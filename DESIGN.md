@@ -1,100 +1,133 @@
-# JAXIS StatLab — Design System & Interface Architecture
+# JAXIS StatLab — Enterprise Design System & Interface Architecture
 
-This document specifies the UI/UX design tokens, visual aesthetics, color systems, and layout architectures for all 6 role interfaces in **JAXIS StatLab**.
+This document specifies the reverse-engineered enterprise visual design system, color tokens, visual hierarchy, and layout architectures for **JAXIS StatLab**.
 
 ---
 
-## 1. Design Aesthetics & Visual Tokens
+## 1. Visual Personality & Brand Positioning
 
-JAXIS StatLab utilizes a high-end, modern dark-mode aesthetic with glassmorphism effects, crisp typography, and semantic status indicators.
+The **JAXIS StatLab** design system projects an **Enterprise, High-Trust, Mission-Critical SaaS** visual personality. It is built for academic institutions, research leads, QA auditors, finance officers, and enterprise clients.
 
-### 🎨 Color Palette (HSL Tailored)
+- **Personality:** Trustworthy, Corporate, Cyber/Government-grade Technology, Premium SaaS, Mission-Critical.
+- **Vibe:** Deep ocean space, precise data analytics, high security, non-distracting contrast.
+
+---
+
+## 2. Reverse-Engineered Color System
 
 ```css
 :root {
-  /* Surface & Background */
-  --bg-dark: hsl(224, 25%, 6%);
-  --surface-card: hsl(222, 20%, 10%);
-  --surface-glass: rgba(15, 23, 42, 0.75);
-  --border-glass: rgba(255, 255, 255, 0.08);
+  /* 1. Primary Background — 95% Foundation */
+  --bg-primary: #010114;           /* Midnight Navy */
+  
+  /* 2. Surface & Glassmorphism — Content Separation */
+  --surface-secondary: #012E57;    /* Deep Ocean Blue */
+  --surface-glass: rgba(1, 46, 87, 0.65);
+  --border-glass: rgba(255, 255, 255, 0.12);
 
-  /* Primary Brand Accents */
-  --primary-indigo: hsl(239, 84%, 67%);
-  --primary-cyan: hsl(188, 94%, 53%);
+  /* 3. Brand Accent — 5-10% Max Usage Rule */
+  --accent-primary: #CC6600;       /* Enterprise Orange */
+  --accent-hover: #E67300;
+  --accent-glow: rgba(204, 102, 0, 0.25);
 
-  /* Semantic Status Colors */
-  --status-emerald: hsl(160, 84%, 39%); /* Fully Paid, Approved, Released */
-  --status-amber: hsl(38, 92%, 50%);    /* Awaiting Payment, In Review, Pending */
-  --status-crimson: hsl(350, 89%, 60%);  /* Blocked, QA Rejected, Ethical Flag */
-  --status-purple: hsl(271, 91%, 65%);   /* Advanced / Premium Tag */
+  /* 4. Primary Content — High Legibility */
+  --text-primary: #FFFFFF;         /* Pure White */
+  --text-muted: rgba(255, 255, 255, 0.70);
+  --text-dim: rgba(255, 255, 255, 0.45);
+
+  /* 5. Semantic Status Overlays */
+  --status-emerald: #10B981;       /* Fully Paid, Approved, Released */
+  --status-amber: #F59E0B;         /* Awaiting Payment, In Review */
+  --status-crimson: #EF4444;       /* Blocked, QA Rejected, Ethical Risk */
 }
 ```
 
-### 💎 Glassmorphic Card Styling
-- **Background:** `background: var(--surface-glass);`
-- **Backdrop Filter:** `backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);`
-- **Border:** `1px solid var(--border-glass)`
-- **Border Radius:** `12px` (Cards), `8px` (Buttons & Badges)
+---
+
+## 3. Color Usage Rules & Visual Hierarchy
+
+```
+Background (#010114)
+   │
+   └── Surface (#012E57)
+         │
+         └── Accent (#CC6600)  ─── 5-10% Max Usage Rule
+               │
+               └── Content (#FFFFFF)
+```
+
+### 1. Midnight Navy (`#010114`) — Primary Foundation (95%)
+- **Purpose:** Primary backdrop for the entire application.
+- **Used For:** Entire page background, hero section, navbar, footer, modal backdrops, dark cards, and main dashboard shells.
+
+### 2. Deep Ocean Blue (`#012E57`) — Surface Color
+- **Purpose:** Content separation without relying on generic gray backgrounds.
+- **Used For:** Secondary cards, feature sections, hover states, glassmorphism panels, active navigation items, code snippets, and pricing highlight cards.
+
+### 3. Enterprise Orange (`#CC6600`) — Brand Accent
+- **Purpose:** Draw high-intent visual focus to key interactions.
+- **Strict Rule:** **5–10% of the UI maximum.** Never use orange as a large background container.
+- **Used For:** Primary CTAs, main action buttons, active navigation indicator tabs, key icons, notification badges, statistical key metric highlights, and subtle progress bars.
+
+### 4. Pure White (`#FFFFFF`) — Content Legibility
+- **Used For:** Headlines, primary body typography, crisp icons, logos, form labels, and subtle card borders (`rgba(255, 255, 255, 0.12)`).
 
 ---
 
-## 2. Status Badge Tokens Matrix
+## 4. Status Badges & Semantic Tokens
 
-All project and operational statuses across the 9 stages must use standard visual badges:
+All project and operational statuses across the 9 workflow stages utilize the enterprise palette:
 
-| Status Key | Display Name | Background / Border Token |
-| :--- | :--- | :--- |
-| `DRAFT_QUOTE` | Draft Quote | Muted Slate (`--surface-card`) |
-| `QUOTE_SENT` | Quote Issued | Primary Cyan (`--primary-cyan`) |
-| `AWAITING_PAYMENT`| Awaiting Payment | Warning Amber (`--status-amber`) |
-| `PAYMENT_SUBMITTED`| Payment Verification Pending | Warning Amber (`--status-amber`) |
-| `DOWNPAYMENT_CONFIRMED`| Downpayment Paid | Indigo Accent (`--primary-indigo`) |
-| `FULLY_PAID` | Fully Paid | Success Emerald (`--status-emerald`) |
-| `IN_ANALYSIS` | Analysis In Progress | Indigo Accent (`--primary-indigo`) |
-| `FOR_QA` | Pending QA Review | Purple Accent (`--status-purple`) |
-| `QA_APPROVED` | QA Approved | Success Emerald (`--status-emerald`) |
-| `RELEASED` | Deliverables Released | Success Emerald (`--status-emerald`) |
-| `BLOCKED_UNPAID` | Release Blocked | Crimson Alert (`--status-crimson`) |
-| `ETHICAL_BREACH` | Ethical Risk Escalated | Crimson Alert (`--status-crimson`) |
-
----
-
-## 3. Interface Architectures (6 Role Desks)
-
-### 1. Client Interface
-- **Dashboard View:** Active project status card, countdown indicators, pending balance alerts.
-- **Intake Portal:** Multi-step submission wizard, research objective inputs, dataset dropzone.
-- **Quotation Viewer:** Interactive quote card with itemized breakdown and Accept/Decline actions.
-- **Deliverables Hub:** Final verified report package, download manager, certificate viewer.
-
-### 2. Admin Interface (Client Success Desk)
-- **Executive Dashboard:** Global intake volume, operational bottleneck flags, release queues.
-- **Quotation Studio:** Drag-and-drop package pricing builder, line-item calculator.
-- **Payment Verification Desk:** Receipt preview panel, instant Approve/Reject controls.
-- **Resource Allocation Panel:** Statistician and QA lead workload balancing desk.
-
-### 3. Statistician Workspace
-- **My Task Board:** Assigned active projects sorted by deadline countdown.
-- **Analysis Workbench:** Scope brief container, dataset viewer, draft report uploader.
-- **QA Feedback Center:** Review scorecard history, error feedback list, resubmission portal.
-
-### 4. Senior QA Interface
-- **QA Review Console:** Pending submission queue sorted by urgency/package level.
-- **Dataset & Report Inspector:** Statistical assumption checklist, error logger (Minor/Major/Critical).
-- **Risk Escalation Desk:** CEO notification trigger interface for ethical breaches.
-
-### 5. Finance Officer Console
-- **Financial Summary Dashboard:** Revenue inflow, allocated shares, platform fund balance, reserve pool.
-- **Payout Processing Desk:** Eligible contractor payout list, disbursement verification controls.
-
-### 6. CEO Risk Dashboard
-- **Executive Risk Board:** Escalated QA issues, custom price override requests, refund disputes.
+| Status Key | Display Name | Background / Border Token | Text Color |
+| :--- | :--- | :--- | :--- |
+| `DRAFT_QUOTE` | Draft Quote | Surface (`#012E57`) + Border (`rgba(255,255,255,0.2)`) | White (`#FFFFFF`) |
+| `QUOTE_SENT` | Quote Issued | Accent Glow (`rgba(204,102,0,0.2)`) | Enterprise Orange (`#CC6600`) |
+| `AWAITING_PAYMENT`| Awaiting Payment | Amber Muted (`rgba(245,158,11,0.2)`) | Warning Amber (`#F59E0B`) |
+| `PAYMENT_SUBMITTED`| Proof Under Review | Amber Muted (`rgba(245,158,11,0.2)`) | Warning Amber (`#F59E0B`) |
+| `FULLY_PAID` | Fully Paid | Emerald Muted (`rgba(16,185,129,0.2)`) | Success Emerald (`#10B981`) |
+| `IN_ANALYSIS` | Analysis Active | Surface Accent (`#012E57`) | White (`#FFFFFF`) |
+| `FOR_QA` | Pending QA Review | Surface Accent (`#012E57`) | White (`#FFFFFF`) |
+| `QA_APPROVED` | QA Approved | Emerald Muted (`rgba(16,185,129,0.2)`) | Success Emerald (`#10B981`) |
+| `RELEASED` | Deliverables Released | Emerald Muted (`rgba(16,185,129,0.2)`) | Success Emerald (`#10B981`) |
+| `BLOCKED_UNPAID` | Release Blocked | Crimson Muted (`rgba(239,68,68,0.2)`) | Crimson Alert (`#EF4444`) |
+| `ETHICAL_BREACH` | Ethical Risk Escalated | Crimson Solid (`#EF4444`) | White (`#FFFFFF`) |
 
 ---
 
-## 4. Shared UI Component Library Guidelines (`packages/ui`)
+## 5. Role Interface Architectures (6 Desks)
 
-All shared React components inside `packages/ui` must:
-1. Export type-safe props with default fallback states.
-2. Support dark-mode glassmorphism out-of-the-box.
-3. Be accessible (`aria-*` labels for file dropzones and status controls).
+All 6 interface desks are built upon the Midnight Navy foundation with Deep Ocean Blue surface layering:
+
+1. **Client Portal:**
+   - Background: Midnight Navy (`#010114`)
+   - Project Cards: Deep Ocean Blue (`#012E57`) with White text
+   - Action Buttons: Enterprise Orange (`#CC6600`)
+
+2. **Admin Executive Desk:**
+   - High-density data grids framed in Deep Ocean Blue (`#012E57`)
+   - Triage action triggers highlighted in Enterprise Orange (`#CC6600`)
+
+3. **Statistician Workspace:**
+   - Focused analytical workbench with dark navy backdrop to reduce eye strain
+   - Upload action buttons styled in Enterprise Orange (`#CC6600`)
+
+4. **Senior QA Studio:**
+   - Audit scorecard checklists in Deep Ocean Blue (`#012E57`)
+   - Risk escalation badges styled in Crimson (`#EF4444`) or Enterprise Orange (`#CC6600`)
+
+5. **Finance Officer Console:**
+   - Financial breakdown cards using Deep Ocean Blue (`#012E57`) with Emerald indicators for cleared funds
+
+6. **CEO Risk Dashboard:**
+   - Executive overview desk with high-level KPI cards and instant action overrides
+
+---
+
+## 6. Shared Component Library Specifications (`packages/ui`)
+
+Shared components inside `packages/ui` must follow these styling tokens:
+
+- **Button Primary:** `background: #CC6600; color: #FFFFFF; hover: #E67300;`
+- **Button Secondary:** `background: #012E57; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.15);`
+- **Card Container:** `background: #012E57; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;`
+- **Page Wrapper:** `background: #010114; min-height: 100vh; color: #FFFFFF;`

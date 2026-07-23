@@ -44,7 +44,12 @@ Derived directly from the official **JAXIS StatSpecification Document**:
   - `apps/web`: Public Landing Page & Marketing Site (Optimized for SSR/SSG & SEO).
   - `apps/app`: SaaS Application Workspace (Client, Admin, Statistician, QA, Finance, CEO Dashboards).
   - `packages/ui`: Shared React UI component library (`@repo/ui`).
-- **Frameworks:** Next.js (App Router), React 19, TypeScript, Tailwind CSS with custom HSL design tokens.
+- **Frameworks:** Next.js (App Router), React 19, TypeScript, Tailwind CSS with Enterprise color tokens.
+- **Enterprise Palette Rules:**
+  - Primary Background: Midnight Navy (`#010114`)
+  - Secondary Surface: Deep Ocean Blue (`#012E57`)
+  - Brand Accent: Enterprise Orange (`#CC6600`) — 5–10% max UI usage rule
+  - Primary Content: Pure White (`#FFFFFF`)
 - **Data Fetching:** TanStack Query for client server-state, Next.js Server Actions / API Routes (`/api/v1/...`).
 - **ORM & DB:** Prisma ORM with PostgreSQL.
 
