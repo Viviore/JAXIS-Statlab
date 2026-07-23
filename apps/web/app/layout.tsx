@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "JAXIS StatLab - Modern Statistical Analysis & Data Intelligence",
-  description: "Empowering researchers, data scientists, and engineers with high-performance statistical modeling and interactive data analytics.",
+  title: "JAXIS StatLab — Enterprise Statistical Infrastructure & Intelligence Platform",
+  description: "Mission-critical workflow platform connecting clients, statisticians, QA leads, and finance teams from intake to payout with strict compliance gates.",
+  keywords: ["statistical analysis", "data intelligence", "research QA", "statistical modeling", "enterprise SaaS"],
+  openGraph: {
+    title: "JAXIS StatLab — Enterprise Statistical Infrastructure",
+    description: "High-performance statistical workflow platform built for enterprise research and clinical compliance.",
+    url: "https://jaxisstatlab.com",
+    siteName: "JAXIS StatLab",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -22,10 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-      </body>
+    <html lang="en" className={inter.variable}>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
