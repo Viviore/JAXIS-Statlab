@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { ThinkingOrb } from "thinking-orbs";
+import { useEffect, useRef, lazy, Suspense } from "react";
+
+// Dynamically import the Three.js globe to keep it client-only
+// and avoid SSR issues with WebGL
+const ParticleGlobe = lazy(() => import("./ParticleGlobe"));
 
 // Floating code annotations — mimics the reference design's terminal-style overlays
 const CODE_SNIPPETS = [
@@ -60,18 +63,24 @@ export default function Hero() {
         background: "#000008",
       }}
     >
-      {/* Deep radial glow at bottom — matching reference blue-violet bloom */}
+      {/* ── Three.js Particle Globe — fills the full section ── */}
+      <Suspense fallback={null}>
+        <ParticleGlobe />
+      </Suspense>
+
+      {/* Deep radial blue-violet glow at bottom — matching reference */}
       <div
         aria-hidden="true"
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse 80% 55% at 50% 105%, rgba(20, 30, 90, 0.75) 0%, rgba(1, 2, 14, 0) 70%)",
+            "radial-gradient(ellipse 80% 55% at 50% 105%, rgba(20, 30, 90, 0.65) 0%, rgba(1, 2, 14, 0) 70%)",
           pointerEvents: "none",
           zIndex: 1,
         }}
       />
+
       {/* Top + bottom vignette */}
       <div
         aria-hidden="true"
@@ -85,42 +94,16 @@ export default function Hero() {
         }}
       />
 
-      {/* ── ThinkingOrb blown up as hero background ── */}
-      {/* The orb only supports 64px, so we scale it up via CSS transform     */}
-      {/* A scale of ~9–10 on a 64px canvas = ~576–640px visual diameter      */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) scale(7.5)",
-          transformOrigin: "center center",
-          zIndex: 3,
-          opacity: 0.7,
-          filter: "blur(2px)",
-          pointerEvents: "none",
-        }}
-      >
-        <ThinkingOrb
-          state="working"
-          size={64}
-          theme="dark"
-          speed={0.5}
-          style={{ display: "block" }}
-        />
-      </div>
-
-      {/* Radial mask over the orb so it fades into the dark background */}
+      {/* Radial mask fades the globe edges into darkness */}
       <div
         aria-hidden="true"
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse 52% 48% at 50% 50%, transparent 30%, rgba(0,0,8,0.55) 65%, rgba(0,0,8,1) 85%)",
+            "radial-gradient(ellipse 58% 52% at 50% 50%, transparent 25%, rgba(0,0,8,0.45) 60%, rgba(0,0,8,0.92) 82%)",
           pointerEvents: "none",
-          zIndex: 4,
+          zIndex: 3,
         }}
       />
 
