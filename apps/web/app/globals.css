@@ -185,9 +185,94 @@ body {
 
 /* ─── Hero responsive ─── */
 @media (max-width: 480px) {
+  #snippet-top-left,
   #snippet-top-right,
+  #snippet-bottom-left,
   #snippet-bottom-right {
     display: none;
   }
 }
+
+/* ─── Hero load animations ─── */
+
+@keyframes heroLineReveal {
+  from { opacity: 0; transform: translateY(28px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+@keyframes heroCaptionReveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Globe entrance — pure opacity fade, no scale (scale amplifies bloom into white blob) */
+@keyframes globeFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.globe-intro {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: globeFadeIn 2.0s ease-out 150ms both;
+  will-change: opacity;
+}
+
+@keyframes typewriterReveal {
+  from { max-width: 0; }
+  to   { max-width: 40ch; }
+}
+
+/* Cursor disappears once typing finishes — no persistent blink */
+@keyframes cursorFadeOut {
+  0%   { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes snippetFadeIn {
+
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.hero-line {
+  display: block;
+  opacity: 0;
+  animation: heroLineReveal 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.hero-caption {
+  opacity: 0;
+  animation: heroCaptionReveal 1.0s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.snippet-block {
+  opacity: 0;
+  animation: snippetFadeIn 0.4s ease forwards;
+}
+
+.snippet-line {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0;
+  /* Stay hidden (max-width:0) until animationDelay fires, then type out */
+  animation: typewriterReveal 0.9s steps(28, end) both;
+  will-change: max-width;
+}
+
+/* Cursor visible while typing, disappears after */
+.snippet-line-last::after {
+  content: '\25AE';
+  display: inline-block;
+  margin-left: 1px;
+  opacity: 1;
+  animation: cursorFadeOut 0.7s ease var(--cursor-delay, 0.55s) both;
+  color: rgba(255, 255, 255, 0.30);
+}
+
 

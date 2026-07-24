@@ -2,36 +2,70 @@
 
 import { useEffect, useRef, lazy, Suspense } from "react";
 
-// Dynamically import the Three.js globe to keep it client-only
-// and avoid SSR issues with WebGL
 const ParticleGlobe = lazy(() => import("./ParticleGlobe"));
 
-// Floating code annotations — mimics the reference design's terminal-style overlays
+// Stagger timing constants (ms)
+const SNIPPET_BASE_DELAY    = 1600;  // ms — snippets start after headline settles
+const HEADLINE_BASE_DELAY   = 700;   // ms — headline starts while globe is mid-fade
+const HEADLINE_LINE_STAGGER = 300;   // ms between headline lines
+const SNIPPET_BLOCK_STAGGER = 320;   // ms between each snippet block
+const SNIPPET_LINE_STAGGER  = 220;   // ms between lines within a block
+const TYPEWRITER_DURATION   = 900;   // ms — must match CSS animation duration
+
 const CODE_SNIPPETS = [
+  {
+    id: "snippet-top-left",
+    lines: [
+      "ANOVA  F(3,196) = 8.42",
+      "p = 0.00002  η² = 0.114",
+      "Post-hoc: Tukey HSD ✓",
+    ],
+    position: { top: "18%", left: "4%", right: "auto", bottom: "auto" } as React.CSSProperties,
+    blockDelay: 0,
+  },
   {
     id: "snippet-top-right",
     lines: [
-      "push  %rbp",
-      "mov   %rsp, %rbp",
-      "call  0x1177391a39b8a04",
+      "Power = 0.92  α = 0.05",
+      "n_required = 148",
+      "Effect size d = 0.51",
     ],
-    position: { top: "28%", right: "7%", left: "auto", bottom: "auto" } as React.CSSProperties,
+    position: { top: "18%", right: "4%", left: "auto", bottom: "auto" } as React.CSSProperties,
+    blockDelay: 1,
+  },
+  {
+    id: "snippet-bottom-left",
+    lines: [
+      "95% CI [2.14, 5.87]",
+      "β₁ = 3.21  SE = 0.94",
+      "R² = 0.763  p < 0.001",
+    ],
+    position: { bottom: "18%", left: "4%", top: "auto", right: "auto" } as React.CSSProperties,
+    blockDelay: 2,
   },
   {
     id: "snippet-bottom-right",
     lines: [
-      "clt, clv, lss #40!",
-      "cli, lr",
-      "dl, lats, dlr",
+      "Shapiro-Wilk W = 0.991",
+      "Levene p = 0.412",
+      "Assumptions met ✓",
     ],
-    position: { top: "auto", right: "7%", left: "auto", bottom: "28%" } as React.CSSProperties,
+    position: { bottom: "18%", right: "4%", top: "auto", left: "auto" } as React.CSSProperties,
+    blockDelay: 3,
   },
+];
+
+// Headline broken into animatable lines
+const HEADLINE_LINES = [
+  { text: "Evidence-backed decisions",  delay: 0 },
+  { text: "at the speed of",           delay: 1 },
+  { text: "discovery.",                 delay: 2, accent: true },
 ];
 
 export default function Hero() {
   const wrapperRef = useRef<HTMLElement>(null);
 
-  // Subtle parallax: headline shifts slightly on mouse move
+  // Subtle parallax on mouse move — only affects the h1 translate, not opacity
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
@@ -39,7 +73,7 @@ export default function Hero() {
     if (!headline) return;
 
     const onMouseMove = (e: MouseEvent) => {
-      const dx = (e.clientX / window.innerWidth - 0.5) * 12;
+      const dx = (e.clientX / window.innerWidth  - 0.5) * 12;
       const dy = (e.clientY / window.innerHeight - 0.5) * 8;
       headline.style.transform = `translate(${dx}px, ${dy}px)`;
     };
@@ -60,79 +94,77 @@ export default function Hero() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        background: "#000008",
+        background: "#000814",
       }}
     >
-      {/* ── Three.js Particle Globe — fills the full section ── */}
+      {/* ── Three.js Globe — fades in via Three.js loop, not CSS ── */}
       <Suspense fallback={null}>
         <ParticleGlobe />
       </Suspense>
 
-      {/* Deep radial blue-violet glow at bottom — matching reference */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(ellipse 80% 55% at 50% 105%, rgba(20, 30, 90, 0.65) 0%, rgba(1, 2, 14, 0) 70%)",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
+      {/* Bottom navy glow */}
+      <div aria-hidden="true" style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1,
+        background: "radial-gradient(ellipse 90% 60% at 50% 110%, rgba(1,22,57,0.80) 0%, rgba(0,4,20,0) 65%)",
+      }} />
 
-      {/* Top + bottom vignette */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(to bottom, rgba(0,0,8,0.55) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.5) 100%)",
-          pointerEvents: "none",
-          zIndex: 2,
-        }}
-      />
+      {/* Top/bottom vignette */}
+      <div aria-hidden="true" style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2,
+        background: "linear-gradient(to bottom, rgba(0,0,8,0.55) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.5) 100%)",
+      }} />
 
-      {/* Radial mask fades the globe edges into darkness */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(ellipse 58% 52% at 50% 50%, transparent 25%, rgba(0,0,8,0.45) 60%, rgba(0,0,8,0.92) 82%)",
-          pointerEvents: "none",
-          zIndex: 3,
-        }}
-      />
+      {/* Edge radial mask */}
+      <div aria-hidden="true" style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3,
+        background: "radial-gradient(ellipse 62% 56% at 50% 50%, transparent 20%, rgba(0,8,20,0.38) 58%, rgba(0,8,20,0.90) 80%)",
+      }} />
 
-      {/* Floating code annotations */}
-      {CODE_SNIPPETS.map((snippet) => (
-        <div
-          key={snippet.id}
-          id={snippet.id}
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            ...snippet.position,
-            fontFamily: "'Courier New', Courier, monospace",
-            fontSize: "0.62rem",
-            lineHeight: "1.8",
-            color: "rgba(255,255,255,0.28)",
-            letterSpacing: "0.04em",
-            userSelect: "none",
-            pointerEvents: "none",
-            zIndex: 5,
-          }}
-        >
-          {snippet.lines.map((line, i) => (
-            <div key={i}>{line}</div>
-          ))}
-        </div>
-      ))}
+      {/* ── Floating statistical code annotations ── */}
+      {CODE_SNIPPETS.map((snippet) => {
+        const blockStart = SNIPPET_BASE_DELAY + snippet.blockDelay * SNIPPET_BLOCK_STAGGER;
+        return (
+          <div
+            key={snippet.id}
+            id={snippet.id}
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              ...snippet.position,
+              fontFamily: "'Courier New', Courier, monospace",
+              fontSize: "0.62rem",
+              lineHeight: "1.9",
+              color: "rgba(255,255,255,0.30)",
+              letterSpacing: "0.04em",
+              userSelect: "none",
+              pointerEvents: "none",
+              zIndex: 5,
+            }}
+          >
+            {snippet.lines.map((line, i) => {
+              const isLast   = i === snippet.lines.length - 1;
+              // Each line starts after the previous one finishes typing
+              const lineDelay = blockStart + i * (TYPEWRITER_DURATION + SNIPPET_LINE_STAGGER);
+              // Cursor fades out right after THIS line finishes
+              const cursorDelay = TYPEWRITER_DURATION;
+              return (
+                <div
+                  key={i}
+                  className={`snippet-line${isLast ? " snippet-line-last" : ""}`}
+                  style={{
+                    animationDelay: `${lineDelay}ms`,
+                    ...(isLast ? { "--cursor-delay": `${cursorDelay}ms` } as React.CSSProperties : {}),
+                  }}
+                >
+                  {line}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
 
-      {/* Main headline — sits above everything */}
+      {/* ── Main headline ── */}
       <div
         style={{
           position: "relative",
@@ -157,25 +189,28 @@ export default function Hero() {
             willChange: "transform",
           }}
         >
-          Statistics that moves
-          <br />
-          at the speed of your
-          <br />
-          <em
-            style={{
-              fontStyle: "normal",
-              background:
-                "linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.6) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            research.
-          </em>
+          {HEADLINE_LINES.map(({ text, delay, accent }) => (
+            <span
+              key={text}
+              className="hero-line"
+              style={{ animationDelay: `${HEADLINE_BASE_DELAY + delay * HEADLINE_LINE_STAGGER}ms` }}
+            >
+              {accent ? (
+                <em style={{
+                  fontStyle: "normal",
+                  background: "linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.6) 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}>
+                  {text}
+                </em>
+              ) : text}
+            </span>
+          ))}
         </h1>
       </div>
 
-      {/* Sub-caption — bottom center */}
+      {/* ── Sub-caption ── */}
       <div
         style={{
           position: "absolute",
@@ -188,6 +223,7 @@ export default function Hero() {
         }}
       >
         <p
+          className="hero-caption"
           style={{
             fontFamily: "var(--font-inter), sans-serif",
             fontSize: "0.78rem",
@@ -197,6 +233,7 @@ export default function Hero() {
             maxWidth: "380px",
             margin: "0 auto",
             letterSpacing: "0.01em",
+            animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 300}ms`,
           }}
         >
           Continuously validating, analyzing, and delivering statistical
