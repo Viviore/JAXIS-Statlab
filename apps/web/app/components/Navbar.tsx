@@ -1,47 +1,239 @@
 "use client";
 
-import React from "react";
+import { useState, useEffect } from "react";
+
+const NAV_LINKS = [
+  { label: "Our Approach", href: "#approach" },
+  { label: "Solutions", href: "#solutions" },
+  { label: "Research", href: "#research" },
+  { label: "Contact", href: "#contact" },
+];
 
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 transition-all duration-300">
-      <div className="max-w-7xl mx-auto glass-panel px-6 py-3.5 flex items-center justify-between">
-        {/* Brand Logo */}
-        <a href="#" className="flex items-center gap-3 group text-decoration-none">
-          <div className="w-9 h-9 rounded-lg bg-[#CC6600] flex items-center justify-center font-bold text-white shadow-lg shadow-[#CC6600]/30 transition-transform group-hover:scale-105">
-            JS
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-lg tracking-tight text-white flex items-center gap-1.5">
-              JAXIS <span className="text-[#CC6600] font-mono text-sm uppercase px-1.5 py-0.5 rounded bg-[#012E57]/60 border border-[#CC6600]/30">StatLab</span>
-            </span>
-          </div>
+    <header
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        transition: "background 0.4s ease, border-color 0.4s ease",
+        background: scrolled ? "rgba(1, 1, 20, 0.85)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+      }}
+    >
+      <nav
+        style={{
+          maxWidth: "1280px",
+          margin: "0 auto",
+          padding: "0 2rem",
+          height: "64px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Logo */}
+        <a
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            textDecoration: "none",
+            color: "#fff",
+          }}
+          aria-label="JAXIS StatLab Home"
+        >
+          {/* Logo mark — angular accent */}
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "26px",
+              height: "26px",
+              background: "linear-gradient(135deg, #CC6600 0%, #FF8800 100%)",
+              clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)",
+              flexShrink: 0,
+            }}
+            aria-hidden="true"
+          />
+          <span
+            style={{
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "1rem",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#FFFFFF",
+            }}
+          >
+            JAXIS <span style={{ color: "#CC6600" }}>StatLab</span>
+          </span>
         </a>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
-          <a href="#platform" className="hover:text-white transition-colors">Platform</a>
-          <a href="#workflow" className="hover:text-white transition-colors">Master Workflow</a>
-          <a href="#security" className="hover:text-white transition-colors">Compliance & Gates</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-        </nav>
+        {/* Desktop Nav Links */}
+        <ul
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "2.5rem",
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+          }}
+          className="nav-links-desktop"
+        >
+          {NAV_LINKS.map((link) => (
+            <li key={link.href}>
+              <a
+                href={link.href}
+                style={{
+                  fontFamily: "var(--font-inter), sans-serif",
+                  fontSize: "0.72rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.65)",
+                  textDecoration: "none",
+                  transition: "color 0.2s ease",
+                }}
+                onMouseEnter={(e) =>
+                  ((e.target as HTMLAnchorElement).style.color = "#FFFFFF")
+                }
+                onMouseLeave={(e) =>
+                  ((e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.65)")
+                }
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-4">
-          <a
-            href="http://localhost:3001"
-            className="hidden sm:inline-flex text-sm text-white/80 hover:text-white font-medium px-4 py-2 rounded-lg hover:bg-[#012E57]/40 transition-all"
-          >
-            Sign In
-          </a>
-          <a href="http://localhost:3001" className="btn-primary">
-            Launch Workspace
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
+        {/* CTA Button */}
+        <a
+          href="#get-started"
+          id="navbar-cta"
+          style={{
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: "0.7rem",
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#FFFFFF",
+            textDecoration: "none",
+            padding: "8px 20px",
+            border: "1px solid rgba(255,255,255,0.45)",
+            borderRadius: "2px",
+            transition: "border-color 0.2s ease, background 0.2s ease",
+            background: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget;
+            el.style.borderColor = "#CC6600";
+            el.style.background = "rgba(204,102,0,0.08)";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget;
+            el.style.borderColor = "rgba(255,255,255,0.45)";
+            el.style.background = "transparent";
+          }}
+          className="nav-cta-desktop"
+        >
+          Get Started
+        </a>
+
+        {/* Mobile hamburger */}
+        <button
+          id="mobile-menu-toggle"
+          aria-label="Toggle mobile menu"
+          onClick={() => setMenuOpen((v) => !v)}
+          style={{
+            display: "none",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "4px",
+            color: "#fff",
+          }}
+          className="nav-hamburger"
+        >
+          <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect y="0" width="22" height="1.5" fill="currentColor" />
+            <rect y="7" width="22" height="1.5" fill="currentColor" />
+            <rect y="14" width="22" height="1.5" fill="currentColor" />
+          </svg>
+        </button>
+      </nav>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div
+          style={{
+            background: "rgba(1, 1, 20, 0.96)",
+            backdropFilter: "blur(16px)",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: "1.5rem 2rem",
+          }}
+        >
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    fontFamily: "var(--font-inter), sans-serif",
+                    fontSize: "0.8rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.7)",
+                    textDecoration: "none",
+                  }}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                href="#get-started"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  fontFamily: "var(--font-inter), sans-serif",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "#FFFFFF",
+                  textDecoration: "none",
+                  padding: "10px 20px",
+                  border: "1px solid rgba(255,255,255,0.4)",
+                  borderRadius: "2px",
+                  display: "inline-block",
+                }}
+              >
+                Get Started
+              </a>
+            </li>
+          </ul>
         </div>
-      </div>
+      )}
     </header>
   );
 }

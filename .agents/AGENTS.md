@@ -52,6 +52,7 @@ Derived directly from the official **JAXIS StatSpecification Document**:
   - Primary Content: Pure White (`#FFFFFF`)
 - **Data Fetching:** TanStack Query for client server-state, Next.js Server Actions / API Routes (`/api/v1/...`).
 - **ORM & DB:** Prisma ORM with PostgreSQL.
+- **Animations, 3D & Scrolling:** `gsap`, `lenis`, and `three` (including `@react-three/fiber`) MUST ONLY be installed and used in the `apps/web` (Landing Page) workspace to achieve cinematic designs. The `apps/app` (SaaS Dashboard) workspace MUST remain lightweight and prioritize standard native scroll behaviors without scroll hijacking.
 
 ---
 
@@ -78,3 +79,11 @@ Before submitting code or declaring a task complete, verify:
 1. `npm run check-types` passes with **0 TypeScript errors**.
 2. `npm run lint` passes with **0 ESLint warnings/errors**.
 3. `npm run build` succeeds cleanly for both `apps/web` and `apps/app`.
+
+---
+
+## 6. Agent Skills & Usage
+
+All AI agents MUST utilize the appropriate custom **Skills** when working on this workspace:
+- **`apps/web` (Landing Page):** When building, auditing, or refactoring the landing page, you MUST use the **`impeccable`**, **`high-end-visual-design`**, **`design-taste-frontend`**, and **`gpt-taste`** skills. These enforce the premium, cinematic, anti-generic aesthetic required for the Corporate Midnight Enterprise design system.
+- **`apps/app` (SaaS Dashboard):** Prioritize the **`minimalist-ui`** or **`industrial-brutalist-ui`** skills for utilitarian, fast, data-dense interfaces that avoid visual bloat.

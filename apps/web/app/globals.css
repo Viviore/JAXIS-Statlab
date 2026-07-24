@@ -169,3 +169,25 @@ body {
 .animate-pulse-glow {
   animation: pulseGlow 4s infinite ease-in-out;
 }
+
+/* ─── Navbar responsive ─── */
+@media (max-width: 768px) {
+  .nav-links-desktop {
+    display: none !important;
+  }
+  .nav-cta-desktop {
+    display: none !important;
+  }
+  .nav-hamburger {
+    display: flex !important;
+  }
+}
+
+/* ─── Hero responsive ─── */
+@media (max-width: 480px) {
+  #snippet-top-right,
+  #snippet-bottom-right {
+    display: none;
+  }
+}
+
