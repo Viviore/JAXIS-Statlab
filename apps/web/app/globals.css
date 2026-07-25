@@ -660,3 +660,43 @@ body {
 .scroll-fade-up.active {
   animation: fadeSlideUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
+/* ─── Light Section (Section 3) ─── */
+.section-light {
+  background-color: #F8F9FA;
+  color: #010114;
+}
+
+.section-light h2 {
+  color: #010114;
+}
+
+.section-light .text-muted-light {
+  color: rgba(1, 1, 20, 0.6);
+}
+
+.section-light .border-light {
+  border-color: rgba(1, 1, 20, 0.1);
+}
+
+.tab-light {
+  background: transparent;
+  border-bottom: 1px solid rgba(1, 1, 20, 0.1);
+  color: #010114;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 0.9rem;
+  text-align: left;
+  padding: 1.25rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.tab-light:hover {
+  background: rgba(1, 1, 20, 0.03);
+}
+
+.tab-light.active {
+  background: #010114;
+  color: #FFFFFF;
+}
