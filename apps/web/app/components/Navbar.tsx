@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 const NAV_LINKS = [
   { label: "Our Approach", href: "#approach" },
@@ -17,6 +18,12 @@ export default function Navbar() {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth > 768) setMenuOpen(false); };
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   return (
@@ -46,7 +53,7 @@ export default function Navbar() {
         }}
       >
         {/* Logo */}
-        <a
+        <Link
           href="/"
           style={{
             display: "flex",
@@ -83,7 +90,7 @@ export default function Navbar() {
           >
             JAXIS <span style={{ color: "#CC6600" }}>StatLab</span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop Nav Links */}
         <ul
@@ -180,16 +187,21 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile dropdown */}
-      {menuOpen && (
-        <div
-          style={{
-            background: "rgba(1, 1, 20, 0.96)",
-            backdropFilter: "blur(16px)",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            padding: "1.5rem 2rem",
-          }}
-        >
+      {/* Mobile dropdown — always rendered; transitions via max-height + opacity */}
+      <div
+        style={{
+          overflow: "hidden",
+          maxHeight: menuOpen ? "320px" : "0px",
+          opacity: menuOpen ? 1 : 0,
+          pointerEvents: menuOpen ? "auto" : "none",
+          transition: "max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease",
+          background: "rgba(1, 1, 20, 0.96)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderTop: menuOpen ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+        }}
+      >
+        <div style={{ padding: "1.5rem 2rem" }}>
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
@@ -212,7 +224,7 @@ export default function Navbar() {
             ))}
             <li>
               <a
-                href="#get-started"
+                href="#contact"
                 onClick={() => setMenuOpen(false)}
                 style={{
                   fontFamily: "var(--font-inter), sans-serif",
@@ -233,7 +245,7 @@ export default function Navbar() {
             </li>
           </ul>
         </div>
-      )}
+      </div>
     </header>
   );
 }

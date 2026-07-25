@@ -87,3 +87,26 @@ Before submitting code or declaring a task complete, verify:
 All AI agents MUST utilize the appropriate custom **Skills** when working on this workspace:
 - **`apps/web` (Landing Page):** When building, auditing, or refactoring the landing page, you MUST use the **`impeccable`**, **`high-end-visual-design`**, **`design-taste-frontend`**, and **`gpt-taste`** skills. These enforce the premium, cinematic, anti-generic aesthetic required for the Corporate Midnight Enterprise design system.
 - **`apps/app` (SaaS Dashboard):** Prioritize the **`minimalist-ui`** or **`industrial-brutalist-ui`** skills for utilitarian, fast, data-dense interfaces that avoid visual bloat.
+
+---
+
+# Antigravity Development & Agent Rules
+
+## 🎯 Core Engineering Principles
+- **No Over-Engineering:** Write clean code for current requirements only. Do not invent abstractions, utility wrappers, or config flags for theoretical future needs.
+- **Zero Dead Code:** Delete unused variables, obsolete imports, dead helper functions, and commented-out code immediately. Never leave commented code in PRs.
+- **Fail Fast & Loud:** Never silently ignore errors or leave empty `catch` blocks. Log errors with context or let them bubble up cleanly.
+
+## 🤖 Agent Autonomy & Behavior Standards
+- **Verify Before Completing:** Always run local tests or build checks (e.g., `npm run build` or `pytest`) before marking a task as completed.
+- **Incremental Modifications:** Do not attempt massive multi-file rewrites in a single step. Make targeted changes and update the task list as you progress.
+- **Minimal Surface Area:** Keep diffs as tight as possible. Do not reformat untouched files or introduce unrelated style churn.
+
+## 🎨 Frontend & Styling Guidelines
+- **Tailwind & Utility-First:** Prefer Tailwind utility classes over custom CSS blocks. Keep UI structures modular and readable.
+- **Semantic Markup:** Use standard HTML tags (`<main>`, `<nav>`, `<article>`, `<button>`) to ensure accessibility and clear structure.
+- **Component Boundaries:** Keep UI components focused on a single responsibility. Extract reusable sub-views only when reused at least twice.
+
+## 🧪 Testing & Code Hygiene
+- **Behavior-Driven Testing:** Write unit/integration tests that verify user behavior and API outputs rather than internal state implementation details.
+- **Self-Documenting Code:** Choose clear variable and function names over redundant comments. Use comments strictly to explain non-obvious *why* decisions.

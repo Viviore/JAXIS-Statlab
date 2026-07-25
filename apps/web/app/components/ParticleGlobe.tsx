@@ -68,7 +68,22 @@ function fibonacciSphere(count: number, radius: number): THREE.Vector3[] {
   return pts;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Module-scope geometry (computed once at module load, not per mount) ──────────
+type EdgePair = { a: number; b: number };
+
+const positions = fibonacciSphere(POINT_COUNT, SPHERE_RADIUS);
+const normals   = positions.map(p => p.clone().normalize());
+
+const edgePairs: EdgePair[] = [];
+for (let i = 0; i < positions.length; i++) {
+  for (let j = i + 1; j < positions.length; j++) {
+    if (positions[i]!.distanceTo(positions[j]!) < CONNECT_DISTANCE) {
+      edgePairs.push({ a: i, b: j });
+    }
+  }
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────────
 export default function ParticleGlobe() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -88,10 +103,7 @@ export default function ParticleGlobe() {
     const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
-    // ── Geometry ──────────────────────────────────────────────────────────────
-    const positions = fibonacciSphere(POINT_COUNT, SPHERE_RADIUS);
-    const normals   = positions.map(p => p.clone().normalize());
-
+    // ── Geometry ───────────────────────────────────────────────────────────────────────
     const hsTarget  = REST_DIR.clone();
     const hsCurrent = REST_DIR.clone();
     let   isHovered = false;
@@ -144,23 +156,13 @@ export default function ParticleGlobe() {
     });
     const haloMesh = new THREE.Points(haloGeo, haloMat);
 
-    // ── Edges ─────────────────────────────────────────────────────────────────
-    type EdgePair = { a: number; b: number };
-    const edgePairs: EdgePair[] = [];
-    for (let i = 0; i < positions.length; i++) {
-      for (let j = i + 1; j < positions.length; j++) {
-        if (positions[i].distanceTo(positions[j]) < CONNECT_DISTANCE) {
-          edgePairs.push({ a: i, b: j });
-        }
-      }
-    }
-
+    // ── Edges ─────────────────────────────────────────────────────────────────────────
     const edgePosArr = new Float32Array(edgePairs.length * 6);
     const edgeColArr = new Float32Array(edgePairs.length * 6);
     edgePairs.forEach(({ a, b }, ei) => {
       const base = ei * 6;
-      edgePosArr[base + 0] = positions[a].x; edgePosArr[base + 1] = positions[a].y; edgePosArr[base + 2] = positions[a].z;
-      edgePosArr[base + 3] = positions[b].x; edgePosArr[base + 4] = positions[b].y; edgePosArr[base + 5] = positions[b].z;
+      edgePosArr[base + 0] = positions[a]!.x; edgePosArr[base + 1] = positions[a]!.y; edgePosArr[base + 2] = positions[a]!.z;
+      edgePosArr[base + 3] = positions[b]!.x; edgePosArr[base + 4] = positions[b]!.y; edgePosArr[base + 5] = positions[b]!.z;
     });
 
     const edgeGeo     = new THREE.BufferGeometry();
@@ -256,7 +258,8 @@ export default function ParticleGlobe() {
       el = el.parentElement;
     }
 
-    const onMouseMove  = (e: MouseEvent) => {
+    const onMouseMove  = (evt: Event) => {
+      const e = evt as MouseEvent;
       const rect = eventRoot.getBoundingClientRect();
       mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
       mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
@@ -316,9 +319,19 @@ export default function ParticleGlobe() {
       updateColors();
       renderer.render(scene, camera);
     };
-    animate();
+    // ── Reduced motion: static render, skip animation loop ───────────────────
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      coreMat.opacity  = 1;
+      haloMat.opacity  = HALO_MAX_OPACITY;
+      edgeMat.opacity  = EDGE_MAX_OPACITY;
+      group.rotation.y = 0;
+      updateColors();
+      renderer.render(scene, camera);
+    } else {
+      animate();
+    }
 
-    // ── Resize ────────────────────────────────────────────────────────────────
+    // ── Resize ─────────────────────────────────────────────────────────────────────────────
     const onResize = () => {
       const w = container.clientWidth, h = container.clientHeight;
       camera.aspect = w / h;

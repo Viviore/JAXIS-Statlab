@@ -65,21 +65,33 @@ const HEADLINE_LINES = [
 export default function Hero() {
   const wrapperRef = useRef<HTMLElement>(null);
 
-  // Subtle parallax on mouse move — only affects the h1 translate, not opacity
+  // Subtle parallax on mouse move — pointer-capable devices only
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     const headline = wrapper.querySelector<HTMLElement>("#hero-headline");
     if (!headline) return;
 
+    const onMouseEnter = () => { headline.style.willChange = "transform"; };
+    const onMouseLeave = () => {
+      headline.style.willChange = "auto";
+      headline.style.transform = "";
+    };
     const onMouseMove = (e: MouseEvent) => {
       const dx = (e.clientX / window.innerWidth  - 0.5) * 12;
       const dy = (e.clientY / window.innerHeight - 0.5) * 8;
       headline.style.transform = `translate(${dx}px, ${dy}px)`;
     };
 
+    wrapper.addEventListener("mouseenter", onMouseEnter, { passive: true });
+    wrapper.addEventListener("mouseleave", onMouseLeave, { passive: true });
     window.addEventListener("mousemove", onMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMouseMove);
+    return () => {
+      wrapper.removeEventListener("mouseenter", onMouseEnter);
+      wrapper.removeEventListener("mouseleave", onMouseLeave);
+      window.removeEventListener("mousemove", onMouseMove);
+    };
   }, []);
 
   return (
@@ -94,7 +106,7 @@ export default function Hero() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        background: "#000814",
+        background: "var(--bg-primary)",
       }}
     >
       {/* ── Three.js Globe — fades in via Three.js loop, not CSS ── */}
@@ -164,7 +176,7 @@ export default function Hero() {
         );
       })}
 
-      {/* ── Main headline ── */}
+      {/* ── Content: headline + caption + CTA ── */}
       <div
         style={{
           position: "relative",
@@ -173,6 +185,9 @@ export default function Hero() {
           padding: "0 1.5rem",
           maxWidth: "900px",
           width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         <h1
@@ -186,7 +201,7 @@ export default function Hero() {
             color: "#FFFFFF",
             margin: 0,
             transition: "transform 0.15s ease-out",
-            willChange: "transform",
+            textShadow: "0 2px 24px rgba(0,0,0,0.55), 0 1px 6px rgba(0,0,0,0.4)",
           }}
         >
           {HEADLINE_LINES.map(({ text, delay, accent }) => (
@@ -196,42 +211,24 @@ export default function Hero() {
               style={{ animationDelay: `${HEADLINE_BASE_DELAY + delay * HEADLINE_LINE_STAGGER}ms` }}
             >
               {accent ? (
-                <em style={{
-                  fontStyle: "normal",
-                  background: "linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.6) 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}>
+                <em style={{ fontStyle: "normal", color: "var(--accent-orange)", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
                   {text}
                 </em>
               ) : text}
             </span>
           ))}
         </h1>
-      </div>
 
-      {/* ── Sub-caption ── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "9%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          textAlign: "center",
-          zIndex: 10,
-          padding: "0 1rem",
-        }}
-      >
         <p
           className="hero-caption"
           style={{
             fontFamily: "var(--font-inter), sans-serif",
             fontSize: "0.78rem",
             fontWeight: 400,
-            color: "rgba(255,255,255,0.42)",
+            color: "rgba(255,255,255,0.65)",
             lineHeight: 1.65,
             maxWidth: "380px",
-            margin: "0 auto",
+            margin: "1.75rem auto 0",
             letterSpacing: "0.01em",
             animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 300}ms`,
           }}
@@ -239,6 +236,41 @@ export default function Hero() {
           Continuously validating, analyzing, and delivering statistical
           intelligence across your research, clinical, and enterprise data.
         </p>
+
+        <a
+          href="#contact"
+          id="hero-cta"
+          className="hero-caption"
+          style={{
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: "0.7rem",
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#FFFFFF",
+            textDecoration: "none",
+            padding: "10px 28px",
+            border: "1px solid rgba(255,255,255,0.45)",
+            borderRadius: "2px",
+            background: "transparent",
+            marginTop: "2rem",
+            display: "inline-block",
+            transition: "border-color 0.2s ease, background 0.2s ease",
+            animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 600}ms`,
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget;
+            el.style.borderColor = "var(--accent-orange)";
+            el.style.background = "rgba(204,102,0,0.08)";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget;
+            el.style.borderColor = "rgba(255,255,255,0.45)";
+            el.style.background = "transparent";
+          }}
+        >
+          Get Started
+        </a>
       </div>
     </section>
   );

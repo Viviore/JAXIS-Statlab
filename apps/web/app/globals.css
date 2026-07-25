@@ -25,10 +25,19 @@
   padding: 0;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 html {
   color-scheme: dark;
-  scroll-behavior: smooth;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
 }
 
 body {
@@ -184,7 +193,7 @@ body {
 }
 
 /* ─── Hero responsive ─── */
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   #snippet-top-left,
   #snippet-top-right,
   #snippet-bottom-left,
@@ -273,6 +282,40 @@ body {
   opacity: 1;
   animation: cursorFadeOut 0.7s ease var(--cursor-delay, 0.55s) both;
   color: rgba(255, 255, 255, 0.30);
+}
+
+/* ─── Reduced motion: preserve visible end-state, cancel all motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .hero-caption {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .snippet-block {
+    animation: none;
+    opacity: 1;
+  }
+  .snippet-line {
+    animation: none;
+    max-width: 40ch;
+  }
+  .snippet-line-last::after {
+    animation: none;
+    opacity: 0;
+  }
+  .globe-intro {
+    animation: none;
+    opacity: 1;
+  }
+  .animate-pulse-glow {
+    animation: none;
+  }
 }
 
 
