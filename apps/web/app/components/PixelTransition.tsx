@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
 
-// Simple deterministic PRNG to prevent hydration mismatches
+// Register GSAP Plugin
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+// Simple deterministic PRNG
 function mulberry32(a: number) {
     return function() {
       var t = a += 0x6D2B79F5;
@@ -13,56 +20,119 @@ function mulberry32(a: number) {
 }
 
 export default function PixelTransition() {
-  const [mounted, setMounted] = useState(false);
-  
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    setMounted(true);
+    if (!containerRef.current) return;
+
+    const ctx = gsap.context(() => {
+      // 1. The original animation: fade in the white pixels
+      const pixels = gsap.utils.toArray<SVGRectElement>('.pixel-rect');
+      
+      pixels.sort((a, b) => {
+        const yA = parseInt(a.getAttribute('data-y') || '0');
+        const yB = parseInt(b.getAttribute('data-y') || '0');
+        return (yB - yA) + (Math.random() * 8 - 4); 
+      });
+
+      gsap.to(pixels, {
+        opacity: 1,
+        ease: "none",
+        stagger: {
+          amount: 1.5, 
+        },
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 95%",
+          end: "top 10%",
+          scrub: 1.2, 
+        }
+      });
+
+      // 2. The cleanup animation: flawlessly turn the dark pixels white organically, 
+      // while fading in a white backing to seal any SVG microscopic cracks.
+      // We NEVER animate opacity to 0 here, because semi-transparent dark pixels over a background look muddy gray!
+      const darkPixels = gsap.utils.toArray<SVGRectElement>('.pixel-dark');
+      
+      // Sort so bottom dark pixels turn white first, eating upwards
+      darkPixels.sort((a, b) => {
+        const yA = parseInt(a.getAttribute('data-y') || '0');
+        const yB = parseInt(b.getAttribute('data-y') || '0');
+        return (yB - yA) + (Math.random() * 4 - 2); 
+      });
+
+      // Animate the SVG fill color. This keeps the pixels 100% solid and crisp!
+      gsap.to(darkPixels, {
+        fill: '#F8F9FA',
+        ease: "none",
+        stagger: {
+          amount: 1, 
+        },
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 15%",
+          end: "bottom 60%",
+          scrub: 1.2,
+        }
+      });
+
+      // Fade in the white backing behind the opaque pixels to perfectly seal any SVG anti-aliasing cracks
+      gsap.to('.white-bg', {
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 15%",
+          end: "bottom 60%",
+          scrub: 1.2,
+        }
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
   }, []);
 
   const rects = useMemo(() => {
-    // By using a repeating pattern, we can ensure the pixels are ALWAYS perfect squares.
-    // We will generate a block of 100 columns by 12 rows. 
-    // It will loop horizontally seamlessly.
-    const cols = 80;
-    const rows = 7;
+    const cols = 100;
+    const rows = 10;
     const items = [];
-    const random = mulberry32(888); // deterministic seed
+    const random = mulberry32(888); 
     
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const progress = y / (rows - 1);
         let lightProb = Math.pow(progress, 1.4); 
         
-        // Force edges to be solid for a clean transition
-        if (y === 0) lightProb = 0.02;
-        if (y === 1) lightProb = 0.15;
-        if (y === rows - 2) lightProb = 0.85;
-        if (y === rows - 1) lightProb = 0.98;
+        // Force top to be sparse and bottom to be dense
+        if (y === 0) lightProb = 0.01;
+        if (y === 1) lightProb = 0.05;
+        if (y === 2) lightProb = 0.12;
+        if (y === rows - 3) lightProb = 0.88;
+        if (y === rows - 2) lightProb = 0.98;
+        if (y === rows - 1) lightProb = 1.0; 
 
         const rand = random();
-        
         let isLight = rand < lightProb;
         let color = isLight ? '#F8F9FA' : '#010114';
-        
-        // Add random accents in the middle transition area
-        if (y > 0 && y < rows - 1 && random() < 0.04) {
-          color = random() > 0.5 ? '#CC6600' : '#012E57'; // Orange or Deep Blue
-        }
 
-        // Fade out the grid lines as they reach the bottom so they blend into the solid white section seamlessly
-        const strokeOpacity = isLight ? 0.06 * (1 - (y / (rows - 1))) : 0;
-        const strokeColor = strokeOpacity > 0.001 ? `rgba(1, 1, 20, ${strokeOpacity.toFixed(3)})` : 'transparent';
+        const classes = [];
+        if (isLight) {
+          classes.push('pixel-rect');
+        } else {
+          classes.push('pixel-dark');
+        }
 
         items.push(
           <rect 
             key={`${x}-${y}`} 
             x={x} 
-            y={y} 
-            width={1.05} 
-            height={1.05} 
+            y={y}
+            data-y={y} 
+            width={1} 
+            height={1} 
             fill={color} 
-            stroke={strokeColor}
-            strokeWidth={0.05}
+            className={classes.join(' ')}
+            shapeRendering="crispEdges"
           />
         );
       }
@@ -70,40 +140,53 @@ export default function PixelTransition() {
     return items;
   }, []);
 
-  // Server-side placeholder with exact same height to prevent layout shift
-  if (!mounted) {
-    return <div style={{ width: '100%', height: '280px', backgroundColor: '#010114' }} aria-hidden="true" />;
-  }
-
-  // We map the 80x7 grid to 3200px x 280px. 
-  // This guarantees each block is exactly 40x40 pixels, making them incredibly chunky.
   return (
     <div 
+      ref={containerRef}
       style={{ 
+        position: 'relative',
         width: '100%', 
-        height: '280px',
+        height: '400px',
         backgroundColor: '#010114',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        display: 'flex',
+        justifyContent: 'center'
       }} 
       aria-hidden="true"
     >
-      <svg width="100%" height="280px" style={{ display: 'block' }}>
-        <defs>
-          <pattern 
-            id="pixel-pattern" 
-            x="0" 
-            y="0" 
-            width="3200" 
-            height="280" 
-            patternUnits="userSpaceOnUse"
-          >
-            <svg viewBox="0 0 80 7" width="3200" height="280">
-              {rects}
-            </svg>
-          </pattern>
-        </defs>
-        <rect x="0" y="0" width="100%" height="100%" fill="url(#pixel-pattern)" />
-      </svg>
+      <style>{`
+        /* All light/accent pixels start completely invisible */
+        .pixel-rect {
+          opacity: 0;
+        }
+      `}</style>
+
+      {/* Solid white background that crossfades in */}
+      <div 
+        className="white-bg"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: '#F8F9FA',
+          opacity: 0,
+          pointerEvents: 'none'
+        }}
+      />
+      
+      {/* Wrapper for the SVG */}
+      <div 
+        className="svg-wrapper"
+        style={{
+          position: 'relative',
+          display: 'flex',
+          width: '100%',
+          justifyContent: 'center'
+        }}
+      >
+        <svg viewBox="0 0 100 10" width="4000" height="400" style={{ flexShrink: 0 }}>
+          {rects}
+        </svg>
+      </div>
     </div>
   );
 }
