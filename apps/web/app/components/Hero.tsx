@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, lazy, Suspense } from "react";
+import { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 
-const ParticleGlobe = lazy(() => import("./ParticleGlobe"));
+const ParticleGlobe = dynamic(() => import("./ParticleGlobe"), { ssr: false });
 
 // Stagger timing constants (ms)
 const SNIPPET_BASE_DELAY    = 1600;  // ms — snippets start after headline settles
@@ -110,9 +111,7 @@ export default function Hero() {
       }}
     >
       {/* ── Three.js Globe — fades in via Three.js loop, not CSS ── */}
-      <Suspense fallback={null}>
-        <ParticleGlobe />
-      </Suspense>
+      <ParticleGlobe />
 
       {/* Bottom navy glow */}
       <div aria-hidden="true" style={{

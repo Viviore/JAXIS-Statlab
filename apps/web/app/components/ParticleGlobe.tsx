@@ -94,13 +94,15 @@ export default function ParticleGlobe() {
     // ── Renderer ─────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    const initW = container.clientWidth || window.innerWidth;
+    const initH = container.clientHeight || window.innerHeight;
+    renderer.setSize(initW, initH);
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
     // ── Scene & Camera ────────────────────────────────────────────────────────
     const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(42, initW / initH, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
     // ── Geometry ───────────────────────────────────────────────────────────────────────

@@ -318,4 +318,352 @@ body {
   }
 }
 
+/* ─── Core Infrastructure Section ─── */
+.infra-layout {
+  display: flex;
+  gap: 2rem;
+}
 
+.infra-sidebar {
+  flex: 0 0 280px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.btn-secondary:hover {
+  background: rgba(1, 46, 87, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* 3D Perspective Card Tilt Container */
+.perspective-container {
+  perspective: 1200px;
+}
+
+.tilt-card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.tilt-card-3d:hover {
+  transform: rotateX(6deg) rotateY(-4deg) translateZ(10px);
+}
+
+/* Pulse animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+/* ─── Navbar responsive ─── */
+@media (max-width: 768px) {
+  .nav-links-desktop {
+    display: none !important;
+  }
+  .nav-cta-desktop {
+    display: none !important;
+  }
+  .nav-hamburger {
+    display: flex !important;
+  }
+}
+
+/* ─── Hero responsive ─── */
+@media (max-width: 640px) {
+  #snippet-top-left,
+  #snippet-top-right,
+  #snippet-bottom-left,
+  #snippet-bottom-right {
+    display: none;
+  }
+}
+
+/* ─── Hero load animations ─── */
+
+@keyframes heroLineReveal {
+  from { opacity: 0; transform: translateY(28px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+@keyframes heroCaptionReveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Globe entrance — pure opacity fade, no scale (scale amplifies bloom into white blob) */
+@keyframes globeFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.globe-intro {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: globeFadeIn 2.0s ease-out 150ms both;
+  will-change: opacity;
+}
+
+@keyframes typewriterReveal {
+  from { max-width: 0; }
+  to   { max-width: 40ch; }
+}
+
+/* Cursor disappears once typing finishes — no persistent blink */
+@keyframes cursorFadeOut {
+  0%   { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes snippetFadeIn {
+
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.hero-line {
+  display: block;
+  opacity: 0;
+  animation: heroLineReveal 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.hero-caption {
+  opacity: 0;
+  animation: heroCaptionReveal 1.0s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.snippet-block {
+  opacity: 0;
+  animation: snippetFadeIn 0.4s ease forwards;
+}
+
+.snippet-line {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0;
+  /* Stay hidden (max-width:0) until animationDelay fires, then type out */
+  animation: typewriterReveal 0.9s steps(28, end) both;
+  will-change: max-width;
+}
+
+/* Cursor visible while typing, disappears after */
+.snippet-line-last::after {
+  content: '\25AE';
+  display: inline-block;
+  margin-left: 1px;
+  opacity: 1;
+  animation: cursorFadeOut 0.7s ease var(--cursor-delay, 0.55s) both;
+  color: rgba(255, 255, 255, 0.30);
+}
+
+/* ─── Reduced motion: preserve visible end-state, cancel all motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .hero-caption {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .snippet-block {
+    animation: none;
+    opacity: 1;
+  }
+  .snippet-line {
+    animation: none;
+    max-width: 40ch;
+  }
+  .snippet-line-last::after {
+    animation: none;
+    opacity: 0;
+  }
+  .globe-intro {
+    animation: none;
+    opacity: 1;
+  }
+  .animate-pulse-glow {
+    animation: none;
+  }
+}
+
+/* ─── Core Infrastructure Section ─── */
+.infra-layout {
+  display: flex;
+  gap: 2rem;
+}
+
+.infra-sidebar {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.infra-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: "'Courier New', monospace";
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-align: left;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.infra-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.03);
+}
+
+.infra-tab.active {
+  background: var(--accent-orange);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px 0 var(--accent-orange-glow);
+}
+
+.infra-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.infra-card {
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.3s ease;
+  min-height: 380px;
+}
+
+.infra-card:hover {
+  border-color: var(--border-glass-hover);
+}
+
+.infra-card-header {
+  padding: 2rem;
+  border-bottom: 1px solid var(--border-glass);
+  min-height: 160px;
+}
+
+.infra-card-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.infra-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.infra-card-visual {
+  padding: 2rem;
+  flex: 1;
+  background: rgba(0, 0, 8, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Terminal Styling */
+.terminal-block {
+  font-family: "'Courier New', monospace";
+  font-size: 0.65rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.term-line {
+  display: block;
+}
+
+.term-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.term-dim {
+  color: var(--text-muted);
+}
+
+.term-accent { color: var(--accent-orange); }
+.term-emerald { color: var(--status-emerald); }
+.term-amber { color: var(--status-amber); }
+.term-crimson { color: var(--status-crimson); }
+
+.term-badge {
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-size: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .infra-layout {
+    flex-direction: column;
+  }
+  .infra-sidebar {
+    flex: none;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+  .infra-tab {
+    white-space: nowrap;
+  }
+  .infra-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

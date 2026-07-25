@@ -22,18 +22,19 @@ The **JAXIS StatLab** design system projects an **Enterprise, High-Trust, Missio
   
   /* 2. Surface & Glassmorphism — Content Separation */
   --surface-secondary: #012E57;    /* Deep Ocean Blue */
-  --surface-glass: rgba(1, 46, 87, 0.65);
+  --surface-glass: rgba(1, 46, 87, 0.55);
   --border-glass: rgba(255, 255, 255, 0.12);
+  --border-glass-hover: rgba(255, 255, 255, 0.25);
 
   /* 3. Brand Accent — 5-10% Max Usage Rule */
-  --accent-primary: #CC6600;       /* Enterprise Orange */
-  --accent-hover: #E67300;
-  --accent-glow: rgba(204, 102, 0, 0.25);
+  --accent-orange: #CC6600;        /* Enterprise Orange */
+  --accent-orange-hover: #E67300;
+  --accent-orange-glow: rgba(204, 102, 0, 0.35);
 
   /* 4. Primary Content — High Legibility */
   --text-primary: #FFFFFF;         /* Pure White */
-  --text-muted: rgba(255, 255, 255, 0.70);
-  --text-dim: rgba(255, 255, 255, 0.45);
+  --text-secondary: rgba(255, 255, 255, 0.72);
+  --text-muted: rgba(255, 255, 255, 0.45);
 
   /* 5. Semantic Status Overlays */
   --status-emerald: #10B981;       /* Fully Paid, Approved, Released */
@@ -131,3 +132,24 @@ Shared components inside `packages/ui` must follow these styling tokens:
 - **Button Secondary:** `background: #012E57; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.15);`
 - **Card Container:** `background: #012E57; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;`
 - **Page Wrapper:** `background: #010114; min-height: 100vh; color: #FFFFFF;`
+
+---
+
+## 7. Landing Page & Visual Presentation Paradigms
+
+The public-facing marketing and landing pages (like the Hero section) employ a specialized cinematic aesthetic designed to project enterprise scale and scientific rigor. All new landing page sections must adhere to these exact paradigms:
+
+### A. Data-Driven Visualization (No Generic Assets)
+- Never use generic stock photography, flat vector illustrations, or simple isometric SVGs.
+- Backgrounds and visual anchors must be highly technical, utilizing WebGL/Three.js data visualizations (like the `ParticleGlobe`), code-styled data arrays, or hardware-accelerated particle systems.
+- Visuals should live *behind* or frame the typography, heavily masked by radial gradients (`bg-radial-glow`) and vignettes to preserve pure readability.
+
+### B. Typography Scale & Framing
+- **Primary Headlines:** Must be massive, lightweight, and tightly tracked. Use `font-weight: 300`, `letter-spacing: -0.02em`, and fluid `clamp()` sizing (e.g., `clamp(2.6rem, 7vw, 5.5rem)`).
+- **Secondary Accents:** Frame large typography with small, monospaced "technical data" annotations (Courier New, `0.62rem`, highly transparent) positioned at the absolute edges of the container to create structural texture.
+- **Microcopy:** Body text max-width should rarely exceed `400px` for captions, keeping line lengths editorial and short.
+
+### C. Motion & Animation Standards
+- **Easing:** Standardize all CSS reveals on a cinematic ease-out curve: `cubic-bezier(0.22, 1, 0.36, 1)` with durations between `1.0s` and `1.3s`.
+- **Staggering:** Elements must never appear simultaneously. Use strict, delayed cascading (e.g., Hero headline lines staggering in, followed by background data snippets, followed by the CTA).
+- **Reduced Motion:** ALL animations (CSS and WebGL) must be rigorously gated behind `@media (prefers-reduced-motion: reduce)`. WebGL loops must freeze, and CSS elements must instantly resolve to their final `opacity: 1` state.
