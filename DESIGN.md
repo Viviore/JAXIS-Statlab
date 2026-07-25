@@ -128,9 +128,9 @@ All 6 interface desks are built upon the Midnight Navy foundation with Deep Ocea
 
 Shared components inside `packages/ui` must follow these styling tokens:
 
-- **Button Primary:** `background: #CC6600; color: #FFFFFF; hover: #E67300;`
-- **Button Secondary:** `background: #012E57; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.15);`
-- **Card Container:** `background: #012E57; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;`
+- **Button Primary:** `background: #CC6600; color: #FFFFFF; hover: #E67300; border-radius: 2px;`
+- **Button Secondary:** `background: #012E57; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.15); border-radius: 2px;`
+- **Card Container:** `background: #012E57; border: 1px solid rgba(255,255,255,0.1); border-radius: 2px;`
 - **Page Wrapper:** `background: #010114; min-height: 100vh; color: #FFFFFF;`
 
 ---
@@ -151,5 +151,12 @@ The public-facing marketing and landing pages (like the Hero section) employ a s
 
 ### C. Motion & Animation Standards
 - **Easing:** Standardize all CSS reveals on a cinematic ease-out curve: `cubic-bezier(0.22, 1, 0.36, 1)` with durations between `1.0s` and `1.3s`.
-- **Staggering:** Elements must never appear simultaneously. Use strict, delayed cascading (e.g., Hero headline lines staggering in, followed by background data snippets, followed by the CTA).
+- **Staggering:** Elements must never appear simultaneously. Use strict, delayed cascading (e.g., Hero headline lines staggering in, followed by background data snippets, followed by the CTA) utilizing CSS `animationDelay` inline offsets (e.g. `0.15s`, `0.30s`).
+- **Scroll Reveals:** For content below the fold, use lightweight native CSS animations (e.g. `.scroll-fade-up` using `translateY(50px)`) triggered via native `IntersectionObserver`. Avoid importing heavy JS layout libraries (GSAP ScrollTrigger) for simple fade/slide-up sequences.
 - **Reduced Motion:** ALL animations (CSS and WebGL) must be rigorously gated behind `@media (prefers-reduced-motion: reduce)`. WebGL loops must freeze, and CSS elements must instantly resolve to their final `opacity: 1` state.
+
+### D. Layout & Interaction Mechanics (The Anti-Generic Rules)
+- **Sharp Brutalism:** Avoid soft, generic SaaS styling. No heavy drop shadows. Use strict `0px` or `2px` maximum border radii for hard, technical edges that feel like command terminals or data dashboards.
+- **Hover Reveals:** Use "invisible" layouts where grids, tabs, and layout sections rely on `transparent` borders/backgrounds that only reveal themselves on hover (e.g., `border: 1px solid var(--border-glass-hover)`). This creates a responsive, highly interactive terminal-like feel without visual clutter.
+- **Flush Grids:** Continuous vertical or horizontal elements (like feature grids) should snap flush (`gap: 0` on specific axes) to form tight, continuous data bands rather than floating distinct islands.
+- **Typewriter/Console Text:** Use strict monospace fonts (`Courier New`) with wide tracking for accents and section kickers to reinforce the intelligence/developer tool theme, rather than standard uppercase sans-serifs. Always orchestrate typewriter effects carefully to prevent layout shifts (e.g. lock container `max-width` and `overflow: hidden`).

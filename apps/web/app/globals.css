@@ -33,7 +33,7 @@
 
 html {
   color-scheme: dark;
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-montserrat), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -52,14 +52,14 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
   background: #010114;
 }
 ::-webkit-scrollbar-thumb {
   background: #012E57;
-  border-radius: 4px;
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #CC6600;
@@ -321,27 +321,97 @@ body {
 /* ─── Core Infrastructure Section ─── */
 .infra-layout {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
 }
 
 .infra-sidebar {
-  flex: 0 0 280px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: 1px solid var(--border-glass);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease-in-out;
-  text-decoration: none;
-  font-size: 0.95rem;
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: sticky;
+  top: 140px;
+  align-self: flex-start;
 }
 
-.btn-secondary:hover {
-  background: rgba(1, 46, 87, 0.8);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+.infra-tab {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-muted);
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  text-align: left;
+  padding: 1rem 1.25rem;
+  border-radius: 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.infra-tab:hover {
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #FFFFFF;
+}
+
+.infra-tab.active {
+  background: rgba(204,102,0,0.08);
+  color: #FFFFFF;
+  font-weight: 600;
+  border: 1px solid #CC6600;
+}
+
+.infra-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 0;
+  row-gap: 0.75rem;
+}
+
+.infra-card {
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.3s ease;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+.infra-card:hover {
+  border-color: var(--border-glass-hover);
+}
+
+.infra-card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-glass);
+  background: rgba(255,255,255,0.02);
+}
+
+.infra-card-title {
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.infra-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.infra-card-visual {
+  padding: 1.5rem;
+  flex: 1;
+  background: rgba(0, 0, 8, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* 3D Perspective Card Tilt Container */
@@ -513,97 +583,6 @@ body {
   }
 }
 
-/* ─── Core Infrastructure Section ─── */
-.infra-layout {
-  display: flex;
-  gap: 2rem;
-}
-
-.infra-sidebar {
-  flex: 0 0 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.infra-tab {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  font-family: "'Courier New', monospace";
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  text-align: left;
-  padding: 1rem 1.25rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.infra-tab:hover {
-  color: var(--text-primary);
-  background: rgba(255,255,255,0.03);
-}
-
-.infra-tab.active {
-  background: var(--accent-orange);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 4px 14px 0 var(--accent-orange-glow);
-}
-
-.infra-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.infra-card {
-  background: transparent;
-  border: 1px solid var(--border-glass);
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  transition: border-color 0.3s ease;
-  min-height: 380px;
-}
-
-.infra-card:hover {
-  border-color: var(--border-glass-hover);
-}
-
-.infra-card-header {
-  padding: 2rem;
-  border-bottom: 1px solid var(--border-glass);
-  min-height: 160px;
-}
-
-.infra-card-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-  color: var(--text-primary);
-}
-
-.infra-card-desc {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.infra-card-visual {
-  padding: 2rem;
-  flex: 1;
-  background: rgba(0, 0, 8, 0.4);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
 /* Terminal Styling */
 .terminal-block {
   font-family: "'Courier New', monospace";
@@ -640,17 +619,23 @@ body {
 }
 
 @media (max-width: 900px) {
+  /* Navbar Mobile Fixes */
+  .nav-links-desktop, .nav-cta-desktop {
+    display: none !important;
+  }
+  .nav-hamburger {
+    display: block !important;
+  }
+
+  /* Infrastructure Mobile Fixes */
   .infra-layout {
     flex-direction: column;
+    gap: 2rem;
   }
   .infra-sidebar {
-    flex: none;
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-  }
-  .infra-tab {
-    white-space: nowrap;
+    flex: auto;
+    width: 100%;
+    position: static;
   }
   .infra-grid {
     grid-template-columns: 1fr;
@@ -660,10 +645,18 @@ body {
 @keyframes fadeSlideUp {
   0% {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(50px);
   }
   100% {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.scroll-fade-up {
+  opacity: 0;
+  transform: translateY(50px);
+}
+.scroll-fade-up.active {
+  animation: fadeSlideUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

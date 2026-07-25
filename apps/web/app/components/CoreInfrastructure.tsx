@@ -1,133 +1,91 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useRef, useState } from "react";
 
-gsap.registerPlugin(ScrollTrigger);
-
-const PILLARS = [
-  {
-    id: "validation",
-    label: "PILLAR I - CONTINUOUS VALIDATION",
-    cards: [
-      { 
-        title: "Understand all your data", 
-        desc: "We detect unvalidated variables, missingness patterns, and assumption violations across datasets, with or without dictionary access.",
-        visual: "scan" 
-      },
-      { 
-        title: "Control your statistical risk", 
-        desc: "Move from trusting third-party vendors to verifying statistical outputs yourself. Find critical flaws in clinical pipelines before they are published.",
-        visual: "levene" 
-      },
-      { 
-        title: "Focus on what actually matters", 
-        desc: "JAXIS verifies every finding through rigorous robustness checks. Not every flagged outlier is relevant — we show you which ones actually skew your results.",
-        visual: "anova" 
-      },
-      { 
-        title: "StatLab in action", 
-        desc: "Data scan: 10,000 variables flagged. StatLab validated: 7 critical assumptions violated. Your team saves weeks and fixes what matters.",
-        visual: "summary" 
-      }
-    ]
+const FEATURES = [
+  { 
+    title: "Understand all your data", 
+    desc: "We detect unvalidated variables, missingness patterns, and assumption violations across datasets, with or without dictionary access.",
+    visual: "scan" 
   },
-  {
-    id: "modeling",
-    label: "PILLAR II - PREDICTIVE MODELING",
-    cards: [
-      { 
-        title: "Train with confidence", 
-        desc: "Our ensemble models run through rigorous cross-validation pipelines automatically, ensuring zero data leakage.", 
-        visual: "model1" 
-      },
-      { 
-        title: "Hyperparameter tuning", 
-        desc: "Bayesian optimization finds the global maxima without the manual guesswork or compute waste.", 
-        visual: "model2" 
-      },
-      { 
-        title: "Explainable AI (XAI)", 
-        desc: "SHAP values and LIME are built into every model delivery for full regulatory compliance and stakeholder trust.", 
-        visual: "model3" 
-      },
-      { 
-        title: "Deployment ready", 
-        desc: "Export models directly to ONNX or secure Docker containers for immediate production inference.", 
-        visual: "model4" 
-      }
-    ]
+  { 
+    title: "Control your statistical risk", 
+    desc: "Move from trusting third-party vendors to verifying statistical outputs yourself. Find critical flaws in clinical pipelines before they are published.",
+    visual: "levene" 
   },
-  {
-    id: "trial",
-    label: "PILLAR III - TRIAL SUPPORT",
-    cards: [
-      { 
-        title: "Adaptive Designs", 
-        desc: "Modify trial parameters mid-course without inflating the Type I error rate or compromising integrity.", 
-        visual: "trial1" 
-      },
-      { 
-        title: "Power Analysis", 
-        desc: "Dynamic sample size re-estimation based on interim variance checks ensures you never under-enroll.", 
-        visual: "trial2" 
-      },
-      { 
-        title: "Interim Monitoring", 
-        desc: "Automated O'Brien-Fleming boundaries for early stopping for efficacy or futility.", 
-        visual: "trial3" 
-      },
-      { 
-        title: "CDISC Compliance", 
-        desc: "Raw clinical data transformed to strict SDTM and ADaM formats seamlessly and securely.", 
-        visual: "trial4" 
-      }
-    ]
+  { 
+    title: "Explainable AI (XAI)", 
+    desc: "SHAP values and LIME are built into every model delivery for full regulatory compliance and stakeholder trust.", 
+    visual: "model3" 
+  },
+  { 
+    title: "Deployment ready", 
+    desc: "Export models directly to ONNX or secure Docker containers for immediate production inference.", 
+    visual: "model4" 
+  },
+  { 
+    title: "Adaptive Designs", 
+    desc: "Modify trial parameters mid-course without inflating the Type I error rate or compromising integrity.", 
+    visual: "trial1" 
+  },
+  { 
+    title: "CDISC Compliance", 
+    desc: "Raw clinical data transformed to strict SDTM and ADaM formats seamlessly and securely.", 
+    visual: "trial4" 
   }
 ];
 
 export default function CoreInfrastructure() {
-  const [activeTab, setActiveTab] = useState(PILLARS[0]!.id);
+  const [activeTab, setActiveTab] = useState(1);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const activeData = PILLARS.find(p => p.id === activeTab)!;
-
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
-      
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 75%",
-          }
-        });
 
-        tl.from(".infra-header-anim", {
-          y: 40,
-          opacity: 0,
-          duration: 1.2,
-          ease: "power3.out",
-          stagger: 0.2
-        })
-        .from(".infra-sidebar-anim", {
-          x: -30,
-          opacity: 0,
-          duration: 1.0,
-          ease: "power3.out"
-        }, "-=0.8")
-        .from(".infra-grid-anim", {
-          y: 30,
-          opacity: 0,
-          duration: 1.2,
-          ease: "power3.out"
-        }, "-=0.8");
+    // Intersection Observer for scroll-spy highlighting
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const pillarNum = Number(entry.target.getAttribute("data-pillar"));
+          if (pillarNum) setActiveTab(pillarNum);
+        }
       });
-    }, sectionRef);
+    }, { rootMargin: "-40% 0px -40% 0px" });
 
-    return () => ctx.revert();
+    const cards = document.querySelectorAll('.pillar-card-observe');
+    cards.forEach(card => observer.observe(card));
+
+    // Intersection Observer for typewriter text and header intro
+    const twObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (entry.target.classList.contains("scroll-fade-up")) {
+            entry.target.classList.add("active");
+          } else {
+            (entry.target as HTMLElement).style.opacity = "1";
+            const lines = entry.target.querySelectorAll('.tw-line');
+            lines.forEach((line, index) => {
+              if (index === lines.length - 1) {
+                line.classList.add("snippet-line", "snippet-line-last");
+              } else {
+                line.classList.add("snippet-line");
+              }
+            });
+          }
+          twObserver.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: "0px 0px -15% 0px" });
+
+    const twElement = document.querySelector('.infra-typewriter-anim');
+    if (twElement) twObserver.observe(twElement);
+    
+    const fadeUpElements = document.querySelectorAll('.scroll-fade-up');
+    fadeUpElements.forEach(el => twObserver.observe(el));
+
+    return () => {
+      observer.disconnect();
+      twObserver.disconnect();
+    };
   }, []);
 
   // Helper to render the terminal visuals based on the type
@@ -356,10 +314,11 @@ export default function CoreInfrastructure() {
 
   return (
     <section 
-      id="core-infrastructure" 
+      id="approach" 
       ref={sectionRef}
       style={{
         backgroundColor: "var(--bg-primary)",
+        backgroundImage: "linear-gradient(to bottom, rgba(0,0,8,0.5) 0%, rgba(0,0,8,0) 150px)",
         color: "var(--text-primary)",
         padding: "8rem 2rem",
         position: "relative",
@@ -369,55 +328,72 @@ export default function CoreInfrastructure() {
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         
         {/* Header Area */}
-        <div style={{ marginBottom: "5rem" }}>
-          <div className="infra-header-anim" style={{ 
-            fontFamily: "'Courier New', monospace", 
-            fontSize: "0.75rem", 
-            letterSpacing: "0.15em", 
-            color: "var(--text-muted)",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            marginBottom: "2rem"
-          }}>
-            WHAT JAXIS STATLAB ACTUALLY DOES
-            <div style={{ width: "6px", height: "12px", backgroundColor: "var(--text-muted)" }}></div>
+        <div className="infra-layout" style={{ marginBottom: "4rem" }}>
+          {/* Aligned with sidebar */}
+          <div className="infra-sidebar" style={{ position: "static", gap: 0, padding: 0 }}>
+            <div className="infra-typewriter-anim" style={{ 
+              fontFamily: "'Courier New', monospace", 
+              fontSize: "0.7rem", 
+              letterSpacing: "0.08em", 
+              color: "var(--text-muted)",
+              lineHeight: 1.6,
+              opacity: 0,
+              maxWidth: "100%",
+              overflow: "hidden"
+            }}>
+              <span className="tw-line" style={{ display: 'block' }}>
+                WHAT JAXIS STATLAB
+              </span>
+              <span className="tw-line" style={{ display: 'block', animationDelay: '0.9s' }}>
+                IS ENGINEERED TO DO
+              </span>
+            </div>
           </div>
           
-          <h2 className="infra-header-anim" style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "clamp(2rem, 4vw, 3.5rem)",
-            fontWeight: 300,
-            letterSpacing: "-0.02em",
-            lineHeight: 1.2,
-            maxWidth: "800px"
-          }}>
-            End-to-end statistical intelligence.<br/>
-            <span style={{ color: "var(--text-secondary)" }}>Validated from raw data to clinical release.</span>
-          </h2>
+          {/* Aligned with grid */}
+          <div style={{ flex: 1 }}>
+            <h2 className="scroll-fade-up" style={{
+              fontFamily: "var(--font-montserrat), sans-serif",
+              fontSize: "clamp(1.75rem, 3vw, 2.75rem)",
+              fontWeight: 300,
+              letterSpacing: "-0.02em",
+              lineHeight: 1.2,
+              marginTop: "-0.5rem" /* Visual adjustment to align the baseline with the small text */
+            }}>
+              End-to-end statistical intelligence.<br/>
+              <span style={{ color: "var(--text-secondary)" }}>From raw data to clinical release.</span>
+            </h2>
+          </div>
         </div>
 
         {/* Bento Grid Layout */}
         <div className="infra-layout">
           
-          {/* Left Tabs */}
-          <div className="infra-sidebar infra-sidebar-anim">
-            {PILLARS.map((pillar) => (
+          {/* Left Tabs (Sticky Anchor Menu) */}
+          <div className="infra-sidebar scroll-fade-up" style={{ animationDelay: "0.15s" }}>
+            {[1, 2, 3].map((pillarNum) => (
               <button
-                key={pillar.id}
-                onClick={() => setActiveTab(pillar.id)}
-                className={`infra-tab ${activeTab === pillar.id ? "active" : ""}`}
+                key={pillarNum}
+                onClick={() => {
+                  setActiveTab(pillarNum);
+                  document.getElementById(`pillar-${pillarNum}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className={`infra-tab ${activeTab === pillarNum ? "active" : ""}`}
               >
-                {pillar.label}
-                <span style={{ opacity: activeTab === pillar.id ? 1 : 0, transition: 'opacity 0.2s' }}>▶</span>
+                PILLAR {pillarNum === 1 ? 'I - VALIDATION' : pillarNum === 2 ? 'II - MODELING' : 'III - TRIALS'}
               </button>
             ))}
           </div>
 
-          {/* Right Grid */}
-          <div className="infra-grid infra-grid-anim" key={activeTab} style={{ animation: 'fadeSlideUp 0.4s ease-out forwards' }}>
-            {activeData.cards.map((card, idx) => (
-              <div key={idx} className="infra-card">
+          {/* Right Grid (2-column layout) */}
+          <div className="infra-grid scroll-fade-up" style={{ animationDelay: "0.3s" }}>
+            {FEATURES.map((card, idx) => (
+              <div 
+                key={idx} 
+                id={idx % 2 === 0 ? `pillar-${Math.floor(idx / 2) + 1}` : undefined}
+                className="infra-card pillar-card-observe"
+                data-pillar={Math.floor(idx / 2) + 1}
+              >
                 <div className="infra-card-header">
                   <h3 className="infra-card-title">{card.title}</h3>
                   <p className="infra-card-desc">{card.desc}</p>

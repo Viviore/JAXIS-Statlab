@@ -15,6 +15,15 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.scrollRestoration = "manual";
+      window.scrollTo(0, 0);
+      // Remove hash from URL on initial load so it doesn't auto-jump
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
+    
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
