@@ -142,8 +142,8 @@ export default function Hero() {
             style={{
               position: "absolute",
               ...snippet.position,
-              fontFamily: "'Courier New', Courier, monospace",
-              fontSize: "0.62rem",
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.75rem",
               lineHeight: "1.9",
               color: "rgba(255,255,255,0.30)",
               letterSpacing: "0.04em",

@@ -320,7 +320,7 @@ export default function CoreInfrastructure() {
         backgroundColor: "var(--bg-primary)",
         backgroundImage: "linear-gradient(to bottom, rgba(0,0,8,0.5) 0%, rgba(0,0,8,0) 150px)",
         color: "var(--text-primary)",
-        padding: "8rem 2rem",
+        padding: "8rem 2rem 14rem 2rem",
         position: "relative",
         zIndex: 10
       }}
@@ -332,7 +332,7 @@ export default function CoreInfrastructure() {
           {/* Aligned with sidebar */}
           <div className="infra-sidebar" style={{ position: "static", gap: 0, padding: 0 }}>
             <div className="infra-typewriter-anim" style={{ 
-              fontFamily: "'Courier New', monospace", 
+              fontFamily: "var(--font-inter), sans-serif", 
               fontSize: "0.7rem", 
               letterSpacing: "0.08em", 
               color: "var(--text-muted)",

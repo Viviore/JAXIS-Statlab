@@ -146,7 +146,7 @@ The public-facing marketing and landing pages (like the Hero section) employ a s
 
 ### B. Typography Scale & Framing
 - **Primary Headlines:** Must be massive, lightweight, and tightly tracked. Use `font-weight: 300`, `letter-spacing: -0.02em`, and fluid `clamp()` sizing (e.g., `clamp(2.6rem, 7vw, 5.5rem)`).
-- **Secondary Accents:** Frame large typography with small, monospaced "technical data" annotations (Courier New, `0.62rem`, highly transparent) positioned at the absolute edges of the container to create structural texture.
+- **Secondary Accents:** Frame large typography with small "technical data" annotations (Inter, `0.75rem`, highly transparent) positioned at the absolute edges of the container to create structural texture. Avoid using generic monospaced fonts.
 - **Microcopy:** Body text max-width should rarely exceed `400px` for captions, keeping line lengths editorial and short.
 
 ### C. Motion & Animation Standards
@@ -159,4 +159,4 @@ The public-facing marketing and landing pages (like the Hero section) employ a s
 - **Sharp Brutalism:** Avoid soft, generic SaaS styling. No heavy drop shadows. Use strict `0px` or `2px` maximum border radii for hard, technical edges that feel like command terminals or data dashboards.
 - **Hover Reveals:** Use "invisible" layouts where grids, tabs, and layout sections rely on `transparent` borders/backgrounds that only reveal themselves on hover (e.g., `border: 1px solid var(--border-glass-hover)`). This creates a responsive, highly interactive terminal-like feel without visual clutter.
 - **Flush Grids:** Continuous vertical or horizontal elements (like feature grids) should snap flush (`gap: 0` on specific axes) to form tight, continuous data bands rather than floating distinct islands.
-- **Typewriter/Console Text:** Use strict monospace fonts (`Courier New`) with wide tracking for accents and section kickers to reinforce the intelligence/developer tool theme, rather than standard uppercase sans-serifs. Always orchestrate typewriter effects carefully to prevent layout shifts (e.g. lock container `max-width` and `overflow: hidden`).
+- **Typewriter/Console Text:** Use strict standard sans-serif body fonts (like `Inter`) with wide tracking for accents and section kickers to reinforce a highly readable, uniform SaaS interface rather than a raw developer terminal feel. Do NOT use standard monospace fonts. Always orchestrate typewriter effects carefully to prevent layout shifts (e.g. lock container `max-width` and `overflow: hidden`).

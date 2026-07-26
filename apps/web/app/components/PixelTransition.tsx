@@ -11,23 +11,33 @@ if (typeof window !== "undefined") {
 
 // Simple deterministic PRNG
 function mulberry32(a: number) {
-    return function() {
-      var t = a += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
+  return function() {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
 }
 
-export default function PixelTransition() {
+interface PixelTransitionProps {
+  direction?: 'dark-to-light' | 'light-to-dark';
+}
+
+export default function PixelTransition({ direction = 'dark-to-light' }: PixelTransitionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const activeColor = direction === 'dark-to-light' ? '#F8F9FA' : '#010114';
+  const inactiveColor = direction === 'dark-to-light' ? '#010114' : '#F8F9FA';
+  const targetFillColor = direction === 'dark-to-light' ? '#F8F9FA' : '#010114';
+  const containerBg = direction === 'dark-to-light' ? '#010114' : '#F8F9FA';
+  const backingBgColor = direction === 'dark-to-light' ? '#F8F9FA' : '#010114';
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
-      // 1. The original animation: fade in the white pixels
-      const pixels = gsap.utils.toArray<SVGRectElement>('.pixel-rect');
+      // 1. The original animation: fade in the active pixels
+      const pixels = gsap.utils.toArray<SVGRectElement>('.pixel-rect', containerRef.current || undefined);
       
       pixels.sort((a, b) => {
         const yA = parseInt(a.getAttribute('data-y') || '0');
@@ -37,60 +47,21 @@ export default function PixelTransition() {
 
       gsap.to(pixels, {
         opacity: 1,
-        ease: "none",
+        duration: 0.1,
+        ease: "power1.inOut",
         stagger: {
           amount: 1.5, 
         },
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 95%",
-          end: "top 10%",
-          scrub: 1.2, 
-        }
-      });
-
-      // 2. The cleanup animation: flawlessly turn the dark pixels white organically, 
-      // while fading in a white backing to seal any SVG microscopic cracks.
-      // We NEVER animate opacity to 0 here, because semi-transparent dark pixels over a background look muddy gray!
-      const darkPixels = gsap.utils.toArray<SVGRectElement>('.pixel-dark');
-      
-      // Sort so bottom dark pixels turn white first, eating upwards
-      darkPixels.sort((a, b) => {
-        const yA = parseInt(a.getAttribute('data-y') || '0');
-        const yB = parseInt(b.getAttribute('data-y') || '0');
-        return (yB - yA) + (Math.random() * 4 - 2); 
-      });
-
-      // Animate the SVG fill color. This keeps the pixels 100% solid and crisp!
-      gsap.to(darkPixels, {
-        fill: '#F8F9FA',
-        ease: "none",
-        stagger: {
-          amount: 1, 
-        },
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top 15%",
-          end: "bottom 60%",
-          scrub: 1.2,
-        }
-      });
-
-      // Fade in the white backing behind the opaque pixels to perfectly seal any SVG anti-aliasing cracks
-      gsap.to('.white-bg', {
-        opacity: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top 15%",
-          end: "bottom 60%",
-          scrub: 1.2,
+          start: "top 80%",
+          toggleActions: "play none none reverse", 
         }
       });
     }, containerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [targetFillColor]);
 
   const rects = useMemo(() => {
     const cols = 100;
@@ -103,7 +74,6 @@ export default function PixelTransition() {
         const progress = y / (rows - 1);
         let lightProb = Math.pow(progress, 1.4); 
         
-        // Force top to be sparse and bottom to be dense
         if (y === 0) lightProb = 0.01;
         if (y === 1) lightProb = 0.05;
         if (y === 2) lightProb = 0.12;
@@ -112,8 +82,8 @@ export default function PixelTransition() {
         if (y === rows - 1) lightProb = 1.0; 
 
         const rand = random();
-        let isLight = rand < lightProb;
-        let color = isLight ? '#F8F9FA' : '#010114';
+        const isLight = rand < lightProb;
+        const color = isLight ? activeColor : inactiveColor;
 
         const classes = [];
         if (isLight) {
@@ -138,7 +108,7 @@ export default function PixelTransition() {
       }
     }
     return items;
-  }, []);
+  }, [activeColor, inactiveColor]);
 
   return (
     <div 
@@ -147,27 +117,30 @@ export default function PixelTransition() {
         position: 'relative',
         width: '100%', 
         height: '400px',
-        backgroundColor: '#010114',
+        backgroundColor: containerBg,
         overflow: 'hidden',
         display: 'flex',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: '-200px',
+        marginBottom: '-200px',
+        zIndex: 11
       }} 
       aria-hidden="true"
     >
       <style>{`
-        /* All light/accent pixels start completely invisible */
+        /* All active pixels start completely invisible */
         .pixel-rect {
           opacity: 0;
         }
       `}</style>
 
-      {/* Solid white background that crossfades in */}
+      {/* Solid backing background that crossfades in */}
       <div 
-        className="white-bg"
+        className="backing-bg"
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: '#F8F9FA',
+          backgroundColor: backingBgColor,
           opacity: 0,
           pointerEvents: 'none'
         }}

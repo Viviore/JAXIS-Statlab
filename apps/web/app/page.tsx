@@ -3,6 +3,7 @@ import Hero from "./components/Hero";
 import CoreInfrastructure from "./components/CoreInfrastructure";
 import PixelTransition from "./components/PixelTransition";
 import Solutions from "./components/Solutions";
+import Pricing from "./components/Pricing";
 
 export default function Home() {
   return (
@@ -13,6 +14,8 @@ export default function Home() {
         <CoreInfrastructure />
         <PixelTransition />
         <Solutions />
+        <PixelTransition direction="light-to-dark" />
+        <Pricing />
       </main>
     </div>
   );
