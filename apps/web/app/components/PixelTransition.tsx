@@ -45,19 +45,40 @@ export default function PixelTransition({ direction = 'dark-to-light' }: PixelTr
         return (yB - yA) + (Math.random() * 8 - 4); 
       });
 
-      gsap.to(pixels, {
-        opacity: 1,
-        duration: 0.1,
-        ease: "power1.inOut",
-        stagger: {
-          amount: 1.5, 
-        },
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top 80%",
-          toggleActions: "play none none reverse", 
+          end: "bottom 20%",
+          scrub: 1, 
         }
       });
+
+      tl.from('.svg-wrapper', {
+        filter: "blur(6px)",
+        scale: 1.03,
+        duration: 1.2,
+        ease: "power3.out"
+      }, 0);
+
+      tl.to(pixels, {
+        opacity: 1,
+        duration: () => gsap.utils.random(0.08, 0.18),
+        ease: "power2.out",
+        stagger: {
+          amount: 1.5, 
+        }
+      }, 0);
+
+      // Fade in the solid backing behind it to hide the gap
+      const backingBg = containerRef.current?.querySelector('.backing-bg');
+      if (backingBg) {
+        tl.to(backingBg, {
+          opacity: 1,
+          duration: 0.5,
+          ease: "power2.inOut"
+        }, 1.0); // start fading in near the end of the pixel stagger
+      }
     }, containerRef);
 
     return () => ctx.revert();

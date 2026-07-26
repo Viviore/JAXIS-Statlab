@@ -40,8 +40,8 @@ class Pixel {
     this.speed = this.getRandomValue(0.1, 0.9) * speed;
     this.size = 0;
     this.sizeStep = Math.random() * 0.4;
-    this.minSize = 0.5;
-    this.maxSizeInteger = 2;
+    this.minSize = 1;
+    this.maxSizeInteger = 4;
     this.maxSize = this.getRandomValue(this.minSize, this.maxSizeInteger);
     this.delay = delay;
     this.counter = 0;
