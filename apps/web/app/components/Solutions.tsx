@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const SECTORS = [
   { id: 'publications', name: "Peer-Reviewed Publications" },
@@ -69,6 +75,8 @@ const SECTOR_DATA: Record<string, {
 
 export default function Solutions() {
   const sectionRef = useRef<HTMLElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('publications');
   const currentData = (SECTOR_DATA[activeTab] || SECTOR_DATA.publications)!;
 
@@ -79,6 +87,11 @@ export default function Solutions() {
         if (entry.isIntersecting) {
           entry.target.classList.add("active");
           observer.unobserve(entry.target);
+          
+          // Re-calculate GSAP pin spacing after the CSS fade-up animations complete
+          setTimeout(() => {
+            ScrollTrigger.refresh();
+          }, 800);
         }
       });
     }, { rootMargin: "0px 0px -15% 0px" });
@@ -86,30 +99,73 @@ export default function Solutions() {
     const fadeEls = document.querySelectorAll('.sol-fade-up');
     fadeEls.forEach(el => observer.observe(el));
 
-    return () => observer.disconnect();
+    // GSAP Scroll Pinning
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: pinRef.current,
+        start: "top 15%", // Pin a little below the navbar
+        end: "+=2400", // 2400px of scroll distance to scrub through the 4 tabs
+        pin: true,
+        anticipatePin: 1, // Prevents layout bounce when entering/exiting the pin
+        scrub: 1.5, // 1.5s of smooth interpolation catching up to the scroll position
+        onUpdate: (self) => {
+          const p = self.progress;
+          let newTab = 'publications';
+          if (p >= 0.75) newTab = 'longitudinal';
+          else if (p >= 0.50) newTab = 'grants';
+          else if (p >= 0.25) newTab = 'dissertations';
+
+          // Only trigger React state update if it actually changed
+          setActiveTab((prev) => {
+            if (prev !== newTab) return newTab;
+            return prev;
+          });
+        }
+      });
+    }, sectionRef);
+
+    return () => {
+      observer.disconnect();
+      ctx.revert();
+    };
   }, []);
+
+  // Animate terminal content when tab changes
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(contentRef.current, 
+        { opacity: 0, y: 15, filter: "blur(4px)" }, 
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "power2.out", overwrite: "auto" }
+      );
+    });
+    return () => ctx.revert();
+  }, [activeTab]);
 
   return (
     <section id="solutions" className="section-light" ref={sectionRef} style={{ padding: "14rem 2rem 8rem 2rem", position: "relative" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
-        {/* Centered Header */}
-        <div className="sol-fade-up scroll-fade-up" style={{ textAlign: "center", marginBottom: "6rem" }}>
-          <h2 style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
-            fontSize: "clamp(2.5rem, 4vw, 4rem)",
-            fontWeight: 300,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.1,
-            maxWidth: "900px",
-            margin: "0 auto"
-          }}>
-            Built for academic researchers where statistical failure is not an option.
-          </h2>
-        </div>
+        {/* Pinned Composition: Header + Tabs */}
+        <div ref={pinRef} style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+          
+          {/* Centered Header */}
+          <div className="sol-fade-up scroll-fade-up" style={{ textAlign: "center", marginBottom: "6rem" }}>
+            <h2 style={{
+              fontFamily: "var(--font-montserrat), sans-serif",
+              fontSize: "clamp(2.5rem, 4vw, 4rem)",
+              fontWeight: 300,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.1,
+              maxWidth: "900px",
+              margin: "0 auto"
+            }}>
+              Built for academic researchers where statistical failure is not an option.
+            </h2>
+          </div>
 
-        {/* 2-Column Split */}
-        <div className="infra-layout" style={{ marginBottom: "8rem", alignItems: "flex-start" }}>
+          {/* 2-Column Split */}
+          <div className="infra-layout" style={{ marginBottom: "8rem", alignItems: "flex-start" }}>
           {/* Left Col */}
           <div className="infra-sidebar solutions-sidebar sol-fade-up scroll-fade-up" style={{ animationDelay: "0.15s" }}>
             <p className="text-muted-light" style={{
@@ -160,36 +216,40 @@ export default function Solutions() {
                width: "calc(100% - 2rem)",
                maxWidth: "540px"
              }}>
-               <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "space-between", marginBottom: "2rem", alignItems: "flex-start" }}>
-                 <div>
-                   <div style={{ color: "var(--text-primary)", fontSize: "0.9rem", fontFamily: "var(--font-montserrat)" }}>Validation complete</div>
-                   <div style={{ color: "rgba(255, 255, 255, 0.72)", fontSize: "0.75rem", marginTop: "0.25rem", maxWidth: "200px" }}>
-                     {currentData.findings.critical} critical & {currentData.findings.minor} minor findings filtered.
+               <div ref={contentRef} style={{ width: "100%", willChange: "opacity, transform, filter" }}>
+                 <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "space-between", marginBottom: "2rem", alignItems: "flex-start" }}>
+                   <div>
+                     <div style={{ color: "var(--text-primary)", fontSize: "0.9rem", fontFamily: "var(--font-montserrat)" }}>Validation complete</div>
+                     <div style={{ color: "rgba(255, 255, 255, 0.72)", fontSize: "0.75rem", marginTop: "0.25rem", maxWidth: "200px" }}>
+                       {currentData.findings.critical} critical & {currentData.findings.minor} minor findings filtered.
+                     </div>
+                   </div>
+                   <div style={{ fontSize: "2.5rem", fontWeight: 300, color: "var(--text-primary)", lineHeight: 1 }}>
+                     {currentData.total}
                    </div>
                  </div>
-                 <div style={{ fontSize: "2.5rem", fontWeight: 300, color: "var(--text-primary)", lineHeight: 1 }}>
-                   {currentData.total}
+                 
+                 <div style={{ borderTop: "1px solid var(--border-glass)", paddingTop: "1rem" }}>
+                   {currentData.violations.map((violation, idx) => (
+                     <div key={idx} style={{ 
+                       display: "flex", 
+                       justifyContent: "space-between", 
+                       fontSize: "0.65rem", 
+                       fontFamily: "var(--font-inter), sans-serif", 
+                       color: "#FF8080", 
+                       marginBottom: idx === currentData.violations.length - 1 ? 0 : "0.5rem" 
+                     }}>
+                       <span>{violation.name}</span>
+                       <span>x {violation.count}</span>
+                     </div>
+                   ))}
                  </div>
-               </div>
-               
-               <div style={{ borderTop: "1px solid var(--border-glass)", paddingTop: "1rem" }}>
-                 {currentData.violations.map((violation, idx) => (
-                   <div key={idx} style={{ 
-                     display: "flex", 
-                     justifyContent: "space-between", 
-                     fontSize: "0.65rem", 
-                     fontFamily: "var(--font-inter), sans-serif", 
-                     color: "#FF8080", 
-                     marginBottom: idx === currentData.violations.length - 1 ? 0 : "0.5rem" 
-                   }}>
-                     <span>{violation.name}</span>
-                     <span>x {violation.count}</span>
-                   </div>
-                 ))}
                </div>
              </div>
           </div>
         </div>
+        </div>
+        {/* End Pinned Composition */}
 
         {/* Data Table Section */}
         <div className="sol-fade-up scroll-fade-up" style={{ marginBottom: "4rem" }}>

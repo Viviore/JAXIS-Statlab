@@ -12,6 +12,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -24,8 +25,26 @@ export default function Navbar() {
       }
     }
     
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+      
+      const solutionsEl = document.getElementById("solutions");
+      if (solutionsEl) {
+        const rect = solutionsEl.getBoundingClientRect();
+        // The navbar is 64px tall. 
+        // We consider it over the solutions section if the top of the section is <= 64, 
+        // and the bottom of the section is >= 64.
+        if (rect.top <= 64 && rect.bottom >= 64) {
+          setTheme("light");
+        } else {
+          setTheme("dark");
+        }
+      }
+    };
+    
     window.addEventListener("scroll", onScroll, { passive: true });
+    // Run once on mount in case we start scrolled down
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -43,11 +62,11 @@ export default function Navbar() {
         left: 0,
         right: 0,
         zIndex: 100,
-        transition: "background 0.4s ease, border-color 0.4s ease",
-        background: scrolled ? "rgba(1, 1, 20, 0.85)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+        transition: "background 0.8s ease, border-color 0.8s ease",
+        background: scrolled ? (theme === "light" ? "#F8F9FA" : "#010114") : "transparent",
+        borderBottom: scrolled 
+          ? (theme === "light" ? "1px solid rgba(1,1,20,0.06)" : "1px solid rgba(255,255,255,0.06)") 
+          : "1px solid transparent",
       }}
     >
       <nav
@@ -69,7 +88,8 @@ export default function Navbar() {
             alignItems: "center",
             gap: "8px",
             textDecoration: "none",
-            color: "#fff",
+            color: theme === "light" ? "#010114" : "#fff",
+            transition: "color 0.8s ease",
           }}
           aria-label="JAXIS StatLab Home"
         >
@@ -94,7 +114,8 @@ export default function Navbar() {
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#FFFFFF",
+              color: theme === "light" ? "#010114" : "#FFFFFF",
+              transition: "color 0.8s ease",
             }}
           >
             JAXIS <span style={{ color: "#CC6600" }}>StatLab</span>
@@ -123,15 +144,15 @@ export default function Navbar() {
                   fontWeight: 500,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.65)",
+                  color: theme === "light" ? "rgba(1,1,20,0.65)" : "rgba(255,255,255,0.65)",
                   textDecoration: "none",
-                  transition: "color 0.2s ease",
+                  transition: "color 0.8s ease",
                 }}
                 onMouseEnter={(e) =>
-                  ((e.target as HTMLAnchorElement).style.color = "#FFFFFF")
+                  ((e.target as HTMLAnchorElement).style.color = theme === "light" ? "#010114" : "#FFFFFF")
                 }
                 onMouseLeave={(e) =>
-                  ((e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.65)")
+                  ((e.target as HTMLAnchorElement).style.color = theme === "light" ? "rgba(1,1,20,0.65)" : "rgba(255,255,255,0.65)")
                 }
               >
                 {link.label}
@@ -150,12 +171,12 @@ export default function Navbar() {
             fontWeight: 600,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#FFFFFF",
+            color: theme === "light" ? "#010114" : "#FFFFFF",
             textDecoration: "none",
             padding: "8px 20px",
-            border: "1px solid rgba(255,255,255,0.45)",
+            border: `1px solid ${theme === "light" ? "rgba(1,1,20,0.45)" : "rgba(255,255,255,0.45)"}`,
             borderRadius: "2px",
-            transition: "border-color 0.2s ease, background 0.2s ease",
+            transition: "border-color 0.2s ease, background 0.2s ease, color 0.8s ease",
             background: "transparent",
           }}
           onMouseEnter={(e) => {
@@ -165,7 +186,7 @@ export default function Navbar() {
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.borderColor = "rgba(255,255,255,0.45)";
+            el.style.borderColor = theme === "light" ? "rgba(1,1,20,0.45)" : "rgba(255,255,255,0.45)";
             el.style.background = "transparent";
           }}
           className="nav-cta-desktop"
@@ -184,7 +205,8 @@ export default function Navbar() {
             border: "none",
             cursor: "pointer",
             padding: "4px",
-            color: "#fff",
+            color: theme === "light" ? "#010114" : "#fff",
+            transition: "color 0.8s ease",
           }}
           className="nav-hamburger"
         >
@@ -203,11 +225,11 @@ export default function Navbar() {
           maxHeight: menuOpen ? "320px" : "0px",
           opacity: menuOpen ? 1 : 0,
           pointerEvents: menuOpen ? "auto" : "none",
-          transition: "max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease",
-          background: "rgba(1, 1, 20, 0.96)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          borderTop: menuOpen ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+          transition: "max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease, background 0.8s ease",
+          background: theme === "light" ? "#F8F9FA" : "#010114",
+          borderTop: menuOpen 
+            ? (theme === "light" ? "1px solid rgba(1,1,20,0.06)" : "1px solid rgba(255,255,255,0.06)") 
+            : "1px solid transparent",
         }}
       >
         <div style={{ padding: "1.5rem 2rem" }}>
@@ -223,8 +245,9 @@ export default function Navbar() {
                     fontWeight: 500,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.7)",
+                    color: theme === "light" ? "rgba(1,1,20,0.7)" : "rgba(255,255,255,0.7)",
                     textDecoration: "none",
+                    transition: "color 0.8s ease",
                   }}
                 >
                   {link.label}
@@ -241,12 +264,13 @@ export default function Navbar() {
                   fontWeight: 600,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: "#FFFFFF",
+                  color: theme === "light" ? "#010114" : "#FFFFFF",
                   textDecoration: "none",
                   padding: "10px 20px",
-                  border: "1px solid rgba(255,255,255,0.4)",
+                  border: `1px solid ${theme === "light" ? "rgba(1,1,20,0.4)" : "rgba(255,255,255,0.4)"}`,
                   borderRadius: "2px",
                   display: "inline-block",
+                  transition: "color 0.8s ease, border-color 0.8s ease",
                 }}
               >
                 Get Started
