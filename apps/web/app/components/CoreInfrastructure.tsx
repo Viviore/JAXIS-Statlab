@@ -4,35 +4,25 @@ import { useEffect, useRef, useState } from "react";
 
 const FEATURES = [
   { 
-    title: "Understand all your data", 
-    desc: "We detect unvalidated variables, missingness patterns, and assumption violations across datasets, with or without dictionary access.",
+    title: "The Methodology Lock", 
+    desc: "A binding Scope of Work upfront. No revisions. No surprise fees. You get exactly what was agreed, down to the final decimal.",
     visual: "scan" 
   },
   { 
-    title: "Control your statistical risk", 
-    desc: "Move from trusting third-party vendors to verifying statistical outputs yourself. Find critical flaws in clinical pipelines before they are published.",
+    title: "The Data Pre-Flight", 
+    desc: "Our engine scans your dataset for missing values, outliers, and normality violations before any human touches it.",
     visual: "levene" 
   },
   { 
-    title: "Explainable AI (XAI)", 
-    desc: "SHAP values and LIME are built into every model delivery for full regulatory compliance and stakeholder trust.", 
+    title: "The 2-Pass QA Gateway", 
+    desc: "A Senior Methodologist audits reproducibility. Our team verifies SOW compliance and APA 7th formatting. Nothing ships without both.",
     visual: "model3" 
   },
   { 
-    title: "Deployment ready", 
-    desc: "Export models directly to ONNX or secure Docker containers for immediate production inference.", 
+    title: "The Anti-P-Hacking Guarantee", 
+    desc: "We never force significance. You get the raw output alongside a plain-English narrative — fully reproducible, fully auditable.",
     visual: "model4" 
   },
-  { 
-    title: "Adaptive Designs", 
-    desc: "Modify trial parameters mid-course without inflating the Type I error rate or compromising integrity.", 
-    visual: "trial1" 
-  },
-  { 
-    title: "CDISC Compliance", 
-    desc: "Raw clinical data transformed to strict SDTM and ADaM formats seamlessly and securely.", 
-    visual: "trial4" 
-  }
 ];
 
 export default function CoreInfrastructure() {
@@ -342,27 +332,36 @@ export default function CoreInfrastructure() {
               overflow: "hidden"
             }}>
               <span className="tw-line" style={{ display: 'block' }}>
-                WHAT JAXIS STATLAB
-              </span>
-              <span className="tw-line" style={{ display: 'block', animationDelay: '0.9s' }}>
-                IS ENGINEERED TO DO
+                WHY STUDENTS FAIL
               </span>
             </div>
           </div>
           
           {/* Aligned with grid */}
           <div style={{ flex: 1 }}>
-            <h2 className="scroll-fade-up" style={{
+              <h2 className="scroll-fade-up" style={{
               fontFamily: "var(--font-montserrat), sans-serif",
               fontSize: "clamp(1.75rem, 3vw, 2.75rem)",
               fontWeight: 300,
               letterSpacing: "-0.02em",
               lineHeight: 1.2,
-              marginTop: "-0.5rem" /* Visual adjustment to align the baseline with the small text */
+              marginTop: "-0.5rem"
             }}>
-              End-to-end statistical intelligence.<br/>
-              <span style={{ color: "var(--text-secondary)" }}>From raw data to clinical release.</span>
+              Nobody taught you how
+              <br />
+              <span style={{ color: "var(--text-secondary)" }}>to prove it.</span>
             </h2>
+            <p className="scroll-fade-up" style={{
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.9rem",
+              lineHeight: 1.75,
+              color: "var(--text-secondary)",
+              maxWidth: "560px",
+              marginTop: "1.5rem",
+              animationDelay: "0.15s"
+            }}>
+              Your panel expects you to defend every decimal. Cheap freelancers hand you a file you cannot explain. JAXIS closes that gap.
+            </p>
           </div>
         </div>
 
@@ -370,8 +369,8 @@ export default function CoreInfrastructure() {
         <div className="infra-layout">
           
           {/* Left Tabs (Sticky Anchor Menu) */}
-          <div className="infra-sidebar scroll-fade-up" style={{ animationDelay: "0.15s" }}>
-            {[1, 2, 3].map((pillarNum) => (
+          <div className="infra-sidebar" style={{ position: "static", gap: 0, padding: 0 }}>
+            {[1, 2].map((pillarNum) => (
               <button
                 key={pillarNum}
                 onClick={() => {
@@ -380,7 +379,7 @@ export default function CoreInfrastructure() {
                 }}
                 className={`infra-tab ${activeTab === pillarNum ? "active" : ""}`}
               >
-                PILLAR {pillarNum === 1 ? 'I - VALIDATION' : pillarNum === 2 ? 'II - MODELING' : 'III - TRIALS'}
+                {pillarNum === 1 ? 'OUR INFRASTRUCTURE' : 'THE 4 PILLARS'}
               </button>
             ))}
           </div>

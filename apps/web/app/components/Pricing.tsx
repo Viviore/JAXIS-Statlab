@@ -5,97 +5,64 @@ import PixelCard from "./PixelCard";
 
 const PACKAGES = [
   {
-    name: "JAXIS Start",
-    catalog: "JX-01 // BASELINE",
-    price: "1,200",
-    desc: "Descriptive statistics summary for baseline validation.",
+    name: "DataCheck",
+    catalog: "JX-01 // DIAGNOSTIC",
+    price: "1,000",
+    desc: "Essential automated diagnostics to ensure your data is ready for human analysis.",
     features: [
-      "Descriptive statistics only",
-      "Basic interpretation (1-2 sentences per table)",
-      "No statistical test included",
-      "3-day chat support",
-      "Certificate included"
+      "Automated Data Cleaning & Scrubber",
+      "Normality & Outlier Identification",
+      "Scale Reliability (Cronbach's Alpha)",
+      "The JAXIS \"Readiness Report\""
     ],
     highlighted: false
   },
   {
-    name: "JAXIS Essential",
-    catalog: "JX-02 // SINGLE_TEST",
-    price: "1,500",
-    desc: "Single-hypothesis testing and descriptive parameters.",
+    name: "Start Package",
+    catalog: "JX-02 // BASELINE",
+    price: "1,500 – 1,800",
+    desc: "Ideal for demographic profiling and baseline survey summaries.",
     features: [
-      "1 Statistical test",
-      "Includes descriptive statistics",
-      "Statistical Interpretation",
-      "5-min online consultation",
-      "Certificate included"
+      "Descriptive Statistics & Frequencies",
+      "Cross-tabulations",
+      "Full APA 7th Ed. Table Generation",
+      "Plain-English Narrative Translation"
     ],
     highlighted: false
   },
   {
-    name: "JAXIS Complete ★",
-    catalog: "JX-03 // DUAL_TEST",
-    price: "1,800",
-    desc: "Best-value package covering dual hypothesis analyses.",
+    name: "Core Package ★",
+    catalog: "JX-03 // INFERENTIAL",
+    price: "1,800 – 3,000",
+    desc: "The standard analytical requirement for Undergraduate, Master's and Ph.D. dissertations.",
     features: [
-      "Up to 2 statistical tests",
-      "Includes descriptive statistics",
-      "Statistical Interpretation",
-      "15-min online consultation",
-      "Certificate included"
+      "Standard Inferential Tests (T-Tests, ANOVA, Regression)",
+      "Assumption Checks & Effect Sizes",
+      "Full JAXIS 4-Part Narrative Report",
+      "Tier 2 Human QA (Senior Expert Review)"
     ],
     highlighted: true
   },
   {
-    name: "JAXIS Advanced",
-    catalog: "JX-04 // MULTI_TEST",
-    price: "2,000",
-    desc: "Multi-group comparative study validation.",
+    name: "Advanced Package",
+    catalog: "JX-04 // COMPLEX",
+    price: "3,000+",
+    desc: "Complex modeling executed by elite Senior Methodologists.",
     features: [
-      "Up to 3 statistical tests",
-      "Includes descriptive statistics",
-      "Statistical Interpretation",
-      "30-mins online consultation",
-      "Certificate included"
+      "Advanced Modeling (SEM, Factor Analysis, Time-Series)",
+      "Custom Methodological Consultation",
+      "Priority Tier 2 QA Routing"
     ],
     highlighted: false
   },
-  {
-    name: "JAXIS Premium",
-    catalog: "JX-05 // COMPLEX_MODEL",
-    price: "2,500",
-    desc: "Complex statistical modeling and exploratory analysis.",
-    features: [
-      "Advanced/complex statistical models",
-      "Includes descriptive statistics",
-      "Item-total correlation + factor analysis",
-      "Basic factor analysis (if applicable)",
-      "Retention recommendations",
-      "60-mins online consultation",
-      "Certificate included"
-    ],
-    highlighted: false
-  },
-  {
-    name: "JAXIS Validate",
-    catalog: "JX-06 // PILOT_SCALABLE",
-    price: "70",
-    isPerVar: true,
-    desc: "Scalable validation for pilot study instruments.",
-    features: [
-      "Pilot testing descriptive statistics",
-      "Reliability test — Cronbach's Alpha",
-      "Item-total correlation + factor analysis",
-      "Basic factor analysis (if applicable)",
-      "Retention recommendations",
-      "3-day chat support + 5-min consultation",
-      "Certificate included"
-    ],
-    highlighted: false
-  }
 ];
 
 const ADDITIONS = [
+  {
+    name: "DefenseLab Module",
+    desc: "Live 1-on-1 mock panel defense with a JAXIS senior statistician. We grill you on your methodology so you're ready for the real thing.",
+    price: "₱250/hr"
+  },
   {
     name: "JAXIS Rush",
     desc: "3-day turnaround upgrade",
@@ -120,11 +87,12 @@ export default function Pricing() {
         
         {/* Header Block */}
         <div className="pricing-title-area scroll-fade-up active">
-          <span className="pricing-kicker">Operational Costs</span>
-          <h2>Service Packages</h2>
+          <span className="pricing-kicker">FIXED PRICING. ZERO SURPRISES.</span>
+          <h2>Transparent Pricing.<br />Complete Deliverables.</h2>
           <p>
-            All statistical analysis usually takes 3-5 days and may take longer 
-            depending on project complexity.
+            Every package includes raw output, assumption checks,
+            statistical interpretation, and APA 7th Edition tables.
+            No hourly billing. No scope creep.
           </p>
         </div>
 

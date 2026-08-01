@@ -17,9 +17,8 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-top-left",
     lines: [
-      "ANOVA  F(3,196) = 8.42",
-      "p = 0.00002  η² = 0.114",
-      "Post-hoc: Tukey HSD ✓",
+      "[JAXIS_Engine] Data pre-flight complete",
+      "0% Missingness | Normality assumed ✓",
     ],
     position: { top: "18%", left: "4%", right: "auto", bottom: "auto" } as React.CSSProperties,
     blockDelay: 0,
@@ -27,9 +26,8 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-top-right",
     lines: [
-      "Power = 0.92  α = 0.05",
-      "n_required = 148",
-      "Effect size d = 0.51",
+      "[Studio_OS] Methodology SOW Locked",
+      "Routing to Rank 3 Methodologist...",
     ],
     position: { top: "18%", right: "4%", left: "auto", bottom: "auto" } as React.CSSProperties,
     blockDelay: 1,
@@ -37,9 +35,8 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-bottom-left",
     lines: [
-      "95% CI [2.14, 5.87]",
-      "β₁ = 3.21  SE = 0.94",
-      "R² = 0.763  p < 0.001",
+      "[AOG_Script] APA 7th Ed.",
+      "Table Generation: SUCCESS",
     ],
     position: { bottom: "18%", left: "4%", top: "auto", right: "auto" } as React.CSSProperties,
     blockDelay: 2,
@@ -47,9 +44,8 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-bottom-right",
     lines: [
-      "Shapiro-Wilk W = 0.991",
-      "Levene p = 0.412",
-      "Assumptions met ✓",
+      "[QA_Gateway] Tier 2 Peer Review: PASSED",
+      "Ready for Panel Defense ✓",
     ],
     position: { bottom: "18%", right: "4%", top: "auto", left: "auto" } as React.CSSProperties,
     blockDelay: 3,
@@ -58,9 +54,8 @@ const CODE_SNIPPETS = [
 
 // Headline broken into animatable lines
 const HEADLINE_LINES = [
-  { text: "Evidence-backed decisions",  delay: 0 },
-  { text: "at the speed of",           delay: 1 },
-  { text: "discovery.",                 delay: 2, accent: true },
+  { text: "Panel-Ready",    delay: 0 },
+  { text: "Research.",      delay: 1, accent: false },
 ];
 
 export default function Hero() {
@@ -232,8 +227,8 @@ export default function Hero() {
             animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 300}ms`,
           }}
         >
-          Continuously validating, analyzing, and delivering statistical
-          intelligence across your research, clinical, and enterprise data.
+          Premium statistical consulting for students and researchers
+          who cannot afford to get their data analysis wrong.
         </p>
 
         <a
@@ -268,7 +263,42 @@ export default function Hero() {
             el.style.background = "transparent";
           }}
         >
-          Get Started
+          Submit Your Research for Review
+        </a>
+
+        <a
+          href="#solutions"
+          id="hero-cta-secondary"
+          className="hero-caption"
+          style={{
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: "0.7rem",
+            fontWeight: 500,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.55)",
+            textDecoration: "none",
+            padding: "10px 28px",
+            border: "1px solid rgba(255,255,255,0.18)",
+            borderRadius: "2px",
+            background: "transparent",
+            marginTop: "1rem",
+            display: "inline-block",
+            transition: "border-color 0.2s ease, color 0.2s ease",
+            animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 850}ms`,
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget;
+            el.style.borderColor = "rgba(255,255,255,0.45)";
+            el.style.color = "#FFFFFF";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget;
+            el.style.borderColor = "rgba(255,255,255,0.18)";
+            el.style.color = "rgba(255,255,255,0.55)";
+          }}
+        >
+          Explore How It Works
         </a>
       </div>
     </section>

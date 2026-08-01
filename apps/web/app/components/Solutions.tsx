@@ -160,8 +160,21 @@ export default function Solutions() {
               maxWidth: "900px",
               margin: "0 auto"
             }}>
-              Built for academic researchers where statistical failure is not an option.
+              Not just output.
+              <br />
+              <span style={{ color: "var(--text-muted-light)" }}>Defensible output.</span>
             </h2>
+            <p style={{
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.9rem",
+              lineHeight: 1.75,
+              color: "var(--text-muted-light)",
+              maxWidth: "600px",
+              margin: "1.5rem auto 0"
+            }}>
+              Raw output. Assumption checks. APA tables. A narrative you can read out loud to your committee.
+              That is the JAXIS deliverable.
+            </p>
           </div>
 
           {/* 2-Column Split */}
@@ -174,7 +187,8 @@ export default function Solutions() {
               lineHeight: 1.6,
               marginBottom: "2.5rem"
             }}>
-              JAXIS is built for high-stakes academic environments where a missed variable or assumption violation isn&apos;t just a typo—it&apos;s a retracted study or a rejected paper.
+              We work with undergraduates, graduate researchers, clinical teams, and enterprise institutions.
+              The standard is always the same: every output must withstand panel scrutiny.
             </p>
             
             <div role="tablist" aria-label="Research sectors" style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -300,7 +314,7 @@ export default function Solutions() {
               &lt; 48hr
             </div>
             <div style={{ fontSize: "1rem", color: "var(--bg-primary)" }}>
-              From raw data to publication-ready tables and methodology
+              From raw dataset to panel-ready deliverable
             </div>
           </div>
           
@@ -317,7 +331,7 @@ export default function Solutions() {
               98%
             </div>
             <div style={{ fontSize: "1rem", color: "var(--text-muted-light)" }}>
-              Reduction in Reviewer 2 pushback on methodology and assumptions
+              Of JAXIS clients pass their panel defense on the first attempt
             </div>
           </div>
           
@@ -334,7 +348,7 @@ export default function Solutions() {
               3x
             </div>
             <div style={{ fontSize: "1rem", color: "var(--text-muted-light)" }}>
-              Faster manuscript submission cycles vs manual review
+              Fixed price packages — no hourly billing, ever
             </div>
           </div>
           
@@ -351,7 +365,7 @@ export default function Solutions() {
               100%
             </div>
             <div style={{ fontSize: "1rem", color: "var(--text-muted-light)" }}>
-              Reproducibility guaranteed for stringent journal requirements
+              Reproducibility rate — every result is auditable by your committee
             </div>
           </div>
         </div>

@@ -84,9 +84,132 @@ Before submitting code or declaring a task complete, verify:
 
 ## 6. Agent Skills & Usage
 
-All AI agents MUST utilize the appropriate custom **Skills** when working on this workspace:
-- **`apps/web` (Landing Page):** When building, auditing, or refactoring the landing page, you MUST use the **`impeccable`**, **`high-end-visual-design`**, **`design-taste-frontend`**, and **`gpt-taste`** skills. These enforce the premium, cinematic, anti-generic aesthetic required for the Corporate Midnight Enterprise design system.
-- **`apps/app` (SaaS Dashboard):** Prioritize the **`minimalist-ui`** or **`industrial-brutalist-ui`** skills for utilitarian, fast, data-dense interfaces that avoid visual bloat.
+All AI agents MUST utilize the appropriate custom **Skills** when working on this workspace.
+Skills are scoped per-app using `.agents/skills/` directories inside each app, registered via the root [`.agents/skills.json`](./../.agents/skills.json).
+
+### Skill Discovery Structure
+
+```
+JAXIS StatLab/
+├── .agents/
+│   ├── AGENTS.md
+│   └── skills.json          ← registers both app skill dirs
+├── apps/
+│   ├── web/.agents/skills/  ← 33 skills (Landing Page)
+│   └── app/.agents/skills/  ← 12 skills (SaaS Dashboard)
+```
+
+---
+
+### `apps/web` — Landing Page Skills (33 total)
+
+When building, auditing, or refactoring the landing page, agents MUST use the relevant skills below. These enforce the premium, cinematic, anti-generic aesthetic required for the Corporate Midnight Enterprise design system.
+
+#### From `emilkowalski/skill` (8 skills)
+> Install: `npx skills add emilkowalski/skill`
+
+| Skill | Purpose |
+|---|---|
+| `animation-vocabulary` | Reverse-lookup glossary for animation/motion effect terminology |
+| `apple-design` | Apple's interface design philosophy: gestures, springs, depth, materials |
+| `emil-design-eng` | Emil Kowalski's UI polish philosophy, component design, invisible details |
+| `find-animation-opportunities` | Scan codebase for places that should animate but don't |
+| `improve-animations` | Audit existing motion code and produce prioritized fix plans |
+| `pick-ui-library` | Evaluate and recommend UI component libraries |
+| `prototype` | Rapid prototyping workflows and patterns |
+| `review-animations` | Review animation diffs for quality and correctness |
+
+#### From `greensock/gsap-skills` (8 skills)
+> Install: `npx skills add https://github.com/greensock/gsap-skills`
+
+| Skill | Purpose |
+|---|---|
+| `gsap-core` | Core GSAP API — tweens, easing, stagger, matchMedia |
+| `gsap-frameworks` | GSAP in Vue, Svelte, Nuxt — lifecycle, scoping, cleanup |
+| `gsap-performance` | Performance optimization — transforms, batching, will-change |
+| `gsap-plugins` | Plugin registration — ScrollSmoother, Flip, Draggable, SplitText |
+| `gsap-react` | GSAP in React/Next.js — useGSAP hook, refs, context, cleanup |
+| `gsap-scrolltrigger` | ScrollTrigger — scroll-linked animations, pinning, scrub |
+| `gsap-timeline` | Timelines — sequencing, position parameter, nesting, playback |
+| `gsap-utils` | Utility helpers — clamp, mapRange, snap, toArray, wrap, pipe |
+
+#### From `vercel-labs/agent-skills` (9 skills)
+> Install: `npx skills add vercel-labs/agent-skills`
+
+| Skill | Purpose |
+|---|---|
+| `deploy-to-vercel` | Deploy applications to Vercel |
+| `vercel-cli-with-tokens` | Vercel CLI with token-based authentication |
+| `vercel-composition-patterns` | React composition patterns that scale |
+| `vercel-optimize` | Vercel cost and performance optimization |
+| `vercel-react-best-practices` | React/Next.js performance guidelines from Vercel Engineering |
+| `vercel-react-native-skills` | React Native and Expo best practices |
+| `vercel-react-view-transitions` | React View Transition API implementation |
+| `web-design-guidelines` | Web Interface Guidelines compliance review |
+| `writing-guidelines` | Documentation and prose style review |
+
+#### From `Leonxlnx/taste-skill` (7 skills)
+> Install: `npx skills add Leonxlnx/taste-skill`
+
+| Skill | Purpose |
+|---|---|
+| `brandkit` | Premium brand-kit image generation — logos, identity, visual-world |
+| `full-output-enforcement` | Overrides LLM truncation — enforces complete unabridged output |
+| `image-to-code` | Generate design images, analyze them, then implement to match |
+| `imagegen-frontend-mobile` | Premium mobile app screen concept generation |
+| `imagegen-frontend-web` | Web design reference image generation (one image per section) |
+| `redesign-existing-projects` | Audit and upgrade existing sites to premium quality |
+| `stitch-design-taste` | Generate agent-friendly DESIGN.md design system files |
+
+#### Pre-existing (1 skill)
+
+| Skill | Purpose |
+|---|---|
+| `impeccable` | Comprehensive frontend UI design, audit, polish, motion, accessibility |
+
+---
+
+### `apps/app` — SaaS Dashboard Skills (12 total)
+
+Prioritize **`minimalist-ui`** or **`industrial-brutalist-ui`** for utilitarian, fast, data-dense interfaces. Use code review and Vercel skills for quality and deployment.
+
+#### From `awesome-skills/code-review-skill` (1 skill)
+> Install: `npx skills add https://github.com/awesome-skills/code-review-skill`
+
+| Skill | Purpose |
+|---|---|
+| `code-review-skill` | Comprehensive code review for React 19, TypeScript, Next.js, and 20+ ecosystems |
+
+#### From `vercel-labs/agent-skills` (9 skills)
+> Install: `npx skills add vercel-labs/agent-skills`
+
+| Skill | Purpose |
+|---|---|
+| `deploy-to-vercel` | Deploy applications to Vercel |
+| `vercel-cli-with-tokens` | Vercel CLI with token-based authentication |
+| `vercel-composition-patterns` | React composition patterns that scale |
+| `vercel-optimize` | Vercel cost and performance optimization |
+| `vercel-react-best-practices` | React/Next.js performance guidelines from Vercel Engineering |
+| `vercel-react-native-skills` | React Native and Expo best practices |
+| `vercel-react-view-transitions` | React View Transition API implementation |
+| `web-design-guidelines` | Web Interface Guidelines compliance review |
+| `writing-guidelines` | Documentation and prose style review |
+
+#### Pre-existing (2 skills)
+
+| Skill | Purpose |
+|---|---|
+| `minimalist-ui` | Clean editorial interfaces — warm monochrome, typographic contrast, flat bento |
+| `industrial-brutalist-ui` | Raw mechanical interfaces — Swiss type, military terminal, rigid grids |
+
+---
+
+### ❌ Failed Installations
+
+| Source | Reason |
+|---|---|
+| `anthropics/claude-code-security-review` | No valid `SKILL.md` files found — repo structured for Claude Code's own format |
+
 
 ---
 

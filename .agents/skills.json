@@ -1,0 +1,6 @@
+{
+  "entries": [
+    { "path": "apps/web/.agents/skills" },
+    { "path": "apps/app/.agents/skills" }
+  ]
+}
