@@ -57,8 +57,8 @@ export default function PixelTransition({
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
-          start: "top 80%",
-          end: "bottom 20%",
+          start: "top 90%",
+          end: "bottom 95%",
           scrub: 1,
         },
       });
@@ -84,8 +84,8 @@ export default function PixelTransition({
     // [TWEAK]: Grid resolution. More rows/cols = smaller, finer pixels. Less = bigger, blockier pixels.
     // Tip: Try to keep the 10:1 ratio between cols and rows to keep them perfect squares.
     // Min: cols=50/rows=5 (massive blocks), Max: cols=200/rows=20 (tiny dots).
-    const cols = 100;
-    const rows = 10;
+    const cols = 60;
+    const rows = 6;
     const items = [];
     const random = mulberry32(999);
 
@@ -149,9 +149,7 @@ export default function PixelTransition({
         backgroundColor: sourceColor, // Solid source color hides the seam
         display: "flex",
         justifyContent: "center",
-        // Pull UP to overlap the bottom padding of the previous section
-        marginTop: "clamp(-250px, -12vw, -150px)", 
-        // 0 bottom margin ensures it DOES NOT bleed into the target section's actual bounding box
+        marginTop: "0", 
         marginBottom: "0", 
         zIndex: 11,
         overflow: "hidden",
@@ -171,7 +169,7 @@ export default function PixelTransition({
         }}
       >
         <svg
-          viewBox="0 0 100 10"
+          viewBox="0 0 60 6"
           width="100%"
           height="100%"
           preserveAspectRatio="xMidYMid slice"

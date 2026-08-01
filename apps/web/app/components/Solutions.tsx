@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import ScrollToPlugin from "gsap/ScrollToPlugin";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 }
 
 const SECTORS = [
@@ -77,6 +78,8 @@ export default function Solutions() {
   const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const dataTableRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<ScrollTrigger | null>(null);
   const [activeTab, setActiveTab] = useState('publications');
   const currentData = (SECTOR_DATA[activeTab] || SECTOR_DATA.publications)!;
 
@@ -87,11 +90,6 @@ export default function Solutions() {
         if (entry.isIntersecting) {
           entry.target.classList.add("active");
           observer.unobserve(entry.target);
-          
-          // Re-calculate GSAP pin spacing after the CSS fade-up animations complete
-          setTimeout(() => {
-            ScrollTrigger.refresh();
-          }, 800);
         }
       });
     }, { rootMargin: "0px 0px -15% 0px" });
@@ -101,13 +99,12 @@ export default function Solutions() {
 
     // GSAP Scroll Pinning
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
+      triggerRef.current = ScrollTrigger.create({
         trigger: pinRef.current,
         start: "top 15%", // Pin a little below the navbar
         end: "+=2400", // 2400px of scroll distance to scrub through the 4 tabs
         pin: true,
         anticipatePin: 1, // Prevents layout bounce when entering/exiting the pin
-        scrub: 1.5, // 1.5s of smooth interpolation catching up to the scroll position
         onUpdate: (self) => {
           const p = self.progress;
           let newTab = 'publications';
@@ -130,27 +127,42 @@ export default function Solutions() {
     };
   }, []);
 
-  // Animate terminal content when tab changes
+  const handleTabClick = (tabId: string) => {
+    if (!triggerRef.current) return;
+    const st = triggerRef.current;
+    const distance = st.end - st.start;
+    
+    let progress = 0;
+    if (tabId === 'publications') progress = 0.0;
+    else if (tabId === 'dissertations') progress = 0.25;
+    else if (tabId === 'grants') progress = 0.50;
+    else if (tabId === 'longitudinal') progress = 0.75;
+    
+    // Add a small 10px buffer so it definitely trips the onUpdate boundary
+    gsap.to(window, { scrollTo: st.start + (distance * progress) + 10, duration: 0.8, ease: "power3.out" });
+  };
+
+  // Animate terminal and data table content when tab changes
   useEffect(() => {
-    if (!contentRef.current) return;
+    if (!contentRef.current || !dataTableRef.current) return;
     const ctx = gsap.context(() => {
-      gsap.fromTo(contentRef.current, 
+      gsap.fromTo([contentRef.current, dataTableRef.current], 
         { opacity: 0, y: 15, filter: "blur(4px)" }, 
-        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "power2.out", overwrite: "auto" }
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "power2.out", overwrite: "auto", stagger: 0.1 }
       );
     });
     return () => ctx.revert();
   }, [activeTab]);
 
   return (
-    <section id="solutions" className="section-light" ref={sectionRef} style={{ padding: "14rem 2rem 8rem 2rem", position: "relative" }}>
+    <section id="solutions" className="section-light" ref={sectionRef} style={{ padding: "4rem 2rem 4rem 2rem", position: "relative" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
         {/* Pinned Composition: Header + Tabs */}
         <div ref={pinRef} style={{ width: "100%", display: "flex", flexDirection: "column" }}>
           
           {/* Centered Header */}
-          <div className="sol-fade-up scroll-fade-up" style={{ textAlign: "center", marginBottom: "6rem" }}>
+          <div className="sol-fade-up scroll-fade-up" style={{ textAlign: "center", marginBottom: "3rem" }}>
             <h2 style={{
               fontFamily: "var(--font-montserrat), sans-serif",
               fontSize: "clamp(2.5rem, 4vw, 4rem)",
@@ -178,7 +190,7 @@ export default function Solutions() {
           </div>
 
           {/* 2-Column Split */}
-          <div className="infra-layout" style={{ marginBottom: "8rem", alignItems: "flex-start" }}>
+          <div className="infra-layout" style={{ marginBottom: "3rem", alignItems: "flex-start" }}>
           {/* Left Col */}
           <div className="infra-sidebar solutions-sidebar sol-fade-up scroll-fade-up" style={{ animationDelay: "0.15s" }}>
             <p className="text-muted-light" style={{
@@ -200,7 +212,7 @@ export default function Solutions() {
                   aria-selected={activeTab === sec.id}
                   aria-controls={`panel-${sec.id}`}
                   className={`tab-light ${activeTab === sec.id ? 'active' : ''}`}
-                  onClick={() => setActiveTab(sec.id)}
+                  onClick={() => handleTabClick(sec.id)}
                 >
                   <span>{sec.name}</span>
                   <span className="infra-tab-indicator"></span>
@@ -261,45 +273,45 @@ export default function Solutions() {
                </div>
              </div>
           </div>
-        </div>
-        </div>
-        {/* End Pinned Composition */}
+          </div>
 
-        {/* Data Table Section */}
-        <div className="sol-fade-up scroll-fade-up" style={{ marginBottom: "4rem" }}>
-          <h2 style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
-            fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
-            fontWeight: 300,
-            letterSpacing: "-0.02em",
-            marginBottom: "2.5rem"
-          }}>
-            Validated statistical outputs published in top-tier peer-reviewed journals.
-          </h2>
-          
-          <div style={{ width: "100%", borderTop: "1px solid var(--border-light)" }}>
-            {currentData.cve.map((row, idx) => (
-              <div key={idx} className="cve-table-row">
-                <div style={{ fontFamily: "var(--font-inter), sans-serif", fontWeight: 600 }}>{row.id}</div>
-                <div style={{ color: "var(--accent-orange)" }}>{row.type}</div>
-                <div style={{ color: "var(--text-muted-light)" }}>{row.desc}</div>
-                <div style={{ 
-                  color: "var(--accent-orange)", 
-                  background: "var(--accent-orange-tint)", 
-                  padding: "0.15rem 0.6rem", 
-                  fontSize: "0.65rem", 
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase"
-                }}>
-                  {row.status}
+          {/* Data Table Section (Moved inside pinned container) */}
+          <div className="sol-fade-up scroll-fade-up" ref={dataTableRef} style={{ marginBottom: "0", willChange: "opacity, transform, filter" }}>
+            <h2 style={{
+              fontFamily: "var(--font-montserrat), sans-serif",
+              fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
+              fontWeight: 300,
+              letterSpacing: "-0.02em",
+              marginBottom: "1.5rem"
+            }}>
+              Validated statistical outputs published in top-tier peer-reviewed journals.
+            </h2>
+            
+            <div style={{ width: "100%", borderTop: "1px solid var(--border-light)" }}>
+              {currentData.cve.map((row, idx) => (
+                <div key={idx} className="cve-table-row">
+                  <div style={{ fontFamily: "var(--font-inter), sans-serif", fontWeight: 600 }}>{row.id}</div>
+                  <div style={{ color: "var(--accent-orange)" }}>{row.type}</div>
+                  <div style={{ color: "var(--text-muted-light)" }}>{row.desc}</div>
+                  <div style={{ 
+                    color: "var(--accent-orange)", 
+                    background: "var(--accent-orange-tint)", 
+                    padding: "0.15rem 0.6rem", 
+                    fontSize: "0.65rem", 
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase"
+                  }}>
+                    {row.status}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
+        {/* End Pinned Composition */}
         
-        {/* 2x2 Bento Stat Grid */}
-        <div className="infra-grid sol-fade-up scroll-fade-up" style={{ animationDelay: "0.2s" }}>
+        {/* 2x2 Bento Stat Grid (Unpinned) */}
+        <div className="infra-grid sol-fade-up scroll-fade-up" style={{ animationDelay: "0.2s", marginTop: "6rem" }}>
           {/* Box 1 (Highlighted) */}
           <div style={{ 
             background: "var(--accent-orange-light-tint)", 

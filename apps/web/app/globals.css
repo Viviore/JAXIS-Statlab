@@ -756,7 +756,7 @@ body {
 .pricing-section {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  padding: 14rem 2rem 8rem 2rem;
+  padding: 4rem 2rem 8rem 2rem;
   position: relative;
 }
 

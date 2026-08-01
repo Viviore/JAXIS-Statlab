@@ -310,7 +310,7 @@ export default function CoreInfrastructure() {
         backgroundColor: "var(--bg-primary)",
         backgroundImage: "linear-gradient(to bottom, rgba(0,0,8,0.5) 0%, rgba(0,0,8,0) 150px)",
         color: "var(--text-primary)",
-        padding: "8rem 2rem 14rem 2rem",
+        padding: "8rem 2rem 4rem 2rem",
         position: "relative",
         zIndex: 10
       }}
