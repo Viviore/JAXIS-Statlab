@@ -229,7 +229,7 @@ export default function Pricing() {
         </div>
         
         {/* Packages 2x2 Grid */}
-        <div className="packages-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "2rem", marginBottom: "4rem" }}>
+        <div className="packages-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2rem", marginBottom: "4rem" }}>
           {PACKAGES.map((pkg, idx) => (
             <PixelCard
               key={idx}

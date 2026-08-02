@@ -9,7 +9,6 @@ export default function FooterCTA() {
         id="security"
         style={{
           backgroundColor: "var(--bg-primary)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
           padding: "8rem 2rem",
           color: "var(--text-primary)",
         }}
@@ -180,7 +179,6 @@ export default function FooterCTA() {
         style={{
           position: "relative",
           backgroundColor: "var(--bg-primary)",
-          borderTop: "1px solid rgba(255,255,255,0.08)",
           padding: "10rem 2rem 6rem",
           textAlign: "center",
           color: "var(--text-primary)",

@@ -5,6 +5,7 @@ import CoreInfrastructure from "./components/CoreInfrastructure";
 import PixelTransition from "./components/PixelTransition";
 import Solutions from "./components/Solutions";
 import Pricing from "./components/Pricing";
+import FAQ from "./components/FAQ";
 import FooterCTA from "./components/FooterCTA";
 
 export default function Home() {
@@ -38,6 +39,7 @@ export default function Home() {
         <Solutions />
         <PixelTransition direction="light-to-dark" />
         <Pricing />
+        <FAQ />
         <FooterCTA />
       </main>
     </div>

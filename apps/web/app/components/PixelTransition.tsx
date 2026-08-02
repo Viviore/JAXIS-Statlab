@@ -173,6 +173,7 @@ export default function PixelTransition({
           width="100%"
           height="100%"
           preserveAspectRatio="xMidYMid slice"
+          style={{ display: "block" }}
         >
           {rects}
         </svg>
