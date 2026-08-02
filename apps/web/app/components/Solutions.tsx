@@ -97,8 +97,9 @@ export default function Solutions() {
     const fadeEls = document.querySelectorAll('.sol-fade-up');
     fadeEls.forEach(el => observer.observe(el));
 
-    // GSAP Scroll Pinning
+    // GSAP Scroll Pinning & Continuous Scrub Effects
     const ctx = gsap.context(() => {
+      // 1. Main Pinning Logic
       triggerRef.current = ScrollTrigger.create({
         trigger: pinRef.current,
         start: "top 15%", // Pin a little below the navbar
@@ -118,6 +119,42 @@ export default function Solutions() {
             return prev;
           });
         }
+      });
+
+      // 2. Continuous Parallax Background
+      // This slowly rotates and scales the abstract background gradient during the entire 2400px pin,
+      // creating a gorgeous, continuous sense of motion that perfectly compliments Lenis smooth scrolling.
+      gsap.to('.tech-overlay', {
+        rotation: 60,
+        scale: 1.5,
+        opacity: 0.8,
+        ease: "none",
+        scrollTrigger: {
+          trigger: pinRef.current,
+          start: "top 15%",
+          end: "+=2400",
+          scrub: true,
+        }
+      });
+
+      // 4. Fluid Bento Grid Reveal
+      // Instead of firing once, the bento boxes float up dynamically tied to the scroll wheel.
+      const bentoBoxes = gsap.utils.toArray('.bento-box');
+      bentoBoxes.forEach((box: any, i) => {
+        gsap.fromTo(box,
+          { y: 120, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: box,
+              start: "top 95%",
+              end: "top 65%",
+              scrub: 1, // '1' adds a 1-second lag to the scrub, creating incredibly buttery momentum
+            }
+          }
+        );
       });
     }, sectionRef);
 
@@ -139,16 +176,23 @@ export default function Solutions() {
     else if (tabId === 'longitudinal') progress = 0.75;
     
     // Add a small 10px buffer so it definitely trips the onUpdate boundary
-    gsap.to(window, { scrollTo: st.start + (distance * progress) + 10, duration: 0.8, ease: "power3.out" });
+    gsap.to(window, { scrollTo: st.start + (distance * progress) + 10, duration: 1.2, ease: "expo.inOut" });
   };
 
   // Animate terminal and data table content when tab changes
   useEffect(() => {
     if (!contentRef.current || !dataTableRef.current) return;
     const ctx = gsap.context(() => {
-      gsap.fromTo([contentRef.current, dataTableRef.current], 
-        { opacity: 0, y: 15, filter: "blur(4px)" }, 
-        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "power2.out", overwrite: "auto", stagger: 0.1 }
+      // Dynamic Staggered Reveal
+      // Makes the tab transition feel mechanical and high-tech
+      gsap.fromTo(contentRef.current, 
+        { opacity: 0, scale: 0.96, filter: "blur(8px)" }, 
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", overwrite: "auto" }
+      );
+      
+      gsap.fromTo(".cve-table-row",
+        { opacity: 0, x: -10 },
+        { opacity: 1, x: 0, duration: 0.2, stagger: 0.04, ease: "power2.out", overwrite: "auto" }
       );
     });
     return () => ctx.revert();
@@ -230,7 +274,7 @@ export default function Solutions() {
             style={{ flex: 1, width: "100%", minHeight: "400px", background: "var(--bg-primary)", position: "relative", overflow: "hidden", animationDelay: "0.3s" }}
           >
              {/* Technical visual overlay */}
-             <div style={{ position: "absolute", inset: 0, opacity: 0.5, backgroundImage: "radial-gradient(circle at 70% 30%, var(--surface-secondary) 0%, transparent 60%)" }}></div>
+             <div className="tech-overlay" style={{ position: "absolute", inset: -150, opacity: 0.3, backgroundImage: "radial-gradient(circle at 70% 30%, var(--surface-secondary) 0%, transparent 60%)" }}></div>
              
              {/* Terminal Card */}
              <div style={{ 
@@ -311,9 +355,9 @@ export default function Solutions() {
         {/* End Pinned Composition */}
         
         {/* 2x2 Bento Stat Grid (Unpinned) */}
-        <div className="infra-grid sol-fade-up scroll-fade-up" style={{ animationDelay: "0.2s", marginTop: "6rem" }}>
+        <div className="infra-grid" style={{ marginTop: "8rem" }}>
           {/* Box 1 (Highlighted) */}
-          <div style={{ 
+          <div className="bento-box" style={{ 
             background: "var(--accent-orange-light-tint)", 
             border: "1px solid var(--accent-orange-border)",
             padding: "3rem 2rem",
@@ -331,7 +375,7 @@ export default function Solutions() {
           </div>
           
           {/* Box 2 */}
-          <div style={{ 
+          <div className="bento-box" style={{ 
             background: "var(--bg-light-tint)", 
             padding: "3rem 2rem",
             display: "flex",
@@ -348,7 +392,7 @@ export default function Solutions() {
           </div>
           
           {/* Box 3 */}
-          <div style={{ 
+          <div className="bento-box" style={{ 
             background: "var(--bg-light-tint)", 
             padding: "3rem 2rem",
             display: "flex",
@@ -365,7 +409,7 @@ export default function Solutions() {
           </div>
           
           {/* Box 4 */}
-          <div style={{ 
+          <div className="bento-box" style={{ 
             background: "var(--bg-light-tint)", 
             padding: "3rem 2rem",
             display: "flex",

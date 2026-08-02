@@ -61,6 +61,14 @@ const HEADLINE_LINES = [
 export default function Hero() {
   const wrapperRef = useRef<HTMLElement>(null);
 
+  // Force scroll to top on refresh
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   // Subtle parallax on mouse move — pointer-capable devices only
   useEffect(() => {
     const wrapper = wrapperRef.current;

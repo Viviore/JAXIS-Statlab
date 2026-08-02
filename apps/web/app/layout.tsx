@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+import SmoothScroll from "./components/SmoothScroll";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${montserrat.variable} ${inter.variable}`} style={{ backgroundColor: "#000814" }}>
-      <body className={montserrat.className} style={{ backgroundColor: "#000814" }}>{children}</body>
+      <body className={montserrat.className} style={{ backgroundColor: "#000814" }}>
+        <SmoothScroll>{children}</SmoothScroll>
+      </body>
     </html>
   );
 }

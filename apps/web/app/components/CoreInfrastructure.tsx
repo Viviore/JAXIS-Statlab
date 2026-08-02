@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const FEATURES = [
   { 
@@ -72,9 +78,55 @@ export default function CoreInfrastructure() {
     const fadeUpElements = document.querySelectorAll('.scroll-fade-up');
     fadeUpElements.forEach(el => twObserver.observe(el));
 
+    // GSAP context for grid entrance and terminal lines
+    const ctx = gsap.context(() => {
+      // Find all cards
+      const cards = gsap.utils.toArray<HTMLElement>('.infra-card');
+      
+      if (cards.length > 0) {
+        // Stagger cards in
+        gsap.fromTo(cards, 
+          { opacity: 0, y: 50 }, 
+          { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.6, 
+            stagger: 0.1, 
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: ".infra-grid",
+              start: "top 85%",
+            }
+          }
+        );
+
+        // Terminal text staggering
+        cards.forEach(card => {
+          const termLines = gsap.utils.toArray<HTMLElement>('.term-line, .term-flex', card);
+          if (termLines.length > 0) {
+            gsap.fromTo(termLines,
+              { opacity: 0, x: -10 },
+              {
+                opacity: 1,
+                x: 0,
+                duration: 0.4,
+                stagger: 0.1,
+                ease: "power1.out",
+                scrollTrigger: {
+                  trigger: card,
+                  start: "top 90%",
+                }
+              }
+            );
+          }
+        });
+      }
+    }, sectionRef);
+
     return () => {
       observer.disconnect();
       twObserver.disconnect();
+      ctx.revert();
     };
   }, []);
 
@@ -385,7 +437,7 @@ export default function CoreInfrastructure() {
           </div>
 
           {/* Right Grid (2-column layout) */}
-          <div className="infra-grid scroll-fade-up" style={{ animationDelay: "0.3s" }}>
+          <div className="infra-grid">
             {FEATURES.map((card, idx) => (
               <div 
                 key={idx} 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Hero as FooterBackground } from "./ui/tailwind-css-background-snippet";
 export default function FooterCTA() {
   return (
     <>
@@ -177,14 +178,19 @@ export default function FooterCTA() {
       <footer
         id="contact"
         style={{
+          position: "relative",
           backgroundColor: "var(--bg-primary)",
           borderTop: "1px solid rgba(255,255,255,0.08)",
           padding: "10rem 2rem 6rem",
           textAlign: "center",
           color: "var(--text-primary)",
+          overflow: "hidden",
         }}
       >
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+          <FooterBackground className="h-full" />
+        </div>
+        <div style={{ maxWidth: "800px", margin: "0 auto", position: "relative", zIndex: 1 }}>
           <h2
             style={{
               fontFamily: "var(--font-montserrat), sans-serif",

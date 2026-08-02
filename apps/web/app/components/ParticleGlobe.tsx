@@ -92,12 +92,12 @@ export default function ParticleGlobe() {
     if (!container) return;
 
     // ── Renderer ─────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     const initW = container.clientWidth || window.innerWidth;
     const initH = container.clientHeight || window.innerHeight;
     renderer.setSize(initW, initH);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x010114, 1); // Opaque background prevents alpha-accumulation white blobs
     container.appendChild(renderer.domElement);
 
     // ── Scene & Camera ────────────────────────────────────────────────────────
