@@ -169,7 +169,8 @@ export default function Hero() {
     // GSAP ScrollTrigger temporarily removes and re-adds the pinned element on resize to recalculate layout.
     // This DOM detach/attach causes all CSS keyframe animations to restart from 0%.
     // To prevent this, we lock in the final state of the CSS animations after they finish playing once.
-    gsap.delayedCall(3.5, () => {
+    // Timeout set to 5.0s to ensure the final floating annotation (which finishes at ~3.7s) is fully typed out.
+    gsap.delayedCall(5.0, () => {
       document.querySelectorAll(".hero-line, .hero-caption").forEach(el => {
         const e = el as HTMLElement;
         e.style.opacity = "1";
