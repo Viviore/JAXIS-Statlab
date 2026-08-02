@@ -120,27 +120,29 @@ export default function Hero() {
       scrollTrigger: {
         trigger: triggerEl,
         start: "top top",
-        end: "+=150%", // Pins for 1.5x viewport height (giving 250vh total scroll distance)
-        scrub: 1,
+        end: "+=250%", 
+        scrub: 1.2,
         pin: true,
         anticipatePin: 1,
+        invalidateOnRefresh: true,
       }
     });
 
-    // ── Phase 1: Text & Globe Transition (0% to 60%) ──
-    // 0.0 -> 0.2: Hero text fades out
-    tl.to(".hero-main-content", { y: -30, opacity: 0, duration: 0.2, ease: "power2.inOut" }, 0);
-    tl.to(".hero-snippets-container", { y: -20, opacity: 0, duration: 0.2, ease: "power2.inOut" }, 0);
+    // ── Phase 1: Text & Globe Transition (0% to 20%) ──
+    // Hero text fades out, snippets fade out
+    tl.to(".hero-main-content", { y: -50, opacity: 0, duration: 0.2, ease: "power2.inOut" }, 0);
+    tl.to(".hero-snippets-container", { y: -30, opacity: 0, duration: 0.2, ease: "power2.inOut" }, 0);
 
-    // 0.1 -> 0.6: Intro text fades in
+    // ── Phase 1.5: Reveal Jaxis Intro text (20% to 40%) ──
     const introWordElements = introTextRef.current.querySelectorAll(".reveal-word");
     tl.fromTo(introWordElements,
-      { opacity: 0, y: 15 },
-      { opacity: 1, y: 0, stagger: { amount: 0.3 }, duration: 0.2, ease: "power2.out" },
-      0.1
+      { opacity: 0, y: 30, scale: 0.95, filter: "blur(12px)" },
+      { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", stagger: { amount: 0.2 }, duration: 0.2, ease: "power2.out" },
+      0.2
     );
 
-    // 0.1 -> 0.5: Globe transforms
+    // ── Phase 1.5: Globe transforms ──
+    // The globe comes close to the camera while the Jaxis Intro text is revealed
     tl.to(globeScrollState, {
       yOffset: -4.5,
       scale: 2.8,
@@ -149,18 +151,39 @@ export default function Hero() {
       ease: "power2.inOut" 
     }, 0.1); 
 
-    // ── Phase 2: Stacking Card Transition (60% to 100%) ──
-    // As the user scrolls the final 100vh, the next section naturally slides up over the sticky hero.
-    // Simultaneously, we scale the hero down and dim it for a physical 3D stacking effect.
+    // ── Phase 2: Dwell Time (40% to 60%) ──
+    // No animations. The intro text remains readable on screen while scrolling.
+
+    // ── Phase 3: Stacking Card Transition (60% to 100%) ──
+    // CoreInfrastructure is pulled up by -100vh, so it enters the bottom of the screen exactly at 60% of this 250vh pin.
+    // The scale/dim must use linear easing ("none") to perfectly map to the physical scroll distance.
     tl.to(".hero-intro-wrapper", {
       scale: 0.92,
-      borderRadius: "32px",
-      filter: "brightness(0.35)",
+      borderRadius: "40px",
+      filter: "brightness(0.25)",
       duration: 0.4,
-      ease: "none" // Linear mapping perfectly matches the physical scroll overlap
+      ease: "none" 
     }, 0.6);
 
-  }, { scope: wrapperRef });
+    // ── Fix for Resize Animation Restart ──
+    // GSAP ScrollTrigger temporarily removes and re-adds the pinned element on resize to recalculate layout.
+    // This DOM detach/attach causes all CSS keyframe animations to restart from 0%.
+    // To prevent this, we lock in the final state of the CSS animations after they finish playing once.
+    gsap.delayedCall(3.5, () => {
+      document.querySelectorAll(".hero-line, .hero-caption").forEach(el => {
+        const e = el as HTMLElement;
+        e.style.opacity = "1";
+        e.style.transform = "none";
+        e.style.animation = "none";
+      });
+      document.querySelectorAll(".snippet-line").forEach(el => {
+        const e = el as HTMLElement;
+        e.style.maxWidth = "100%";
+        e.style.animation = "none";
+      });
+    });
+
+  }, { scope: wrapperRef, dependencies: [] });
 
   return (
     <section
@@ -168,7 +191,7 @@ export default function Hero() {
       ref={wrapperRef}
       style={{
         position: "relative",
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -179,13 +202,14 @@ export default function Hero() {
     >
       {/* ── Three.js Globe is now in page.tsx ── */}
       {/* ── Floating statistical code annotations ── */}
-      <div className="hero-snippets-container" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
+        <div className="hero-snippets-container" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
         {CODE_SNIPPETS.map((snippet) => {
           const blockStart = SNIPPET_BASE_DELAY + snippet.blockDelay * SNIPPET_BLOCK_STAGGER;
         return (
           <div
             key={snippet.id}
             id={snippet.id}
+            className="hero-snippet-block"
             aria-hidden="true"
             style={{
               position: "absolute",
@@ -202,9 +226,7 @@ export default function Hero() {
           >
             {snippet.lines.map((line, i) => {
               const isLast   = i === snippet.lines.length - 1;
-              // Each line starts after the previous one finishes typing
               const lineDelay = blockStart + i * (TYPEWRITER_DURATION + SNIPPET_LINE_STAGGER);
-              // Cursor fades out right after THIS line finishes
               const cursorDelay = TYPEWRITER_DURATION;
               return (
                 <div
@@ -215,7 +237,20 @@ export default function Hero() {
                     ...(isLast ? { "--cursor-delay": `${cursorDelay}ms` } as React.CSSProperties : {}),
                   }}
                 >
-                  {line}
+                  {line.split("").map((char, charIdx) => {
+                    // Deterministic pseudo-random delay based on character index so it matches perfectly on server/client hydration
+                    const seed = snippet.blockDelay * 100 + i * 50 + charIdx;
+                    // Format to fixed decimal places to prevent server/client float precision hydration mismatches
+                    const pseudoRandom = Math.abs(Math.sin(seed * 9999)) * 12;
+                    // Delay the flicker until AFTER the typewriter animation finishes for this specific line
+                    const startOffset = (lineDelay + TYPEWRITER_DURATION) / 1000; 
+                    const totalDelay = (startOffset + pseudoRandom).toFixed(2);
+                    return (
+                      <span key={charIdx} className="flicker-char" style={{ animationDelay: `${totalDelay}s` }}>
+                        {char === " " ? "\u00A0" : char}
+                      </span>
+                    );
+                  })}
                 </div>
               );
             })}
@@ -249,6 +284,7 @@ export default function Hero() {
             letterSpacing: "-0.02em",
             color: "#FFFFFF",
             margin: 0,
+            textAlign: "center",
             transition: "transform 0.15s ease-out",
             textShadow: "0 2px 24px rgba(0,0,0,0.55), 0 1px 6px rgba(0,0,0,0.4)",
           }}
@@ -286,82 +322,47 @@ export default function Hero() {
           who cannot afford to get their data analysis wrong.
         </p>
 
-        <a
-          href="#contact"
-          id="hero-cta"
-          className="hero-caption"
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#FFFFFF",
-            textDecoration: "none",
-            padding: "10px 28px",
-            border: "1px solid rgba(255,255,255,0.45)",
-            borderRadius: "2px",
-            background: "transparent",
-            marginTop: "2rem",
-            display: "inline-block",
-            transition: "border-color 0.2s ease, background 0.2s ease",
-            animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 600}ms`,
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "var(--accent-orange)";
-            el.style.background = "rgba(204,102,0,0.08)";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(255,255,255,0.45)";
-            el.style.background = "transparent";
-          }}
-        >
-          Submit Your Research for Review
-        </a>
-
-        <a
-          href="#solutions"
-          id="hero-cta-secondary"
-          className="hero-caption"
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "0.7rem",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.55)",
-            textDecoration: "none",
-            padding: "10px 28px",
-            border: "1px solid rgba(255,255,255,0.18)",
-            borderRadius: "2px",
-            background: "transparent",
-            marginTop: "1rem",
-            display: "inline-block",
-            transition: "border-color 0.2s ease, color 0.2s ease",
-            animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 850}ms`,
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(255,255,255,0.45)";
-            el.style.color = "#FFFFFF";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(255,255,255,0.18)";
-            el.style.color = "rgba(255,255,255,0.55)";
-          }}
-        >
-          Explore How It Works
-        </a>
+        <div className="hero-cta-wrapper">
+          <a
+            href="#contact"
+            id="hero-cta"
+            className="hero-caption hero-cta-btn"
+            style={{
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "#FFFFFF",
+              textDecoration: "none",
+              padding: "12px 32px",
+              border: "1px solid rgba(255,255,255,0.45)",
+              borderRadius: "2px",
+              background: "transparent",
+              transition: "border-color 0.2s ease, background 0.2s ease",
+              animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 600}ms`,
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "var(--accent-orange)";
+              el.style.background = "rgba(204,102,0,0.08)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "rgba(255,255,255,0.45)";
+              el.style.background = "transparent";
+            }}
+          >
+            Submit Your Research for Review
+          </a>
+        </div>
       </div>
 
       {/* ── Jaxis Intro Text (Reveals on Scroll) ── */}
       <div 
         style={{ 
           position: "absolute", 
-          top: "50%",
+          top: "35%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: "100%",
@@ -377,7 +378,7 @@ export default function Hero() {
           ref={introTextRef}
           style={{
             fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "clamp(1.6rem, 3.5vw, 3.2rem)",
+            fontSize: "clamp(1.1rem, 3.5vw, 3.2rem)",
             fontWeight: 300,
             lineHeight: 1.25,
             letterSpacing: "-0.02em",

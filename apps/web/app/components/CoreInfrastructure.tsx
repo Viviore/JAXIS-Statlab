@@ -364,10 +364,16 @@ export default function CoreInfrastructure() {
         color: "var(--text-primary)",
         padding: "8rem 2rem 4rem 2rem",
         position: "relative",
-        zIndex: 10
+        zIndex: 10,
+        marginTop: "-100vh",
+        borderTopLeftRadius: "32px",
+        borderTopRightRadius: "32px",
+        borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+        boxShadow: "0 -30px 80px rgba(0, 0, 0, 0.6)",
+        overflow: "hidden"
       }}
     >
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 5 }}>
         
         {/* Header Area */}
         <div className="infra-layout" style={{ marginBottom: "4rem" }}>
