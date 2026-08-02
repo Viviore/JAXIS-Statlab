@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { globeScrollState } from "./globeState";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -198,6 +199,9 @@ export default function ParticleGlobe() {
     const tmpC     = new THREE.Color();
 
     function updateColors() {
+      // Dynamically calculate camera direction relative to the globe's position
+      camDir.subVectors(camera.position, group.position).normalize();
+
       invQuat.copy(group.quaternion).invert();
       localDir.copy(hsCurrent).applyQuaternion(invQuat).normalize();
       camLocal.copy(camDir).applyQuaternion(invQuat).normalize();
@@ -279,29 +283,7 @@ export default function ParticleGlobe() {
     eventRoot.addEventListener("mouseenter", onMouseEnter, { passive: true });
     eventRoot.addEventListener("mouseleave", onMouseLeave, { passive: true });
 
-    // ── GSAP ScrollTrigger ────────────────────────────────────────────────────
-    const scrollState = { offset: 0, yOffset: 0, scale: 1, xOffset: 0 };
-    
-    // Find the relative wrapper that contains both Hero and JaxisIntro
-    const triggerEl = document.querySelector(".hero-intro-wrapper") || container.parentElement || document.body;
-
-    const scrollTrigger = ScrollTrigger.create({
-      trigger: triggerEl,
-      start: "top top",
-      end: "bottom bottom", // Animate over the entire scroll (Hero + Intro + Margin)
-      scrub: true,
-      onUpdate: (self) => {
-        // We use an ease-in-out calculation for the position so the slide feels physical
-        const easeProgress = self.progress < 0.5 
-          ? 2 * self.progress * self.progress 
-          : 1 - Math.pow(-2 * self.progress + 2, 2) / 2;
-
-        scrollState.offset = self.progress * (Math.PI * 2); 
-        scrollState.xOffset = 0;   
-        scrollState.yOffset = easeProgress * -0.5;          
-        scrollState.scale = 1 - (easeProgress * 0.4);       
-      }
-    });
+    // ── GSAP ScrollTrigger (Removed in favor of centralized animation in Hero.tsx) ──
 
     // ── Animation loop ────────────────────────────────────────────────────────
     let animId: number;
@@ -326,15 +308,15 @@ export default function ParticleGlobe() {
       haloMat.opacity  = eased * HALO_MAX_OPACITY;
       edgeMat.opacity  = eased * EDGE_MAX_OPACITY;
 
-      group.rotation.y = t * 0.10 + scrollState.offset;
+      group.rotation.y = t * 0.10 + globeScrollState.offset;
       group.rotation.x = Math.sin(t * 0.06) * 0.07;
       
-      group.position.y = scrollState.yOffset;
-      group.position.x = scrollState.xOffset;
+      group.position.y = globeScrollState.yOffset;
+      group.position.x = globeScrollState.xOffset;
 
       // Breathing scale
       const breathe = 1 + Math.sin(t * 0.9) * 0.012;
-      group.scale.setScalar(breathe * scrollState.scale);
+      group.scale.setScalar(breathe * globeScrollState.scale);
 
       // Bug fix: pulse must be scaled by eased so halo stays at 0 during intro.
       // Previously this line overwrote the fade-in, causing immediate 0.34 opacity on frame 1.
@@ -377,7 +359,6 @@ export default function ParticleGlobe() {
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
     return () => {
-      scrollTrigger?.kill();
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
       eventRoot.removeEventListener("mousemove",  onMouseMove);

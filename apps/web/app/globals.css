@@ -695,6 +695,36 @@ body {
   border-color: rgba(1, 1, 20, 0.1);
 }
 
+.hero-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 16px 40px;
+  border-radius: 2px;
+  border: 1px solid var(--accent-orange-hover);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), 
+              background 200ms ease, 
+              border-color 200ms ease,
+              box-shadow 200ms ease;
+  box-shadow: 0 8px 32px rgba(204, 102, 0, 0.25);
+}
+
+.hero-btn-primary:hover {
+  background: var(--accent-orange-hover);
+  border-color: #FF8000;
+  box-shadow: 0 12px 40px rgba(204, 102, 0, 0.45);
+}
+
 .tab-light {
   background: #FFFFFF;
   border: 1px solid var(--border-light);
