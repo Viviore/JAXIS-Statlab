@@ -278,7 +278,7 @@ export default function Hero() {
         <h1
           id="hero-headline"
           style={{
-            fontFamily: "var(--font-inter), sans-serif",
+            fontFamily: "var(--font-montserrat), sans-serif",
             fontSize: "clamp(2.6rem, 7vw, 5.5rem)",
             fontWeight: 300,
             lineHeight: 1.12,

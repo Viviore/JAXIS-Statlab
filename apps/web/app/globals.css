@@ -401,17 +401,18 @@ body {
 
 .infra-card {
   background: transparent;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-glass);
   border-radius: 0;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 320px;
   overflow: hidden;
 }
 
 .infra-card:hover {
   border-color: var(--border-glass-hover);
+  background: rgba(1, 46, 87, 0.2);
 }
 
 .infra-card-header {
@@ -498,13 +499,13 @@ body {
 /* ─── Hero load animations ─── */
 
 @keyframes heroLineReveal {
-  from { opacity: 0; transform: translateY(28px); filter: blur(4px); }
-  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  from { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0);   }
 }
 
 @keyframes heroCaptionReveal {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px) scale(0.98); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0);   }
 }
 
 /* Globe entrance — pure opacity fade, no scale (scale amplifies bloom into white blob) */
@@ -613,9 +614,9 @@ body {
 
 /* Terminal Styling */
 .terminal-block {
-  font-family: var(--font-inter), sans-serif;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 0.65rem;
-  line-height: 1.8;
+  line-height: 1.6;
   color: var(--text-primary);
   width: 100%;
 }
@@ -807,12 +808,30 @@ body {
   display: grid;
   grid-template-columns: 1.2fr 1.5fr 2.5fr auto;
   gap: 1rem;
-  padding: 1.25rem 0;
+  padding: 1.25rem 1rem;
+  margin: 0 -1rem;
   border-bottom: 1px solid var(--border-light);
   font-family: var(--font-inter), sans-serif;
   font-size: 0.85rem;
   color: var(--bg-primary);
   align-items: center;
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+
+.cve-table-row:hover {
+  background: rgba(1, 1, 20, 0.03);
+}
+
+/* Bento Box (Solutions Section) */
+.bento-box {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-light) !important;
+}
+
+.bento-box:hover {
+  background: rgba(1, 1, 20, 0.04) !important;
+  border-color: rgba(1, 1, 20, 0.25) !important;
 }
 
 @media (max-width: 768px) {
@@ -912,7 +931,7 @@ body {
 /* Blueprint Card Styles */
 .pricing-card {
   background: var(--bg-primary);
-  border: none;
+  border: 1px solid var(--border-glass);
   border-radius: 0px;
   padding: 2rem 1.5rem;
   display: flex;
@@ -924,6 +943,18 @@ body {
   min-height: 420px;
   overflow: visible;
   z-index: 1;
+}
+
+.offering-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-glass);
+  border-radius: 0px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.offering-card:hover {
+  background: rgba(1, 46, 87, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .pricing-card:hover {

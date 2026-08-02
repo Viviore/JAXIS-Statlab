@@ -84,22 +84,30 @@ export default function Solutions() {
   const currentData = (SECTOR_DATA[activeTab] || SECTOR_DATA.publications)!;
 
   useEffect(() => {
-    // Scroll fade observer
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("active");
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: "0px 0px -15% 0px" });
-
-    const fadeEls = document.querySelectorAll('.sol-fade-up');
-    fadeEls.forEach(el => observer.observe(el));
-
-    // GSAP Scroll Pinning & Continuous Scrub Effects
+    // GSAP Context for all scroll animations in this section
     const ctx = gsap.context(() => {
-      // 1. Main Pinning Logic
+      // 1. Material Entrances for fade-up elements
+      const fadeEls = gsap.utils.toArray<HTMLElement>('.sol-fade-up');
+      if (fadeEls.length > 0) {
+        gsap.fromTo(fadeEls,
+          { opacity: 0, y: 30, scale: 0.98, filter: "blur(6px)" },
+          {
+            opacity: 1, 
+            y: 0, 
+            scale: 1, 
+            filter: "blur(0px)",
+            duration: 0.8,
+            ease: "expo.out",
+            stagger: 0.15,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 80%",
+            }
+          }
+        );
+      }
+
+      // 2. Main Pinning Logic
       triggerRef.current = ScrollTrigger.create({
         trigger: pinRef.current,
         start: "top 15%", // Pin a little below the navbar
@@ -137,31 +145,29 @@ export default function Solutions() {
         }
       });
 
-      // 4. Fluid Bento Grid Reveal
-      // Instead of firing once, the bento boxes float up dynamically tied to the scroll wheel.
+      // 4. Fluid Bento Grid Reveal (with physical weight)
       const bentoBoxes = gsap.utils.toArray('.bento-box');
-      bentoBoxes.forEach((box: any, i) => {
+      bentoBoxes.forEach((box: any) => {
         gsap.fromTo(box,
-          { y: 120, opacity: 0 },
+          { y: 120, scale: 0.92, opacity: 0, filter: "blur(4px)" },
           {
             y: 0,
+            scale: 1,
             opacity: 1,
+            filter: "blur(0px)",
             ease: "none",
             scrollTrigger: {
               trigger: box,
               start: "top 95%",
               end: "top 65%",
-              scrub: 1, // '1' adds a 1-second lag to the scrub, creating incredibly buttery momentum
+              scrub: 1,
             }
           }
         );
       });
     }, sectionRef);
 
-    return () => {
-      observer.disconnect();
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
   const handleTabClick = (tabId: string) => {
@@ -183,17 +189,20 @@ export default function Solutions() {
   useEffect(() => {
     if (!contentRef.current || !dataTableRef.current) return;
     const ctx = gsap.context(() => {
-      // Dynamic Staggered Reveal
-      // Makes the tab transition feel mechanical and high-tech
+      // Dynamic Staggered Reveal scoped to contentRef
       gsap.fromTo(contentRef.current, 
         { opacity: 0, scale: 0.96, filter: "blur(8px)" }, 
         { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", overwrite: "auto" }
       );
       
-      gsap.fromTo(".cve-table-row",
-        { opacity: 0, x: -10 },
-        { opacity: 1, x: 0, duration: 0.2, stagger: 0.04, ease: "power2.out", overwrite: "auto" }
-      );
+      // Select rows specifically inside dataTableRef to avoid global pollution
+      const rows = gsap.utils.toArray('.cve-table-row', dataTableRef.current);
+      if (rows.length > 0) {
+        gsap.fromTo(rows,
+          { opacity: 0, x: -10 },
+          { opacity: 1, x: 0, duration: 0.2, stagger: 0.04, ease: "power2.out", overwrite: "auto" }
+        );
+      }
     });
     return () => ctx.revert();
   }, [activeTab]);

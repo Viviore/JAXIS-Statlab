@@ -50,49 +50,60 @@ export default function CoreInfrastructure() {
     const cards = document.querySelectorAll('.pillar-card-observe');
     cards.forEach(card => observer.observe(card));
 
-    // Intersection Observer for typewriter text and header intro
-    const twObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          if (entry.target.classList.contains("scroll-fade-up")) {
-            entry.target.classList.add("active");
-          } else {
-            (entry.target as HTMLElement).style.opacity = "1";
-            const lines = entry.target.querySelectorAll('.tw-line');
-            lines.forEach((line, index) => {
-              if (index === lines.length - 1) {
-                line.classList.add("snippet-line", "snippet-line-last");
-              } else {
-                line.classList.add("snippet-line");
-              }
-            });
-          }
-          twObserver.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: "0px 0px -15% 0px" });
-
-    const twElement = document.querySelector('.infra-typewriter-anim');
-    if (twElement) twObserver.observe(twElement);
-    
-    const fadeUpElements = document.querySelectorAll('.scroll-fade-up');
-    fadeUpElements.forEach(el => twObserver.observe(el));
-
     // GSAP context for grid entrance and terminal lines
     const ctx = gsap.context(() => {
-      // Find all cards
+      
+      // 1. Typewriter Animation (Native GSAP)
+      gsap.set(".infra-typewriter-anim", { opacity: 1 });
+      gsap.fromTo(".tw-line", 
+        { maxWidth: 0 }, 
+        { 
+          maxWidth: "40ch", 
+          duration: 1.2, 
+          ease: "steps(15)", 
+          scrollTrigger: {
+            trigger: ".infra-typewriter-anim",
+            start: "top 85%",
+          }
+        }
+      );
+
+      // 2. Scroll Fade Up Elements (Material Entrance)
+      const fadeUps = gsap.utils.toArray<HTMLElement>('.scroll-fade-up');
+      if (fadeUps.length > 0) {
+        gsap.fromTo(fadeUps,
+          { opacity: 0, y: 30, scale: 0.98, filter: "blur(6px)" },
+          {
+            opacity: 1, 
+            y: 0, 
+            scale: 1, 
+            filter: "blur(0px)",
+            duration: 0.8,
+            ease: "expo.out",
+            stagger: 0.15,
+            scrollTrigger: {
+              trigger: ".infra-typewriter-anim",
+              start: "top 85%",
+            }
+          }
+        );
+      }
+
+      // 3. Find all cards
       const cards = gsap.utils.toArray<HTMLElement>('.infra-card');
       
       if (cards.length > 0) {
-        // Stagger cards in
+        // Stagger cards in (Material Entrance)
         gsap.fromTo(cards, 
-          { opacity: 0, y: 50 }, 
+          { opacity: 0, y: 30, scale: 0.96, filter: "blur(8px)" }, 
           { 
             opacity: 1, 
             y: 0, 
-            duration: 0.6, 
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.8, 
             stagger: 0.1, 
-            ease: "power2.out",
+            ease: "expo.out",
             scrollTrigger: {
               trigger: ".infra-grid",
               start: "top 85%",
@@ -100,18 +111,17 @@ export default function CoreInfrastructure() {
           }
         );
 
-        // Terminal text staggering
+        // Terminal text staggering (Raw data stream step effect)
         cards.forEach(card => {
           const termLines = gsap.utils.toArray<HTMLElement>('.term-line, .term-flex', card);
           if (termLines.length > 0) {
             gsap.fromTo(termLines,
-              { opacity: 0, x: -10 },
+              { opacity: 0 },
               {
                 opacity: 1,
-                x: 0,
-                duration: 0.4,
-                stagger: 0.1,
-                ease: "power1.out",
+                duration: 0.05,
+                stagger: 0.15,
+                ease: "none", // Stepped effect
                 scrollTrigger: {
                   trigger: card,
                   start: "top 90%",
@@ -125,7 +135,6 @@ export default function CoreInfrastructure() {
 
     return () => {
       observer.disconnect();
-      twObserver.disconnect();
       ctx.revert();
     };
   }, []);
@@ -366,8 +375,6 @@ export default function CoreInfrastructure() {
         position: "relative",
         zIndex: 10,
         marginTop: "-100vh",
-        borderTopLeftRadius: "32px",
-        borderTopRightRadius: "32px",
         borderTop: "1px solid rgba(255, 255, 255, 0.06)",
         boxShadow: "0 -30px 80px rgba(0, 0, 0, 0.6)",
         overflow: "hidden"
@@ -389,7 +396,7 @@ export default function CoreInfrastructure() {
               maxWidth: "100%",
               overflow: "hidden"
             }}>
-              <span className="tw-line" style={{ display: 'block' }}>
+              <span className="tw-line" style={{ display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                 WHY STUDENTS FAIL
               </span>
             </div>
