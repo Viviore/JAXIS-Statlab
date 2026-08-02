@@ -110,30 +110,10 @@ export default function Hero() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        background: "var(--bg-primary)",
+        background: "transparent",
       }}
     >
-      {/* ── Three.js Globe — fades in via Three.js loop, not CSS ── */}
-      <ParticleGlobe />
-
-      {/* Bottom navy glow */}
-      <div aria-hidden="true" style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1,
-        background: "radial-gradient(ellipse 90% 60% at 50% 110%, rgba(1,22,57,0.80) 0%, rgba(0,4,20,0) 65%)",
-      }} />
-
-      {/* Top/bottom vignette */}
-      <div aria-hidden="true" style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2,
-        background: "linear-gradient(to bottom, rgba(0,0,8,0.55) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.5) 100%)",
-      }} />
-
-      {/* Edge radial mask */}
-      <div aria-hidden="true" style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3,
-        background: "radial-gradient(ellipse 62% 56% at 50% 50%, transparent 20%, rgba(0,8,20,0.38) 58%, rgba(0,8,20,0.90) 80%)",
-      }} />
-
+      {/* ── Three.js Globe is now in page.tsx ── */}
       {/* ── Floating statistical code annotations ── */}
       {CODE_SNIPPETS.map((snippet) => {
         const blockStart = SNIPPET_BASE_DELAY + snippet.blockDelay * SNIPPET_BLOCK_STAGGER;
