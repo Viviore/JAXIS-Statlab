@@ -20,7 +20,7 @@ export default function Home() {
             
             {/* ── Shared Background Gradients & 3D Globe for Hero & Intro ── */}
             <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 1 }}>
-              {/* <ParticleGlobe /> */}
+              <ParticleGlobe />
               
               <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, background: "radial-gradient(ellipse 90% 60% at 50% 110%, rgba(1,22,57,0.80) 0%, rgba(0,4,20,0) 65%)" }} />
               <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(to bottom, rgba(0,0,8,0.55) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.5) 100%)" }} />
