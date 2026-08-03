@@ -113,12 +113,13 @@ export default function ParticleGlobe() {
       return;
     }
 
+    const initW = container.clientWidth || window.innerWidth;
+    const initH = container.clientHeight || window.innerHeight;
+
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      const initW = container.clientWidth || window.innerWidth;
-      const initH = container.clientHeight || window.innerHeight;
       renderer.setSize(initW, initH);
       renderer.setClearColor(0x010114, 1);
       container.appendChild(renderer.domElement);

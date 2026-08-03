@@ -2,7 +2,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import ParticleGlobe from "./components/ParticleGlobe";
 import CoreInfrastructure from "./components/CoreInfrastructure";
-import PixelTransition from "./components/PixelTransition";
+import DeckTransition from "./components/DeckTransition";
 import Solutions from "./components/Solutions";
 import Pricing from "./components/Pricing";
 import FAQ from "./components/FAQ";
@@ -35,9 +35,9 @@ export default function Home() {
         </div>
 
         <CoreInfrastructure />
-        <PixelTransition />
+        <DeckTransition />
         <Solutions />
-        <PixelTransition direction="light-to-dark" />
+        <DeckTransition zIndexTarget={30} />
         <Pricing />
         <FAQ />
         <FooterCTA />

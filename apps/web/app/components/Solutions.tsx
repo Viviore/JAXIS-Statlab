@@ -1,13 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
-import ScrollToPlugin from "gsap/ScrollToPlugin";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-}
+import { useState } from "react";
 
 const SECTORS = [
   { id: 'publications', name: "Peer-Reviewed Publications" },
@@ -75,144 +68,19 @@ const SECTOR_DATA: Record<string, {
 };
 
 export default function Solutions() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const pinRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const dataTableRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<ScrollTrigger | null>(null);
   const [activeTab, setActiveTab] = useState('publications');
   const currentData = (SECTOR_DATA[activeTab] || SECTOR_DATA.publications)!;
 
-  useEffect(() => {
-    // GSAP Context for all scroll animations in this section
-    const ctx = gsap.context(() => {
-      // 1. Material Entrances for fade-up elements
-      const fadeEls = gsap.utils.toArray<HTMLElement>('.sol-fade-up');
-      if (fadeEls.length > 0) {
-        gsap.fromTo(fadeEls,
-          { opacity: 0, y: 30, scale: 0.98, filter: "blur(6px)" },
-          {
-            opacity: 1, 
-            y: 0, 
-            scale: 1, 
-            filter: "blur(0px)",
-            duration: 0.8,
-            ease: "expo.out",
-            stagger: 0.15,
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top 80%",
-            }
-          }
-        );
-      }
-
-      // 2. Main Pinning Logic
-      triggerRef.current = ScrollTrigger.create({
-        trigger: pinRef.current,
-        start: "top 15%", // Pin a little below the navbar
-        end: "+=2400", // 2400px of scroll distance to scrub through the 4 tabs
-        pin: true,
-        anticipatePin: 1, // Prevents layout bounce when entering/exiting the pin
-        onUpdate: (self) => {
-          const p = self.progress;
-          let newTab = 'publications';
-          if (p >= 0.75) newTab = 'longitudinal';
-          else if (p >= 0.50) newTab = 'grants';
-          else if (p >= 0.25) newTab = 'dissertations';
-
-          // Only trigger React state update if it actually changed
-          setActiveTab((prev) => {
-            if (prev !== newTab) return newTab;
-            return prev;
-          });
-        }
-      });
-
-      // 2. Continuous Parallax Background
-      // This slowly rotates and scales the abstract background gradient during the entire 2400px pin,
-      // creating a gorgeous, continuous sense of motion that perfectly compliments Lenis smooth scrolling.
-      gsap.to('.tech-overlay', {
-        rotation: 60,
-        scale: 1.5,
-        opacity: 0.8,
-        ease: "none",
-        scrollTrigger: {
-          trigger: pinRef.current,
-          start: "top 15%",
-          end: "+=2400",
-          scrub: true,
-        }
-      });
-
-      // 4. Fluid Bento Grid Reveal (with physical weight)
-      const bentoBoxes = gsap.utils.toArray('.bento-box');
-      bentoBoxes.forEach((box: any) => {
-        gsap.fromTo(box,
-          { y: 120, scale: 0.92, opacity: 0, filter: "blur(4px)" },
-          {
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            filter: "blur(0px)",
-            ease: "none",
-            scrollTrigger: {
-              trigger: box,
-              start: "top 95%",
-              end: "top 65%",
-              scrub: 1,
-            }
-          }
-        );
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
-
   const handleTabClick = (tabId: string) => {
-    if (!triggerRef.current) return;
-    const st = triggerRef.current;
-    const distance = st.end - st.start;
-    
-    let progress = 0;
-    if (tabId === 'publications') progress = 0.0;
-    else if (tabId === 'dissertations') progress = 0.25;
-    else if (tabId === 'grants') progress = 0.50;
-    else if (tabId === 'longitudinal') progress = 0.75;
-    
-    // Add a small 10px buffer so it definitely trips the onUpdate boundary
-    gsap.to(window, { scrollTo: st.start + (distance * progress) + 10, duration: 1.2, ease: "expo.inOut" });
+    setActiveTab(tabId);
   };
 
-  // Animate terminal and data table content when tab changes
-  useEffect(() => {
-    if (!contentRef.current || !dataTableRef.current) return;
-    const ctx = gsap.context(() => {
-      // Dynamic Staggered Reveal scoped to contentRef
-      gsap.fromTo(contentRef.current, 
-        { opacity: 0, scale: 0.96, filter: "blur(8px)" }, 
-        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", overwrite: "auto" }
-      );
-      
-      // Select rows specifically inside dataTableRef to avoid global pollution
-      const rows = gsap.utils.toArray('.cve-table-row', dataTableRef.current);
-      if (rows.length > 0) {
-        gsap.fromTo(rows,
-          { opacity: 0, x: -10 },
-          { opacity: 1, x: 0, duration: 0.2, stagger: 0.04, ease: "power2.out", overwrite: "auto" }
-        );
-      }
-    });
-    return () => ctx.revert();
-  }, [activeTab]);
-
   return (
-    <section id="solutions" className="section-light" ref={sectionRef} style={{ padding: "4rem 2rem 4rem 2rem", position: "relative" }}>
+    <section id="solutions" className="section-light" style={{ padding: "4rem 2rem 4rem 2rem", position: "relative" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
-        {/* Pinned Composition: Header + Tabs */}
-        <div ref={pinRef} style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+        {/* Tabs */}
+        <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
           
           {/* Centered Header */}
           <div className="sol-fade-up scroll-fade-up" style={{ textAlign: "center", marginBottom: "3rem" }}>
@@ -295,7 +163,7 @@ export default function Solutions() {
                width: "calc(100% - 2rem)",
                maxWidth: "540px"
              }}>
-               <div ref={contentRef} style={{ width: "100%", willChange: "opacity, transform, filter" }}>
+               <div style={{ width: "100%", willChange: "opacity, transform, filter" }}>
                  <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "space-between", marginBottom: "2rem", alignItems: "flex-start" }}>
                    <div>
                      <div style={{ color: "var(--text-primary)", fontSize: "0.9rem", fontFamily: "var(--font-montserrat)" }}>Validation complete</div>
@@ -328,8 +196,8 @@ export default function Solutions() {
           </div>
           </div>
 
-          {/* Data Table Section (Moved inside pinned container) */}
-          <div className="sol-fade-up scroll-fade-up" ref={dataTableRef} style={{ marginBottom: "0", willChange: "opacity, transform, filter" }}>
+          {/* Data Table Section */}
+          <div className="sol-fade-up scroll-fade-up" style={{ marginBottom: "0", willChange: "opacity, transform, filter" }}>
             <h2 style={{
               fontFamily: "var(--font-montserrat), sans-serif",
               fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
@@ -361,9 +229,7 @@ export default function Solutions() {
             </div>
           </div>
         </div>
-        {/* End Pinned Composition */}
-        
-        {/* 2x2 Bento Stat Grid (Unpinned) */}
+        {/* 2x2 Bento Stat Grid */}
         <div className="infra-grid" style={{ marginTop: "8rem" }}>
           {/* Box 1 (Highlighted) */}
           <div className="bento-box" style={{ 
