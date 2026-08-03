@@ -99,13 +99,47 @@ export default function ParticleGlobe() {
     if (!container) return;
 
     // ── Renderer ─────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    const initW = container.clientWidth || window.innerWidth;
-    const initH = container.clientHeight || window.innerHeight;
-    renderer.setSize(initW, initH);
-    renderer.setClearColor(0x010114, 1); // Opaque background prevents alpha-accumulation white blobs
-    container.appendChild(renderer.domElement);
+    // Check if WebGL is supported before initializing to prevent console.error from Next.js overlay
+    let isWebGLSupported = false;
+    try {
+      const testCanvas = document.createElement('canvas');
+      isWebGLSupported = !!(window.WebGLRenderingContext && (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
+    } catch (e) {
+      isWebGLSupported = false;
+    }
+    
+    if (!isWebGLSupported) {
+      console.warn("WebGL not supported, falling back to no-globe.");
+      return;
+    }
+
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const initW = container.clientWidth || window.innerWidth;
+      const initH = container.clientHeight || window.innerHeight;
+      renderer.setSize(initW, initH);
+      renderer.setClearColor(0x010114, 1);
+      container.appendChild(renderer.domElement);
+    } catch (e) {
+      console.warn("WebGL renderer failed to initialize. Displaying fallback.");
+      const fallbackMsg = document.createElement("div");
+      fallbackMsg.style.position = "absolute";
+      fallbackMsg.style.inset = "0";
+      fallbackMsg.style.display = "flex";
+      fallbackMsg.style.alignItems = "center";
+      fallbackMsg.style.justifyContent = "center";
+      fallbackMsg.style.color = "var(--text-muted)";
+      fallbackMsg.style.fontFamily = "var(--font-inter)";
+      fallbackMsg.style.fontSize = "0.75rem";
+      fallbackMsg.style.letterSpacing = "2px";
+      fallbackMsg.style.textTransform = "uppercase";
+      fallbackMsg.style.background = "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(204,102,0,0.05) 0%, transparent 100%)";
+      fallbackMsg.innerHTML = "<span style='color: var(--accent-orange)'>[WARN]</span> WEBGL_CONTEXT_FAILED // 3D_VISUALIZATION_OFFLINE";
+      container.appendChild(fallbackMsg);
+      return;
+    }
 
     // ── Scene & Camera ────────────────────────────────────────────────────────
     const scene  = new THREE.Scene();

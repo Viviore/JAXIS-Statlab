@@ -4,27 +4,37 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
+import { Lock, Scan, CheckSquare, ShieldCheck, LucideIcon } from "lucide-react";
+import { Card, CardHeader, CardContent } from "@/app/components/ui/card";
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
+
+
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 const FEATURES = [
   { 
+    icon: Lock,
     title: "The Methodology Lock", 
     desc: "A binding Scope of Work upfront. No revisions. No surprise fees. You get exactly what was agreed, down to the final decimal.",
     visual: "scan" 
   },
   { 
+    icon: Scan,
     title: "The Data Pre-Flight", 
     desc: "Our engine scans your dataset for missing values, outliers, and normality violations before any human touches it.",
     visual: "levene" 
   },
   { 
+    icon: CheckSquare,
     title: "The 2-Pass QA Gateway", 
     desc: "A Senior Methodologist audits reproducibility. Our team verifies SOW compliance and APA 7th formatting. Nothing ships without both.",
     visual: "model3" 
   },
   { 
+    icon: ShieldCheck,
     title: "The Anti-P-Hacking Guarantee", 
     desc: "We never force significance. You get the raw output alongside a plain-English narrative — fully reproducible, fully auditable.",
     visual: "model4" 
@@ -369,18 +379,16 @@ export default function CoreInfrastructure() {
       ref={sectionRef}
       style={{
         backgroundColor: "var(--bg-primary)",
-        backgroundImage: "linear-gradient(to bottom, rgba(0,0,8,0.5) 0%, rgba(0,0,8,0) 150px)",
         color: "var(--text-primary)",
         padding: "8rem 2rem 4rem 2rem",
         position: "relative",
         zIndex: 10,
         marginTop: "-100vh",
         borderTop: "1px solid rgba(255, 255, 255, 0.06)",
-        boxShadow: "0 -30px 80px rgba(0, 0, 0, 0.6)",
         overflow: "hidden"
       }}
     >
-      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 5 }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 5 }}>
         
         {/* Header Area */}
         <div className="infra-layout" style={{ marginBottom: "4rem" }}>
@@ -431,44 +439,35 @@ export default function CoreInfrastructure() {
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="infra-layout">
-          
-          {/* Left Tabs (Sticky Anchor Menu) */}
-          <div className="infra-sidebar" style={{ position: "static", gap: 0, padding: 0 }}>
-            {[1, 2].map((pillarNum) => (
-              <button
-                key={pillarNum}
-                onClick={() => {
-                  setActiveTab(pillarNum);
-                  document.getElementById(`pillar-${pillarNum}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                className={`infra-tab ${activeTab === pillarNum ? "active" : ""}`}
-              >
-                {pillarNum === 1 ? 'OUR INFRASTRUCTURE' : 'THE 4 PILLARS'}
-              </button>
-            ))}
-          </div>
-
-          {/* Right Grid (2-column layout) */}
-          <div className="infra-grid">
+        <div className="mx-auto infra-grid" style={{ marginTop: '2rem' }}>
             {FEATURES.map((card, idx) => (
-              <div 
-                key={idx} 
-                id={idx % 2 === 0 ? `pillar-${Math.floor(idx / 2) + 1}` : undefined}
-                className="infra-card pillar-card-observe"
-                data-pillar={Math.floor(idx / 2) + 1}
-              >
-                <div className="infra-card-header">
-                  <h3 className="infra-card-title">{card.title}</h3>
-                  <p className="infra-card-desc">{card.desc}</p>
+                <div key={idx} className="infra-card pillar-card-observe" data-pillar={Math.floor(idx / 2) + 1} id={idx % 2 === 0 ? `pillar-${Math.floor(idx / 2) + 1}` : undefined} style={{ position: 'relative' }}>
+                    
+                    {/* Corner Decorators */}
+                    <span style={{ position: 'absolute', left: '-1px', top: '-1px', width: '8px', height: '8px', borderLeft: '2px solid var(--accent-orange)', borderTop: '2px solid var(--accent-orange)', zIndex: 10 }}></span>
+                    <span style={{ position: 'absolute', right: '-1px', top: '-1px', width: '8px', height: '8px', borderRight: '2px solid var(--accent-orange)', borderTop: '2px solid var(--accent-orange)', zIndex: 10 }}></span>
+                    <span style={{ position: 'absolute', left: '-1px', bottom: '-1px', width: '8px', height: '8px', borderLeft: '2px solid var(--accent-orange)', borderBottom: '2px solid var(--accent-orange)', zIndex: 10 }}></span>
+                    <span style={{ position: 'absolute', right: '-1px', bottom: '-1px', width: '8px', height: '8px', borderRight: '2px solid var(--accent-orange)', borderBottom: '2px solid var(--accent-orange)', zIndex: 10 }}></span>
+
+                    <div className="infra-card-header">
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                            <card.icon style={{ width: '16px', height: '16px', color: 'var(--accent-orange)' }} />
+                            {card.title}
+                        </span>
+                        <p className="infra-card-desc" style={{ color: "var(--text-primary)", fontSize: "1.05rem" }}>{card.desc}</p>
+                    </div>
+                    
+                    <div className="infra-card-visual" style={{ position: 'relative' }}>
+                        {/* Accent Glow */}
+                        <div style={{ position: 'absolute', inset: '0', background: 'radial-gradient(50% 50% at 75% 50%, rgba(204,102,0,0.04), transparent 100%)', pointerEvents: 'none' }}></div>
+                        
+                        {/* Terminal Container */}
+                        <div style={{ zIndex: 2, position: 'relative', width: '100%', display: 'flex', flexDirection: 'column' }}>
+                            {renderVisual(card.visual)}
+                        </div>
+                    </div>
                 </div>
-                <div className="infra-card-visual">
-                  {renderVisual(card.visual)}
-                </div>
-              </div>
             ))}
-          </div>
-          
         </div>
       </div>
     </section>

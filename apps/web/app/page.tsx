@@ -13,13 +13,13 @@ export default function Home() {
     <div className="site-root">
       <Navbar />
       <main>
-        {/* ── GSAP Pin Trigger ── */}
+        {/* -- GSAP Pin Trigger -- */}
         <div className="hero-pin-trigger" style={{ position: "relative", width: "100%", height: "100dvh" }}>
           
-          {/* ── Animated Wrapper (Scales down at the end of the pin) ── */}
+          {/* -- Animated Wrapper (Scales down at the end of the pin) -- */}
           <div className="hero-intro-wrapper" style={{ position: "relative", width: "100%", height: "100dvh", backgroundColor: "var(--bg-primary)", overflow: "hidden", transformOrigin: "top center", willChange: "transform, filter, border-radius" }}>
             
-            {/* ── Shared Background Gradients & 3D Globe for Hero & Intro ── */}
+            {/* -- Shared Background Gradients & 3D Globe for Hero & Intro -- */}
             <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 1 }}>
               <ParticleGlobe />
               
