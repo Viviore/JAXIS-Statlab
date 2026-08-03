@@ -257,17 +257,24 @@ export default function FooterCTA() {
               alignItems: "center",
             }}
           >
-            <span
-              style={{
-                fontFamily: "var(--font-inter), sans-serif",
-                fontSize: "0.7rem",
-                letterSpacing: "0.08em",
-                color: "rgba(255,255,255,0.25)",
-                textTransform: "uppercase",
-              }}
-            >
-              JAXIS StatLab
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <img 
+                src="/jaxislogo.png" 
+                alt="JAXIS Logo" 
+                style={{ height: "18px", width: "auto", opacity: 0.5 }} 
+              />
+              <span
+                style={{
+                  fontFamily: "var(--font-inter), sans-serif",
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.08em",
+                  color: "rgba(255,255,255,0.25)",
+                  textTransform: "uppercase",
+                }}
+              >
+                JAXIS StatLab
+              </span>
+            </div>
             {["Privacy Policy", "Terms of Service", "Academic Integrity Policy", "Enterprise API"].map(
               (link) => (
                 <a

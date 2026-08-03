@@ -93,19 +93,10 @@ export default function Navbar() {
           }}
           aria-label="JAXIS StatLab Home"
         >
-          {/* Logo mark — angular accent */}
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "26px",
-              height: "26px",
-              background: "linear-gradient(135deg, #CC6600 0%, #FF8800 100%)",
-              clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)",
-              flexShrink: 0,
-            }}
-            aria-hidden="true"
+          <img 
+            src="/jaxislogo.png" 
+            alt="JAXIS Logo" 
+            style={{ height: "26px", width: "auto" }} 
           />
           <span
             style={{
