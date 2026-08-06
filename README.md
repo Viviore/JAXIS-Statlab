@@ -1,159 +1,44 @@
-# Turborepo starter
+# JAXIS StatLab
 
-This Turborepo starter is maintained by the Turborepo core team.
+## Overview
+JAXIS StatLab is a comprehensive, multi-role SaaS platform designed to manage end-to-end statistical workflows. It connects clients, statisticians, Quality Assurance (QA) leads, finance officers, administrators, and executive oversight into a single, cohesive, and secure system.
 
-## Using this example
+## The Flow (How It Works)
+The platform ensures quality and accountability by following a strict 9-stage operational workflow:
 
-Run the following command:
+1. **Intake (Triage):** Client research requests are evaluated and either approved or rejected.
+2. **Quotation:** Accurate pricing is generated based on the scope of work.
+3. **Payment:** Secure verification of upfront payments or downpayments.
+4. **Assignment:** Projects are intelligently routed to appropriate statisticians and Senior QA leads.
+5. **Analysis Workspace:** Statisticians process the data using specialized analytical notebooks.
+6. **QA Review:** Senior QA leads perform rigorous statistical audits and error classification. No project is released without approval.
+7. **Deliverables:** Final files are released to the client, strictly gated by final payment clearance.
+8. **Revisions:** Any requested scope changes or revisions are tracked and handled.
+9. **Archive & Payout:** Projects are archived, and revenue shares are automatically calculated and disbursed.
 
-```sh
-npx create-turbo@latest
-```
+## Recent Updates
+The public-facing Landing Page (`apps/web`) has been significantly upgraded for a premium, cinematic experience:
+- **Cinematic Animations:** Implemented GSAP scroll-triggered hero animations, pixel transitions, and dynamic statistical code snippets.
+- **Enhanced UI/UX Sections:** Added new modular UI card systems, a Research Sector Dashboard, Solutions, Pricing, FAQ, and FooterCTA components.
+- **Core Infrastructure Component:** Added a visual representation of our enterprise-grade architecture and robust data processing capabilities.
 
-## What's inside?
+## Monorepo Architecture
+This project uses Turborepo to manage multiple applications and packages:
+- `apps/web`: Public-facing Landing Page & Marketing Site (Next.js SSR/SSG).
+- `apps/app`: SaaS Application Workspace for all 7 internal and external Roles (Next.js App Router).
+- `packages/ui`: Shared Enterprise Design System Component Library (`@repo/ui`).
 
-This Turborepo includes the following packages/apps:
+## Getting Started
 
-### Apps and Packages
+To build and run all applications locally:
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+```bash
+# Install dependencies
+npm install
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-npm dlx turbo build
-npm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
+# Run the development servers
 npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- The Landing Page (`web`) will be available at [http://localhost:3000](http://localhost:3000)
+- The SaaS Workspace (`app`) will be available at [http://localhost:3001](http://localhost:3001)
