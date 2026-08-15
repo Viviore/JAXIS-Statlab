@@ -1,13 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-const SECTORS = [
-  { id: 'publications', name: "Peer-Reviewed Publications" },
-  { id: 'dissertations', name: "Dissertations & Theses" },
-  { id: 'grants', name: "Grant Proposals" },
-  { id: 'longitudinal', name: "Longitudinal Studies" },
-];
+import React from "react";
 
 const SECTOR_DATA: Record<string, {
   cve: Array<{ id: string; type: string; desc: string; status: string }>;
@@ -29,79 +22,59 @@ const SECTOR_DATA: Record<string, {
       { id: "JAX-2025-882", type: "Propensity Scoring", desc: "Observational cohort matching", status: "CLEARED" },
     ]
   },
-  dissertations: {
-    total: 108,
-    findings: { critical: 0, minor: 4 },
-    violations: [
-      { name: "! OUTLIER_INFLUENCE_HIGH", count: 3 },
-      { name: "! MULTICOLLINEARITY_VIF_10", count: 1 }
-    ],
-    cve: [
-      { id: "JAX-2025-102", type: "Linear Regression", desc: "Assumption check for student performance cohort", status: "CLEARED" },
-      { id: "JAX-2025-115", type: "Logistic Regression", desc: "Multicollinearity diagnosis in binary models", status: "CLEARED" },
-    ]
-  },
-  grants: {
-    total: 62,
-    findings: { critical: 1, minor: 3 },
-    violations: [
-      { name: "! POWER_UNDERPOWERED_TRIAL", count: 1 },
-      { name: "! COVARIATE_IMBALANCE", count: 3 }
-    ],
-    cve: [
-      { id: "JAX-2025-901", type: "Power Analysis", desc: "Sample size re-estimation for NIH application", status: "CLEARED" },
-      { id: "JAX-2025-920", type: "ANCOVA Model", desc: "Covariate adjustment for multi-center trials", status: "CLEARED" },
-    ]
-  },
-  longitudinal: {
-    total: 315,
-    findings: { critical: 3, minor: 18 },
-    violations: [
-      { name: "! AUTOCORRELATION_DETECTED", count: 3 },
-      { name: "! SPATIAL_LAG_DEPENDENCY", count: 18 }
-    ],
-    cve: [
-      { id: "JAX-2025-612", type: "GGE / GEE Models", desc: "Correlated clinical observations analysis", status: "CLEARED" },
-      { id: "JAX-2025-703", type: "Time Series", desc: "ARIMA residuals autocorrelation check", status: "CLEARED" },
-    ]
-  }
 };
 
 export default function Solutions() {
-  const [activeTab, setActiveTab] = useState('publications');
-  const currentData = (SECTOR_DATA[activeTab] || SECTOR_DATA.publications)!;
-
-  const handleTabClick = (tabId: string) => {
-    setActiveTab(tabId);
-  };
+  const currentData = SECTOR_DATA.publications!;
 
   return (
-    <section id="solutions" className="section-light" style={{ padding: "4rem 2rem 4rem 2rem", position: "relative" }}>
+    <section 
+      id="solutions" 
+      style={{ 
+        padding: "6rem 2rem 6rem 2rem", 
+        position: "relative",
+        backgroundColor: "var(--bg-primary)",
+        color: "var(--text-primary)",
+        borderTop: "1px solid var(--border-glass)"
+      }}
+    >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
         {/* Tabs */}
         <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
           
           {/* Centered Header */}
-          <div className="sol-fade-up scroll-fade-up" style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+            <span style={{ 
+              fontFamily: "var(--font-mono)", 
+              fontSize: "0.75rem", 
+              letterSpacing: "0.15em", 
+              color: "var(--accent-orange)", 
+              textTransform: "uppercase", 
+              display: "block", 
+              marginBottom: "1rem" 
+            }}>
+              PEER-REVIEWED STANDARDS
+            </span>
             <h2 style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
+              fontFamily: "var(--font-heading), sans-serif",
               fontSize: "clamp(2.5rem, 4vw, 4rem)",
               fontWeight: 300,
               letterSpacing: "-0.03em",
               lineHeight: 1.1,
               maxWidth: "900px",
-              margin: "0 auto"
+              margin: "0 auto",
+              color: "#FFFFFF"
             }}>
               Not just output.
               <br />
-              <span style={{ color: "var(--text-muted-light)" }}>Defensible output.</span>
+              <span style={{ color: "var(--text-secondary)" }}>Defensible output.</span>
             </h2>
             <p style={{
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: "0.9rem",
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: "0.95rem",
               lineHeight: 1.75,
-              color: "var(--text-muted-light)",
+              color: "var(--text-secondary)",
               maxWidth: "600px",
               margin: "1.5rem auto 0"
             }}>
@@ -111,51 +84,75 @@ export default function Solutions() {
           </div>
 
           {/* 2-Column Split */}
-          <div className="infra-layout" style={{ marginBottom: "3rem", alignItems: "flex-start" }}>
+          <div className="infra-layout" style={{ marginBottom: "4rem", alignItems: "flex-start" }}>
           {/* Left Col */}
-          <div className="infra-sidebar solutions-sidebar sol-fade-up scroll-fade-up" style={{ animationDelay: "0.15s" }}>
-            <p className="text-muted-light" style={{
-              fontFamily: "var(--font-inter), sans-serif",
+          <div className="infra-sidebar solutions-sidebar">
+            <p style={{
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: "0.95rem",
               lineHeight: 1.6,
+              color: "var(--text-secondary)",
               marginBottom: "2.5rem"
             }}>
               We work with undergraduates, graduate researchers, clinical teams, and enterprise institutions.
               The standard is always the same: every output must withstand panel scrutiny.
             </p>
             
-            <div role="tablist" aria-label="Research sectors" style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              {SECTORS.map((sec) => (
-                <button 
-                  key={sec.id}
-                  id={`tab-${sec.id}`}
-                  role="tab"
-                  aria-selected={activeTab === sec.id}
-                  aria-controls={`panel-${sec.id}`}
-                  className={`tab-light ${activeTab === sec.id ? 'active' : ''}`}
-                  onClick={() => handleTabClick(sec.id)}
-                >
-                  <span>{sec.name}</span>
-                  <span className="infra-tab-indicator"></span>
-                </button>
-              ))}
+            {/* Minimal Horizontal Metric Group */}
+            <div style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "2.5rem",
+              marginBottom: "2.5rem",
+              borderTop: "1px solid var(--border-glass)",
+              paddingTop: "1.5rem"
+            }}>
+              <div>
+                <div style={{
+                  fontSize: "clamp(1.75rem, 3vw, 2.25rem)",
+                  fontWeight: 300,
+                  letterSpacing: "-0.03em",
+                  color: "var(--accent-orange)",
+                  fontFamily: "var(--font-mono), monospace",
+                  lineHeight: 1
+                }}>100%</div>
+                <div style={{
+                  fontSize: "0.7rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginTop: "0.35rem",
+                  fontFamily: "var(--font-sans)"
+                }}>Defended Deliverables</div>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: "clamp(1.75rem, 3vw, 2.25rem)",
+                  fontWeight: 300,
+                  letterSpacing: "-0.03em",
+                  color: "var(--accent-orange)",
+                  fontFamily: "var(--font-mono), monospace",
+                  lineHeight: 1
+                }}>4-Eye</div>
+                <div style={{
+                  fontSize: "0.7rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginTop: "0.35rem",
+                  fontFamily: "var(--font-sans)"
+                }}>QA Review Standard</div>
+              </div>
             </div>
+            
+            <a href="#contact" className="hero-btn-primary" style={{ cursor: "pointer", display: "inline-flex" }}>
+              Get Started
+            </a>
           </div>
 
-          {/* Right Col */}
-          <div 
-            id={`panel-${activeTab}`}
-            role="tabpanel"
-            aria-labelledby={`tab-${activeTab}`}
-            className="sol-fade-up scroll-fade-up" 
-            style={{ flex: 1, width: "100%", minHeight: "400px", background: "var(--bg-primary)", position: "relative", overflow: "hidden", animationDelay: "0.3s" }}
-          >
-             {/* Technical visual overlay */}
-             <div className="tech-overlay" style={{ position: "absolute", inset: -150, opacity: 0.3, backgroundImage: "radial-gradient(circle at 70% 30%, var(--surface-secondary) 0%, transparent 60%)" }}></div>
-             
-             {/* Terminal Card */}
-             <div style={{ 
-               position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+          {/* Right Col / Interactive Display */}
+          <div className="infra-content solutions-interactive">
+             <div style={{
                background: "var(--surface-glass)",
                backdropFilter: "blur(12px)",
                border: "1px solid var(--border-glass)",
@@ -163,15 +160,15 @@ export default function Solutions() {
                width: "calc(100% - 2rem)",
                maxWidth: "540px"
              }}>
-               <div style={{ width: "100%", willChange: "opacity, transform, filter" }}>
+               <div style={{ width: "100%" }}>
                  <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "space-between", marginBottom: "2rem", alignItems: "flex-start" }}>
                    <div>
-                     <div style={{ color: "var(--text-primary)", fontSize: "0.9rem", fontFamily: "var(--font-montserrat)" }}>Validation complete</div>
-                     <div style={{ color: "rgba(255, 255, 255, 0.72)", fontSize: "0.75rem", marginTop: "0.25rem", maxWidth: "200px" }}>
+                     <div style={{ color: "var(--text-primary)", fontSize: "0.9rem", fontFamily: "var(--font-heading)" }}>Validation complete</div>
+                     <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem", marginTop: "0.25rem", maxWidth: "200px" }}>
                        {currentData.findings.critical} critical & {currentData.findings.minor} minor findings filtered.
                      </div>
                    </div>
-                   <div style={{ fontSize: "2.5rem", fontWeight: 300, color: "var(--text-primary)", lineHeight: 1 }}>
+                   <div style={{ fontSize: "2.5rem", fontWeight: 300, color: "var(--text-primary)", lineHeight: 1, fontFamily: "var(--font-mono)" }}>
                      {currentData.total}
                    </div>
                  </div>
@@ -182,7 +179,7 @@ export default function Solutions() {
                        display: "flex", 
                        justifyContent: "space-between", 
                        fontSize: "0.65rem", 
-                       fontFamily: "var(--font-inter), sans-serif", 
+                       fontFamily: "var(--font-mono), monospace", 
                        color: "#FF8080", 
                        marginBottom: idx === currentData.violations.length - 1 ? 0 : "0.5rem" 
                      }}>
@@ -197,30 +194,33 @@ export default function Solutions() {
           </div>
 
           {/* Data Table Section */}
-          <div className="sol-fade-up scroll-fade-up" style={{ marginBottom: "0", willChange: "opacity, transform, filter" }}>
+          <div style={{ marginBottom: "0" }}>
             <h2 style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
+              fontFamily: "var(--font-heading), sans-serif",
               fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
               fontWeight: 300,
               letterSpacing: "-0.02em",
-              marginBottom: "1.5rem"
+              marginBottom: "1.5rem",
+              color: "#FFFFFF"
             }}>
               Validated statistical outputs published in top-tier peer-reviewed journals.
             </h2>
             
-            <div style={{ width: "100%", borderTop: "1px solid var(--border-light)" }}>
+            <div style={{ width: "100%", borderTop: "1px solid var(--border-glass)" }}>
               {currentData.cve.map((row, idx) => (
                 <div key={idx} className="cve-table-row">
-                  <div style={{ fontFamily: "var(--font-inter), sans-serif", fontWeight: 600 }}>{row.id}</div>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontWeight: 600, color: "#FFFFFF" }}>{row.id}</div>
                   <div style={{ color: "var(--accent-orange)" }}>{row.type}</div>
-                  <div style={{ color: "var(--text-muted-light)" }}>{row.desc}</div>
+                  <div style={{ color: "var(--text-secondary)" }}>{row.desc}</div>
                   <div style={{ 
                     color: "var(--accent-orange)", 
                     background: "var(--accent-orange-tint)", 
+                    border: "1px solid var(--accent-orange-border)",
                     padding: "0.15rem 0.6rem", 
                     fontSize: "0.65rem", 
                     letterSpacing: "0.05em",
-                    textTransform: "uppercase"
+                    textTransform: "uppercase",
+                    fontFamily: "var(--font-mono), monospace"
                   }}>
                     {row.status}
                   </div>
@@ -230,10 +230,10 @@ export default function Solutions() {
           </div>
         </div>
         {/* 2x2 Bento Stat Grid */}
-        <div className="infra-grid" style={{ marginTop: "8rem" }}>
+        <div className="infra-grid" style={{ marginTop: "6rem" }}>
           {/* Box 1 (Highlighted) */}
           <div className="bento-box" style={{ 
-            background: "var(--accent-orange-light-tint)", 
+            background: "rgba(204, 102, 0, 0.05)", 
             border: "1px solid var(--accent-orange-border)",
             padding: "3rem 2rem",
             display: "flex",
@@ -241,61 +241,64 @@ export default function Solutions() {
             justifyContent: "space-between",
             minHeight: "220px"
           }}>
-            <div style={{ fontSize: "4rem", fontWeight: 300, color: "var(--accent-orange)", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            <div style={{ fontSize: "4rem", fontWeight: 300, color: "var(--accent-orange)", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em", fontFamily: "var(--font-mono)" }}>
               &lt; 48hr
             </div>
-            <div style={{ fontSize: "1rem", color: "var(--bg-primary)" }}>
+            <div style={{ fontSize: "1rem", color: "var(--text-primary)" }}>
               From raw dataset to panel-ready deliverable
             </div>
           </div>
           
           {/* Box 2 */}
           <div className="bento-box" style={{ 
-            background: "var(--bg-light-tint)", 
+            background: "var(--surface-glass)", 
+            border: "1px solid var(--border-glass)",
             padding: "3rem 2rem",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
             minHeight: "220px"
           }}>
-            <div style={{ fontSize: "4rem", fontWeight: 300, color: "var(--bg-primary)", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            <div style={{ fontSize: "4rem", fontWeight: 300, color: "#FFFFFF", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em", fontFamily: "var(--font-mono)" }}>
               98%
             </div>
-            <div style={{ fontSize: "1rem", color: "var(--text-muted-light)" }}>
+            <div style={{ fontSize: "1rem", color: "var(--text-secondary)" }}>
               Of JAXIS clients pass their panel defense on the first attempt
             </div>
           </div>
           
           {/* Box 3 */}
           <div className="bento-box" style={{ 
-            background: "var(--bg-light-tint)", 
+            background: "var(--surface-glass)", 
+            border: "1px solid var(--border-glass)",
             padding: "3rem 2rem",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
             minHeight: "220px"
           }}>
-            <div style={{ fontSize: "4rem", fontWeight: 300, color: "var(--bg-primary)", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            <div style={{ fontSize: "4rem", fontWeight: 300, color: "#FFFFFF", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em", fontFamily: "var(--font-mono)" }}>
               3x
             </div>
-            <div style={{ fontSize: "1rem", color: "var(--text-muted-light)" }}>
+            <div style={{ fontSize: "1rem", color: "var(--text-secondary)" }}>
               Fixed price packages — no hourly billing, ever
             </div>
           </div>
           
           {/* Box 4 */}
           <div className="bento-box" style={{ 
-            background: "var(--bg-light-tint)", 
+            background: "var(--surface-glass)", 
+            border: "1px solid var(--border-glass)",
             padding: "3rem 2rem",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
             minHeight: "220px"
           }}>
-            <div style={{ fontSize: "4rem", fontWeight: 300, color: "var(--bg-primary)", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            <div style={{ fontSize: "4rem", fontWeight: 300, color: "#FFFFFF", marginBottom: "1rem", lineHeight: 1, letterSpacing: "-0.04em", fontFamily: "var(--font-mono)" }}>
               100%
             </div>
-            <div style={{ fontSize: "1rem", color: "var(--text-muted-light)" }}>
+            <div style={{ fontSize: "1rem", color: "var(--text-secondary)" }}>
               Reproducibility rate — every result is auditable by your committee
             </div>
           </div>

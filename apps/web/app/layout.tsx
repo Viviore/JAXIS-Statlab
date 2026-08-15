@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import SmoothScroll from "./components/SmoothScroll";
+
+const disketMono = localFont({
+  src: "./fonts/Disket-Mono-Regular.ttf",
+  variable: "--font-disket",
+  display: "swap",
+});
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-});
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -26,16 +30,18 @@ export const metadata: Metadata = {
   },
 };
 
-import SmoothScroll from "./components/SmoothScroll";
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${inter.variable}`} style={{ backgroundColor: "#000814" }}>
-      <body className={montserrat.className} style={{ backgroundColor: "#000814" }}>
+    <html
+      lang="en"
+      className={`${disketMono.variable} ${inter.variable}`}
+      style={{ backgroundColor: "#010114" }}
+    >
+      <body className="font-sans antialiased" style={{ backgroundColor: "#010114" }}>
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

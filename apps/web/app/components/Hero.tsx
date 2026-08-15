@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { globeScrollState } from "./globeState";
+import ParticleGlobe from "./ParticleGlobe";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
-
-const ParticleGlobe = dynamic(() => import("./ParticleGlobe"), { ssr: false });
 
 // Stagger timing constants (ms)
 const SNIPPET_BASE_DELAY    = 1600;  // ms — snippets start after headline settles
@@ -66,12 +64,12 @@ const HEADLINE_LINES = [
   { text: "Research.",      delay: 1, accent: false },
 ];
 
-export default function Hero() {
-  const wrapperRef = useRef<HTMLElement>(null);
-  const introTextRef = useRef<HTMLHeadingElement>(null);
+const INTRO_TEXT = "JAXIS is statistical consulting for researchers and students. Every project gets analyzed by one statistician and double-checked by another before you receive it — so your results hold up when your adviser or panel questions them.";
+const INTRO_WORDS = INTRO_TEXT.split(" ");
 
-  const introText = "JAXIS is statistical consulting for researchers and students. Every project gets analyzed by one statistician and double-checked by another before you receive it — so your results hold up when your adviser or panel questions them.";
-  const introWords = useMemo(() => introText.split(" "), [introText]);
+export default function Hero() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLElement>(null);
 
   // Subtle parallax on mouse move — pointer-capable devices only
   useEffect(() => {
@@ -111,97 +109,69 @@ export default function Hero() {
   }, []);
 
   useGSAP(() => {
-    if (!wrapperRef.current || !introTextRef.current) return;
-
-    // Trigger on the outer wrapper that we want to pin
-    const triggerEl = document.querySelector(".hero-pin-trigger") || wrapperRef.current;
+    if (!containerRef.current) return;
 
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: triggerEl,
+        trigger: containerRef.current,
         start: "top top",
-        end: "+=250%", 
-        scrub: 1.2,
+        end: "+=160%", 
+        scrub: 1,
         pin: true,
-        anticipatePin: 1,
         invalidateOnRefresh: true,
       }
     });
 
-    // ── Phase 1: Text & Globe Transition (0% to 20%) ──
-    // Hero text fades out, snippets fade out
-    tl.to(".hero-main-content", { y: -50, opacity: 0, duration: 0.2, ease: "power2.inOut" }, 0);
-    tl.to(".hero-snippets-container", { y: -30, opacity: 0, duration: 0.2, ease: "power2.inOut" }, 0);
+    // ── Phase 1: Fade out initial headline & telemetry snippets (0% to 30%) ──
+    tl.to(".hero-main-content", { y: -45, opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0);
+    tl.to(".hero-snippets-container", { y: -25, opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0);
 
-    // ── Phase 1.5: Reveal Jaxis Intro text (20% to 40%) ──
-    const introWordElements = introTextRef.current.querySelectorAll(".reveal-word");
-    tl.fromTo(introWordElements,
-      { opacity: 0, y: 30, scale: 0.95, filter: "blur(12px)" },
-      { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", stagger: { amount: 0.2 }, duration: 0.2, ease: "power2.out" },
-      0.2
+    // ── Phase 1.5: 3D Globe Expansion & Rotation (0% to 80%) ──
+    tl.to(globeScrollState, {
+      yOffset: -3.0,
+      scale: 2.2,
+      offset: Math.PI * 1.6,
+      duration: 0.8, 
+      ease: "power2.inOut" 
+    }, 0.05); 
+
+    // ── Phase 2: Reveal JAXIS Message Statement Word-by-Word (25% to 85%) ──
+    const wordEls = containerRef.current.querySelectorAll(".hero-reveal-word");
+    tl.fromTo(wordEls,
+      { opacity: 0, y: 20, filter: "blur(4px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", stagger: { amount: 0.45 }, duration: 0.5, ease: "power2.out" },
+      0.25
     );
 
-    // ── Phase 1.5: Globe transforms ──
-    // The globe comes close to the camera while the Jaxis Intro text is revealed
-    tl.to(globeScrollState, {
-      yOffset: -4.5,
-      scale: 2.8,
-      offset: Math.PI * 2,
-      duration: 0.4, 
-      ease: "power2.inOut" 
-    }, 0.1); 
-
-    // ── Phase 2: Dwell Time (40% to 60%) ──
-    // No animations. The intro text remains readable on screen while scrolling.
-
-    // ── Phase 3: Stacking Card Transition (60% to 100%) ──
-    // CoreInfrastructure is pulled up by -100vh, so it enters the bottom of the screen exactly at 60% of this 250vh pin.
-    // The scale/dim must use linear easing ("none") to perfectly map to the physical scroll distance.
-    tl.to(".hero-intro-wrapper", {
-      scale: 0.92,
-      borderRadius: "40px",
-      filter: "brightness(0.25)",
-      duration: 0.4,
-      ease: "none" 
-    }, 0.6);
-
-    // ── Fix for Resize Animation Restart ──
-    // GSAP ScrollTrigger temporarily removes and re-adds the pinned element on resize to recalculate layout.
-    // This DOM detach/attach causes all CSS keyframe animations to restart from 0%.
-    // To prevent this, we lock in the final state of the CSS animations after they finish playing once.
-    // Timeout set to 5.0s to ensure the final floating annotation (which finishes at ~3.7s) is fully typed out.
-    gsap.delayedCall(5.0, () => {
-      document.querySelectorAll(".hero-line, .hero-caption").forEach(el => {
-        const e = el as HTMLElement;
-        e.style.opacity = "1";
-        e.style.transform = "none";
-        e.style.animation = "none";
-      });
-      document.querySelectorAll(".snippet-line").forEach(el => {
-        const e = el as HTMLElement;
-        e.style.maxWidth = "100%";
-        e.style.animation = "none";
-      });
-    });
-
-  }, { scope: wrapperRef, dependencies: [] });
+  }, { scope: containerRef, dependencies: [] });
 
   return (
-    <section
-      id="hero"
-      ref={wrapperRef}
-      style={{
-        position: "relative",
-        minHeight: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-        background: "transparent",
-      }}
-    >
-      {/* ── Three.js Globe is now in page.tsx ── */}
+    <div ref={containerRef} style={{ position: "relative", width: "100%", height: "100dvh", backgroundColor: "var(--bg-primary)", overflow: "hidden" }}>
+      {/* -- Shared Background Gradients & 3D Globe -- */}
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 1 }}>
+        <ParticleGlobe />
+        
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, background: "radial-gradient(ellipse 90% 60% at 50% 110%, rgba(1,22,57,0.80) 0%, rgba(0,4,20,0) 65%)" }} />
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(to bottom, rgba(0,0,8,0.55) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.5) 100%)" }} />
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 4, background: "radial-gradient(ellipse 62% 56% at 50% 50%, transparent 20%, rgba(0,8,20,0.38) 58%, rgba(0,8,20,0.90) 80%)" }} />
+      </div>
+      
+      <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <section
+          id="hero"
+          ref={wrapperRef}
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            background: "transparent",
+          }}
+        >
       {/* ── Floating statistical code annotations ── */}
         <div className="hero-snippets-container" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
         {CODE_SNIPPETS.map((snippet) => {
@@ -215,7 +185,7 @@ export default function Hero() {
             style={{
               position: "absolute",
               ...snippet.position,
-              fontFamily: "var(--font-inter), sans-serif",
+              fontFamily: "var(--font-mono), monospace",
               fontSize: "0.75rem",
               lineHeight: "1.9",
               color: "rgba(255,255,255,0.30)",
@@ -278,7 +248,7 @@ export default function Hero() {
         <h1
           id="hero-headline"
           style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
+            fontFamily: "var(--font-heading), sans-serif",
             fontSize: "clamp(2.6rem, 7vw, 5.5rem)",
             fontWeight: 300,
             lineHeight: 1.12,
@@ -308,7 +278,7 @@ export default function Hero() {
         <p
           className="hero-caption"
           style={{
-            fontFamily: "var(--font-inter), sans-serif",
+            fontFamily: "var(--font-sans), sans-serif",
             fontSize: "0.78rem",
             fontWeight: 400,
             color: "rgba(255,255,255,0.65)",
@@ -329,7 +299,7 @@ export default function Hero() {
             id="hero-cta"
             className="hero-caption hero-cta-btn"
             style={{
-              fontFamily: "var(--font-inter), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: "0.7rem",
               fontWeight: 600,
               letterSpacing: "0.12em",
@@ -359,45 +329,47 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* ── Jaxis Intro Text (Reveals on Scroll) ── */}
+      {/* ── JAXIS Message (Revealed on ScrollTrigger) ── */}
       <div 
+        className="hero-message-overlay"
         style={{ 
           position: "absolute", 
-          top: "35%",
+          top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: "100%",
-          maxWidth: "1100px", 
-          margin: "0 auto", 
+          maxWidth: "1050px", 
           textAlign: "center", 
           zIndex: 10, 
           padding: "0 2rem",
-          pointerEvents: "none" // Prevents interfering with clicks before it's visible
+          pointerEvents: "none"
         }}
       >
         <h2 
-          ref={introTextRef}
           style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "clamp(1.1rem, 3.5vw, 3.2rem)",
+            fontFamily: "var(--font-sans), sans-serif",
+            fontSize: "clamp(1.2rem, 3.2vw, 2.8rem)",
             fontWeight: 300,
-            lineHeight: 1.25,
+            lineHeight: 1.35,
             letterSpacing: "-0.02em",
             color: "#FFFFFF",
-            textShadow: "0 2px 24px rgba(0,0,0,0.55), 0 1px 6px rgba(0,0,0,0.4)",
+            textShadow: "0 2px 24px rgba(0,0,0,0.65), 0 1px 6px rgba(0,0,0,0.5)",
             margin: 0
           }}
         >
-          {introWords.map((word, i) => (
+          {INTRO_WORDS.map((word, i) => (
             <React.Fragment key={i}>
-              <span className="reveal-word" style={{ willChange: "opacity, transform", display: "inline-block" }}>
+              <span className="hero-reveal-word" style={{ willChange: "opacity, transform", display: "inline-block", opacity: 0 }}>
                 {word}
               </span>
-              {i < introWords.length - 1 && " "}
+              {i < INTRO_WORDS.length - 1 && " "}
             </React.Fragment>
           ))}
         </h2>
       </div>
-    </section>
+
+        </section>
+      </div>
+    </div>
   );
 }

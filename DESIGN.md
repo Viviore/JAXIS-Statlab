@@ -135,7 +135,29 @@ Shared components inside `packages/ui` must follow these styling tokens:
 
 ---
 
-## 7. Landing Page & Visual Presentation Paradigms
+## 7. Official Typography Rules & Type Scale
+
+The **JAXIS StatLab** interface enforces a clean, high-precision 2-tier typographic system paired with an 8-step proportional type scale:
+
+### A. Font Families & Roles
+- **Primary Font (`--font-primary` / `--font-sans` / `--font-heading`):** **sans-serif (Inter / System)** — Clean, high-legibility sans-serif used across all major headlines, section titles, card headers, navigation links, editorial body copy, captions, and interactive CTAs.
+- **Secondary Font (`--font-secondary` / `--font-mono`):** **Disket Mono Regular** — Grid-based geometric monospace font used for statistical calculations, forensic data tags, package codes (`JX-01`), timestamps, metric counters, diagnostic stamps, and technical data annotations.
+
+### B. Exact Type Scale Hierarchy
+| Scale Token | Size (rem) | Size (px) | Line Height | Application |
+| :--- | :--- | :--- | :--- | :--- |
+| `xs` | `0.563rem` | ~9px | `1.4` | Micro-badges, timestamps, forensic tags |
+| `sm` | `0.75rem` | 12px | `1.4` | Secondary metadata, captions, kicker labels |
+| `base` | `1.000rem` | 16px | `1.5` | Standard body copy, navigation links, feed text |
+| `lg` | `1.188rem` | 19px | `1.4` | Subheadings, card titles, featured descriptions |
+| `xl` | `1.625rem` | 26px | `1.3` | Section headings, panel headers, medium callouts |
+| `2xl` | `2.000rem` | 32px | `1.25` | Major titles, module headers, modal titles |
+| `3xl` | `2.625rem` | 42px | `1.2` | Hero headers, level clear banners, big score displays |
+| `4xl` | `3.25rem` | 52px | `1.15` | Giant display titles, victory screen numbers |
+
+---
+
+## 8. Landing Page & Visual Presentation Paradigms
 
 The public-facing marketing and landing pages (like the Hero section) employ a specialized cinematic aesthetic designed to project enterprise scale and scientific rigor. All new landing page sections must adhere to these exact paradigms:
 
@@ -145,9 +167,9 @@ The public-facing marketing and landing pages (like the Hero section) employ a s
 - Visuals should live *behind* or frame the typography, heavily masked by radial gradients (`bg-radial-glow`) and vignettes to preserve pure readability.
 
 ### B. Typography Scale & Framing
-- **Primary Headlines:** Must be massive, lightweight, and tightly tracked. Use `font-weight: 300`, `letter-spacing: -0.02em`, and fluid `clamp()` sizing (e.g., `clamp(2.6rem, 7vw, 5.5rem)`).
-- **Secondary Accents:** Frame large typography with small "technical data" annotations (Inter, `0.75rem`, highly transparent) positioned at the absolute edges of the container to create structural texture. Avoid using generic monospaced fonts.
-- **Microcopy:** Body text max-width should rarely exceed `400px` for captions, keeping line lengths editorial and short.
+- **Primary Headlines:** Must be massive, lightweight, and tightly tracked in clean **sans-serif** (`--font-primary` / `--font-sans`). Use `letter-spacing: -0.02em` and fluid `clamp()` sizing (e.g., `clamp(2.6rem, 7vw, 5.5rem)`).
+- **Secondary Accents:** Frame large typography with small technical data annotations in **Disket Mono Regular** (`--font-secondary` / `--font-mono`, `0.75rem`, highly transparent) positioned at the absolute edges of the container to create structural texture.
+- **Microcopy:** Body text max-width should rarely exceed `400px` for captions in clean **sans-serif** (`--font-primary` / `--font-sans`), keeping line lengths editorial and short.
 
 ### C. Motion & Animation Standards
 - **Easing:** Standardize all CSS reveals on a cinematic ease-out curve: `cubic-bezier(0.22, 1, 0.36, 1)` with durations between `1.0s` and `1.3s`.
@@ -159,4 +181,4 @@ The public-facing marketing and landing pages (like the Hero section) employ a s
 - **Sharp Brutalism:** Avoid soft, generic SaaS styling. No heavy drop shadows. Use strict `0px` or `2px` maximum border radii for hard, technical edges that feel like command terminals or data dashboards.
 - **Hover Reveals:** Use "invisible" layouts where grids, tabs, and layout sections rely on `transparent` borders/backgrounds that only reveal themselves on hover (e.g., `border: 1px solid var(--border-glass-hover)`). This creates a responsive, highly interactive terminal-like feel without visual clutter.
 - **Flush Grids:** Continuous vertical or horizontal elements (like feature grids) should snap flush (`gap: 0` on specific axes) to form tight, continuous data bands rather than floating distinct islands.
-- **Typewriter/Console Text:** Use strict standard sans-serif body fonts (like `Inter`) with wide tracking for accents and section kickers to reinforce a highly readable, uniform SaaS interface rather than a raw developer terminal feel. Do NOT use standard monospace fonts. Always orchestrate typewriter effects carefully to prevent layout shifts (e.g. lock container `max-width` and `overflow: hidden`).
+- **Console Text:** Use Disket Mono for technical data badges and status stamps with wide tracking to reinforce a highly readable, uniform scientific lab feel. Always orchestrate typewriter effects carefully to prevent layout shifts (e.g. lock container `max-width` and `overflow: hidden`).

@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
-
-import { Lock, Scan, CheckSquare, ShieldCheck, LucideIcon } from "lucide-react";
-import { Card, CardHeader, CardContent } from "@/app/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
-
+import { Lock, Scan, CheckSquare, ShieldCheck } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -42,27 +37,11 @@ const FEATURES = [
 ];
 
 export default function CoreInfrastructure() {
-  const [activeTab, setActiveTab] = useState(1);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-
-    // Intersection Observer for scroll-spy highlighting
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const pillarNum = Number(entry.target.getAttribute("data-pillar"));
-          if (pillarNum) setActiveTab(pillarNum);
-        }
-      });
-    }, { rootMargin: "-40% 0px -40% 0px" });
-
-    const cards = document.querySelectorAll('.pillar-card-observe');
-    cards.forEach(card => observer.observe(card));
-
     // GSAP context for grid entrance and terminal lines
     const ctx = gsap.context(() => {
-      
       // 1. Typewriter Animation (Native GSAP)
       gsap.set(".infra-typewriter-anim", { opacity: 1 });
       gsap.fromTo(".tw-line", 
@@ -101,7 +80,6 @@ export default function CoreInfrastructure() {
 
       // 3. Find all cards
       const cards = gsap.utils.toArray<HTMLElement>('.infra-card');
-      
       if (cards.length > 0) {
         // Stagger cards in (Material Entrance)
         gsap.fromTo(cards, 
@@ -131,7 +109,7 @@ export default function CoreInfrastructure() {
                 opacity: 1,
                 duration: 0.05,
                 stagger: 0.15,
-                ease: "none", // Stepped effect
+                ease: "none",
                 scrollTrigger: {
                   trigger: card,
                   start: "top 90%",
@@ -144,7 +122,6 @@ export default function CoreInfrastructure() {
     }, sectionRef);
 
     return () => {
-      observer.disconnect();
       ctx.revert();
     };
   }, []);
@@ -380,11 +357,10 @@ export default function CoreInfrastructure() {
       style={{
         backgroundColor: "var(--bg-primary)",
         color: "var(--text-primary)",
-        padding: "8rem 2rem 4rem 2rem",
+        padding: "6rem 2rem 4rem 2rem",
         position: "relative",
         zIndex: 10,
-        marginTop: "-100vh",
-        borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+        borderTop: "1px solid var(--border-glass)",
         overflow: "hidden"
       }}
     >
@@ -395,7 +371,7 @@ export default function CoreInfrastructure() {
           {/* Aligned with sidebar */}
           <div className="infra-sidebar" style={{ position: "static", gap: 0, padding: 0 }}>
             <div className="infra-typewriter-anim" style={{ 
-              fontFamily: "var(--font-inter), sans-serif", 
+              fontFamily: "var(--font-mono), monospace", 
               fontSize: "0.7rem", 
               letterSpacing: "0.08em", 
               color: "var(--text-muted)",
@@ -413,7 +389,7 @@ export default function CoreInfrastructure() {
           {/* Aligned with grid */}
           <div style={{ flex: 1 }}>
               <h2 className="scroll-fade-up" style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
+              fontFamily: "var(--font-heading), sans-serif",
               fontSize: "clamp(1.75rem, 3vw, 2.75rem)",
               fontWeight: 300,
               letterSpacing: "-0.02em",
@@ -425,7 +401,7 @@ export default function CoreInfrastructure() {
               <span style={{ color: "var(--text-secondary)" }}>to prove it.</span>
             </h2>
             <p className="scroll-fade-up" style={{
-              fontFamily: "var(--font-inter), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: "0.9rem",
               lineHeight: 1.75,
               color: "var(--text-secondary)",

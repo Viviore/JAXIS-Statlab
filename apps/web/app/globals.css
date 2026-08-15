@@ -1,3 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+@font-face {
+  font-family: 'Disket Mono';
+  src: url('/fonts/Disket-Mono-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Corporate Midnight Design System Tokens */
   --bg-primary: #010114;
@@ -27,6 +37,24 @@
   --accent-orange-tint: rgba(204, 102, 0, 0.1);
   --accent-orange-light-tint: rgba(204, 102, 0, 0.05);
   --accent-orange-border: rgba(204, 102, 0, 0.15);
+
+  /* Typography System: Primary = sans-serif (Inter), Secondary = Disket Mono */
+  --font-sans: 'Inter', var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Disket Mono', var(--font-disket), 'Courier New', monospace;
+  --font-heading: var(--font-sans);
+  --font-primary: var(--font-sans);
+  --font-secondary: var(--font-mono);
+  --font-montserrat: var(--font-sans); /* Backward-compatibility alias */
+
+  /* Exact Type Scale Tokens */
+  --text-xs: 0.563rem;   /* ~9px */
+  --text-sm: 0.75rem;    /* 12px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.188rem;   /* 19px */
+  --text-xl: 1.625rem;   /* 26px */
+  --text-2xl: 2rem;      /* 32px */
+  --text-3xl: 2.625rem;  /* 42px */
+  --text-4xl: 3.25rem;   /* 52px */
 }
 
 * {
@@ -43,10 +71,38 @@
 
 html, body {
   color-scheme: dark;
-  font-family: var(--font-montserrat), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
   width: 100%;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+p, span, a, button, input, textarea, select, label {
+  font-family: var(--font-sans);
+}
+
+code, kbd, samp, pre, .font-mono, .metric-mono, .counter-mono, .badge-mono {
+  font-family: var(--font-mono);
+}
+
+/* Typography Utility Classes */
+.text-xs { font-size: var(--text-xs); line-height: 1.4; }
+.text-sm { font-size: var(--text-sm); line-height: 1.4; }
+.text-base { font-size: var(--text-base); line-height: 1.5; }
+.text-lg { font-size: var(--text-lg); line-height: 1.4; }
+.text-xl { font-size: var(--text-xl); line-height: 1.3; }
+.text-2xl { font-size: var(--text-2xl); line-height: 1.25; }
+.text-3xl { font-size: var(--text-3xl); line-height: 1.2; }
+.text-4xl { font-size: var(--text-4xl); line-height: 1.15; }
+
+.font-heading { font-family: var(--font-heading) !important; }
+.font-sans { font-family: var(--font-sans) !important; }
+.font-mono { font-family: var(--font-mono) !important; }
 
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
@@ -810,28 +866,29 @@ body {
   gap: 1rem;
   padding: 1.25rem 1rem;
   margin: 0 -1rem;
-  border-bottom: 1px solid var(--border-light);
-  font-family: var(--font-inter), sans-serif;
+  border-bottom: 1px solid var(--border-glass);
+  font-family: var(--font-sans), sans-serif;
   font-size: 0.85rem;
-  color: var(--bg-primary);
+  color: var(--text-primary);
   align-items: center;
   transition: all 0.2s ease;
   border-radius: 2px;
 }
 
 .cve-table-row:hover {
-  background: rgba(1, 1, 20, 0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* Bento Box (Solutions Section) */
 .bento-box {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid var(--border-light) !important;
+  border-radius: 2px;
 }
 
 .bento-box:hover {
-  background: rgba(1, 1, 20, 0.04) !important;
-  border-color: rgba(1, 1, 20, 0.25) !important;
+  background: rgba(1, 46, 87, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
@@ -839,9 +896,9 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     padding: 1.25rem;
-    border: 1px solid var(--border-light-muted);
+    border: 1px solid var(--border-glass);
     margin-bottom: 0.75rem;
-    background: var(--bg-light-card);
+    background: var(--surface-glass);
   }
   .cve-table-row > div:nth-child(3) {
     grid-column: span 2;
@@ -1014,7 +1071,7 @@ body {
   position: absolute;
   top: 12px;
   right: 14px;
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 3rem;
   font-weight: 700;
   line-height: 1;
@@ -1048,7 +1105,7 @@ body {
 
 /* Card Header elements */
 .pricing-card-tag {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.55rem;
   color: var(--accent-orange);
   font-weight: 700;
@@ -1058,7 +1115,7 @@ body {
 }
 
 .pricing-card-catalog {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.6rem;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -1068,7 +1125,7 @@ body {
 }
 
 .pricing-card-name {
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: var(--font-heading), sans-serif;
   font-size: 1.15rem;
   font-weight: 700;
   color: #FFFFFF;
@@ -1077,6 +1134,7 @@ body {
 }
 
 .pricing-card-desc {
+  font-family: var(--font-sans), sans-serif;
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 0.5rem;
@@ -1092,7 +1150,7 @@ body {
 }
 
 .pricing-card-price {
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: var(--font-heading), sans-serif;
   font-size: 1.75rem;
   font-weight: 300;
   color: #FFFFFF;
@@ -1106,7 +1164,7 @@ body {
 }
 
 .pricing-card-price-suffix {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.6rem;
   color: var(--accent-orange);
   text-transform: uppercase;
@@ -1130,7 +1188,7 @@ body {
 }
 
 .pricing-card-list-item {
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.5;
@@ -1141,7 +1199,7 @@ body {
 }
 
 .pricing-card-bullet {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.7rem;
   color: var(--accent-orange);
   font-weight: 700;
@@ -1155,7 +1213,7 @@ body {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-glass);
   color: #FFFFFF;
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: var(--font-heading), sans-serif;
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1212,7 +1270,7 @@ body {
 }
 
 .offerings-header h3 {
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: var(--font-heading), sans-serif;
   font-size: 1.75rem;
   font-weight: 300;
   letter-spacing: -0.01em;
@@ -1220,6 +1278,7 @@ body {
 }
 
 .offerings-header p {
+  font-family: var(--font-sans), sans-serif;
   color: var(--text-secondary);
   font-size: 0.85rem;
 }
@@ -1306,7 +1365,7 @@ body {
 }
 
 .offering-info h4 {
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: var(--font-heading), sans-serif;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -1315,13 +1374,14 @@ body {
 }
 
 .offering-info p {
+  font-family: var(--font-sans), sans-serif;
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 0.25rem;
 }
 
 .offering-price {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent-orange);
@@ -1331,7 +1391,7 @@ body {
 .pricing-sys-status {
   text-align: center;
   margin-top: 4rem;
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.6rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;

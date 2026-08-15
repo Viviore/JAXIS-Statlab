@@ -104,7 +104,7 @@ export default function ParticleGlobe() {
     try {
       const testCanvas = document.createElement('canvas');
       isWebGLSupported = !!(window.WebGLRenderingContext && (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
-    } catch (e) {
+    } catch {
       isWebGLSupported = false;
     }
     
@@ -123,7 +123,7 @@ export default function ParticleGlobe() {
       renderer.setSize(initW, initH);
       renderer.setClearColor(0x010114, 1);
       container.appendChild(renderer.domElement);
-    } catch (e) {
+    } catch {
       console.warn("WebGL renderer failed to initialize. Displaying fallback.");
       const fallbackMsg = document.createElement("div");
       fallbackMsg.style.position = "absolute";
@@ -132,7 +132,7 @@ export default function ParticleGlobe() {
       fallbackMsg.style.alignItems = "center";
       fallbackMsg.style.justifyContent = "center";
       fallbackMsg.style.color = "var(--text-muted)";
-      fallbackMsg.style.fontFamily = "var(--font-inter)";
+      fallbackMsg.style.fontFamily = "var(--font-mono)";
       fallbackMsg.style.fontSize = "0.75rem";
       fallbackMsg.style.letterSpacing = "2px";
       fallbackMsg.style.textTransform = "uppercase";

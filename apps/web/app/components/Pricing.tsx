@@ -205,9 +205,6 @@ export default function Pricing() {
     return () => ctx.revert();
   }, []);
 
-  const featuredPkg = PACKAGES.find(p => p.highlighted)!;
-  const regularPkgs = PACKAGES.filter(p => !p.highlighted);
-
   return (
     <section id="pricing" className="pricing-section" ref={sectionRef}>
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 2rem" }}>

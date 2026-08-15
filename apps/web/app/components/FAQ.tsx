@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { useState } from "react";
 
 const FAQ_DATA = [
   {
@@ -47,7 +45,7 @@ export default function FAQ() {
         <div style={{ marginBottom: "4rem", textAlign: "center" }}>
           <span
             style={{
-              fontFamily: "var(--font-inter), sans-serif",
+              fontFamily: "var(--font-mono), monospace",
               fontSize: "0.65rem",
               letterSpacing: "0.14em",
               textTransform: "uppercase",
@@ -60,7 +58,7 @@ export default function FAQ() {
           </span>
           <h2
             style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
+              fontFamily: "var(--font-heading), sans-serif",
               fontSize: "clamp(2rem, 4vw, 3rem)",
               fontWeight: 300,
               letterSpacing: "-0.02em",
@@ -99,7 +97,7 @@ export default function FAQ() {
                     color: "white",
                     cursor: "pointer",
                     textAlign: "left",
-                    fontFamily: "var(--font-inter), sans-serif",
+                    fontFamily: "var(--font-heading), sans-serif",
                     fontSize: "1.05rem",
                     fontWeight: 500,
                     letterSpacing: "-0.01em",
@@ -132,7 +130,7 @@ export default function FAQ() {
                       style={{
                         padding: "0 1.5rem 1.5rem",
                         margin: 0,
-                        fontFamily: "var(--font-inter), sans-serif",
+                        fontFamily: "var(--font-sans), sans-serif",
                         fontSize: "0.9rem",
                         lineHeight: 1.7,
                         color: "rgba(255,255,255,0.6)",

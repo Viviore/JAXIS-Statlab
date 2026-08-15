@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { Hero as FooterBackground } from "./ui/tailwind-css-background-snippet";
+
 export default function FooterCTA() {
   return (
     <>
@@ -26,7 +28,7 @@ export default function FooterCTA() {
             <div>
               <span
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
+                  fontFamily: "var(--font-mono), monospace",
                   fontSize: "0.65rem",
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
@@ -39,7 +41,7 @@ export default function FooterCTA() {
               </span>
               <h3
                 style={{
-                  fontFamily: "var(--font-montserrat), sans-serif",
+                  fontFamily: "var(--font-heading), sans-serif",
                   fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
                   fontWeight: 300,
                   letterSpacing: "-0.02em",
@@ -51,7 +53,7 @@ export default function FooterCTA() {
               </h3>
               <p
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: "0.875rem",
                   lineHeight: 1.75,
                   color: "rgba(255,255,255,0.55)",
@@ -68,7 +70,7 @@ export default function FooterCTA() {
               <a
                 href="#contact"
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: "0.7rem",
                   fontWeight: 600,
                   letterSpacing: "0.12em",
@@ -98,7 +100,7 @@ export default function FooterCTA() {
             <div>
               <span
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
+                  fontFamily: "var(--font-mono), monospace",
                   fontSize: "0.65rem",
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
@@ -111,7 +113,7 @@ export default function FooterCTA() {
               </span>
               <h3
                 style={{
-                  fontFamily: "var(--font-montserrat), sans-serif",
+                  fontFamily: "var(--font-heading), sans-serif",
                   fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
                   fontWeight: 300,
                   letterSpacing: "-0.02em",
@@ -145,7 +147,7 @@ export default function FooterCTA() {
                   >
                     <div
                       style={{
-                        fontFamily: "var(--font-inter), sans-serif",
+                        fontFamily: "var(--font-sans), sans-serif",
                         fontSize: "0.8rem",
                         fontWeight: 600,
                         letterSpacing: "0.04em",
@@ -157,7 +159,7 @@ export default function FooterCTA() {
                     </div>
                     <div
                       style={{
-                        fontFamily: "var(--font-inter), sans-serif",
+                        fontFamily: "var(--font-sans), sans-serif",
                         fontSize: "0.825rem",
                         lineHeight: 1.65,
                         color: "rgba(255,255,255,0.5)",
@@ -191,7 +193,7 @@ export default function FooterCTA() {
         <div style={{ maxWidth: "800px", margin: "0 auto", position: "relative", zIndex: 1 }}>
           <h2
             style={{
-              fontFamily: "var(--font-montserrat), sans-serif",
+              fontFamily: "var(--font-heading), sans-serif",
               fontSize: "clamp(2rem, 5vw, 4rem)",
               fontWeight: 300,
               letterSpacing: "-0.03em",
@@ -204,7 +206,7 @@ export default function FooterCTA() {
           </h2>
           <p
             style={{
-              fontFamily: "var(--font-inter), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: "0.9rem",
               lineHeight: 1.75,
               color: "rgba(255,255,255,0.5)",
@@ -258,14 +260,16 @@ export default function FooterCTA() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <img 
+              <Image 
                 src="/jaxislogo.png" 
                 alt="JAXIS Logo" 
+                width={18}
+                height={18}
                 style={{ height: "18px", width: "auto", opacity: 0.5 }} 
               />
               <span
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
+                  fontFamily: "var(--font-heading), sans-serif",
                   fontSize: "0.7rem",
                   letterSpacing: "0.08em",
                   color: "rgba(255,255,255,0.25)",
