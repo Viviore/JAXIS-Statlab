@@ -36,7 +36,7 @@ const FEATURES = [
   },
 ];
 
-export default function CoreInfrastructure() {
+export default function Approach() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {

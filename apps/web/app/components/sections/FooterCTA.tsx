@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Hero as FooterBackground } from "./ui/tailwind-css-background-snippet";
+import { Hero as FooterBackground } from "../ui/tailwind-css-background-snippet";
 
 export default function FooterCTA() {
   return (

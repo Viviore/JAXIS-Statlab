@@ -4,8 +4,8 @@ import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { globeScrollState } from "./globeState";
-import ParticleGlobe from "./ParticleGlobe";
+import { globeScrollState } from "@/lib/globeState";
+import ParticleGlobe from "../ui/ParticleGlobe";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, useGSAP);

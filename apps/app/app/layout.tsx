@@ -18,6 +18,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "JAXIS StatLab Workspace",
   description: "Interactive statistical analysis tool, dataset workspace, and data modeling dashboard.",
+  icons: {
+    icon: "/jaxislogo.png",
+    shortcut: "/jaxislogo.png",
+    apple: "/jaxislogo.png",
+  },
 };
 
 export default function RootLayout({

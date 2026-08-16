@@ -1,10 +1,10 @@
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import CoreInfrastructure from "./components/CoreInfrastructure";
-import Solutions from "./components/Solutions";
-import Pricing from "./components/Pricing";
-import FAQ from "./components/FAQ";
-import FooterCTA from "./components/FooterCTA";
+import Navbar from "./components/layout/Navbar";
+import Hero from "./components/sections/Hero";
+import Approach from "./components/sections/Approach";
+import Solutions from "./components/sections/Solutions";
+import Pricing from "./components/sections/Pricing";
+import FAQ from "./components/sections/FAQ";
+import FooterCTA from "./components/sections/FooterCTA";
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <CoreInfrastructure />
+        <Approach />
         <Solutions />
         <Pricing />
         <FAQ />

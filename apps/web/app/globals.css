@@ -1,13 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-
-@font-face {
-  font-family: 'Disket Mono';
-  src: url('/fonts/Disket-Mono-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   /* Corporate Midnight Design System Tokens */
   --bg-primary: #010114;
@@ -118,19 +108,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
+/* Custom Scrollbar — Corporate Midnight Aesthetic */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #012E57 #010114;
 }
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
 ::-webkit-scrollbar-track {
   background: #010114;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #012E57;
-  border-radius: 0;
+  background-color: #012E57;
+  border-radius: 4px;
+  border: 2px solid #010114; /* Inset padding effect */
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #CC6600;
+  background-color: #CC6600;
+  box-shadow: 0 0 8px rgba(204, 102, 0, 0.45);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #E67300;
 }
 
 /* Glassmorphism Panels */

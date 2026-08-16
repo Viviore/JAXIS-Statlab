@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import SmoothScroll from "./components/SmoothScroll";
+import SmoothScroll from "./components/layout/SmoothScroll";
 
 const disketMono = localFont({
   src: "./fonts/Disket-Mono-Regular.ttf",
@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   title: "JAXIS StatLab — Enterprise Statistical Infrastructure & Intelligence Platform",
   description: "Mission-critical workflow platform connecting clients, statisticians, QA leads, and finance teams from intake to payout with strict compliance gates.",
   keywords: ["statistical analysis", "data intelligence", "research QA", "statistical modeling", "enterprise SaaS"],
+  icons: {
+    icon: "/jaxislogo.png",
+    shortcut: "/jaxislogo.png",
+    apple: "/jaxislogo.png",
+  },
   openGraph: {
     title: "JAXIS StatLab — Enterprise Statistical Infrastructure",
     description: "High-performance statistical workflow platform built for enterprise research and clinical compliance.",

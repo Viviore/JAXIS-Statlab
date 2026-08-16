@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
-import { globeScrollState } from "./globeState";
+import { globeScrollState } from "@/lib/globeState";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);

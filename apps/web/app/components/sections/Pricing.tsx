@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
-import PixelCard from "./PixelCard";
+import PixelCard from "../ui/PixelCard";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
