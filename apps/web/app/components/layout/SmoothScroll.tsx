@@ -11,14 +11,16 @@ export default function SmoothScroll({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    // Initialize Lenis
+    // Initialize Lenis with optimized physics for silky ScrollTrigger pinning
     const lenis = new Lenis({
-      lerp: 0.03, // Lower lerp means floatier, smoother momentum
+      lerp: 0.08, // Buttery smooth response without pinning drag lag
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 2,
+      touchMultiplier: 1.5,
     });
 
     // Synchronize Lenis with GSAP ScrollTrigger

@@ -62,7 +62,7 @@
 html, body {
   color-scheme: dark;
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow-x: clip;
   width: 100%;
 }
 
@@ -101,7 +101,7 @@ code, kbd, samp, pre, .font-mono, .metric-mono, .counter-mono, .badge-mono {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -867,48 +867,22 @@ body {
 }
 
 /* Responsive CVE Table Row */
-/* ─── Solutions Section (Editorial White Theme) ─── */
-.solutions-section {
-  background-color: #FFFFFF;
-  color: #010114;
+/* ─── Stacked Card Scroll-Pinning Styles (Section 03) ─── */
+.stacked-card-wrapper {
+  transition: transform 0.2s ease;
 }
 
-.solutions-section .cve-table-row {
-  display: grid;
-  grid-template-columns: 1.2fr 1.5fr 2.5fr auto;
-  gap: 1rem;
-  padding: 1.25rem 1rem;
-  margin: 0 -1rem;
-  border-bottom: 1px solid rgba(1, 1, 20, 0.08);
-  font-family: var(--font-sans), sans-serif;
-  font-size: 0.85rem;
-  color: #010114;
-  align-items: center;
-  transition: all 0.2s ease;
-  border-radius: 2px;
+.feature-card-hover:hover {
+  background: rgba(1, 46, 87, 0.45) !important;
+  border-color: rgba(204, 102, 0, 0.4) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.4);
 }
 
-.solutions-section .cve-table-row:hover {
-  background: rgba(1, 1, 20, 0.03);
-}
-
-.solutions-section .bento-box {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 4px;
-}
-
-.solutions-section .bento-box:hover {
-  background: #F1F5F9 !important;
-  border-color: rgba(1, 1, 20, 0.2) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(1, 1, 20, 0.08);
-}
-
-.solutions-section .bento-box-featured:hover {
-  background: rgba(204, 102, 0, 0.09) !important;
-  border-color: rgba(204, 102, 0, 0.45) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(204, 102, 0, 0.15);
+@media (max-width: 768px) {
+  .stacked-card-inner {
+    padding: 1.5rem !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1486,4 +1460,24 @@ body {
   opacity: 1;
   transform: translateX(-50%) translateY(-4px);
 }
+
+/* ─── Solutions Section 03 Stacked Cards ─── */
+.feature-card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
+}
+
+.feature-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(1, 46, 87, 0.45);
+}
+
+@media (max-width: 768px) {
+  .stacked-card-wrapper {
+    top: 150px !important;
+    padding: 1.25rem !important;
+    margin-bottom: 8vh !important;
+  }
+}
+
 
