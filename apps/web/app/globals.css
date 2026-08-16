@@ -867,50 +867,63 @@ body {
 }
 
 /* Responsive CVE Table Row */
-.cve-table-row {
+/* ─── Solutions Section (Editorial White Theme) ─── */
+.solutions-section {
+  background-color: #FFFFFF;
+  color: #010114;
+}
+
+.solutions-section .cve-table-row {
   display: grid;
   grid-template-columns: 1.2fr 1.5fr 2.5fr auto;
   gap: 1rem;
   padding: 1.25rem 1rem;
   margin: 0 -1rem;
-  border-bottom: 1px solid var(--border-glass);
+  border-bottom: 1px solid rgba(1, 1, 20, 0.08);
   font-family: var(--font-sans), sans-serif;
   font-size: 0.85rem;
-  color: var(--text-primary);
+  color: #010114;
   align-items: center;
   transition: all 0.2s ease;
   border-radius: 2px;
 }
 
-.cve-table-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+.solutions-section .cve-table-row:hover {
+  background: rgba(1, 1, 20, 0.03);
 }
 
-/* Bento Box (Solutions Section) */
-.bento-box {
+.solutions-section .bento-box {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
-.bento-box:hover {
-  background: rgba(1, 46, 87, 0.35) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+.solutions-section .bento-box:hover {
+  background: #F1F5F9 !important;
+  border-color: rgba(1, 1, 20, 0.2) !important;
   transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(1, 1, 20, 0.08);
+}
+
+.solutions-section .bento-box-featured:hover {
+  background: rgba(204, 102, 0, 0.09) !important;
+  border-color: rgba(204, 102, 0, 0.45) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(204, 102, 0, 0.15);
 }
 
 @media (max-width: 768px) {
-  .cve-table-row {
+  .solutions-section .cve-table-row {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     padding: 1.25rem;
-    border: 1px solid var(--border-glass);
+    border: 1px solid rgba(1, 1, 20, 0.1);
     margin-bottom: 0.75rem;
-    background: var(--surface-glass);
+    background: #F8FAFC;
   }
-  .cve-table-row > div:nth-child(3) {
+  .solutions-section .cve-table-row > div:nth-child(3) {
     grid-column: span 2;
   }
-  .cve-table-row > div:nth-child(4) {
+  .solutions-section .cve-table-row > div:nth-child(4) {
     grid-column: span 2;
     justify-self: flex-start;
   }
