@@ -210,67 +210,67 @@ interface GateData {
 
 const GATES: GateData[] = [
   {
-    code: "GATE_01",
+    code: "STEP_01",
     index: "01",
-    tag: "HYPOTHESIS & SCOPE LOCK",
-    title: "Methodology Lock",
-    subtitle: "FORMAL PROTOCOL & SOW FREEZE",
-    desc: "Binding Scope of Work established upfront. Research objectives, target sample power, and exact statistical test families are formally frozen before analysis starts to eliminate scope creep.",
-    deliverableBadge: "DELIVERABLE: SOW & G*POWER BLUEPRINT",
+    tag: "FREE INITIAL REVIEW",
+    title: "Send Us Your Chapter 1 & Data",
+    subtitle: "EXACT TEST MATCHING & FREE QUOTE",
+    desc: "We review your research objectives, statement of the problem, and raw survey data. We determine the exact statistical tests your study actually needs before you spend a single peso.",
+    deliverableBadge: "DELIVERABLE: CUSTOM SOW QUOTE IN 24H",
     illustration: <MethodologyLockCAD />,
     specs: [
-      { label: "SOW BOUNDS", value: "FROZEN AT INTAKE", isHighlight: true },
-      { label: "POWER ANALYSIS", value: "1-β = .80 VERIFIED" },
-      { label: "TEST FAMILY", value: "GLM / ANOVA / SEM" },
-      { label: "SIGNIFICANCE", value: "TWO-TAILED α = .05", isHighlight: true },
+      { label: "INITIAL REVIEW", value: "100% FREE INTAKE", isHighlight: true },
+      { label: "TEST SELECTION", value: "MATCHED TO OBJECTIVES" },
+      { label: "QUOTE ACCURACY", value: "CUSTOM TO YOUR STUDY" },
+      { label: "TURNAROUND", value: "QUOTE IN 24 HOURS", isHighlight: true },
     ],
   },
   {
-    code: "GATE_02",
+    code: "STEP_02",
     index: "02",
-    tag: "PRE-FLIGHT DIAGNOSTICS",
-    title: "Data Pre-Flight Engine",
-    subtitle: "AUTOMATED ASSUMPTION AUDIT",
-    desc: "Every raw dataset is scanned for missingness patterns, high-leverage outliers, and parametric violations prior to model estimation. No raw data is ever plugged blindly into tests.",
-    deliverableBadge: "DELIVERABLE: DIAGNOSTIC AUDIT SHEET",
+    tag: "DATA CLEANING & CHECKS",
+    title: "We Clean Your Data & Fix Errors",
+    subtitle: "SURVEY HEALTH & VALIDITY AUDIT",
+    desc: "We organize your spreadsheet, clean up missing survey responses, and run normality and outlier tests so your panel and adviser never reject your raw data.",
+    deliverableBadge: "DELIVERABLE: CLEANED DATASET & HEALTH SHEET",
     illustration: <GaussianPreFlightLineArt />,
     specs: [
-      { label: "NORMALITY TEST", value: "SHAPIRO-WILK (p > .05)", isHighlight: true },
-      { label: "HOMOSCEDASTICITY", value: "LEVENE'S TEST [CLEARED]" },
-      { label: "MULTICOLLINEARITY", value: "VIF < 5.0 [CLEARED]" },
-      { label: "MISSING DATA", value: "LITTLE'S MCAR [PASSED]", isHighlight: true },
+      { label: "SURVEY CLEANUP", value: "OUTLIERS REMOVED", isHighlight: true },
+      { label: "RELIABILITY TEST", value: "CRONBACH'S ALPHA CLEARED" },
+      { label: "MISSING ENTRIES", value: "STATISTICALLY RESOLVED" },
+      { label: "DATA HEALTH", value: "100% VALIDATED", isHighlight: true },
     ],
   },
   {
-    code: "GATE_03",
+    code: "STEP_03",
     index: "03",
-    tag: "DUAL-STATISTICIAN AUDIT",
-    title: "2-Pass QA Gateway",
-    subtitle: "INDEPENDENT DUAL REPLICATION",
-    desc: "Primary analysis is executed by a Methodologist, then independently replicated from scratch by a Senior QA Lead. If a single decimal differs, the deliverable does not release.",
-    deliverableBadge: "DELIVERABLE: REPLICATION CERTIFICATE",
+    tag: "2-STATISTICIAN CHECK",
+    title: "Two Experts Calculate Your Numbers",
+    subtitle: "ZERO CALCULATION ERROR GUARANTEE",
+    desc: "Your data is analyzed by one statistician and recalculated from scratch by a second senior reviewer. If a single decimal differs, we fix it before you receive your results.",
+    deliverableBadge: "DELIVERABLE: DOUBLE-VERIFIED CALCULATIONS",
     illustration: <DualPassQALineArt />,
     specs: [
-      { label: "PRIMARY RUN", value: "METHODOLOGIST [PASSED]" },
-      { label: "REPLICATION AUDIT", value: "SENIOR QA [REPLICATED]", isHighlight: true },
-      { label: "FORMATTING", value: "APA 7TH / IEEE STANDARD" },
-      { label: "DECIMAL TOLERANCE", value: "100% REPRODUCIBLE", isHighlight: true },
+      { label: "PRIMARY RUN", value: "EXPERT STATISTICIAN" },
+      { label: "SECOND AUDIT", value: "SENIOR QA RE-CALCULATION", isHighlight: true },
+      { label: "ERROR TOLERANCE", value: "0.00% ZERO ERROR" },
+      { label: "TABLE FORMAT", value: "APA 7TH EDITION", isHighlight: true },
     ],
   },
   {
-    code: "GATE_04",
+    code: "STEP_04",
     index: "04",
-    tag: "AUDITABLE DEFENSE SUITE",
-    title: "Defense Blueprint",
-    subtitle: "PANEL-DEFENSE READY DELIVERABLE",
-    desc: "You receive raw, fully commented scripts in R, Python, or SPSS alongside a line-by-line plain-English narrative so you can defend every number in front of your adviser or panel with total confidence.",
-    deliverableBadge: "DELIVERABLE: CODE & DEFENSE SCRIPT",
+    tag: "DEFENSE SCRIPT & TABLES",
+    title: "You Get Tables & Plain Speaking Scripts",
+    subtitle: "READY TO PASTE INTO CHAPTER 4",
+    desc: "You receive clean APA tables ready to paste into your manuscript, plus a word-for-word speaking script explaining what every p-value and percentage means during your defense.",
+    deliverableBadge: "DELIVERABLE: APA TABLES & DEFENSE SCRIPT",
     illustration: <RegressionDefenseLineArt />,
     specs: [
-      { label: "SOURCE CODE", value: "R / PYTHON / SPSS SCRIPT" },
-      { label: "ETHICAL POLICY", value: "ZERO P-HACKING POLICY", isHighlight: true },
-      { label: "NARRATIVE", value: "PLAIN-ENGLISH DEFENSE" },
-      { label: "FINAL RELEASE", value: "PANEL VERIFIED", isHighlight: true },
+      { label: "MANUSCRIPT TABLES", value: "COPY-PASTE READY (APA 7)" },
+      { label: "SPEAKING SCRIPT", value: "PLAIN-ENGLISH TRANSLATION", isHighlight: true },
+      { label: "SOURCE CODE", value: "R / PYTHON / SPSS INCLUDED" },
+      { label: "DEFENSE SUPPORT", value: "100% READY FOR PANEL", isHighlight: true },
     ],
   },
 ];
@@ -296,7 +296,7 @@ export default function Approach() {
         }
       );
 
-      // 2. 2x2 Bento Matrix Cards Entry & Vector Self-Drawing
+      // 2. Bento Cards Reveal
       const cards = gsap.utils.toArray<HTMLElement>(".approach-bento-card");
       cards.forEach((card) => {
         const cardTl = gsap.timeline({
@@ -370,7 +370,7 @@ export default function Approach() {
               }}
             >
               <span style={{ display: "inline-block", width: "6px", height: "6px", backgroundColor: "#CC6600" }} />
-              SECTION // 02 — THE JAXIS METHODOLOGY
+              SECTION // 02 — HOW WE WORK
             </div>
             <h2
               style={{
@@ -383,9 +383,9 @@ export default function Approach() {
                 color: "#FFFFFF",
               }}
             >
-              Engineered for
+              From Raw Data To
               <br />
-              <span style={{ color: "#38bdf8", fontWeight: 400 }}>Panel Scrutiny.</span>
+              <span style={{ color: "#38bdf8", fontWeight: 400 }}>Passed Defense.</span>
             </h2>
           </div>
 
@@ -400,7 +400,7 @@ export default function Approach() {
                 maxWidth: "480px",
               }}
             >
-              Your panel expects you to defend every decimal. Cheap freelancers hand you raw output you cannot explain. JAXIS builds four non-negotiable verification gates into every project.
+              Never walk into a panel defense unsure of what your numbers mean. Here is our 4-step process to ensure your research data is 100% accurate, error-free, and easy for you to explain.
             </p>
           </div>
         </div>

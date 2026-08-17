@@ -10,46 +10,46 @@ if (typeof window !== "undefined") {
 
 const SECURITY_PILLARS = [
   {
-    code: "SEC_01 // PII_SANITY",
-    title: "Cryptographic PII Scrubbing",
-    subtitle: "ZERO DATA LEAKAGE PROTOCOL",
-    desc: "Every raw dataset is automatically scrubbed of Personally Identifiable Information (PII) before ingestion. Patient IDs, respondent names, and institutional identifiers are hashed so your participants stay 100% anonymous.",
-    badge: "HIPAA & GDPR ALIGNED",
+    code: "SEC_01 // ANONYMITY",
+    title: "100% Anonymity & Data Privacy",
+    subtitle: "ZERO IDENTITY LEAKAGE",
+    desc: "We remove all participant names, student IDs, emails, and school identifiers from your raw data before our analysts begin work. Your participants stay 100% anonymous.",
+    badge: "CONFIDENTIAL & PRIVATE",
     specs: [
-      { label: "INGESTION ENCRYPTION", value: "AES-256 AT REST" },
-      { label: "PII SANITIZATION", value: "DE-IDENTIFIED AT INTAKE" },
+      { label: "IDENTITY PROTECTION", value: "NAMES & IDS REMOVED" },
+      { label: "STORAGE SECURITY", value: "ENCRYPTED AT REST" },
     ],
   },
   {
-    code: "SEC_02 // ETH_GUARD",
-    title: "Zero-Tolerance Anti-P-Hacking",
-    subtitle: "RULE_ETH_01 GOVERNANCE GATE",
-    desc: "We enforce an uncompromising zero-tolerance policy against p-hacking, outcome fabrication, or post-hoc data manipulation. If your hypothesis yields a null result, we build rigorous methodological and theoretical defenses, never fabricated numbers.",
-    badge: "ETHICAL INTEGRITY CERTIFIED",
+    code: "SEC_02 // HONEST MATH",
+    title: "We Never Fake or Manipulate Data",
+    subtitle: "ZERO P-HACKING POLICY",
+    desc: "We never fabricate numbers or alter survey data to force statistical significance. If your results show no significant difference, we provide legitimate academic explanations so your panel respects your research integrity.",
+    badge: "ACADEMIC HONESTY",
     specs: [
-      { label: "FRAUD TOLERANCE", value: "0.00 ZERO TOLERANCE" },
-      { label: "NULL DEFENSE", value: "POWER-BACKED JUSTIFICATION" },
+      { label: "DATA MANIPULATION", value: "0.00 ZERO TOLERANCE" },
+      { label: "NULL FINDINGS", value: "SCIENTIFICALLY DEFENDED" },
     ],
   },
   {
-    code: "SEC_03 // IP_FENCE",
-    title: "Binding Institutional NDAs",
-    subtitle: "100% INTELLECTUAL PROPERTY LOCK",
-    desc: "All JAXIS statisticians operate under binding Non-Disclosure Agreements. Your raw data, custom R/Python scripts, and derived findings remain 100% your proprietary academic intellectual property. We never claim co-authorship.",
-    badge: "AUTHORSHIP PRESERVED",
+    code: "SEC_03 // OWNERSHIP",
+    title: "You Own 100% of Your Research & Code",
+    subtitle: "STRICT NON-DISCLOSURE AGREEMENTS",
+    desc: "Every JAXIS statistician signs a legally binding Non-Disclosure Agreement (NDA). Your data, analysis scripts, and findings belong 100% to you. We never publish or claim co-authorship.",
+    badge: "100% YOUR PROPERTY",
     specs: [
-      { label: "NDA STATUS", value: "LEGALLY BINDING (ALL STAFF)" },
-      { label: "CODE OWNERSHIP", value: "100% CLIENT PROPRIETARY" },
+      { label: "NDA SIGNED", value: "ALL STAFF LEGALLY BOUND" },
+      { label: "AUTHORSHIP", value: "100% RETAINED BY YOU" },
     ],
   },
   {
-    code: "SEC_04 // ESCROW_QA",
-    title: "QA-Gated Escrow Treasury",
-    subtitle: "RULE_REL_01 & RULE_REL_02 REPLICATION",
-    desc: "Funds are held in secure escrow upon SOW protocol lock. Payout is permanently gated until your deliverable passes independent Senior QA replication (RULE_REL_02) and receives final client authorization (RULE_REL_01).",
-    badge: "DUAL REPLICATION RELEASE",
+    code: "SEC_04 // ESCROW",
+    title: "Safe Escrow Payment Protection",
+    subtitle: "VERIFIED BEFORE FINAL RELEASE",
+    desc: "Your payment is held safely in escrow upon project agreement. Deliverables are only released once an independent Senior QA Lead validates 100% decimal accuracy.",
+    badge: "PAYMENT PROTECTED",
     specs: [
-      { label: "RELEASE GATE", value: "SENIOR QA STAMP REQUIRED" },
+      { label: "QUALITY CHECK", value: "SENIOR QA STAMP REQUIRED" },
       { label: "PAYMENT GATING", value: "ESCROW SECURITY VERIFIED" },
     ],
   },
@@ -141,7 +141,7 @@ export default function Security() {
               }}
             >
               <span style={{ display: "inline-block", width: "6px", height: "6px", backgroundColor: "#CC6600" }} />
-              SECTION // 05 — SECURITY & GOVERNANCE SHIELD
+              SECTION // 05 — PRIVACY & INTEGRITY
             </span>
 
             <h2
@@ -155,10 +155,10 @@ export default function Security() {
                 color: "#FFFFFF",
               }}
             >
-              Zero Data Leakage.
+              Your Research Data Is Safe.
               <br />
               <span style={{ color: "#38bdf8", fontWeight: 400 }}>
-                100% Ethical Integrity.
+                Guaranteed 100%.
               </span>
             </h2>
           </div>
@@ -174,7 +174,7 @@ export default function Security() {
                 maxWidth: "480px",
               }}
             >
-              Your research data, intellectual property, and academic reputation are protected by four non-negotiable institutional governance protocols.
+              We protect your student identity, intellectual property, and academic reputation with four strict privacy and ethical guarantees.
             </p>
           </div>
         </div>

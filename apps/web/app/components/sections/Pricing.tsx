@@ -11,59 +11,67 @@ if (typeof window !== "undefined") {
 const PACKAGES = [
   {
     name: "DataCheck",
-    catalog: "JX-01 // DIAGNOSTIC",
+    catalog: "PLAN 01 // SURVEY AUDIT",
+    pricePrefix: "Starts at",
     price: "1,000",
-    desc: "Essential automated diagnostics to ensure your raw data satisfies all parametric assumptions before formal estimation.",
+    priceSuffix: "PHP // BY QUOTE",
+    desc: "For students who just need their survey spreadsheet cleaned, checked for errors, and verified before running tests.",
     features: [
-      "Automated Data Cleaning & Outlier Audit",
-      "Shapiro-Wilk Normality & Skewness Clearance",
-      "Scale Reliability (Cronbach's Alpha / McDonald's Omega)",
-      "Official JAXIS Data Health Clearance Sheet"
+      "Survey Data Formatting & Outlier Cleanup",
+      "Normality & Distribution Verification",
+      "Survey Reliability Test (Cronbach's Alpha)",
+      "Official Data Health Sheet for Your Adviser"
     ],
     highlighted: false,
     isPerVar: false
   },
   {
     name: "Start Package",
-    catalog: "JX-02 // BASELINE",
+    catalog: "PLAN 02 // DEMOGRAPHICS & PROFILES",
+    pricePrefix: "Starts at",
     price: "1,500",
-    desc: "Ideal for demographic profiling, baseline survey summaries, and descriptive frequency distributions.",
+    priceSuffix: "PHP // BY QUOTE",
+    desc: "Ideal for demographic profiling, respondent frequencies, percentages, and basic cross-tabulation comparisons.",
     features: [
-      "Descriptive Statistics & Frequency Distributions",
-      "Cross-tabulations & Chi-Square Contingency Tests",
-      "Publication-Ready APA 7th Edition Table Generation",
-      "Plain-English Narrative Findings Translation",
-      "100% Upfront Transparent Scope Freeze"
+      "Demographic Frequencies & Percentages",
+      "Cross-tabulations & Chi-Square Comparisons",
+      "Ready-to-Paste APA 7th Edition Tables",
+      "Plain-English Findings Writeup for Chapter 4",
+      "Custom SOW Quote (No Scope Creep)"
     ],
     highlighted: false,
     isPerVar: false
   },
   {
-    name: "Core Package ★",
-    catalog: "JX-03 // INFERENTIAL",
+    name: "Core Thesis Package ★",
+    catalog: "PLAN 03 // COMPLETE HYPOTHESIS TESTING",
+    pricePrefix: "Starts at",
     price: "2,400",
-    desc: "The standard analytical requirement for Undergraduate, Master's, and Ph.D. dissertations requiring inferential models.",
+    priceSuffix: "PHP // BY QUOTE",
+    desc: "The standard choice for College, Master's, and Ph.D. theses needing hypothesis testing and full narrative writeups.",
     features: [
-      "Standard Inferential Models (T-Tests, ANOVA, Multiple Regression)",
-      "Automated Assumption Audits (VIF, Levene's, Little's MCAR)",
-      "Full JAXIS 4-Part Methodology & Defense Report",
-      "Dual-Pass QA Gate (Senior Methodologist Re-calculation)",
-      "Annotated Source Code Scripts (.R / .py / .sps)"
+      "Hypothesis Tests (T-Tests, ANOVA, Multiple Regression)",
+      "Assumption Audits & Statistical Effect Sizes",
+      "Full Plain-English Chapter 4 Narrative Report",
+      "Double-Checked by 2 Independent Statisticians",
+      "Full Analysis Scripts (.R / .py / .sps) Included"
     ],
     highlighted: true,
     isPerVar: false
   },
   {
     name: "Advanced Package",
-    catalog: "JX-04 // COMPLEX",
+    catalog: "PLAN 04 // COMPLEX MODELING",
+    pricePrefix: "Starts at",
     price: "3,000+",
-    desc: "Complex statistical architectures executed by elite Senior Methodologists for high-stakes research.",
+    priceSuffix: "PHP // CUSTOM SCOPE",
+    desc: "For graduate studies and doctoral dissertations requiring advanced multivariate modeling, SEM, or clinical trials.",
     features: [
-      "Advanced Modeling (SEM, Path Analysis, HLM, Survival Cox, MCMC)",
-      "Custom Methodological Architecture Blueprint",
-      "Priority Senior QA Lead Replication Routing",
-      "Comprehensive Panel Question Preparation Suite",
-      "Free Academic Revision Shield on Scope Scope"
+      "Advanced SEM, Path Analysis, HLM & Survival Models",
+      "Custom Methodological Blueprint for Your Defense",
+      "Senior Methodologist Lead Verification",
+      "Comprehensive Panel Defense Question Guide",
+      "Free Academic Revision Guarantee on Scope"
     ],
     highlighted: false,
     isPerVar: false
@@ -72,8 +80,8 @@ const PACKAGES = [
 
 const CONSULTING = {
   name: "DefenseLab Module",
-  catalog: "JX-DL // MOCK DEFENSE",
-  desc: "Live 1-on-1 simulated panel defense with a Senior JAXIS Statistician. We grill you on your methodology, sample power, and test choices so you defend every decimal with unshakeable confidence.",
+  catalog: "OPTIONAL // 1-ON-1 MOCK DEFENSE",
+  desc: "Live 1-on-1 simulated panel defense with a Senior JAXIS Statistician. We grill you on your methodology and test choices so you walk into your real defense with 100% confidence.",
   price: "₱250/hr"
 };
 
@@ -90,7 +98,7 @@ const ADDITIONS = [
   },
   {
     name: "JAXIS Emergency",
-    desc: "24-hour mission-critical overnight delivery",
+    desc: "24-hour urgent overnight delivery",
     price: "₱1,000"
   }
 ];
@@ -212,7 +220,7 @@ export default function Pricing() {
               }}
             >
               <span style={{ display: "inline-block", width: "6px", height: "6px", backgroundColor: "#CC6600" }} />
-              SECTION // 04 — FIXED PRICING & SCOPE FREEZE
+              SECTION // 04 — PACKAGES & CUSTOM QUOTES
             </span>
 
             <h2
@@ -226,9 +234,9 @@ export default function Pricing() {
                 color: "#FFFFFF",
               }}
             >
-              <span className="pricing-heading-line block">Transparent Pricing.</span>
+              <span className="pricing-heading-line block">Transparent Rates.</span>
               <span className="pricing-heading-line block" style={{ color: "#38bdf8", fontWeight: 400 }}>
-                Guaranteed Scope.
+                Custom-Quoted Scopes.
               </span>
             </h2>
           </div>
@@ -244,7 +252,7 @@ export default function Pricing() {
                 maxWidth: "480px",
               }}
             >
-              Every package includes raw output, assumption scans, statistical interpretation, and APA 7th Edition publication tables. Fixed price guarantee — no hourly billing, ever.
+              Every study is unique. We review your research questions and dataset first, then provide an exact, custom Scope of Work quote with zero hidden fees.
             </p>
           </div>
         </div>
@@ -269,12 +277,25 @@ export default function Pricing() {
                 <p className="pricing-card-desc">{pkg.desc}</p>
                 
                 <div className="pricing-card-price-container">
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono), monospace",
+                      fontSize: "0.66rem",
+                      color: "rgba(255, 255, 255, 0.45)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      display: "block",
+                      marginBottom: "2px",
+                    }}
+                  >
+                    {pkg.pricePrefix}
+                  </span>
                   <span className="pricing-card-price">
                     <span className="price-currency">₱</span>
                     {pkg.price}
                   </span>
                   <span className="pricing-card-price-suffix">
-                    {pkg.isPerVar ? "PHP // PER_VAR" : "PHP // FIXED"}
+                    {pkg.priceSuffix}
                   </span>
                 </div>
 
@@ -295,7 +316,7 @@ export default function Pricing() {
                 className="pricing-card-cta"
                 style={{ marginTop: "1.5rem" }}
               >
-                Initialize Scope Freeze
+                Request Custom Quote
               </a>
             </div>
           ))}
@@ -482,7 +503,7 @@ export default function Pricing() {
               letterSpacing: "0.1em",
             }}
           >
-            SYS // ALL_PRICES_IN_PHP // ZERO_SCOPE_CREEP_GUARANTEE // JAXIS_STATLAB_V2
+            SYS // CUSTOM_QUOTED_PER_STUDY // SOW_APPROVAL_REQUIRED // JAXIS_STATLAB_V2
           </span>
 
           <span

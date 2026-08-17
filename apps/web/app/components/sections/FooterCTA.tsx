@@ -37,7 +37,7 @@ export default function FooterCTA() {
           }}
         >
           <span style={{ display: "inline-block", width: "6px", height: "6px", backgroundColor: "#CC6600" }} />
-          INITIALIZE YOUR RESEARCH SOW
+          GET YOUR FREE STATISTICAL CONSULTATION
         </span>
 
         <h2
@@ -51,9 +51,9 @@ export default function FooterCTA() {
             color: "#FFFFFF",
           }}
         >
-          Stop guessing.
+          Stop worrying about defense.
           <br />
-          <span style={{ color: "#38bdf8", fontWeight: 400 }}> Start knowing.</span>
+          <span style={{ color: "#38bdf8", fontWeight: 400 }}> Start feeling confident.</span>
         </h2>
 
         <p
@@ -61,12 +61,12 @@ export default function FooterCTA() {
             fontFamily: "var(--font-sans), sans-serif",
             fontSize: "0.95rem",
             lineHeight: 1.75,
-            color: "rgba(255,255,255,0.70)",
+            color: "rgba(255,255,255,0.75)",
             maxWidth: "480px",
             margin: "0 auto 3rem",
           }}
         >
-          Submit your Chapter 1 or raw dataset. Our Senior Methodologists will provide an exact, fixed-price Scope of Work review at no charge.
+          Send us your Chapter 1 or raw survey spreadsheet. Our senior statisticians will review your study and give you an exact, custom Scope of Work quote within 24 hours at zero charge.
         </p>
 
         <a
@@ -98,7 +98,7 @@ export default function FooterCTA() {
             e.currentTarget.style.transform = "translateY(0px)";
           }}
         >
-          Get My Free SOW Review
+          Get Free Thesis Review
         </a>
 
         {/* Footer Nav */}

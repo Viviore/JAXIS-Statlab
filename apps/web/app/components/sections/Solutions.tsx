@@ -14,47 +14,47 @@ const STACKED_CARDS: StackedCardData[] = [
   {
     id: "intake-diagnostics",
     step: "01",
-    badge: "PHASE 01 // INTAKE AUDIT",
-    title: "Distribution Diagnostics & Assumption Shield",
+    badge: "DELIVERABLE 01 // DATA CLEANING",
+    title: "Spreadsheet Cleaning & Data Health Checks",
     subtitle:
-      "Before fitting any statistical model, your raw dataset passes 18 automated mathematical assumption gates to prevent model misspecification.",
+      "We organize messy survey spreadsheets, clean up duplicate or invalid entries, and ensure your data is 100% mathematically valid before testing.",
     accent: "#CC6600",
     bgGradient: "rgba(2, 11, 34, 0.96)",
     tabBg: "rgba(2, 16, 48, 0.98)",
     borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
-      "Shapiro-Wilk Normality",
-      "Breusch-Pagan Homoscedasticity",
-      "VIF Multicollinearity (< 5.0)",
-      "Mahalanobis Distance Outliers",
-      "Little's MCAR Missingness Matrix",
+      "Survey Data Cleanup",
+      "Missing Response Handling",
+      "Outlier & Extreme Value Check",
+      "Survey Reliability (Cronbach's Alpha)",
+      "Adviser-Ready Clean Sheet",
     ],
     features: [
       {
-        tag: "DISTRIBUTION",
-        title: "Normality Verification",
-        desc: "Q-Q residual plotting, Kolmogorov-Smirnov bounds, and skewness/kurtosis z-score tests.",
-        metric: "p > .05",
-        metricLabel: "ASSUMPTION CLEARED",
+        tag: "DATA CLEANUP",
+        title: "Spreadsheet Formatting",
+        desc: "Fixes messy columns, re-encodes survey answers, and eliminates bad or corrupted entries.",
+        metric: "CLEANED",
+        metricLabel: "100% ACCURATE",
       },
       {
-        tag: "VARIANCE",
-        title: "Homoscedasticity Gate",
-        desc: "Levene's and White tests with automated robust standard error (HC3) fallback corrections.",
-        metric: "F = 1.14",
-        metricLabel: "EQUAL VARIANCE",
+        tag: "OUTLIER CHECK",
+        title: "Extreme Response Scan",
+        desc: "Identifies abnormal survey responses that could distort your overall findings.",
+        metric: "VERIFIED",
+        metricLabel: "NO SKEW",
       },
       {
-        tag: "COLLINEARITY",
-        title: "VIF Multicollinearity",
-        desc: "Variance Inflation Factor auditing to isolate collinear predictors before estimation.",
-        metric: "VIF < 2.1",
-        metricLabel: "OPTIMAL PRECISION",
+        tag: "RELIABILITY",
+        title: "Survey Reliability Test",
+        desc: "Computes Cronbach's Alpha to prove your survey questions measured what they were supposed to.",
+        metric: "α > .80",
+        metricLabel: "HIGH RELIABILITY",
       },
       {
-        tag: "INTEGRITY",
-        title: "Missingness Taxonomy",
-        desc: "Full Information Maximum Likelihood (FIML) & Little's MCAR test for unbiased imputation.",
+        tag: "MISSING DATA",
+        title: "Missing Answer Handling",
+        desc: "Properly handles blank survey answers without biasing your study's conclusions.",
         metric: "0.0%",
         metricLabel: "DATA LEAKAGE",
       },
@@ -63,145 +63,145 @@ const STACKED_CARDS: StackedCardData[] = [
   {
     id: "inferential-modeling",
     step: "02",
-    badge: "PHASE 02 // INFERENTIAL ENGINE",
-    title: "Multivariate, Structural & Longitudinal Modeling",
+    badge: "DELIVERABLE 02 // STATISTICAL TESTS",
+    title: "Accurate Calculations & Ready APA 7th Tables",
     subtitle:
-      "Custom statistical architectures coded in R and Python tailored to your exact experimental design and research questions.",
+      "We compute every demographic profile, hypothesis test, and regression model, then format them into ready-to-paste APA 7th Edition tables.",
     accent: "#CC6600",
     bgGradient: "rgba(2, 11, 34, 0.96)",
     tabBg: "rgba(2, 16, 48, 0.98)",
     borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
-      "Hierarchical Linear (HLM)",
-      "Structural Equation (SEM / Path)",
-      "Cox Proportional Hazards",
-      "Bayesian MCMC Posterior",
-      "Propensity Score Matching",
+      "Demographic Profiles & Frequencies",
+      "T-Tests & ANOVA Group Comparisons",
+      "Correlation & Multiple Regression",
+      "Advanced SEM & Path Analysis",
+      "APA 7th Edition Formatted Tables",
     ],
     features: [
       {
-        tag: "MULTILEVEL",
-        title: "Hierarchical Linear (HLM)",
-        desc: "Random intercept & random slope specifications for nested clinical cohorts and multi-site trials.",
-        metric: "ICC = 0.28",
-        metricLabel: "COHORT ACCOUNTED",
+        tag: "DEMOGRAPHICS",
+        title: "Profile & Frequency Tables",
+        desc: "Clear summary tables for age, gender, occupation, and all baseline study variables.",
+        metric: "100%",
+        metricLabel: "TABULATED",
       },
       {
-        tag: "STRUCTURAL",
-        title: "SEM & Path Analysis",
-        desc: "Confirmatory factor analysis (CFA) with CFI, TLI, and RMSEA fit indices.",
-        metric: "CFI = .986",
+        tag: "HYPOTHESES",
+        title: "Hypothesis Testing",
+        desc: "T-Tests, ANOVA, Chi-Square, and Regressions with exact p-values and effect sizes.",
+        metric: "p < .05",
+        metricLabel: "CONFIRMED",
+      },
+      {
+        tag: "COMPLEX MODELS",
+        title: "Advanced Modeling (SEM)",
+        desc: "Path analysis and structural equation modeling for complex graduate dissertations.",
+        metric: "CFI = .98",
         metricLabel: "EXCELLENT FIT",
       },
       {
-        tag: "LONGITUDINAL",
-        title: "Survival & Hazard Rates",
-        desc: "Kaplan-Meier survival curves and Cox proportional hazards regression with risk ratios.",
-        metric: "HR = 0.42",
-        metricLabel: "p < .001 CONFIRMED",
-      },
-      {
-        tag: "BAYESIAN",
-        title: "MCMC Convergence",
-        desc: "Posterior probability distributions, Gelman-Rubin diagnostics, and 95% highest density intervals.",
-        metric: "R̂ = 1.001",
-        metricLabel: "CHAINS CONVERGED",
+        tag: "APA FORMAT",
+        title: "Ready-to-Paste APA Tables",
+        desc: "Formatted strictly to APA 7th Edition rules so your manuscript looks completely professional.",
+        metric: "APA 7.0",
+        metricLabel: "CAMPUS COMPLIANT",
       },
     ],
   },
   {
     id: "qa-verification",
     step: "03",
-    badge: "PHASE 03 // 4-EYE REVIEW",
-    title: "Independent Dual-Statistician Verification Gate",
+    badge: "DELIVERABLE 03 // QUALITY ASSURANCE",
+    title: "Double-Checked by 2 Independent Statisticians",
     subtitle:
-      "No deliverable leaves JAXIS without independent dual-analyst cross-calculation and senior sign-off.",
+      "No guesswork or solo errors. Your analysis is independently calculated by two separate statisticians to ensure 100% accuracy before you receive it.",
     accent: "#CC6600",
     bgGradient: "rgba(2, 11, 34, 0.96)",
     tabBg: "rgba(2, 16, 48, 0.98)",
     borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
-      "Double-Blind Code Replication",
-      "Zero P-Hacking Policy",
-      "APA 7th Format Tables",
-      "Senior QA Lead Sign-Off",
+      "Double-Blind Recalculation",
+      "Zero Data Fabrication Policy",
+      "Full R / Python / SPSS Code Scripts",
+      "Senior Quality Assurance Stamp",
     ],
     features: [
       {
-        tag: "REPRODUCIBILITY",
-        title: "Blind Replication",
-        desc: "A second senior statistician recalculates every figure from raw data without seeing initial notes.",
+        tag: "DOUBLE CHECK",
+        title: "Independent Recalculation",
+        desc: "A second senior statistician recalculates every figure from scratch to catch any possible error.",
         metric: "100%",
-        metricLabel: "REPRODUCIBILITY",
-      },
-      {
-        tag: "PUBLICATION",
-        title: "APA 7th Tables",
-        desc: "Publication-grade typography with exact decimal precision, standard errors, and significance notations.",
-        metric: "APA 7.0",
-        metricLabel: "JOURNAL COMPLIANT",
+        metricLabel: "REPRODUCIBLE",
       },
       {
         tag: "INTEGRITY",
-        title: "Anti-P-Hacking Gate",
-        desc: "Strict zero-tolerance policy against post-hoc manipulation, p-hacking, or fabricated significance.",
+        title: "Zero P-Hacking Policy",
+        desc: "We never manipulate survey numbers to fake significance. We provide legitimate academic defenses.",
         metric: "0.00",
         metricLabel: "FRAUD TOLERANCE",
       },
       {
-        tag: "GOVERNANCE",
-        title: "Senior Lead Gate",
-        desc: "Deliverables require formal sign-off from a Senior QA Lead before payment release (RULE_REL_02).",
+        tag: "SOURCE CODE",
+        title: "Full Software Scripts",
+        desc: "You get the exact R, Python, or SPSS source code used to generate your tables and charts.",
+        metric: ".R / .SPS",
+        metricLabel: "INCLUDED",
+      },
+      {
+        tag: "APPROVAL",
+        title: "Senior Lead Sign-Off",
+        desc: "Deliverables are only approved after passing our strict quality control checklist.",
         metric: "PASSED",
-        metricLabel: "QA LEAD APPROVED",
+        metricLabel: "QA VERIFIED",
       },
     ],
   },
   {
     id: "defense-synthesis",
     step: "04",
-    badge: "PHASE 04 // DEFENSE READINESS",
-    title: "1-on-1 Mock Panel Defense & Narrative Synthesis",
+    badge: "DELIVERABLE 04 // DEFENSE READINESS",
+    title: "Plain-English Speaking Scripts & Mock Defense",
     subtitle:
-      "A complete 4-part writeup you can read aloud, paired with live 1-on-1 coaching so you defend every decimal with confidence.",
+      "We translate statistical jargon into simple words you can read aloud, and coach you on how to answer tough panel questions with confidence.",
     accent: "#CC6600",
     bgGradient: "rgba(2, 11, 34, 0.96)",
     tabBg: "rgba(2, 16, 48, 0.98)",
     borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
-      "Live 1-on-1 GMeet Defense",
-      "Top 20 Panel Questions Script",
-      "Null-Result Defense",
-      "Free Academic Revision Shield",
+      "Live 1-on-1 Mock Panel Defense",
+      "Top 20 Defense Questions Script",
+      "Explaining Non-Significant Results",
+      "Free Academic Revision Guarantee",
     ],
     features: [
       {
         tag: "COACHING",
-        title: "Live Mock Defense",
-        desc: "1-on-1 simulated panel session with a Senior Statistician grilling you on methodology and test choice.",
+        title: "1-on-1 Mock Panel Defense",
+        desc: "Practice answering tough methodology questions with a senior statistician before your real defense.",
         metric: "1-ON-1",
         metricLabel: "LIVE SIMULATION",
       },
       {
-        tag: "SYNTHESIS",
-        title: "Defense Narrative Script",
-        desc: "Verbatim speaking scripts explaining why every statistical test was chosen and what findings mean.",
+        tag: "SCRIPTS",
+        title: "Defense Speaking Script",
+        desc: "Word-for-word explanations of why each test was chosen and what your findings actually mean.",
         metric: "20+",
         metricLabel: "SCRIPTED ANSWERS",
       },
       {
-        tag: "METHODOLOGY",
+        tag: "EXPLANATION",
         title: "Null-Result Defense",
-        desc: "Rigorous theoretical and power justifications when hypotheses yield non-significant findings.",
-        metric: "β = .85",
-        metricLabel: "POWER VALIDATED",
+        desc: "Clear explanations for when results are not significant, turning potential criticisms into strengths.",
+        metric: "BACKED",
+        metricLabel: "THEORY JUSTIFIED",
       },
       {
         tag: "WARRANTY",
-        title: "Revision Guarantee",
-        desc: "Rapid turnaround on methodology revisions requested by your panel or peer-review committee.",
+        title: "Free Revision Guarantee",
+        desc: "Fast turnaround on any methodology revisions requested by your panel at no extra cost.",
         metric: "100%",
-        metricLabel: "REVISION BACKED",
+        metricLabel: "FREE REVISIONS",
       },
     ],
   },
@@ -213,45 +213,33 @@ export default function Solutions() {
 
   useGSAP(
     () => {
-      if (typeof window === "undefined" || !sectionRef.current) return;
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) return;
 
-      const totalCards = STACKED_CARDS.length;
-      const wrappers = cardWrapperRefs.current.filter(
-        Boolean,
-      ) as HTMLDivElement[];
+      const wrappers = cardWrapperRefs.current.filter(Boolean) as HTMLDivElement[];
+      if (wrappers.length === 0) return;
 
-      // Master Timeline pins section at top top for 100% seamless zero-jump lock
-      const tl = gsap.timeline({
+      const pinnedTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: "+=1200", // Snappy, natural scroll distance per card (~400px per card transition)
+          end: "+=220%",
           pin: true,
-          pinSpacing: true,
-          scrub: true, // 1:1 direct sync with Lenis physics for zero jitter/double-lag
+          scrub: 0.6,
+          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });
 
-      // Animate Cards 02 (Blue), 03 (Red), 04 (Green) with natural physical travel distance
-      for (let i = 1; i < totalCards; i++) {
-        const cardEl = wrappers[i];
-        if (!cardEl) continue;
-
-        tl.fromTo(
-          cardEl,
-          {
-            y: window.innerHeight * 0.7,
-            force3D: true,
-          },
-          {
-            y: 0,
-            ease: "power1.inOut", // Smooth deceleration when docking into stack tab
-            duration: 1,
-            force3D: true,
-          },
+      wrappers.forEach((wrapper, idx) => {
+        if (idx === 0) return;
+        pinnedTimeline.fromTo(
+          wrapper,
+          { y: () => window.innerHeight * 0.75, opacity: 0.95 },
+          { y: 0, opacity: 1, ease: "power2.out" },
+          (idx - 1) * 0.35,
         );
-      }
+      });
     },
     { scope: sectionRef },
   );
@@ -318,7 +306,7 @@ export default function Solutions() {
                 fontWeight: 600,
               }}
             >
-              SECTION 03 // END-TO-END METHODOLOGY
+              SECTION 03 // WHAT YOU RECEIVE
             </span>
           </div>
 
@@ -334,9 +322,9 @@ export default function Solutions() {
               color: "#FFFFFF",
             }}
           >
-            Not just raw output.{" "}
+            Complete Deliverables.{" "}
             <span style={{ color: "var(--text-secondary)" }}>
-              An airtight, defensible methodology.
+              Zero Statistical Anxiety.
             </span>
           </h2>
 
@@ -350,8 +338,7 @@ export default function Solutions() {
               margin: "0.5rem auto 0",
             }}
           >
-            Explore the 4 execution gates of the JAXIS pipeline — from
-            pre-flight diagnostics to live 1-on-1 panel defense readiness.
+            Explore the 4 core deliverables included in your JAXIS package — from cleaned data spreadsheets to your personal thesis defense script.
           </p>
         </div>
 

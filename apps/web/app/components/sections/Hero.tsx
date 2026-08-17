@@ -19,14 +19,14 @@ const SNIPPET_BLOCK_STAGGER = 250;   // ms between each snippet block
 const SNIPPET_LINE_STAGGER  = 180;   // ms between lines within a block
 const TYPEWRITER_DURATION   = 800;   // ms
 
-// Sleek telemetry annotations
+// Plain-English telemetry annotations
 const CODE_SNIPPETS = [
   {
     id: "snippet-top-left",
     code: "01",
-    tag: "JAXIS_ENGINE",
-    line1: "Data pre-flight complete",
-    line2: "0% Missingness | Normality ✓",
+    tag: "DATA_AUDIT",
+    line1: "Raw survey data checked",
+    line2: "No missing entries | Clean ✓",
     position: { top: "20%", left: "5%", right: "auto", bottom: "auto" } as React.CSSProperties,
     align: "left" as const,
     blockDelay: 0,
@@ -34,9 +34,9 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-top-right",
     code: "02",
-    tag: "STUDIO_OS",
-    line1: "Methodology SOW locked",
-    line2: "Routing to Rank 3 Lead...",
+    tag: "TEST_SELECTION",
+    line1: "Correct tests selected",
+    line2: "Matched to research questions ✓",
     position: { top: "20%", right: "5%", left: "auto", bottom: "auto" } as React.CSSProperties,
     align: "right" as const,
     blockDelay: 1,
@@ -44,9 +44,9 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-bottom-left",
     code: "03",
-    tag: "AOG_SCRIPT",
-    line1: "APA 7th formatting",
-    line2: "Table Generation: SUCCESS",
+    tag: "APA_TABLES",
+    line1: "APA 7th Edition tables",
+    line2: "Ready to paste into Chapter 4 ✓",
     position: { bottom: "20%", left: "5%", top: "auto", right: "auto" } as React.CSSProperties,
     align: "left" as const,
     blockDelay: 2,
@@ -54,9 +54,9 @@ const CODE_SNIPPETS = [
   {
     id: "snippet-bottom-right",
     code: "04",
-    tag: "QA_GATEWAY",
-    line1: "Tier 2 Peer Review: PASSED",
-    line2: "Ready for Panel Defense ✓",
+    tag: "QA_VERIFIED",
+    line1: "Double-checked by 2 experts",
+    line2: "Ready for Thesis Defense ✓",
     position: { bottom: "20%", right: "5%", top: "auto", left: "auto" } as React.CSSProperties,
     align: "right" as const,
     blockDelay: 3,
@@ -65,11 +65,11 @@ const CODE_SNIPPETS = [
 
 // Headline broken into animatable lines
 const HEADLINE_LINES = [
-  { text: "Panel-Ready", delay: 0 },
-  { text: "Research.",   delay: 1, accent: true },
+  { text: "Defend Your Thesis.", delay: 0 },
+  { text: "With Confidence.", delay: 1, accent: true },
 ];
 
-const INTRO_TEXT = "JAXIS is statistical consulting for researchers and students. Every project gets analyzed by one statistician and double-checked by another before you receive it — so your results hold up when your adviser or panel questions them.";
+const INTRO_TEXT = "JAXIS helps students and researchers pass their thesis defense. We clean your survey data, calculate your statistical tests, format your APA tables, and double-check every number with two independent statisticians — so you walk into your panel defense with zero fear.";
 const INTRO_WORDS = INTRO_TEXT.split(" ");
 
 export default function Hero() {
@@ -317,21 +317,20 @@ export default function Hero() {
                 fontFamily: "var(--font-sans), sans-serif",
                 fontSize: "0.82rem",
                 fontWeight: 400,
-                color: "rgba(255,255,255,0.75)",
+                color: "rgba(255,255,255,0.80)",
                 lineHeight: 1.68,
-                maxWidth: "420px",
+                maxWidth: "460px",
                 margin: "1.75rem auto 0",
                 letterSpacing: "0.01em",
                 animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 200}ms`,
               }}
             >
-              Premium statistical consulting for students and researchers
-              who cannot afford to get their data analysis wrong.
+              We analyze your survey data, format your APA 7th Edition tables, and give you the exact speaking script to defend your results — with 100% accuracy.
             </p>
 
             <div className="hero-cta-wrapper" style={{ marginTop: "2rem" }}>
               <a
-                href="#contact"
+                href="#pricing"
                 id="hero-cta"
                 className="hero-caption hero-cta-btn"
                 style={{
@@ -344,8 +343,8 @@ export default function Hero() {
                   textDecoration: "none",
                   padding: "13px 34px",
                   border: "1px solid rgba(204,102,0,0.65)",
-                  borderRadius: "4px",
-                  background: "rgba(204,102,0,0.12)",
+                  borderRadius: "0px",
+                  background: "rgba(204,102,0,0.14)",
                   backdropFilter: "blur(12px)",
                   WebkitBackdropFilter: "blur(12px)",
                   display: "inline-flex",
@@ -364,12 +363,12 @@ export default function Hero() {
                 onMouseLeave={(e) => {
                   const el = e.currentTarget;
                   el.style.borderColor = "rgba(204,102,0,0.65)";
-                  el.style.background = "rgba(204,102,0,0.12)";
+                  el.style.background = "rgba(204,102,0,0.14)";
                   const arrow = el.querySelector<HTMLElement>(".hero-cta-arrow");
                   if (arrow) arrow.style.transform = "translateX(0)";
                 }}
               >
-                <span>Submit Your Research for Review</span>
+                <span>View Packages & Pricing</span>
                 <span className="hero-cta-arrow" style={{ transition: "transform 0.2s ease", display: "inline-block" }}>→</span>
               </a>
             </div>

@@ -11,44 +11,44 @@ if (typeof window !== "undefined") {
 const FAQ_DATA = [
   {
     index: "01",
-    question: "What is your standard turnaround time?",
+    question: "How fast will I receive my analysis?",
     answer:
-      "Turnaround depends on project scope. Standard descriptive and inferential packages (DataCheck, Start, Core) are completed in 3 to 7 business days. Complex structural equation modeling (SEM) or longitudinal clinical trial analyses take 2 to 3 weeks. If you are on an urgent deadline, our 24-Hour and 48-Hour Rush upgrades are available.",
+      "Standard thesis and survey packages (DataCheck, Start, Core) take 3 to 7 business days. Complex structural equation modeling (SEM) or medical dissertations take 2 to 3 weeks. If you are on a tight deadline, our 24-Hour and 48-Hour Rush delivery upgrades guarantee you submit on time.",
     category: "TIMELINE & TURNAROUND",
   },
   {
     index: "02",
-    question: "Do you offer revisions if my panel or adviser requests changes?",
+    question: "What if my thesis adviser or panel asks for revisions?",
     answer:
-      "Yes. Every fixed package includes a comprehensive Revision Shield. If your thesis panel, dissertation committee, or peer-reviewers request adjustments, clarifications, or alternate parameterizations within the original locked Scope of Work, our senior team executes those revisions rapidly at zero additional charge.",
-    category: "REVISION GUARANTEE",
+      "Revisions are 100% free. If your panel, adviser, or committee asks for changes, clarifications, or alternate tables within your study's original scope, our senior statisticians will revise your deliverables promptly at zero additional cost.",
+    category: "FREE REVISION GUARANTEE",
   },
   {
     index: "03",
-    question: "How do you protect data privacy and participant anonymity?",
+    question: "Is my survey data and student identity kept confidential?",
     answer:
-      "All client datasets undergo cryptographic de-identification and PII sanitization before entering our execution lab. Patient IDs, respondent names, and institutional identifiers are scrubbed. Every statistician operates under legally binding Non-Disclosure Agreements (NDAs), and your research findings remain 100% your intellectual property.",
-    category: "DATA SECURITY & NDAS",
+      "Yes, completely. We scrub all respondent names, emails, and student ID numbers from your files before our analysts ever see them. Every statistician operates under legally binding NDAs, and your research findings remain 100% your own intellectual property.",
+    category: "PRIVACY & NDAS",
   },
   {
     index: "04",
     question: "What happens if my results are not statistically significant (p > .05)?",
     answer:
-      "We strictly uphold scientific truth and enforce our RULE_ETH_01 Zero-Tolerance Anti-P-Hacking Policy. We never fabricate data or manipulate variables to force significance. If your results yield a null finding, our statisticians build rigorous statistical power justifications and theoretical explanations so you can defend your findings to your panel with complete academic credibility.",
+      "Non-significant results are a normal part of real academic research! We never fake data or manipulate numbers. Instead, we provide rigorous theoretical explanations and sample justifications so you can defend your findings to your panel with complete academic credibility.",
     category: "ETHICAL INTEGRITY & P-VALUES",
   },
   {
     index: "05",
-    question: "How does the escrow payment and QA release gate work?",
+    question: "I know nothing about statistics. How will I defend my numbers?",
     answer:
-      "To ensure mutual integrity, your funds are secured upon Scope of Work (SOW) protocol lock. Deliverables are permanently held behind our 2-Pass QA Gate (RULE_REL_02). Final output and code scripts are only released once an independent Senior QA Lead replicates every calculation and validates 100% decimal concordance.",
-    category: "ESCROW & QA GATING",
+      "That is exactly why students choose JAXIS! You don't just get raw numbers — you receive a plain-English speaking script that explains what each table means in simple words, plus the exact answers to the top 20 questions your panel is likely to ask. You can also book our 1-on-1 mock defense session to practice.",
+    category: "DEFENSE READINESS",
   },
   {
     index: "06",
-    question: "What exact files and source code do I receive upon delivery?",
+    question: "What exact files will I receive upon delivery?",
     answer:
-      "You receive the complete JAXIS Defense Suite: (1) Fully commented reproducible source code scripts in R (.R), Python (.py), or SPSS (.sps), (2) Cleaned analysis dataset (.sav / .csv), (3) Publication-ready APA 7th Edition formatted tables, and (4) Plain-English narrative reports explaining every statistical test chosen and what each finding means.",
+      "You receive: (1) Publication-ready APA 7th Edition tables ready to paste into Chapter 4, (2) A plain-English narrative report explaining your findings, (3) The cleaned dataset file (.sav / .csv), and (4) The full statistical software code (R, Python, or SPSS) so your study is 100% reproducible.",
     category: "DELIVERABLES & CODE",
   },
 ];
