@@ -18,10 +18,10 @@ const STACKED_CARDS: StackedCardData[] = [
     title: "Distribution Diagnostics & Assumption Shield",
     subtitle:
       "Before fitting any statistical model, your raw dataset passes 18 automated mathematical assumption gates to prevent model misspecification.",
-    accent: "#CC6600", // Enterprise Orange
-    bgGradient: "linear-gradient(180deg, #011D38 0%, #010F20 100%)",
-    tabBg: "linear-gradient(90deg, rgba(204, 102, 0, 0.25) 0%, rgba(1, 46, 87, 0.95) 100%)",
-    borderColor: "rgba(204, 102, 0, 0.45)",
+    accent: "#CC6600",
+    bgGradient: "rgba(2, 11, 34, 0.96)",
+    tabBg: "rgba(2, 16, 48, 0.98)",
+    borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
       "Shapiro-Wilk Normality",
       "Breusch-Pagan Homoscedasticity",
@@ -67,10 +67,10 @@ const STACKED_CARDS: StackedCardData[] = [
     title: "Multivariate, Structural & Longitudinal Modeling",
     subtitle:
       "Custom statistical architectures coded in R and Python tailored to your exact experimental design and research questions.",
-    accent: "#0284C7", // Deep Ocean Blue
-    bgGradient: "linear-gradient(180deg, #011E3D 0%, #001024 100%)",
-    tabBg: "linear-gradient(90deg, rgba(2, 132, 199, 0.25) 0%, rgba(1, 46, 87, 0.95) 100%)",
-    borderColor: "rgba(2, 132, 199, 0.35)",
+    accent: "#CC6600",
+    bgGradient: "rgba(2, 11, 34, 0.96)",
+    tabBg: "rgba(2, 16, 48, 0.98)",
+    borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
       "Hierarchical Linear (HLM)",
       "Structural Equation (SEM / Path)",
@@ -116,10 +116,10 @@ const STACKED_CARDS: StackedCardData[] = [
     title: "Independent Dual-Statistician Verification Gate",
     subtitle:
       "No deliverable leaves JAXIS without independent dual-analyst cross-calculation and senior sign-off.",
-    accent: "#DC2626", // Precision Status Red
-    bgGradient: "linear-gradient(180deg, #380C14 0%, #1F050A 100%)",
-    tabBg: "linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, rgba(56, 12, 20, 0.95) 100%)",
-    borderColor: "rgba(239, 68, 68, 0.35)",
+    accent: "#CC6600",
+    bgGradient: "rgba(2, 11, 34, 0.96)",
+    tabBg: "rgba(2, 16, 48, 0.98)",
+    borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
       "Double-Blind Code Replication",
       "Zero P-Hacking Policy",
@@ -164,10 +164,10 @@ const STACKED_CARDS: StackedCardData[] = [
     title: "1-on-1 Mock Panel Defense & Narrative Synthesis",
     subtitle:
       "A complete 4-part writeup you can read aloud, paired with live 1-on-1 coaching so you defend every decimal with confidence.",
-    accent: "#10B981", // Green
-    bgGradient: "linear-gradient(180deg, #053D2E 0%, #021F17 100%)",
-    tabBg: "linear-gradient(90deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 61, 46, 0.95) 100%)",
-    borderColor: "rgba(16, 185, 129, 0.35)",
+    accent: "#CC6600",
+    bgGradient: "rgba(2, 11, 34, 0.96)",
+    tabBg: "rgba(2, 16, 48, 0.98)",
+    borderColor: "rgba(255, 255, 255, 0.12)",
     pills: [
       "Live 1-on-1 GMeet Defense",
       "Top 20 Panel Questions Script",
@@ -262,11 +262,10 @@ export default function Solutions() {
       ref={sectionRef}
       style={{
         position: "relative",
-        backgroundColor: "var(--bg-primary)",
-        color: "var(--text-primary)",
+        backgroundColor: "#010114",
+        color: "#FFFFFF",
         minHeight: "100vh",
-        paddingTop: "clamp(5rem, 8vh, 7rem)",
-        paddingBottom: "clamp(6rem, 10vh, 8rem)",
+        padding: "6rem 2rem 8rem 2rem",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -274,131 +273,120 @@ export default function Solutions() {
     >
       <div
         style={{
-          maxWidth: "1240px",
+          maxWidth: "1280px",
           margin: "0 auto",
-          padding: "0 1.5rem",
           position: "relative",
           zIndex: 1,
           width: "100%",
         }}
       >
-        {/* ── Unified Stage (Header + Cards stay locked together) ── */}
+        {/* Section Header */}
         <div
+          style={{
+            textAlign: "center",
+            marginBottom: "2rem",
+            paddingTop: "0",
+            paddingBottom: "0",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              background: "rgba(204, 102, 0, 0.08)",
+              border: "1px solid rgba(204, 102, 0, 0.3)",
+              padding: "0.25rem 0.8rem",
+              borderRadius: "0px",
+              marginBottom: "0.75rem",
+            }}
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                background: "var(--accent-orange)",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.7rem",
+                letterSpacing: "0.15em",
+                color: "var(--accent-orange)",
+                textTransform: "uppercase",
+                fontWeight: 600,
+              }}
+            >
+              SECTION 03 // END-TO-END METHODOLOGY
+            </span>
+          </div>
+
+          <h2
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: "clamp(1.85rem, 3.5vw, 2.8rem)",
+              fontWeight: 300,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.15,
+              maxWidth: "1050px",
+              margin: "0 auto",
+              color: "#FFFFFF",
+            }}
+          >
+            Not just raw output.{" "}
+            <span style={{ color: "var(--text-secondary)" }}>
+              An airtight, defensible methodology.
+            </span>
+          </h2>
+
+          <p
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: "0.88rem",
+              lineHeight: 1.55,
+              color: "var(--text-secondary)",
+              maxWidth: "880px",
+              margin: "0.5rem auto 0",
+            }}
+          >
+            Explore the 4 execution gates of the JAXIS pipeline — from
+            pre-flight diagnostics to live 1-on-1 panel defense readiness.
+          </p>
+        </div>
+
+        {/* ── Cards Stacking Deck ── */}
+        <div
+          className="stacked-cards-deck"
           style={{
             position: "relative",
             width: "100%",
-            maxWidth: "1160px",
-            margin: "0 auto",
+            minHeight: "560px",
+            paddingBottom: "3rem",
           }}
         >
-          {/* Section Header */}
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: "1.75rem",
-              paddingTop: "0",
-              paddingBottom: "0",
-            }}
-          >
+          {STACKED_CARDS.map((card, idx) => (
             <div
+              key={card.id}
+              ref={(el) => {
+                cardWrapperRefs.current[idx] = el;
+              }}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                background: "rgba(204, 102, 0, 0.08)",
-                border: "1px solid rgba(204, 102, 0, 0.3)",
-                padding: "0.25rem 0.8rem",
-                borderRadius: "0px",
-                marginBottom: "0.5rem",
+                position: idx === 0 ? "relative" : "absolute",
+                top: idx === 0 ? 0 : `${idx * 52}px`,
+                left: 0,
+                right: 0,
+                zIndex: idx + 1,
+                width: "100%",
+                willChange: "transform",
+                transform: "translate3d(0, 0, 0)",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
               }}
             >
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  background: "var(--accent-orange)",
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.15em",
-                  color: "var(--accent-orange)",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                }}
-              >
-                SECTION 03 // END-TO-END METHODOLOGY
-              </span>
+              <SolutionCard card={card} index={idx} isStaticLayout={true} />
             </div>
-
-            <h2
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: "clamp(1.75rem, 3.2vw, 2.6rem)",
-                fontWeight: 300,
-                letterSpacing: "-0.03em",
-                lineHeight: 1.15,
-                maxWidth: "1050px",
-                margin: "0 auto",
-                color: "#FFFFFF",
-              }}
-            >
-              Not just raw output.{" "}
-              <span style={{ color: "var(--text-secondary)" }}>
-                An airtight, defensible methodology.
-              </span>
-            </h2>
-
-            <p
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: "0.85rem",
-                lineHeight: 1.5,
-                color: "var(--text-secondary)",
-                maxWidth: "880px",
-                margin: "0.4rem auto 0",
-              }}
-            >
-              Explore the 4 execution gates of the JAXIS pipeline — from
-              pre-flight diagnostics to live 1-on-1 panel defense readiness.
-            </p>
-          </div>
-
-          {/* ── Cards Stacking Deck ── */}
-          <div
-            className="stacked-cards-deck"
-            style={{
-              position: "relative",
-              width: "100%",
-              minHeight: "560px",
-              paddingBottom: "3rem",
-            }}
-          >
-            {STACKED_CARDS.map((card, idx) => (
-              <div
-                key={card.id}
-                ref={(el) => {
-                  cardWrapperRefs.current[idx] = el;
-                }}
-                style={{
-                  position: idx === 0 ? "relative" : "absolute",
-                  top: idx === 0 ? 0 : `${idx * 52}px`,
-                  left: 0,
-                  right: 0,
-                  zIndex: idx + 1,
-                  width: "100%",
-                  willChange: "transform",
-                  transform: "translate3d(0, 0, 0)",
-                  backfaceVisibility: "hidden",
-                  WebkitBackfaceVisibility: "hidden",
-                }}
-              >
-                <SolutionCard card={card} index={idx} isStaticLayout={true} />
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
     </section>

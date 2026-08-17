@@ -255,7 +255,7 @@ export default function SolutionCard({
                     fontFamily: "var(--font-mono)",
                     fontSize: "0.8rem",
                     fontWeight: 600,
-                    color: card.accent,
+                    color: "#38bdf8",
                   }}
                 >
                   {feat.metric}

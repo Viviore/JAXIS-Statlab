@@ -111,7 +111,7 @@ export default function FAQ() {
         zIndex: 10,
       }}
     >
-      <div style={{ maxWidth: "960px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+      <div style={{ maxWidth: "1280px", width: "100%", margin: "0 auto", position: "relative", zIndex: 1 }}>
         
         {/* Header Block */}
         <div
