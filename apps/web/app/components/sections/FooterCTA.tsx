@@ -237,7 +237,6 @@ export default function FooterCTA() {
               border: "1px solid rgba(255,255,255,0.45)",
               background: "transparent",
               display: "inline-block",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
               transition: "border-color 0.2s ease, background 0.2s ease, transform 0.2s ease",
             }}
             onMouseEnter={(e) => {

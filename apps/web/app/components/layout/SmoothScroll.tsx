@@ -35,9 +35,24 @@ export default function SmoothScroll({
     // Disable GSAP's lag smoothing to prevent jank with Lenis
     gsap.ticker.lagSmoothing(0);
 
+    // Suppress external browser extension unhandled rejections from interrupting Next.js Dev Overlay
+    const onUnhandledRejection = (e: PromiseRejectionEvent) => {
+      const reason = e.reason?.toString?.() || "";
+      const stack = e.reason?.stack?.toString?.() || "";
+      if (
+        reason.includes("MetaMask") ||
+        stack.includes("chrome-extension://") ||
+        stack.includes("inpage.js")
+      ) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+
     return () => {
       lenis.destroy();
       gsap.ticker.remove(update);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
     };
   }, []);
 

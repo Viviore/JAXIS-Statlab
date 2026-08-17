@@ -18,9 +18,10 @@ const STACKED_CARDS: StackedCardData[] = [
     title: "Distribution Diagnostics & Assumption Shield",
     subtitle:
       "Before fitting any statistical model, your raw dataset passes 18 automated mathematical assumption gates to prevent model misspecification.",
-    accent: "#CC6600", // Enterprise Orange (Root Brand Accent)
-    tabBg: "#FFF7ED", // Solid light amber (Zero gradients)
-    borderColor: "#CBD5E1",
+    accent: "#CC6600", // Enterprise Orange
+    bgGradient: "linear-gradient(180deg, #011D38 0%, #010F20 100%)",
+    tabBg: "linear-gradient(90deg, rgba(204, 102, 0, 0.25) 0%, rgba(1, 46, 87, 0.95) 100%)",
+    borderColor: "rgba(204, 102, 0, 0.45)",
     pills: [
       "Shapiro-Wilk Normality",
       "Breusch-Pagan Homoscedasticity",
@@ -67,8 +68,9 @@ const STACKED_CARDS: StackedCardData[] = [
     subtitle:
       "Custom statistical architectures coded in R and Python tailored to your exact experimental design and research questions.",
     accent: "#0284C7", // Deep Ocean Blue
-    tabBg: "#F0F9FF", // Solid light blue (Zero gradients)
-    borderColor: "#CBD5E1",
+    bgGradient: "linear-gradient(180deg, #011E3D 0%, #001024 100%)",
+    tabBg: "linear-gradient(90deg, rgba(2, 132, 199, 0.25) 0%, rgba(1, 46, 87, 0.95) 100%)",
+    borderColor: "rgba(2, 132, 199, 0.35)",
     pills: [
       "Hierarchical Linear (HLM)",
       "Structural Equation (SEM / Path)",
@@ -115,8 +117,9 @@ const STACKED_CARDS: StackedCardData[] = [
     subtitle:
       "No deliverable leaves JAXIS without independent dual-analyst cross-calculation and senior sign-off.",
     accent: "#DC2626", // Precision Status Red
-    tabBg: "#FEF2F2", // Solid light red (Zero gradients)
-    borderColor: "#CBD5E1",
+    bgGradient: "linear-gradient(180deg, #380C14 0%, #1F050A 100%)",
+    tabBg: "linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, rgba(56, 12, 20, 0.95) 100%)",
+    borderColor: "rgba(239, 68, 68, 0.35)",
     pills: [
       "Double-Blind Code Replication",
       "Zero P-Hacking Policy",
@@ -161,9 +164,10 @@ const STACKED_CARDS: StackedCardData[] = [
     title: "1-on-1 Mock Panel Defense & Narrative Synthesis",
     subtitle:
       "A complete 4-part writeup you can read aloud, paired with live 1-on-1 coaching so you defend every decimal with confidence.",
-    accent: "#059669", // Verified Emerald (RULE_REL_02 Gate)
-    tabBg: "#ECFDF5", // Solid light emerald (Zero gradients)
-    borderColor: "#CBD5E1",
+    accent: "#10B981", // Green
+    bgGradient: "linear-gradient(180deg, #053D2E 0%, #021F17 100%)",
+    tabBg: "linear-gradient(90deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 61, 46, 0.95) 100%)",
+    borderColor: "rgba(16, 185, 129, 0.35)",
     pills: [
       "Live 1-on-1 GMeet Defense",
       "Top 20 Panel Questions Script",
@@ -258,10 +262,10 @@ export default function Solutions() {
       ref={sectionRef}
       style={{
         position: "relative",
-        backgroundColor: "transparent",
-        color: "#010114",
+        backgroundColor: "var(--bg-primary)",
+        color: "var(--text-primary)",
         minHeight: "100vh",
-        paddingTop: "clamp(7.5rem, 13vh, 10.5rem)",
+        paddingTop: "clamp(5rem, 8vh, 7rem)",
         paddingBottom: "clamp(6rem, 10vh, 8rem)",
         display: "flex",
         flexDirection: "column",
@@ -275,6 +279,7 @@ export default function Solutions() {
           padding: "0 1.5rem",
           position: "relative",
           zIndex: 1,
+          width: "100%",
         }}
       >
         {/* ── Unified Stage (Header + Cards stay locked together) ── */}
@@ -290,7 +295,7 @@ export default function Solutions() {
           <div
             style={{
               textAlign: "center",
-              marginBottom: "1.25rem",
+              marginBottom: "1.75rem",
               paddingTop: "0",
               paddingBottom: "0",
             }}
@@ -303,7 +308,7 @@ export default function Solutions() {
                 background: "rgba(204, 102, 0, 0.08)",
                 border: "1px solid rgba(204, 102, 0, 0.3)",
                 padding: "0.25rem 0.8rem",
-                borderRadius: "999px",
+                borderRadius: "0px",
                 marginBottom: "0.5rem",
               }}
             >
@@ -311,10 +316,9 @@ export default function Solutions() {
                 style={{
                   width: "6px",
                   height: "6px",
-                  borderRadius: "50%",
                   background: "var(--accent-orange)",
                 }}
-              ></span>
+              />
               <span
                 style={{
                   fontFamily: "var(--font-mono)",
@@ -331,18 +335,18 @@ export default function Solutions() {
 
             <h2
               style={{
-                fontFamily: "var(--font-heading), sans-serif",
-                fontSize: "clamp(1.6rem, 2.5vw, 2.1rem)",
-                fontWeight: 400,
+                fontFamily: "var(--font-sans), sans-serif",
+                fontSize: "clamp(1.75rem, 3.2vw, 2.6rem)",
+                fontWeight: 300,
                 letterSpacing: "-0.03em",
-                lineHeight: 1.2,
+                lineHeight: 1.15,
                 maxWidth: "1050px",
                 margin: "0 auto",
-                color: "#010114",
+                color: "#FFFFFF",
               }}
             >
               Not just raw output.{" "}
-              <span style={{ color: "#64748B" }}>
+              <span style={{ color: "var(--text-secondary)" }}>
                 An airtight, defensible methodology.
               </span>
             </h2>
@@ -351,10 +355,10 @@ export default function Solutions() {
               style={{
                 fontFamily: "var(--font-sans), sans-serif",
                 fontSize: "0.85rem",
-                lineHeight: 1.45,
-                color: "#475569",
+                lineHeight: 1.5,
+                color: "var(--text-secondary)",
                 maxWidth: "880px",
-                margin: "0.3rem auto 0",
+                margin: "0.4rem auto 0",
               }}
             >
               Explore the 4 execution gates of the JAXIS pipeline — from
@@ -362,7 +366,7 @@ export default function Solutions() {
             </p>
           </div>
 
-          {/* ── Cards Stacking Deck (Fixed absolute stack: Card 04 fully covers Card 03 content) ── */}
+          {/* ── Cards Stacking Deck ── */}
           <div
             className="stacked-cards-deck"
             style={{

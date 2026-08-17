@@ -247,9 +247,12 @@ export default function ParticleGlobe() {
           tmpCNormal.lerp(tmpCHot, blend);
         }
 
-        colBuf[i * 3 + 0] = tmpCNormal.r;
-        colBuf[i * 3 + 1] = tmpCNormal.g;
-        colBuf[i * 3 + 2] = tmpCNormal.b;
+        // 🌟 Atmospheric particle shimmer (organic life at rest)
+        const shimmer = 0.88 + Math.sin(t * 1.6 + i * 0.35) * 0.12;
+
+        colBuf[i * 3 + 0] = tmpCNormal.r * shimmer;
+        colBuf[i * 3 + 1] = tmpCNormal.g * shimmer;
+        colBuf[i * 3 + 2] = tmpCNormal.b * shimmer;
       }
 
       posAttr.needsUpdate = true;
@@ -328,8 +331,11 @@ export default function ParticleGlobe() {
       // Halo opacity smoothly increases with hoverStrength
       const currentHaloOpacity = HALO_BASE_OPACITY + hoverStrength * 0.16;
 
-      coreMat.opacity = eased;
-      haloMat.opacity = eased * (currentHaloOpacity + Math.sin(t * 1.2) * 0.03);
+      // Scroll-driven warp opacity (fades out as particles fly past camera)
+      const scrollOpacity = globeScrollState.opacity !== undefined ? globeScrollState.opacity : 1;
+
+      coreMat.opacity = eased * scrollOpacity;
+      haloMat.opacity = eased * (currentHaloOpacity + Math.sin(t * 1.2) * 0.03) * scrollOpacity;
 
       // Magnetic Parallax Inertial Tilt with smooth damping
       group.rotation.x = Math.sin(t * 0.05) * 0.06 - mouseSmooth.y * 0.14;

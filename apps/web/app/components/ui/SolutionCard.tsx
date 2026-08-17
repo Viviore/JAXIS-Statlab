@@ -40,7 +40,9 @@ export default function SolutionCard({
   isStaticLayout = false,
 }: SolutionCardProps) {
   const calculatedTop = topOffset ?? `calc(165px + ${index * 52}px)`;
-  const borderColor = card.borderColor ?? "#CBD5E1";
+  const cardBg = card.bgGradient ?? "#01162E";
+  const tabBg = card.tabBg ?? "linear-gradient(90deg, rgba(1, 46, 87, 0.95) 0%, rgba(1, 20, 45, 0.98) 100%)";
+  const borderColor = card.borderColor ?? "rgba(255, 255, 255, 0.16)";
 
   return (
     <div
@@ -53,32 +55,30 @@ export default function SolutionCard({
         marginBottom: isStaticLayout ? 0 : isLast ? "3rem" : "18vh",
         width: "100%",
         boxSizing: "border-box",
-        background: "#FFFFFF",
+        background: cardBg,
         border: `1px solid ${borderColor}`,
-        borderRadius: "0px", // Strict Modern Industrial Brutalist 90-degree corners
+        borderRadius: "0px",
         overflow: "hidden",
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03)",
-        transition: "border-color 0.25s ease, box-shadow 0.25s ease",
+        boxShadow: "0 -6px 20px rgba(0, 0, 0, 0.6), 0 30px 60px -15px rgba(0, 0, 0, 0.9)",
+        transition: "border-color 0.3s ease, box-shadow 0.3s ease",
       }}
     >
-      {/* ── 52px Dedicated Header Tab Bar (Always visible in the stack) ── */}
+      {/* ── 50px Dedicated Header Tab Bar (Always visible in the stack) ── */}
       <div
         style={{
-          height: "52px",
+          height: "50px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0 1.5rem",
-          background: card.tabBg ?? "#F8FAFC",
+          background: tabBg,
           borderBottom: `1px solid ${borderColor}`,
           userSelect: "none",
         }}
       >
-        {/* Left: Terminal indicator + Protocol Badge */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
           <span
             style={{
-              display: "inline-block",
               width: "8px",
               height: "8px",
               background: card.accent,
@@ -87,219 +87,140 @@ export default function SolutionCard({
           <span
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "0.72rem",
-              letterSpacing: "0.14em",
+              fontSize: "0.75rem",
+              letterSpacing: "0.12em",
               color: card.accent,
-              fontWeight: 700,
+              fontWeight: 600,
               textTransform: "uppercase",
             }}
           >
             {card.badge}
           </span>
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.65rem",
-              color: "#64748B",
-              letterSpacing: "0.08em",
-              display: "inline-block",
-            }}
-          >
-            // VERIFIED_PROTOCOL
-          </span>
         </div>
 
-        {/* Right: Technical Index Indicator */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.85rem",
+            fontFamily: "var(--font-mono)",
+            fontSize: "1rem",
+            fontWeight: 600,
+            color: card.accent,
+            letterSpacing: "-0.02em",
           }}
         >
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.62rem",
-              letterSpacing: "0.12em",
-              color: "#64748B",
-              textTransform: "uppercase",
-            }}
-          >
-            [ EXECUTION GATE ]
-          </span>
-          <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.85rem",
-              fontWeight: 700,
-              color: card.accent,
-              background: "#FFFFFF",
-              border: `1px solid ${borderColor}`,
-              padding: "2px 8px",
-              letterSpacing: "0.05em",
-            }}
-          >
-            {card.step}
-          </span>
+          {card.step}
         </div>
       </div>
 
-      {/* ── Card Content Body ── */}
-      <div style={{ padding: "clamp(1.5rem, 2.8vw, 2.25rem)", background: "#FFFFFF" }}>
-        {/* Top Header Row with Title + Telemetry Meta */}
-        <div
+      {/* ── Card Content Body (Cleanly covered by subsequent card tops) ── */}
+      <div style={{ padding: "clamp(1.25rem, 2.8vw, 2rem)" }}>
+        {/* Title */}
+        <h3
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: "2rem",
-            flexWrap: "wrap",
-            marginBottom: "1rem",
+            fontFamily: "var(--font-heading)",
+            fontSize: "clamp(1.35rem, 2.4vw, 1.85rem)",
+            fontWeight: 400,
+            letterSpacing: "-0.02em",
+            color: "#FFFFFF",
+            lineHeight: 1.2,
+            marginBottom: "0.6rem",
           }}
         >
-          <div style={{ flex: "1 1 550px" }}>
-            <h3
-              style={{
-                fontFamily: "var(--font-heading), sans-serif",
-                fontSize: "clamp(1.4rem, 2.4vw, 1.95rem)",
-                fontWeight: 700,
-                letterSpacing: "-0.03em",
-                color: "#010114",
-                lineHeight: 1.2,
-                marginBottom: "0.6rem",
-              }}
-            >
-              {card.title}
-            </h3>
+          {card.title}
+        </h3>
 
-            <p
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: "0.88rem",
-                lineHeight: 1.6,
-                color: "#475569",
-                maxWidth: "840px",
-                margin: 0,
-              }}
-            >
-              {card.subtitle}
-            </p>
-          </div>
+        {/* Subtitle */}
+        <p
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "0.88rem",
+            lineHeight: 1.55,
+            color: "var(--text-secondary)",
+            maxWidth: "860px",
+            marginBottom: "1.25rem",
+          }}
+        >
+          {card.subtitle}
+        </p>
 
-          {/* Telemetry Matrix Meta Readout (Industrial Brutalism) */}
-          <div
-            style={{
-              background: "#F8FAFC",
-              border: "1px solid #E2E8F0",
-              padding: "0.6rem 1rem",
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.68rem",
-              letterSpacing: "0.08em",
-              color: "#010114",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.3rem",
-              alignSelf: "flex-start",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem" }}>
-              <span style={{ color: "#64748B" }}>ENGINE:</span>
-              <span style={{ color: card.accent, fontWeight: 700 }}>R 4.4 / PYTHON 3.12</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: "1.5rem" }}>
-              <span style={{ color: "#64748B" }}>SPEC:</span>
-              <span style={{ fontWeight: 600 }}>APA 7.0 COMPLIANT</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tactical Check Pills (Industrial Monospace Tags) */}
+        {/* Tab Pills / Check Tags */}
         <div
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "0.5rem",
+            gap: "0.45rem",
             marginBottom: "1.5rem",
             paddingBottom: "1.25rem",
-            borderBottom: "1px solid #E2E8F0",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
           }}
         >
           {card.pills.map((pill, pIdx) => (
             <div
               key={pIdx}
               style={{
-                background: "#F8FAFC",
-                border: "1px solid #E2E8F0",
-                padding: "0.35rem 0.75rem",
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                padding: "0.3rem 0.7rem",
+                borderRadius: "0px",
                 fontFamily: "var(--font-mono)",
-                fontSize: "0.72rem",
-                color: "#010114",
-                letterSpacing: "0.04em",
+                fontSize: "0.725rem",
+                color: "rgba(255, 255, 255, 0.9)",
+                letterSpacing: "0.02em",
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "0.45rem",
+                gap: "0.35rem",
               }}
             >
-              <span style={{ color: card.accent, fontWeight: 700 }}>[✓]</span>
+              <span style={{ color: card.accent }}>✓</span>
               <span>{pill}</span>
             </div>
           ))}
         </div>
 
-        {/* 4-Column Blueprint Feature Matrix Grid */}
+        {/* 4-Column Feature Grid */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "1px",
-            background: "#E2E8F0",
-            border: "1px solid #E2E8F0",
+            gap: "1.15rem",
           }}
         >
           {card.features.map((feat, fIdx) => (
             <div
               key={fIdx}
               style={{
-                background: "#FFFFFF",
-                padding: "1.25rem",
+                background: "rgba(1, 1, 20, 0.65)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                borderRadius: "0px",
+                padding: "1.15rem",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                minHeight: "155px",
-                transition: "background 0.2s ease",
+                minHeight: "150px",
+                transition: "all 0.25s ease",
               }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#F8FAFC";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#FFFFFF";
-              }}
+              className="feature-card-hover"
             >
               <div>
                 <div
                   style={{
                     fontFamily: "var(--font-mono)",
-                    fontSize: "0.62rem",
-                    letterSpacing: "0.12em",
-                    color: "#64748B",
+                    fontSize: "0.65rem",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
                     textTransform: "uppercase",
-                    marginBottom: "0.45rem",
-                    display: "flex",
-                    justifyContent: "space-between",
+                    marginBottom: "0.35rem",
                   }}
                 >
-                  <span>// {feat.tag}</span>
-                  <span style={{ color: card.accent, fontWeight: 600 }}>[0{fIdx + 1}]</span>
+                  {feat.tag}
                 </div>
 
                 <div
                   style={{
-                    fontFamily: "var(--font-heading), sans-serif",
+                    fontFamily: "var(--font-heading)",
                     fontSize: "0.95rem",
-                    fontWeight: 600,
-                    color: "#010114",
-                    marginBottom: "0.4rem",
+                    fontWeight: 500,
+                    color: "#FFFFFF",
+                    marginBottom: "0.35rem",
                     lineHeight: 1.3,
                   }}
                 >
@@ -308,22 +229,22 @@ export default function SolutionCard({
 
                 <div
                   style={{
-                    fontFamily: "var(--font-sans), sans-serif",
+                    fontFamily: "var(--font-sans)",
                     fontSize: "0.78rem",
-                    lineHeight: 1.5,
-                    color: "#475569",
+                    lineHeight: 1.45,
+                    color: "var(--text-secondary)",
                   }}
                 >
                   {feat.desc}
                 </div>
               </div>
 
-              {/* Bottom Telemetry Metric Readout */}
+              {/* Bottom Metric Badge */}
               <div
                 style={{
-                  marginTop: "1rem",
-                  paddingTop: "0.65rem",
-                  borderTop: "1px solid #F1F5F9",
+                  marginTop: "0.85rem",
+                  paddingTop: "0.6rem",
+                  borderTop: "1px solid rgba(255, 255, 255, 0.06)",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -332,10 +253,9 @@ export default function SolutionCard({
                 <span
                   style={{
                     fontFamily: "var(--font-mono)",
-                    fontSize: "0.82rem",
-                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
                     color: card.accent,
-                    letterSpacing: "0.02em",
                   }}
                 >
                   {feat.metric}
@@ -345,12 +265,12 @@ export default function SolutionCard({
                   style={{
                     fontFamily: "var(--font-mono)",
                     fontSize: "0.58rem",
-                    letterSpacing: "0.08em",
-                    color: "#64748B",
+                    letterSpacing: "0.05em",
+                    color: "var(--text-muted)",
                     textTransform: "uppercase",
                   }}
                 >
-                  &lt; {feat.metricLabel} &gt;
+                  {feat.metricLabel}
                 </span>
               </div>
             </div>

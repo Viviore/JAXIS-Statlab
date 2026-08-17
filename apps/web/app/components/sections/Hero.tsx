@@ -11,57 +11,62 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
-// Stagger timing constants (ms)
-const SNIPPET_BASE_DELAY    = 1600;  // ms — snippets start after headline settles
-const HEADLINE_BASE_DELAY   = 700;   // ms — headline starts while globe is mid-fade
-const HEADLINE_LINE_STAGGER = 300;   // ms between headline lines
-const SNIPPET_BLOCK_STAGGER = 320;   // ms between each snippet block
-const SNIPPET_LINE_STAGGER  = 220;   // ms between lines within a block
-const TYPEWRITER_DURATION   = 900;   // ms — must match CSS animation duration
+// Timing constants
+const HEADLINE_BASE_DELAY   = 600;   // ms — headline starts while globe is mid-fade
+const HEADLINE_LINE_STAGGER = 280;   // ms between headline lines
+const SNIPPET_BASE_DELAY    = 1200;  // ms — snippets start after headline settles
+const SNIPPET_BLOCK_STAGGER = 250;   // ms between each snippet block
+const SNIPPET_LINE_STAGGER  = 180;   // ms between lines within a block
+const TYPEWRITER_DURATION   = 800;   // ms
 
+// Sleek telemetry annotations
 const CODE_SNIPPETS = [
   {
     id: "snippet-top-left",
-    lines: [
-      "[JAXIS_Engine] Data pre-flight complete",
-      "0% Missingness | Normality assumed ✓",
-    ],
-    position: { top: "18%", left: "4%", right: "auto", bottom: "auto" } as React.CSSProperties,
+    code: "01",
+    tag: "JAXIS_ENGINE",
+    line1: "Data pre-flight complete",
+    line2: "0% Missingness | Normality ✓",
+    position: { top: "20%", left: "5%", right: "auto", bottom: "auto" } as React.CSSProperties,
+    align: "left" as const,
     blockDelay: 0,
   },
   {
     id: "snippet-top-right",
-    lines: [
-      "[Studio_OS] Methodology SOW Locked",
-      "Routing to Rank 3 Methodologist...",
-    ],
-    position: { top: "18%", right: "4%", left: "auto", bottom: "auto" } as React.CSSProperties,
+    code: "02",
+    tag: "STUDIO_OS",
+    line1: "Methodology SOW locked",
+    line2: "Routing to Rank 3 Lead...",
+    position: { top: "20%", right: "5%", left: "auto", bottom: "auto" } as React.CSSProperties,
+    align: "right" as const,
     blockDelay: 1,
   },
   {
     id: "snippet-bottom-left",
-    lines: [
-      "[AOG_Script] APA 7th Ed.",
-      "Table Generation: SUCCESS",
-    ],
-    position: { bottom: "18%", left: "4%", top: "auto", right: "auto" } as React.CSSProperties,
+    code: "03",
+    tag: "AOG_SCRIPT",
+    line1: "APA 7th formatting",
+    line2: "Table Generation: SUCCESS",
+    position: { bottom: "20%", left: "5%", top: "auto", right: "auto" } as React.CSSProperties,
+    align: "left" as const,
     blockDelay: 2,
   },
   {
     id: "snippet-bottom-right",
-    lines: [
-      "[QA_Gateway] Tier 2 Peer Review: PASSED",
-      "Ready for Panel Defense ✓",
-    ],
-    position: { bottom: "18%", right: "4%", top: "auto", left: "auto" } as React.CSSProperties,
+    code: "04",
+    tag: "QA_GATEWAY",
+    line1: "Tier 2 Peer Review: PASSED",
+    line2: "Ready for Panel Defense ✓",
+    position: { bottom: "20%", right: "5%", top: "auto", left: "auto" } as React.CSSProperties,
+    align: "right" as const,
     blockDelay: 3,
   },
 ];
 
 // Headline broken into animatable lines
 const HEADLINE_LINES = [
-  { text: "Panel-Ready",    delay: 0 },
-  { text: "Research.",      delay: 1, accent: false },
+  { text: "Panel-Ready", delay: 0 },
+  { text: "Research.",   delay: 1, accent: true },
 ];
 
 const INTRO_TEXT = "JAXIS is statistical consulting for researchers and students. Every project gets analyzed by one statistician and double-checked by another before you receive it — so your results hold up when your adviser or panel questions them.";
@@ -71,7 +76,7 @@ export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLElement>(null);
 
-  // Subtle parallax on mouse move — pointer-capable devices only
+  // Reset scroll on mount
   useEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
@@ -115,34 +120,43 @@ export default function Hero() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
-        end: "+=160%", 
+        end: "+=130%", 
         scrub: 1,
         pin: true,
         invalidateOnRefresh: true,
       }
     });
 
-    // ── Phase 1: Fade out initial headline & telemetry snippets (0% to 30%) ──
-    tl.to(".hero-main-content", { y: -45, opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0);
-    tl.to(".hero-snippets-container", { y: -25, opacity: 0, duration: 0.3, ease: "power2.inOut" }, 0);
+    // ── Phase 1: Fade out initial headline & telemetry snippets (0% to 25%) ──
+    tl.to(".hero-main-content", { y: -35, opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0);
+    tl.to(".hero-snippets-container", { y: -20, opacity: 0, duration: 0.25, ease: "power2.inOut" }, 0);
 
-    // ── Phase 1.5: 3D Globe Expansion & Rotation (0% to 80%) ──
+    // ── Phase 2: Moderate Globe Shift & Statement Reveal (20% to 75%) ──
     tl.to(globeScrollState, {
-      yOffset: -3.0,
-      scale: 2.2,
-      offset: Math.PI * 1.6,
-      interactiveWeight: 0, // Disable microinteractions during Phase 2
-      duration: 0.8, 
+      yOffset: -1.8,
+      scale: 1.6,
+      offset: Math.PI * 1.2,
+      opacity: 1,
+      interactiveWeight: 0,
+      duration: 0.55, 
       ease: "power2.inOut" 
-    }, 0.05); 
+    }, 0.15); 
 
-    // ── Phase 2: Reveal JAXIS Message Statement Word-by-Word (25% to 85%) ──
     const wordEls = containerRef.current.querySelectorAll(".hero-reveal-word");
     tl.fromTo(wordEls,
-      { opacity: 0, y: 20, filter: "blur(4px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", stagger: { amount: 0.45 }, duration: 0.5, ease: "power2.out" },
-      0.25
+      { opacity: 0, y: 15, filter: "blur(3px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", stagger: { amount: 0.35 }, duration: 0.40, ease: "power2.out" },
+      0.20
     );
+
+    // ── Phase 3: Smooth dissolve into Approach (75% to 100%) ──
+    tl.to(".hero-message-overlay", {
+      opacity: 0,
+      y: -30,
+      filter: "blur(4px)",
+      duration: 0.25,
+      ease: "power2.inOut"
+    }, 0.75);
 
   }, { scope: containerRef, dependencies: [] });
 
@@ -152,9 +166,10 @@ export default function Hero() {
       <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 1 }}>
         <ParticleGlobe />
         
-        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, background: "radial-gradient(ellipse 90% 60% at 50% 110%, rgba(1,22,57,0.80) 0%, rgba(0,4,20,0) 65%)" }} />
-        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(to bottom, rgba(0,0,8,0.55) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.5) 100%)" }} />
-        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 4, background: "radial-gradient(ellipse 62% 56% at 50% 50%, transparent 20%, rgba(0,8,20,0.38) 58%, rgba(0,8,20,0.90) 80%)" }} />
+        {/* Optical center contrast vignette to keep text razor sharp */}
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2, background: "radial-gradient(ellipse 90% 60% at 50% 110%, rgba(1,22,57,0.50) 0%, rgba(0,4,20,0) 65%)" }} />
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(to bottom, rgba(0,0,8,0.40) 0%, transparent 20%, transparent 75%, rgba(0,0,8,0.45) 100%)" }} />
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 4, background: "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(1,1,20,0.60) 0%, rgba(1,1,20,0.25) 45%, transparent 80%)" }} />
       </div>
       
       <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -173,202 +188,230 @@ export default function Hero() {
             background: "transparent",
           }}
         >
-      {/* ── Floating statistical code annotations ── */}
-        <div className="hero-snippets-container" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
-        {CODE_SNIPPETS.map((snippet) => {
-          const blockStart = SNIPPET_BASE_DELAY + snippet.blockDelay * SNIPPET_BLOCK_STAGGER;
-        return (
-          <div
-            key={snippet.id}
-            id={snippet.id}
-            className="hero-snippet-block"
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              ...snippet.position,
-              fontFamily: "var(--font-mono), monospace",
-              fontSize: "0.75rem",
-              lineHeight: "1.9",
-              color: "rgba(255,255,255,0.30)",
-              letterSpacing: "0.04em",
-              userSelect: "none",
-              pointerEvents: "none",
-              zIndex: 5,
-            }}
-          >
-            {snippet.lines.map((line, i) => {
-              const isLast   = i === snippet.lines.length - 1;
-              const lineDelay = blockStart + i * (TYPEWRITER_DURATION + SNIPPET_LINE_STAGGER);
-              const cursorDelay = TYPEWRITER_DURATION;
+          {/* ── Sleek Floating Telemetry Annotations (Muted Grey Monospace Accents) ── */}
+          <div className="hero-snippets-container" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
+            {CODE_SNIPPETS.map((snippet) => {
+              const blockStart = SNIPPET_BASE_DELAY + snippet.blockDelay * SNIPPET_BLOCK_STAGGER;
+              const isLeft = snippet.align === "left";
               return (
                 <div
-                  key={i}
-                  className={`snippet-line${isLast ? " snippet-line-last" : ""}`}
+                  key={snippet.id}
+                  id={snippet.id}
+                  className="hero-snippet-block"
+                  aria-hidden="true"
                   style={{
-                    animationDelay: `${lineDelay}ms`,
-                    ...(isLast ? { "--cursor-delay": `${cursorDelay}ms` } as React.CSSProperties : {}),
+                    position: "absolute",
+                    ...snippet.position,
+                    fontFamily: "var(--font-mono), monospace",
+                    textAlign: isLeft ? "left" : "right",
+                    userSelect: "none",
+                    pointerEvents: "none",
+                    zIndex: 5,
+                    maxWidth: "260px",
+                    opacity: 0.85,
                   }}
                 >
-                  {line.split("").map((char, charIdx) => {
-                    // Deterministic pseudo-random delay based on character index so it matches perfectly on server/client hydration
-                    const seed = snippet.blockDelay * 100 + i * 50 + charIdx;
-                    // Format to fixed decimal places to prevent server/client float precision hydration mismatches
-                    const pseudoRandom = Math.abs(Math.sin(seed * 9999)) * 12;
-                    // Delay the flicker until AFTER the typewriter animation finishes for this specific line
-                    const startOffset = (lineDelay + TYPEWRITER_DURATION) / 1000; 
-                    const totalDelay = (startOffset + pseudoRandom).toFixed(2);
-                    return (
-                      <span key={charIdx} className="flicker-char" style={{ animationDelay: `${totalDelay}s` }}>
-                        {char === " " ? "\u00A0" : char}
-                      </span>
-                    );
-                  })}
+                  {/* Muted Grey Header: Tag + Index */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: isLeft ? "flex-start" : "flex-end",
+                      gap: "7px",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    {isLeft && (
+                      <span style={{ width: "3.5px", height: "3.5px", borderRadius: "50%", background: "rgba(255, 255, 255, 0.45)" }} />
+                    )}
+                    <span style={{ fontSize: "0.64rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.42)", letterSpacing: "0.08em" }}>
+                      [{snippet.code}] {snippet.tag}
+                    </span>
+                    {!isLeft && (
+                      <span style={{ width: "3.5px", height: "3.5px", borderRadius: "50%", background: "rgba(255, 255, 255, 0.45)" }} />
+                    )}
+                  </div>
+
+                  {/* Body Lines with delicate grey border indicator */}
+                  <div
+                    style={{
+                      borderLeft: isLeft ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
+                      borderRight: !isLeft ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
+                      paddingLeft: isLeft ? "10px" : "0",
+                      paddingRight: !isLeft ? "10px" : "0",
+                      fontSize: "0.70rem",
+                      lineHeight: "1.65",
+                      letterSpacing: "0.02em",
+                      color: "rgba(255, 255, 255, 0.35)",
+                    }}
+                  >
+                    {[snippet.line1, snippet.line2].map((line, lineIdx) => {
+                      const lineDelay = blockStart + lineIdx * (TYPEWRITER_DURATION + SNIPPET_LINE_STAGGER);
+                      const isSuccess = line.includes("✓") || line.includes("SUCCESS") || line.includes("PASSED");
+                      return (
+                        <div
+                          key={lineIdx}
+                          className={`snippet-line${lineIdx === 1 ? " snippet-line-last" : ""}`}
+                          style={{
+                            animationDelay: `${lineDelay}ms`,
+                            color: isSuccess ? "rgba(255, 255, 255, 0.48)" : "rgba(255, 255, 255, 0.32)",
+                          }}
+                        >
+                          {line}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
           </div>
-        );
-      })}
-      </div>
 
-      {/* ── Content: headline + caption + CTA ── */}
-      <div
-        className="hero-main-content"
-        style={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          padding: "0 1.5rem",
-          maxWidth: "900px",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <h1
-          id="hero-headline"
-          style={{
-            fontFamily: "var(--font-heading), sans-serif",
-            fontSize: "clamp(2.6rem, 7vw, 5.5rem)",
-            fontWeight: 300,
-            lineHeight: 1.12,
-            letterSpacing: "-0.02em",
-            color: "#FFFFFF",
-            margin: 0,
-            textAlign: "center",
-            transition: "transform 0.15s ease-out",
-            textShadow: "0 2px 24px rgba(0,0,0,0.55), 0 1px 6px rgba(0,0,0,0.4)",
-          }}
-        >
-          {HEADLINE_LINES.map(({ text, delay, accent }) => (
-            <span
-              key={text}
-              className="hero-line"
-              style={{ animationDelay: `${HEADLINE_BASE_DELAY + delay * HEADLINE_LINE_STAGGER}ms` }}
-            >
-              {accent ? (
-                <em style={{ fontStyle: "normal", color: "var(--accent-orange)", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
-                  {text}
-                </em>
-              ) : text}
-            </span>
-          ))}
-        </h1>
-
-        <p
-          className="hero-caption"
-          style={{
-            fontFamily: "var(--font-sans), sans-serif",
-            fontSize: "0.78rem",
-            fontWeight: 400,
-            color: "rgba(255,255,255,0.65)",
-            lineHeight: 1.65,
-            maxWidth: "380px",
-            margin: "1.75rem auto 0",
-            letterSpacing: "0.01em",
-            animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 300}ms`,
-          }}
-        >
-          Premium statistical consulting for students and researchers
-          who cannot afford to get their data analysis wrong.
-        </p>
-
-        <div className="hero-cta-wrapper">
-          <a
-            href="#contact"
-            id="hero-cta"
-            className="hero-caption hero-cta-btn"
+          {/* ── Content: Headline + Caption + CTA ── */}
+          <div
+            className="hero-main-content"
             style={{
-              fontFamily: "var(--font-sans), sans-serif",
-              fontSize: "0.7rem",
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "#FFFFFF",
-              textDecoration: "none",
-              padding: "12px 32px",
-              border: "1px solid rgba(255,255,255,0.45)",
-              borderRadius: "2px",
-              background: "transparent",
-              transition: "border-color 0.2s ease, background 0.2s ease",
-              animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 600}ms`,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.borderColor = "var(--accent-orange)";
-              el.style.background = "rgba(204,102,0,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.borderColor = "rgba(255,255,255,0.45)";
-              el.style.background = "transparent";
+              position: "relative",
+              zIndex: 10,
+              textAlign: "center",
+              padding: "0 1.5rem",
+              maxWidth: "900px",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            Submit Your Research for Review
-          </a>
-        </div>
-      </div>
+            <h1
+              id="hero-headline"
+              style={{
+                fontFamily: "var(--font-heading), sans-serif",
+                fontSize: "clamp(2.6rem, 7vw, 5.5rem)",
+                fontWeight: 300,
+                lineHeight: 1.12,
+                letterSpacing: "-0.02em",
+                color: "#FFFFFF",
+                margin: 0,
+                textAlign: "center",
+                transition: "transform 0.15s ease-out",
+              }}
+            >
+              {HEADLINE_LINES.map(({ text, delay, accent }) => (
+                <span
+                  key={text}
+                  className="hero-line"
+                  style={{ animationDelay: `${HEADLINE_BASE_DELAY + delay * HEADLINE_LINE_STAGGER}ms` }}
+                >
+                  {accent ? (
+                    <em style={{ fontStyle: "normal", color: "var(--accent-orange)" }}>
+                      {text}
+                    </em>
+                  ) : text}
+                </span>
+              ))}
+            </h1>
 
-      {/* ── JAXIS Message (Revealed on ScrollTrigger) ── */}
-      <div 
-        className="hero-message-overlay"
-        style={{ 
-          position: "absolute", 
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "100%",
-          maxWidth: "1050px", 
-          textAlign: "center", 
-          zIndex: 10, 
-          padding: "0 2rem",
-          pointerEvents: "none"
-        }}
-      >
-        <h2 
-          style={{
-            fontFamily: "var(--font-sans), sans-serif",
-            fontSize: "clamp(1.2rem, 3.2vw, 2.8rem)",
-            fontWeight: 300,
-            lineHeight: 1.35,
-            letterSpacing: "-0.02em",
-            color: "#FFFFFF",
-            textShadow: "0 2px 24px rgba(0,0,0,0.65), 0 1px 6px rgba(0,0,0,0.5)",
-            margin: 0
-          }}
-        >
-          {INTRO_WORDS.map((word, i) => (
-            <React.Fragment key={i}>
-              <span className="hero-reveal-word" style={{ willChange: "opacity, transform", display: "inline-block", opacity: 0 }}>
-                {word}
-              </span>
-              {i < INTRO_WORDS.length - 1 && " "}
-            </React.Fragment>
-          ))}
-        </h2>
-      </div>
+            <p
+              className="hero-caption"
+              style={{
+                fontFamily: "var(--font-sans), sans-serif",
+                fontSize: "0.82rem",
+                fontWeight: 400,
+                color: "rgba(255,255,255,0.75)",
+                lineHeight: 1.68,
+                maxWidth: "420px",
+                margin: "1.75rem auto 0",
+                letterSpacing: "0.01em",
+                animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 200}ms`,
+              }}
+            >
+              Premium statistical consulting for students and researchers
+              who cannot afford to get their data analysis wrong.
+            </p>
 
+            <div className="hero-cta-wrapper" style={{ marginTop: "2rem" }}>
+              <a
+                href="#contact"
+                id="hero-cta"
+                className="hero-caption hero-cta-btn"
+                style={{
+                  fontFamily: "var(--font-sans), sans-serif",
+                  fontSize: "0.72rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "#FFFFFF",
+                  textDecoration: "none",
+                  padding: "13px 34px",
+                  border: "1px solid rgba(204,102,0,0.65)",
+                  borderRadius: "4px",
+                  background: "rgba(204,102,0,0.12)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  animationDelay: `${HEADLINE_BASE_DELAY + HEADLINE_LINE_STAGGER * 3 + 450}ms`,
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget;
+                  el.style.borderColor = "var(--accent-orange)";
+                  el.style.background = "rgba(204,102,0,0.25)";
+                  const arrow = el.querySelector<HTMLElement>(".hero-cta-arrow");
+                  if (arrow) arrow.style.transform = "translateX(4px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget;
+                  el.style.borderColor = "rgba(204,102,0,0.65)";
+                  el.style.background = "rgba(204,102,0,0.12)";
+                  const arrow = el.querySelector<HTMLElement>(".hero-cta-arrow");
+                  if (arrow) arrow.style.transform = "translateX(0)";
+                }}
+              >
+                <span>Submit Your Research for Review</span>
+                <span className="hero-cta-arrow" style={{ transition: "transform 0.2s ease", display: "inline-block" }}>→</span>
+              </a>
+            </div>
+          </div>
+
+          {/* ── JAXIS Message (Revealed on ScrollTrigger Phase 2) ── */}
+          <div 
+            className="hero-message-overlay"
+            style={{ 
+              position: "absolute", 
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "100%",
+              maxWidth: "1050px", 
+              textAlign: "center", 
+              zIndex: 10, 
+              padding: "0 2rem",
+              pointerEvents: "none"
+            }}
+          >
+            <h2 
+              style={{
+                fontFamily: "var(--font-sans), sans-serif",
+                fontSize: "clamp(1.2rem, 3.2vw, 2.8rem)",
+                fontWeight: 300,
+                lineHeight: 1.35,
+                letterSpacing: "-0.02em",
+                color: "#FFFFFF",
+                margin: 0
+              }}
+            >
+              {INTRO_WORDS.map((word, i) => (
+                <React.Fragment key={i}>
+                  <span className="hero-reveal-word" style={{ willChange: "opacity, transform", display: "inline-block", opacity: 0 }}>
+                    {word}
+                  </span>
+                  {i < INTRO_WORDS.length - 1 && " "}
+                </React.Fragment>
+              ))}
+            </h2>
+          </div>
         </section>
       </div>
     </div>
