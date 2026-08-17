@@ -1,93 +1,219 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import gsap from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const FAQ_DATA = [
   {
+    index: "01",
     question: "What is your standard turnaround time?",
-    answer: "Turnaround depends on project scope. Standard statistical modeling typically takes 3 to 7 business days, while full clinical trial analysis or comprehensive dissertation support may take 2 to 4 weeks. We establish strict timelines in the Statement of Work (SOW) before we begin."
+    answer:
+      "Turnaround depends on project scope. Standard descriptive and inferential packages (DataCheck, Start, Core) are completed in 3 to 7 business days. Complex structural equation modeling (SEM) or longitudinal clinical trial analyses take 2 to 3 weeks. If you are on an urgent deadline, our 24-Hour and 48-Hour Rush upgrades are available.",
+    category: "TIMELINE & TURNAROUND",
   },
   {
-    question: "Do you offer revisions if my committee has feedback?",
-    answer: "Yes. Every engagement includes dedicated revision cycles as outlined in your SOW. If your academic panel or peer-reviewers request adjustments to the methodology or reporting, our team will execute those changes swiftly to ensure approval."
+    index: "02",
+    question: "Do you offer revisions if my panel or adviser requests changes?",
+    answer:
+      "Yes. Every fixed package includes a comprehensive Revision Shield. If your thesis panel, dissertation committee, or peer-reviewers request adjustments, clarifications, or alternate parameterizations within the original locked Scope of Work, our senior team executes those revisions rapidly at zero additional charge.",
+    category: "REVISION GUARANTEE",
   },
   {
-    question: "How do you handle data privacy and intellectual property?",
-    answer: "All client data is scrubbed of Personally Identifiable Information (PII) before it enters our execution lab. Every JAXIS statistician operates under strict, binding Non-Disclosure Agreements (NDAs). Your research and findings remain entirely your intellectual property."
+    index: "03",
+    question: "How do you protect data privacy and participant anonymity?",
+    answer:
+      "All client datasets undergo cryptographic de-identification and PII sanitization before entering our execution lab. Patient IDs, respondent names, and institutional identifiers are scrubbed. Every statistician operates under legally binding Non-Disclosure Agreements (NDAs), and your research findings remain 100% your intellectual property.",
+    category: "DATA SECURITY & NDAS",
   },
   {
-    question: "What happens if my results are not statistically significant?",
-    answer: "We are committed to scientific truth. We do not manipulate data or engage in p-hacking to force significance. If your results are null, our statisticians will help you rigorously explain and defend the findings to your panel, providing robust methodological justification."
+    index: "04",
+    question: "What happens if my results are not statistically significant (p > .05)?",
+    answer:
+      "We strictly uphold scientific truth and enforce our RULE_ETH_01 Zero-Tolerance Anti-P-Hacking Policy. We never fabricate data or manipulate variables to force significance. If your results yield a null finding, our statisticians build rigorous statistical power justifications and theoretical explanations so you can defend your findings to your panel with complete academic credibility.",
+    category: "ETHICAL INTEGRITY & P-VALUES",
   },
   {
-    question: "How does the payment and escrow system work?",
-    answer: "To ensure mutual security, your payment is held in escrow upon signing the SOW. The funds are only released to our execution team once the final, flawless deliverable has passed our internal Senior QA check and is ready for you."
-  }
+    index: "05",
+    question: "How does the escrow payment and QA release gate work?",
+    answer:
+      "To ensure mutual integrity, your funds are secured upon Scope of Work (SOW) protocol lock. Deliverables are permanently held behind our 2-Pass QA Gate (RULE_REL_02). Final output and code scripts are only released once an independent Senior QA Lead replicates every calculation and validates 100% decimal concordance.",
+    category: "ESCROW & QA GATING",
+  },
+  {
+    index: "06",
+    question: "What exact files and source code do I receive upon delivery?",
+    answer:
+      "You receive the complete JAXIS Defense Suite: (1) Fully commented reproducible source code scripts in R (.R), Python (.py), or SPSS (.sps), (2) Cleaned analysis dataset (.sav / .csv), (3) Publication-ready APA 7th Edition formatted tables, and (4) Plain-English narrative reports explaining every statistical test chosen and what each finding means.",
+    category: "DELIVERABLES & CODE",
+  },
 ];
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".faq-header",
+        { opacity: 0, y: 25 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.75,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".faq-header",
+            start: "top 85%",
+          },
+        }
+      );
+
+      gsap.fromTo(
+        ".faq-item",
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.55,
+          stagger: 0.08,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".faq-container",
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   const toggleAccordion = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
-    <section 
-      style={{ 
+    <section
+      id="faq"
+      ref={sectionRef}
+      style={{
         position: "relative",
-        backgroundColor: "transparent", 
-        padding: "8rem 2rem", 
-        color: "#010114",
+        backgroundColor: "#010114",
+        padding: "6rem 2rem 8rem 2rem",
+        color: "#FFFFFF",
+        zIndex: 10,
       }}
     >
-      <div style={{ maxWidth: "800px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+      <div style={{ maxWidth: "960px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         
-        <div style={{ marginBottom: "3.5rem", textAlign: "center" }}>
-          <span
-            style={{
-              fontFamily: "var(--font-mono), monospace",
-              fontSize: "0.65rem",
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "var(--accent-orange)",
-              display: "block",
-              marginBottom: "1rem",
-              fontWeight: 600,
-            }}
-          >
-            KNOWLEDGE BASE
-          </span>
-          <h2
-            style={{
-              fontFamily: "var(--font-heading), sans-serif",
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              fontWeight: 400,
-              letterSpacing: "-0.02em",
-              lineHeight: 1.1,
-              color: "#010114",
-            }}
-          >
-            Frequently Asked Questions
-          </h2>
+        {/* Header Block */}
+        <div
+          className="faq-header"
+          style={{
+            borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+            paddingBottom: "2.5rem",
+            marginBottom: "3.5rem",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "2rem",
+            alignItems: "flex-end",
+          }}
+        >
+          <div>
+            <span
+              style={{
+                fontFamily: "var(--font-mono), monospace",
+                fontSize: "0.72rem",
+                letterSpacing: "0.14em",
+                color: "#CC6600",
+                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "0.75rem",
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ display: "inline-block", width: "6px", height: "6px", backgroundColor: "#CC6600" }} />
+              SECTION // 06 — FREQUENTLY ASKED QUESTIONS
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--font-sans), sans-serif",
+                fontSize: "clamp(2.2rem, 5vw, 3.4rem)",
+                fontWeight: 300,
+                lineHeight: 1.08,
+                letterSpacing: "-0.03em",
+                margin: 0,
+                color: "#FFFFFF",
+              }}
+            >
+              Clear Answers.
+              <br />
+              <span style={{ color: "#38bdf8", fontWeight: 400 }}>
+                Zero Ambiguity.
+              </span>
+            </h2>
+          </div>
+
+          <div>
+            <p
+              style={{
+                fontFamily: "var(--font-sans), sans-serif",
+                fontSize: "0.88rem",
+                lineHeight: 1.72,
+                color: "rgba(255, 255, 255, 0.70)",
+                margin: 0,
+                maxWidth: "420px",
+              }}
+            >
+              Everything you need to know about our statistical protocols, turnaround times, academic revisions, and code deliverables.
+            </p>
+          </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {/* FAQ Accordion Container */}
+        <div className="faq-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {FAQ_DATA.map((faq, index) => {
             const isOpen = openIndex === index;
-            
+
             return (
-              <div 
+              <div
                 key={index}
+                className="faq-item"
                 style={{
-                  border: isOpen ? "1px solid rgba(204, 102, 0, 0.35)" : "1px solid #E2E8F0",
-                  borderRadius: "0px",
-                  overflow: "hidden",
-                  backgroundColor: isOpen ? "#FFFDF9" : "#FFFFFF",
-                  boxShadow: isOpen ? "0 4px 20px rgba(204, 102, 0, 0.05)" : "0 2px 8px rgba(0, 0, 0, 0.02)",
-                  transition: "all 0.3s ease",
+                  border: isOpen
+                    ? "1px solid rgba(56, 189, 248, 0.55)"
+                    : "1px solid rgba(255, 255, 255, 0.12)",
+                  borderRadius: 0,
+                  backgroundColor: isOpen
+                    ? "rgba(2, 16, 48, 0.95)"
+                    : "rgba(2, 11, 34, 0.85)",
+                  transition: "background 0.25s ease, border-color 0.25s ease",
+                  position: "relative",
                 }}
               >
+                {/* Active Indicator Line */}
+                {isOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      bottom: 0,
+                      width: "3px",
+                      backgroundColor: "#CC6600",
+                    }}
+                  />
+                )}
+
                 <button
                   onClick={() => toggleAccordion(index)}
                   style={{
@@ -95,61 +221,102 @@ export default function FAQ() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    padding: "1.5rem",
+                    padding: "1.5rem 1.75rem",
                     background: "none",
                     border: "none",
-                    color: "#010114",
+                    color: "#FFFFFF",
                     cursor: "pointer",
                     textAlign: "left",
-                    fontFamily: "var(--font-heading), sans-serif",
-                    fontSize: "1.05rem",
-                    fontWeight: 600,
-                    letterSpacing: "-0.01em",
+                    gap: "1.5rem",
                   }}
                 >
-                  <span style={{ color: isOpen ? "var(--accent-orange)" : "#010114", transition: "color 0.2s ease" }}>
-                    {faq.question}
-                  </span>
-                  <span 
-                    style={{ 
-                      fontSize: "1.25rem", 
-                      color: isOpen ? "var(--accent-orange)" : "#64748B",
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "1rem" }}>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono), monospace",
+                        fontSize: "0.78rem",
+                        color: isOpen ? "#CC6600" : "rgba(255, 255, 255, 0.40)",
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      [{faq.index}]
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-sans), sans-serif",
+                        fontSize: "1.08rem",
+                        fontWeight: 500,
+                        letterSpacing: "-0.01em",
+                        color: isOpen ? "#FFFFFF" : "rgba(255, 255, 255, 0.90)",
+                        transition: "color 0.2s ease",
+                      }}
+                    >
+                      {faq.question}
+                    </span>
+                  </div>
+
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono), monospace",
+                      fontSize: "1.25rem",
+                      color: isOpen ? "#CC6600" : "#38bdf8",
                       transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
                       transition: "transform 0.3s ease, color 0.3s ease",
-                      fontWeight: 300,
+                      flexShrink: 0,
                     }}
                   >
                     +
                   </span>
                 </button>
-                
-                <div 
+
+                <div
                   style={{
                     display: "grid",
                     gridTemplateRows: isOpen ? "1fr" : "0fr",
-                    transition: "grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                    transition: "grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
                   }}
                 >
                   <div style={{ overflow: "hidden" }}>
-                    <p
+                    <div
                       style={{
-                        padding: "0 1.5rem 1.5rem",
-                        margin: 0,
-                        fontFamily: "var(--font-sans), sans-serif",
-                        fontSize: "0.9rem",
-                        lineHeight: 1.75,
-                        color: "#475569",
+                        padding: "0 1.75rem 1.5rem 3.5rem",
+                        borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+                        paddingTop: "1rem",
                       }}
                     >
-                      {faq.answer}
-                    </p>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono), monospace",
+                          fontSize: "0.60rem",
+                          color: "#38bdf8",
+                          letterSpacing: "0.1em",
+                          textTransform: "uppercase",
+                          display: "block",
+                          marginBottom: "0.5rem",
+                        }}
+                      >
+                        // {faq.category}
+                      </span>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontFamily: "var(--font-sans), sans-serif",
+                          fontSize: "0.88rem",
+                          lineHeight: 1.72,
+                          color: "rgba(255, 255, 255, 0.72)",
+                        }}
+                      >
+                        {faq.answer}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-        
+
       </div>
     </section>
   );
