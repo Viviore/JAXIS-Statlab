@@ -11,24 +11,21 @@ if (typeof window !== "undefined") {
 }
 
 // ─── Tuning ───────────────────────────────────────────────────────────────────
-const POINT_COUNT      = 480;
-const SPHERE_RADIUS    = 2.4;
-const CONNECT_DISTANCE = 0.78;
-const HOTSPOT_COUNT    = 32;
+const POINT_COUNT   = 700;   // 700 particle density
+const SPHERE_RADIUS = 2.4;
+const HOTSPOT_COUNT = 36;    // Number of particles illuminated in hover cone
 
 const REST_DIR = new THREE.Vector3(0, 0, 1).normalize();
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
-const COL_NORMAL_NEAR = new THREE.Color(0x6ab4e8);   // front-face, ice-blue
-const COL_NORMAL_FAR  = new THREE.Color(0x091828);   // back-face, near-black
-const COL_HOT_CORE    = new THREE.Color(0xff6010);   // hotspot centre, vivid orange
-const COL_HOT_EDGE    = new THREE.Color(0xffd060);   // hotspot rim, warm gold
-const COL_EDGE_NORMAL = new THREE.Color(0x1e4a7c);
-const COL_EDGE_HOT    = new THREE.Color(0x993010);
+// ─── Luminous Blue Palette ───────────────────────────────────────────────────
+const COL_NORMAL_NEAR = new THREE.Color(0x7dd3fc);   // Front face: crisp electric ice-blue
+const COL_NORMAL_FAR  = new THREE.Color(0x06182c);   // Back face: deep sapphire navy
+const COL_HOT_CORE    = new THREE.Color(0xf0f9ff);   // Interactive hover core: glowing brilliant white-cyan
+const COL_HOT_EDGE    = new THREE.Color(0x0284c7);   // Interactive rim: vibrant azure blue
 
 // ─── Texture factories ────────────────────────────────────────────────────────
 
-/** Sharp core dot — tight bright centre for the crisp layer */
+/** Sharp core dot — crisp inner luminous center */
 function makeCoreGlowTex(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -36,16 +33,16 @@ function makeCoreGlowTex(size = 128): THREE.CanvasTexture {
   const half = size / 2;
   const g = ctx.createRadialGradient(half, half, 0, half, half, half);
   g.addColorStop(0,    "rgba(255,255,255,1.0)");
-  g.addColorStop(0.25, "rgba(255,255,255,0.95)");
-  g.addColorStop(0.55, "rgba(255,255,255,0.35)");
-  g.addColorStop(0.85, "rgba(255,255,255,0.05)");
+  g.addColorStop(0.22, "rgba(255,255,255,0.95)");
+  g.addColorStop(0.50, "rgba(255,255,255,0.30)");
+  g.addColorStop(0.80, "rgba(255,255,255,0.04)");
   g.addColorStop(1,    "rgba(255,255,255,0)");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
   return new THREE.CanvasTexture(canvas);
 }
 
-/** Wide feathered halo — large soft bloom for the glow layer */
+/** Wide feathered halo — soft diffused atmospheric bloom */
 function makeHaloTex(size = 256): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -53,9 +50,9 @@ function makeHaloTex(size = 256): THREE.CanvasTexture {
   const half = size / 2;
   const g = ctx.createRadialGradient(half, half, 0, half, half, half);
   g.addColorStop(0,    "rgba(255,255,255,0.55)");
-  g.addColorStop(0.2,  "rgba(255,255,255,0.30)");
-  g.addColorStop(0.5,  "rgba(255,255,255,0.10)");
-  g.addColorStop(0.8,  "rgba(255,255,255,0.025)");
+  g.addColorStop(0.20, "rgba(255,255,255,0.28)");
+  g.addColorStop(0.50, "rgba(255,255,255,0.09)");
+  g.addColorStop(0.80, "rgba(255,255,255,0.015)");
   g.addColorStop(1,    "rgba(255,255,255,0)");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
@@ -75,22 +72,11 @@ function fibonacciSphere(count: number, radius: number): THREE.Vector3[] {
   return pts;
 }
 
-// ─── Module-scope geometry (computed once at module load, not per mount) ──────────
-type EdgePair = { a: number; b: number };
-
+// ─── Module-scope geometry ───────────────────────────────────────────────────
 const positions = fibonacciSphere(POINT_COUNT, SPHERE_RADIUS);
 const normals   = positions.map(p => p.clone().normalize());
 
-const edgePairs: EdgePair[] = [];
-for (let i = 0; i < positions.length; i++) {
-  for (let j = i + 1; j < positions.length; j++) {
-    if (positions[i]!.distanceTo(positions[j]!) < CONNECT_DISTANCE) {
-      edgePairs.push({ a: i, b: j });
-    }
-  }
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function ParticleGlobe() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -99,15 +85,17 @@ export default function ParticleGlobe() {
     if (!container) return;
 
     // ── Renderer ─────────────────────────────────────────────────────────────
-    // Check if WebGL is supported before initializing to prevent console.error from Next.js overlay
     let isWebGLSupported = false;
     try {
-      const testCanvas = document.createElement('canvas');
-      isWebGLSupported = !!(window.WebGLRenderingContext && (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
+      const testCanvas = document.createElement("canvas");
+      isWebGLSupported = !!(
+        window.WebGLRenderingContext &&
+        (testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl"))
+      );
     } catch {
       isWebGLSupported = false;
     }
-    
+
     if (!isWebGLSupported) {
       console.warn("WebGL not supported, falling back to no-globe.");
       return;
@@ -124,21 +112,7 @@ export default function ParticleGlobe() {
       renderer.setClearColor(0x010114, 1);
       container.appendChild(renderer.domElement);
     } catch {
-      console.warn("WebGL renderer failed to initialize. Displaying fallback.");
-      const fallbackMsg = document.createElement("div");
-      fallbackMsg.style.position = "absolute";
-      fallbackMsg.style.inset = "0";
-      fallbackMsg.style.display = "flex";
-      fallbackMsg.style.alignItems = "center";
-      fallbackMsg.style.justifyContent = "center";
-      fallbackMsg.style.color = "var(--text-muted)";
-      fallbackMsg.style.fontFamily = "var(--font-mono)";
-      fallbackMsg.style.fontSize = "0.75rem";
-      fallbackMsg.style.letterSpacing = "2px";
-      fallbackMsg.style.textTransform = "uppercase";
-      fallbackMsg.style.background = "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(204,102,0,0.05) 0%, transparent 100%)";
-      fallbackMsg.innerHTML = "<span style='color: var(--accent-orange)'>[WARN]</span> WEBGL_CONTEXT_FAILED // 3D_VISUALIZATION_OFFLINE";
-      container.appendChild(fallbackMsg);
+      console.warn("WebGL renderer failed to initialize.");
       return;
     }
 
@@ -147,31 +121,38 @@ export default function ParticleGlobe() {
     const camera = new THREE.PerspectiveCamera(42, initW / initH, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
-    // ── Geometry ───────────────────────────────────────────────────────────────────────
+    // ── Dynamic Buffers ───────────────────────────────────────────────────────
     const hsTarget  = REST_DIR.clone();
     const hsCurrent = REST_DIR.clone();
-    let   isHovered = false;
+    let   isPointerOver = false;
+    let   hoverStrength = 0; // Continuous float: 0.0 (rest) to 1.0 (hovered)
 
-    // Flat position buffer shared by both particle layers
-    const allPos: number[] = [];
-    positions.forEach(p => allPos.push(p.x, p.y, p.z));
+    // Dynamic position buffer (allows smooth micro-forcefield particle displacement)
+    const posBuf  = new Float32Array(POINT_COUNT * 3);
+    positions.forEach((p, i) => {
+      posBuf[i * 3 + 0] = p.x;
+      posBuf[i * 3 + 1] = p.y;
+      posBuf[i * 3 + 2] = p.z;
+    });
+    const posAttr = new THREE.BufferAttribute(posBuf, 3);
+    posAttr.setUsage(THREE.DynamicDrawUsage);
 
-    // Shared colour buffer — both layers read from the same colour values
+    // Shared colour buffer
     const colBuf  = new Float32Array(POINT_COUNT * 3);
     const colAttr = new THREE.BufferAttribute(colBuf, 3);
     colAttr.setUsage(THREE.DynamicDrawUsage);
 
     // ── Layer 1: sharp core dots ──────────────────────────────────────────────
     const coreGeo = new THREE.BufferGeometry();
-    coreGeo.setAttribute("position", new THREE.Float32BufferAttribute(allPos, 3));
-    coreGeo.setAttribute("color",    colAttr);
+    coreGeo.setAttribute("position", posAttr);
+    coreGeo.setAttribute("color", colAttr);
 
     const coreTex = makeCoreGlowTex(128);
     const coreMat = new THREE.PointsMaterial({
-      size: 0.13,
+      size: 0.12,
       vertexColors: true,
       transparent: true,
-      opacity: 0,           // start invisible — fades in via the animation loop
+      opacity: 0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
@@ -181,17 +162,16 @@ export default function ParticleGlobe() {
     const coreMesh = new THREE.Points(coreGeo, coreMat);
 
     // ── Layer 2: wide halo bloom ──────────────────────────────────────────────
-    // Same geometry/colours — just a much larger, semi-transparent overlay
     const haloGeo = new THREE.BufferGeometry();
-    haloGeo.setAttribute("position", new THREE.Float32BufferAttribute(allPos, 3));
-    haloGeo.setAttribute("color",    colAttr);   // same colour buffer — stays in sync
+    haloGeo.setAttribute("position", posAttr);
+    haloGeo.setAttribute("color", colAttr);
 
     const haloTex = makeHaloTex(256);
     const haloMat = new THREE.PointsMaterial({
-      size: 0.72,
+      size: 0.65,
       vertexColors: true,
       transparent: true,
-      opacity: 0,           // start invisible
+      opacity: 0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
@@ -200,41 +180,20 @@ export default function ParticleGlobe() {
     });
     const haloMesh = new THREE.Points(haloGeo, haloMat);
 
-    // ── Edges ─────────────────────────────────────────────────────────────────────────
-    const edgePosArr = new Float32Array(edgePairs.length * 6);
-    const edgeColArr = new Float32Array(edgePairs.length * 6);
-    edgePairs.forEach(({ a, b }, ei) => {
-      const base = ei * 6;
-      edgePosArr[base + 0] = positions[a]!.x; edgePosArr[base + 1] = positions[a]!.y; edgePosArr[base + 2] = positions[a]!.z;
-      edgePosArr[base + 3] = positions[b]!.x; edgePosArr[base + 4] = positions[b]!.y; edgePosArr[base + 5] = positions[b]!.z;
-    });
-
-    const edgeGeo     = new THREE.BufferGeometry();
-    const edgeColAttr = new THREE.BufferAttribute(edgeColArr, 3);
-    edgeColAttr.setUsage(THREE.DynamicDrawUsage);
-    edgeGeo.setAttribute("position", new THREE.BufferAttribute(edgePosArr, 3));
-    edgeGeo.setAttribute("color",    edgeColAttr);
-
-    const edgeMat  = new THREE.LineBasicMaterial({
-      vertexColors: true, transparent: true, opacity: 0, // start invisible
-      blending: THREE.AdditiveBlending, depthWrite: false,
-    });
-    const edgeMesh = new THREE.LineSegments(edgeGeo, edgeMat);
-
-    // ── Group — render order: edges → halo → core ─────────────────────────────
+    // ── Group (Pure Dots only) ────────────────────────────────────────────────
     const group = new THREE.Group();
-    group.add(edgeMesh, haloMesh, coreMesh);
+    group.add(haloMesh, coreMesh);
     scene.add(group);
 
-    // ── Color update ──────────────────────────────────────────────────────────
-    const invQuat  = new THREE.Quaternion();
-    const localDir = new THREE.Vector3();
-    const camDir   = new THREE.Vector3(0, 0, 1);
-    const camLocal = new THREE.Vector3();
-    const tmpC     = new THREE.Color();
+    // ── Particle & Color Updates with Continuous Smooth Float Interpolation ───
+    const invQuat    = new THREE.Quaternion();
+    const localDir   = new THREE.Vector3();
+    const camDir     = new THREE.Vector3(0, 0, 1);
+    const camLocal   = new THREE.Vector3();
+    const tmpCNormal = new THREE.Color();
+    const tmpCHot    = new THREE.Color();
 
-    function updateColors() {
-      // Dynamically calculate camera direction relative to the globe's position
+    function updateParticles(t: number) {
       camDir.subVectors(camera.position, group.position).normalize();
 
       invQuat.copy(group.quaternion).invert();
@@ -249,141 +208,157 @@ export default function ParticleGlobe() {
       scored.sort((a, b) => b.hotDot - a.hotDot);
 
       const hotRank = new Map<number, number>();
-      // Build O(1) depth lookup at the same time to avoid scored.find() in the loop
       const depthLookup = new Map<number, number>();
       scored.forEach((s, rank) => {
         depthLookup.set(s.i, s.depthDot);
         if (rank < HOTSPOT_COUNT) hotRank.set(s.i, rank);
       });
 
-      // — Points — O(n) total, no inner search
+      // Update positions & colors with seamless continuous decay
       for (let i = 0; i < positions.length; i++) {
+        const p = positions[i]!;
+        const n = normals[i]!;
         const depthDot = depthLookup.get(i) ?? 0;
         const rank     = hotRank.get(i);
+        const hotDot   = n.dot(localDir);
 
-        if (rank !== undefined) {
-          const t           = rank / (HOTSPOT_COUNT - 1);
-          const depthFactor = 0.60 + 0.40 * Math.max(0, depthDot);
-          tmpC.lerpColors(COL_HOT_CORE, COL_HOT_EDGE, t).multiplyScalar(depthFactor);
-        } else {
-          const depthFactor = Math.max(0, depthDot);
-          tmpC.lerpColors(COL_NORMAL_FAR, COL_NORMAL_NEAR, depthFactor);
+        // 🌟 Smooth continuous displacement with zero snapping on exit
+        let displacement = 0;
+        if (hoverStrength > 0.005 && hotDot > 0.45) {
+          const intensity = Math.min(1, Math.max(0, (hotDot - 0.45) / 0.55));
+          displacement = intensity * hoverStrength * (0.16 + Math.sin(t * 4.5 + hotDot * 6) * 0.03);
         }
-        colBuf[i * 3]     = tmpC.r;
-        colBuf[i * 3 + 1] = tmpC.g;
-        colBuf[i * 3 + 2] = tmpC.b;
+
+        posBuf[i * 3 + 0] = p.x + n.x * displacement;
+        posBuf[i * 3 + 1] = p.y + n.y * displacement;
+        posBuf[i * 3 + 2] = p.z + n.z * displacement;
+
+        // 🌟 Base natural blue depth gradient
+        const depthFactor = Math.pow(Math.max(0, depthDot), 1.25);
+        tmpCNormal.lerpColors(COL_NORMAL_FAR, COL_NORMAL_NEAR, depthFactor);
+
+        // 🌟 Smooth color crossfade based on hoverStrength
+        if (rank !== undefined && hoverStrength > 0.005) {
+          const rankT = rank / (HOTSPOT_COUNT - 1);
+          const spotDepth = 0.72 + 0.28 * Math.max(0, depthDot);
+          tmpCHot.lerpColors(COL_HOT_CORE, COL_HOT_EDGE, rankT).multiplyScalar(spotDepth);
+
+          const blend = hoverStrength * (1 - rankT * 0.65);
+          tmpCNormal.lerp(tmpCHot, blend);
+        }
+
+        colBuf[i * 3 + 0] = tmpCNormal.r;
+        colBuf[i * 3 + 1] = tmpCNormal.g;
+        colBuf[i * 3 + 2] = tmpCNormal.b;
       }
-      colAttr.needsUpdate = true;   // propagates to both coreGeo and haloGeo
 
-      // — Edges —
-      edgePairs.forEach(({ a, b }, ei) => {
-        const aHot  = hotRank.has(a);
-        const bHot  = hotRank.has(b);
-        const base  = ei * 6;
-        const baseC = aHot || bHot ? COL_EDGE_HOT : COL_EDGE_NORMAL;
-        const dA    = Math.max(0, depthLookup.get(a) ?? 0);
-        const dB    = Math.max(0, depthLookup.get(b) ?? 0);
-        const sA    = (aHot || bHot) ? (0.55 + 0.45 * dA) : dA;
-        const sB    = (aHot || bHot) ? (0.55 + 0.45 * dB) : dB;
-        edgeColArr[base]     = baseC.r * sA; edgeColArr[base + 1] = baseC.g * sA; edgeColArr[base + 2] = baseC.b * sA;
-        edgeColArr[base + 3] = baseC.r * sB; edgeColArr[base + 4] = baseC.g * sB; edgeColArr[base + 5] = baseC.b * sB;
-      });
-      edgeColAttr.needsUpdate = true;
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
     }
 
-    // ── Mouse tracking ────────────────────────────────────────────────────────
-    const mouse     = new THREE.Vector2(9999, 9999);
-    const raycaster = new THREE.Raycaster();
-    const sphereObj = new THREE.Sphere(new THREE.Vector3(0, 0, 0), SPHERE_RADIUS);
-    const rayTarget = new THREE.Vector3();
+    // ── Mouse & Pointer tracking ──────────────────────────────────────────────
+    const mouseTarget = new THREE.Vector2(0, 0);
+    const mouseSmooth = new THREE.Vector2(0, 0);
+    const raycaster   = new THREE.Raycaster();
+    const sphereObj   = new THREE.Sphere(new THREE.Vector3(0, 0, 0), SPHERE_RADIUS);
+    const rayTarget   = new THREE.Vector3();
 
-    let eventRoot: Element = container;
-    let el: Element | null = container.parentElement;
-    while (el) {
-      const tag = el.tagName.toLowerCase();
-      if (tag === "section" || tag === "main" || tag === "body") { eventRoot = el; break; }
-      el = el.parentElement;
-    }
+    const onPointerMove = (e: MouseEvent) => {
+      // If in Phase 2, disable pointer tracking
+      if ((globeScrollState.interactiveWeight ?? 1) < 0.05) {
+        isPointerOver = false;
+        return;
+      }
 
-    const onMouseMove  = (evt: Event) => {
-      const e = evt as MouseEvent;
-      const rect = eventRoot.getBoundingClientRect();
-      mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
-      mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+      mouseTarget.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseTarget.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      // Synchronize raycast sphere with actual 3D group position and scale
+      sphereObj.center.copy(group.position);
+      sphereObj.radius = SPHERE_RADIUS * Math.max(0.1, group.scale.x) * 1.15;
+
+      raycaster.setFromCamera(mouseTarget, camera);
+      const hit = raycaster.ray.intersectSphere(sphereObj, rayTarget);
+      if (hit) {
+        isPointerOver = true;
+        // Transform hit point to local orientation direction
+        const localHit = rayTarget.clone().sub(group.position).normalize();
+        hsTarget.lerp(localHit, 0.28).normalize();
+      } else {
+        isPointerOver = false;
+        hsTarget.lerp(REST_DIR, 0.04).normalize();
+      }
     };
-    const onMouseEnter = () => { isHovered = true; };
-    const onMouseLeave = () => { isHovered = false; mouse.set(9999, 9999); };
 
-    eventRoot.addEventListener("mousemove",  onMouseMove,  { passive: true });
-    eventRoot.addEventListener("mouseenter", onMouseEnter, { passive: true });
-    eventRoot.addEventListener("mouseleave", onMouseLeave, { passive: true });
+    const onPointerLeave = () => {
+      isPointerOver = false;
+      mouseTarget.set(0, 0);
+      hsTarget.lerp(REST_DIR, 0.04).normalize();
+    };
 
-    // ── GSAP ScrollTrigger (Removed in favor of centralized animation in Hero.tsx) ──
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("mouseleave", onPointerLeave, { passive: true });
 
     // ── Animation loop ────────────────────────────────────────────────────────
     let animId: number;
     const clock = new THREE.Clock();
 
-    // ── Intro fade-in (handled in loop — immune to CSS/hydration timing issues) ─
-    // FADE_DURATION: how long (seconds) the globe takes to reach full opacity
-    const FADE_DURATION     = 2.0;
-    const HALO_MAX_OPACITY  = 0.38;
-    const EDGE_MAX_OPACITY  = 0.65;
+    const FADE_DURATION     = 1.8;
+    const HALO_BASE_OPACITY = 0.35;
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
-      // Smooth intro ramp: 0→1 over FADE_DURATION seconds
+      // Smooth intro fade
       const introProgress = Math.min(1, t / FADE_DURATION);
-      // Ease-out curve for a premium feel
       const eased = 1 - Math.pow(1 - introProgress, 3);
 
-      coreMat.opacity  = eased;
-      haloMat.opacity  = eased * HALO_MAX_OPACITY;
-      edgeMat.opacity  = eased * EDGE_MAX_OPACITY;
+      // Phase 1 vs Phase 2 interactive weight (1 in Phase 1, 0 in Phase 2)
+      const interactiveWeight = Math.max(0, Math.min(1, globeScrollState.interactiveWeight ?? 1));
 
-      group.rotation.y = t * 0.10 + globeScrollState.offset;
-      group.rotation.x = Math.sin(t * 0.06) * 0.07;
-      
+      // Smooth continuous hover strength transition (disabled when interactiveWeight is 0)
+      const targetHover = (isPointerOver && interactiveWeight > 0.05) ? 1.0 : 0.0;
+      hoverStrength += (targetHover - hoverStrength) * 0.07;
+
+      // Smooth pointer lerp for magnetic inertia (dampened to 0 in Phase 2)
+      mouseSmooth.x += (mouseTarget.x * interactiveWeight - mouseSmooth.x) * 0.06;
+      mouseSmooth.y += (mouseTarget.y * interactiveWeight - mouseSmooth.y) * 0.06;
+
+      // Halo opacity smoothly increases with hoverStrength
+      const currentHaloOpacity = HALO_BASE_OPACITY + hoverStrength * 0.16;
+
+      coreMat.opacity = eased;
+      haloMat.opacity = eased * (currentHaloOpacity + Math.sin(t * 1.2) * 0.03);
+
+      // Magnetic Parallax Inertial Tilt with smooth damping
+      group.rotation.x = Math.sin(t * 0.05) * 0.06 - mouseSmooth.y * 0.14;
+      group.rotation.y = t * 0.09 + globeScrollState.offset + mouseSmooth.x * 0.20;
+
       group.position.y = globeScrollState.yOffset;
       group.position.x = globeScrollState.xOffset;
 
-      // Breathing scale
-      const breathe = 1 + Math.sin(t * 0.9) * 0.012;
+      // Subtle breathing scale with smooth hover expansion
+      const breathe = (1 + Math.sin(t * 0.8) * 0.01) * (1 + hoverStrength * 0.025);
       group.scale.setScalar(breathe * globeScrollState.scale);
 
-      // Bug fix: pulse must be scaled by eased so halo stays at 0 during intro.
-      // Previously this line overwrote the fade-in, causing immediate 0.34 opacity on frame 1.
-      haloMat.opacity = eased * (HALO_MAX_OPACITY + Math.sin(t * 1.1) * 0.06);
+      hsCurrent.lerp(hsTarget, 0.10).normalize();
 
-      if (isHovered) {
-        raycaster.setFromCamera(mouse, camera);
-        const hit = raycaster.ray.intersectSphere(sphereObj, rayTarget);
-        if (hit) {
-          hsTarget.lerp(rayTarget.clone().normalize(), 0.28).normalize();
-        }
-      } else {
-        hsTarget.lerp(REST_DIR, 0.022).normalize();
-      }
-      hsCurrent.lerp(hsTarget, 0.12).normalize();
-
-      updateColors();
+      updateParticles(t);
       renderer.render(scene, camera);
     };
-    // ── Reduced motion: static render, skip animation loop ───────────────────
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      coreMat.opacity  = 1;
-      haloMat.opacity  = HALO_MAX_OPACITY;
-      edgeMat.opacity  = EDGE_MAX_OPACITY;
+      coreMat.opacity = 1;
+      haloMat.opacity = HALO_BASE_OPACITY;
       group.rotation.y = 0;
-      updateColors();
+      updateParticles(0);
       renderer.render(scene, camera);
     } else {
       animate();
     }
 
-    // ── Resize ─────────────────────────────────────────────────────────────────────────────
+    // ── Resize ────────────────────────────────────────────────────────────────
     const onResize = () => {
       const w = container.clientWidth, h = container.clientHeight;
       camera.aspect = w / h;
@@ -396,14 +371,14 @@ export default function ParticleGlobe() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
-      eventRoot.removeEventListener("mousemove",  onMouseMove);
-      eventRoot.removeEventListener("mouseenter", onMouseEnter);
-      eventRoot.removeEventListener("mouseleave", onMouseLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("mouseleave", onPointerLeave);
       renderer.dispose();
       coreGeo.dispose(); coreMat.dispose(); coreTex.dispose();
       haloGeo.dispose(); haloMat.dispose(); haloTex.dispose();
-      edgeGeo.dispose(); edgeMat.dispose();
-      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
     };
   }, []);
 

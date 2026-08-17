@@ -131,6 +131,7 @@ export default function Hero() {
       yOffset: -3.0,
       scale: 2.2,
       offset: Math.PI * 1.6,
+      interactiveWeight: 0, // Disable microinteractions during Phase 2
       duration: 0.8, 
       ease: "power2.inOut" 
     }, 0.05); 
