@@ -13,6 +13,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -27,6 +28,15 @@ export default function Navbar() {
     
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
+
+      const whiteZone = document.getElementById("white-zone");
+      if (whiteZone) {
+        const rect = whiteZone.getBoundingClientRect();
+        const isOver = rect.top <= 64 && rect.bottom >= 64;
+        setIsLightMode(isOver);
+      } else {
+        setIsLightMode(false);
+      }
     };
     
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -48,13 +58,24 @@ export default function Navbar() {
         left: 0,
         right: 0,
         zIndex: 100,
-        transition: "background 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease",
-        background: scrolled ? "rgba(1, 1, 20, 0.85)" : "transparent",
-        backdropFilter: scrolled ? "blur(16px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(16px)" : "none",
-        borderBottom: scrolled 
-          ? "1px solid rgba(255, 255, 255, 0.08)" 
-          : "1px solid transparent",
+        transition: "background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease",
+        background: !scrolled
+          ? "transparent"
+          : isLightMode
+          ? "rgba(255, 255, 255, 0.75)"
+          : "rgba(1, 1, 20, 0.65)",
+        backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
+        borderBottom: !scrolled
+          ? "1px solid transparent"
+          : isLightMode
+          ? "1px solid rgba(0, 0, 0, 0.08)"
+          : "1px solid rgba(255, 255, 255, 0.12)",
+        boxShadow: scrolled
+          ? isLightMode
+            ? "0 4px 24px rgba(0, 0, 0, 0.06)"
+            : "0 8px 32px rgba(0, 0, 0, 0.3)"
+          : "none",
       }}
     >
       <nav
@@ -76,7 +97,8 @@ export default function Navbar() {
             alignItems: "center",
             gap: "8px",
             textDecoration: "none",
-            color: "#FFFFFF",
+            color: isLightMode ? "#010114" : "#FFFFFF",
+            transition: "color 0.3s ease",
           }}
           aria-label="JAXIS StatLab Home"
         >
@@ -94,7 +116,8 @@ export default function Navbar() {
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#FFFFFF",
+              color: isLightMode ? "#010114" : "#FFFFFF",
+              transition: "color 0.3s ease",
             }}
           >
             JAXIS <span style={{ color: "#CC6600" }}>StatLab</span>
@@ -123,15 +146,15 @@ export default function Navbar() {
                   fontWeight: 500,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.65)",
+                  color: isLightMode ? "rgba(1, 1, 20, 0.72)" : "rgba(255,255,255,0.68)",
                   textDecoration: "none",
                   transition: "color 0.2s ease",
                 }}
                 onMouseEnter={(e) =>
-                  ((e.target as HTMLAnchorElement).style.color = "#FFFFFF")
+                  ((e.target as HTMLAnchorElement).style.color = isLightMode ? "#010114" : "#FFFFFF")
                 }
                 onMouseLeave={(e) =>
-                  ((e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.65)")
+                  ((e.target as HTMLAnchorElement).style.color = isLightMode ? "rgba(1, 1, 20, 0.72)" : "rgba(255,255,255,0.68)")
                 }
               >
                 {link.label}
@@ -150,23 +173,25 @@ export default function Navbar() {
             fontWeight: 600,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#FFFFFF",
+            color: isLightMode ? "#010114" : "#FFFFFF",
             textDecoration: "none",
             padding: "8px 20px",
-            border: "1px solid rgba(255,255,255,0.45)",
+            border: isLightMode ? "1px solid rgba(1, 1, 20, 0.4)" : "1px solid rgba(255,255,255,0.45)",
             borderRadius: "2px",
-            transition: "border-color 0.2s ease, background 0.2s ease",
+            transition: "all 0.2s ease",
             background: "transparent",
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget;
             el.style.borderColor = "#CC6600";
-            el.style.background = "rgba(204,102,0,0.08)";
+            el.style.background = isLightMode ? "rgba(204,102,0,0.12)" : "rgba(204,102,0,0.08)";
+            el.style.color = "#CC6600";
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.borderColor = "rgba(255,255,255,0.45)";
+            el.style.borderColor = isLightMode ? "rgba(1, 1, 20, 0.4)" : "rgba(255,255,255,0.45)";
             el.style.background = "transparent";
+            el.style.color = isLightMode ? "#010114" : "#FFFFFF";
           }}
           className="nav-cta-desktop"
         >
@@ -184,7 +209,8 @@ export default function Navbar() {
             border: "none",
             cursor: "pointer",
             padding: "4px",
-            color: "#fff",
+            color: isLightMode ? "#010114" : "#fff",
+            transition: "color 0.3s ease",
           }}
           className="nav-hamburger"
         >

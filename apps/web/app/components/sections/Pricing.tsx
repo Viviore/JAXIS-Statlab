@@ -206,19 +206,19 @@ export default function Pricing() {
   }, []);
 
   return (
-    <section id="pricing" className="pricing-section" ref={sectionRef}>
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 2rem" }}>
+    <section id="pricing" className="pricing-section" ref={sectionRef} style={{ position: "relative", backgroundColor: "transparent", color: "#010114" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 2rem", position: "relative", zIndex: 1 }}>
         
         {/* Header Block */}
         <div className="pricing-title-area mb-12 max-w-2xl" style={{ willChange: "opacity, transform" }}>
-          <span className="pricing-kicker" style={{ fontSize: "0.75rem", letterSpacing: "0.15em", color: "var(--accent-orange)", textTransform: "uppercase", display: "block", marginBottom: "1rem" }}>
+          <span className="pricing-kicker" style={{ fontSize: "0.75rem", letterSpacing: "0.15em", color: "var(--accent-orange)", textTransform: "uppercase", display: "block", marginBottom: "1rem", fontWeight: 600 }}>
             FIXED PRICING. ZERO SURPRISES.
           </span>
-          <h2 style={{ fontSize: "clamp(2.5rem, 4vw, 4rem)", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.03em" }}>
-            <span className="pricing-heading-line block text-white">Transparent Pricing.</span>
-            <span className="pricing-heading-line block" style={{ color: "var(--text-muted-light)" }}>Complete Deliverables.</span>
+          <h2 style={{ fontSize: "clamp(2.5rem, 4vw, 4rem)", fontWeight: 400, lineHeight: 1.1, letterSpacing: "-0.03em" }}>
+            <span className="pricing-heading-line block" style={{ color: "#010114" }}>Transparent Pricing.</span>
+            <span className="pricing-heading-line block" style={{ color: "#64748B" }}>Complete Deliverables.</span>
           </h2>
-          <p className="mt-6" style={{ fontSize: "0.95rem", lineHeight: 1.75, color: "rgba(255,255,255,0.6)", maxWidth: "45ch" }}>
+          <p className="mt-6" style={{ fontSize: "0.95rem", lineHeight: 1.75, color: "#475569", maxWidth: "45ch" }}>
             Every package includes raw output, assumption checks,
             statistical interpretation, and APA 7th Edition tables.
             No hourly billing. No scope creep.
@@ -267,18 +267,18 @@ export default function Pricing() {
         </div>
 
         {/* Offerings Area (Upgrades & Consulting) */}
-        <div style={{ borderTop: "1px solid var(--border-glass)", paddingTop: "3rem", marginTop: "3rem" }}>
-          <h3 className="offering-card text-white text-xl font-light tracking-wide mb-8 opacity-0" style={{ willChange: "opacity, transform", marginBottom: "2rem" }}>
+        <div style={{ borderTop: "1px solid #E2E8F0", paddingTop: "3rem", marginTop: "3rem" }}>
+          <h3 className="offering-card text-xl font-medium tracking-wide mb-8 opacity-0" style={{ color: "#010114", willChange: "opacity, transform", marginBottom: "2rem" }}>
             Turnaround Upgrades & Add-ons
           </h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "2rem" }}>
               <PixelCard variant="jaxis" className="offering-card featured-consulting" style={{ padding: "2rem", minHeight: "auto", willChange: "opacity, transform" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem", height: "100%" }}>
                   <div>
-                    <h4 style={{ color: "var(--accent-orange)", fontSize: "1.25rem", fontWeight: 400 }}>{CONSULTING.name}</h4>
-                    <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.6)", marginTop: "0.75rem", lineHeight: 1.6 }}>{CONSULTING.desc}</p>
+                    <h4 style={{ color: "var(--accent-orange)", fontSize: "1.25rem", fontWeight: 600 }}>{CONSULTING.name}</h4>
+                    <p style={{ fontSize: "0.9rem", color: "#475569", marginTop: "0.75rem", lineHeight: 1.6 }}>{CONSULTING.desc}</p>
                   </div>
-                  <span style={{ fontSize: "1.75rem", fontWeight: 300, color: "#FFF", marginTop: "auto" }}>{CONSULTING.price}</span>
+                  <span style={{ fontSize: "1.75rem", fontWeight: 400, color: "#010114", marginTop: "auto" }}>{CONSULTING.price}</span>
                 </div>
               </PixelCard>
               
@@ -286,10 +286,10 @@ export default function Pricing() {
                 {ADDITIONS.map((add, idx) => (
                   <PixelCard key={idx} variant="jaxis" className="offering-card" style={{ padding: "1.5rem", minHeight: "auto", willChange: "opacity, transform", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
                     <div>
-                      <h4 style={{ color: "#FFF", fontSize: "1rem", fontWeight: 400 }}>{add.name}</h4>
-                      <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.5)", marginTop: "0.25rem" }}>{add.desc}</p>
+                      <h4 style={{ color: "#010114", fontSize: "1rem", fontWeight: 600 }}>{add.name}</h4>
+                      <p style={{ fontSize: "0.8rem", color: "#64748B", marginTop: "0.25rem" }}>{add.desc}</p>
                     </div>
-                    <span style={{ fontSize: "1.25rem", fontWeight: 300, color: "var(--accent-orange)", whiteSpace: "nowrap" }}>{add.price}</span>
+                    <span style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--accent-orange)", whiteSpace: "nowrap" }}>{add.price}</span>
                   </PixelCard>
                 ))}
               </div>
@@ -297,7 +297,7 @@ export default function Pricing() {
         </div>
         
         {/* System Status Footer */}
-        <p className="pricing-sys-status text-[0.65rem] text-[rgba(255,255,255,0.3)] tracking-[0.1em] font-mono mt-16 pt-8 border-t border-[var(--border-glass)]">
+        <p className="pricing-sys-status text-[0.65rem] text-[#64748B] tracking-[0.1em] font-mono mt-16 pt-8 border-t border-[#E2E8F0]">
           SYS // ALL_PRICES_IN_PHP // LAST_UPDATED 2025 // JAXIS_STATLAB_V2
         </p>
 

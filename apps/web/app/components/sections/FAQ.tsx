@@ -35,14 +35,15 @@ export default function FAQ() {
   return (
     <section 
       style={{ 
-        backgroundColor: "var(--bg-primary)", 
-        padding: "10rem 2rem", 
-        color: "var(--text-primary)" 
+        position: "relative",
+        backgroundColor: "transparent", 
+        padding: "8rem 2rem", 
+        color: "#010114",
       }}
     >
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "800px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         
-        <div style={{ marginBottom: "4rem", textAlign: "center" }}>
+        <div style={{ marginBottom: "3.5rem", textAlign: "center" }}>
           <span
             style={{
               fontFamily: "var(--font-mono), monospace",
@@ -52,6 +53,7 @@ export default function FAQ() {
               color: "var(--accent-orange)",
               display: "block",
               marginBottom: "1rem",
+              fontWeight: 600,
             }}
           >
             KNOWLEDGE BASE
@@ -60,9 +62,10 @@ export default function FAQ() {
             style={{
               fontFamily: "var(--font-heading), sans-serif",
               fontSize: "clamp(2rem, 4vw, 3rem)",
-              fontWeight: 300,
+              fontWeight: 400,
               letterSpacing: "-0.02em",
               lineHeight: 1.1,
+              color: "#010114",
             }}
           >
             Frequently Asked Questions
@@ -77,11 +80,12 @@ export default function FAQ() {
               <div 
                 key={index}
                 style={{
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  border: isOpen ? "1px solid rgba(204, 102, 0, 0.35)" : "1px solid #E2E8F0",
                   borderRadius: "0px",
                   overflow: "hidden",
-                  backgroundColor: isOpen ? "rgba(255,255,255,0.02)" : "transparent",
-                  transition: "background-color 0.3s ease",
+                  backgroundColor: isOpen ? "#FFFDF9" : "#FFFFFF",
+                  boxShadow: isOpen ? "0 4px 20px rgba(204, 102, 0, 0.05)" : "0 2px 8px rgba(0, 0, 0, 0.02)",
+                  transition: "all 0.3s ease",
                 }}
               >
                 <button
@@ -94,24 +98,25 @@ export default function FAQ() {
                     padding: "1.5rem",
                     background: "none",
                     border: "none",
-                    color: "white",
+                    color: "#010114",
                     cursor: "pointer",
                     textAlign: "left",
                     fontFamily: "var(--font-heading), sans-serif",
                     fontSize: "1.05rem",
-                    fontWeight: 500,
+                    fontWeight: 600,
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  <span style={{ color: isOpen ? "var(--accent-orange)" : "white", transition: "color 0.2s ease" }}>
+                  <span style={{ color: isOpen ? "var(--accent-orange)" : "#010114", transition: "color 0.2s ease" }}>
                     {faq.question}
                   </span>
                   <span 
                     style={{ 
-                      fontSize: "1.2rem", 
-                      color: isOpen ? "var(--accent-orange)" : "rgba(255,255,255,0.3)",
+                      fontSize: "1.25rem", 
+                      color: isOpen ? "var(--accent-orange)" : "#64748B",
                       transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
                       transition: "transform 0.3s ease, color 0.3s ease",
+                      fontWeight: 300,
                     }}
                   >
                     +
@@ -132,8 +137,8 @@ export default function FAQ() {
                         margin: 0,
                         fontFamily: "var(--font-sans), sans-serif",
                         fontSize: "0.9rem",
-                        lineHeight: 1.7,
-                        color: "rgba(255,255,255,0.6)",
+                        lineHeight: 1.75,
+                        color: "#475569",
                       }}
                     >
                       {faq.answer}

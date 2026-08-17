@@ -357,10 +357,9 @@ export default function Approach() {
       style={{
         backgroundColor: "var(--bg-primary)",
         color: "var(--text-primary)",
-        padding: "6rem 2rem 4rem 2rem",
+        padding: "6rem 2rem 6rem 2rem",
         position: "relative",
         zIndex: 10,
-        borderTop: "1px solid var(--border-glass)",
         overflow: "hidden"
       }}
     >

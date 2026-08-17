@@ -10,9 +10,9 @@ export default function FooterCTA() {
       <section
         id="security"
         style={{
-          backgroundColor: "var(--bg-primary)",
+          backgroundColor: "#F8FAFC",
           padding: "8rem 2rem",
-          color: "var(--text-primary)",
+          color: "#010114",
         }}
       >
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -35,6 +35,7 @@ export default function FooterCTA() {
                   color: "var(--accent-orange)",
                   display: "block",
                   marginBottom: "1.25rem",
+                  fontWeight: 600,
                 }}
               >
                 ADD-ON MODULE
@@ -43,10 +44,11 @@ export default function FooterCTA() {
                 style={{
                   fontFamily: "var(--font-heading), sans-serif",
                   fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
-                  fontWeight: 300,
+                  fontWeight: 400,
                   letterSpacing: "-0.02em",
                   lineHeight: 1.2,
                   marginBottom: "1.25rem",
+                  color: "#010114",
                 }}
               >
                 The DefenseLab Module
@@ -56,7 +58,7 @@ export default function FooterCTA() {
                   fontFamily: "var(--font-sans), sans-serif",
                   fontSize: "0.875rem",
                   lineHeight: 1.75,
-                  color: "rgba(255,255,255,0.55)",
+                  color: "#475569",
                   marginBottom: "2rem",
                 }}
               >
@@ -72,24 +74,24 @@ export default function FooterCTA() {
                 style={{
                   fontFamily: "var(--font-sans), sans-serif",
                   fontSize: "0.7rem",
-                  fontWeight: 600,
+                  fontWeight: 700,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
                   color: "#FFFFFF",
                   textDecoration: "none",
-                  padding: "10px 28px",
-                  border: "1px solid rgba(255,255,255,0.35)",
-                  background: "transparent",
+                  padding: "12px 32px",
+                  border: "1px solid #010114",
+                  background: "#010114",
                   display: "inline-block",
                   transition: "border-color 0.2s ease, background 0.2s ease",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = "var(--accent-orange)";
-                  e.currentTarget.style.background = "rgba(204,102,0,0.08)";
+                  e.currentTarget.style.background = "var(--accent-orange)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)";
-                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "#010114";
+                  e.currentTarget.style.background = "#010114";
                 }}
               >
                 Add DefenseLab
@@ -107,6 +109,7 @@ export default function FooterCTA() {
                   color: "var(--accent-orange)",
                   display: "block",
                   marginBottom: "1.25rem",
+                  fontWeight: 600,
                 }}
               >
                 SECURITY & INTEGRITY
@@ -115,10 +118,11 @@ export default function FooterCTA() {
                 style={{
                   fontFamily: "var(--font-heading), sans-serif",
                   fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
-                  fontWeight: 300,
+                  fontWeight: 400,
                   letterSpacing: "-0.02em",
                   lineHeight: 1.2,
                   marginBottom: "1.75rem",
+                  color: "#010114",
                 }}
               >
                 The JAXIS Security Shield
@@ -141,17 +145,17 @@ export default function FooterCTA() {
                   <div
                     key={item.label}
                     style={{
-                      borderLeft: "2px solid rgba(204,102,0,0.4)",
+                      borderLeft: "2px solid var(--accent-orange)",
                       paddingLeft: "1.25rem",
                     }}
                   >
                     <div
                       style={{
                         fontFamily: "var(--font-sans), sans-serif",
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                        letterSpacing: "0.04em",
-                        color: "#FFFFFF",
+                        fontSize: "0.85rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.02em",
+                        color: "#010114",
                         marginBottom: "0.35rem",
                       }}
                     >
@@ -162,7 +166,7 @@ export default function FooterCTA() {
                         fontFamily: "var(--font-sans), sans-serif",
                         fontSize: "0.825rem",
                         lineHeight: 1.65,
-                        color: "rgba(255,255,255,0.5)",
+                        color: "#64748B",
                       }}
                     >
                       {item.desc}
@@ -199,6 +203,7 @@ export default function FooterCTA() {
               letterSpacing: "-0.03em",
               lineHeight: 1.1,
               marginBottom: "1.5rem",
+              color: "#FFFFFF",
             }}
           >
             Stop guessing.
@@ -207,9 +212,9 @@ export default function FooterCTA() {
           <p
             style={{
               fontFamily: "var(--font-sans), sans-serif",
-              fontSize: "0.9rem",
+              fontSize: "0.95rem",
               lineHeight: 1.75,
-              color: "rgba(255,255,255,0.5)",
+              color: "rgba(255,255,255,0.6)",
               maxWidth: "480px",
               margin: "0 auto 3rem",
             }}
@@ -228,19 +233,22 @@ export default function FooterCTA() {
               textTransform: "uppercase",
               color: "#FFFFFF",
               textDecoration: "none",
-              padding: "14px 40px",
+              padding: "16px 44px",
               border: "1px solid rgba(255,255,255,0.45)",
               background: "transparent",
               display: "inline-block",
-              transition: "border-color 0.2s ease, background 0.2s ease",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
+              transition: "border-color 0.2s ease, background 0.2s ease, transform 0.2s ease",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--accent-orange)";
-              e.currentTarget.style.background = "rgba(204,102,0,0.08)";
+              e.currentTarget.style.background = "rgba(204,102,0,0.12)";
+              e.currentTarget.style.transform = "translateY(-2px)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "rgba(255,255,255,0.45)";
               e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.transform = "translateY(0px)";
             }}
           >
             Get My Free SOW Review
@@ -251,7 +259,7 @@ export default function FooterCTA() {
             style={{
               marginTop: "6rem",
               paddingTop: "2.5rem",
-              borderTop: "1px solid rgba(255,255,255,0.07)",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
               display: "flex",
               flexWrap: "wrap",
               gap: "2rem",
@@ -265,15 +273,16 @@ export default function FooterCTA() {
                 alt="JAXIS Logo" 
                 width={18}
                 height={18}
-                style={{ height: "18px", width: "auto", opacity: 0.5 }} 
+                style={{ height: "18px", width: "auto", opacity: 0.6 }} 
               />
               <span
                 style={{
                   fontFamily: "var(--font-heading), sans-serif",
-                  fontSize: "0.7rem",
+                  fontSize: "0.75rem",
                   letterSpacing: "0.08em",
-                  color: "rgba(255,255,255,0.25)",
+                  color: "rgba(255,255,255,0.35)",
                   textTransform: "uppercase",
+                  fontWeight: 600,
                 }}
               >
                 JAXIS StatLab
@@ -286,17 +295,18 @@ export default function FooterCTA() {
                   href="#"
                   style={{
                     fontFamily: "var(--font-inter), sans-serif",
-                    fontSize: "0.7rem",
-                    color: "rgba(255,255,255,0.3)",
+                    fontSize: "0.725rem",
+                    color: "rgba(255,255,255,0.35)",
                     textDecoration: "none",
                     letterSpacing: "0.04em",
+                    fontWeight: 500,
                     transition: "color 0.2s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.85)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "rgba(255,255,255,0.3)";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.35)";
                   }}
                 >
                   {link}
