@@ -113,6 +113,9 @@ export default function ParticlesBackground({
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
+      const maxDistanceSq = maxDistance * maxDistance;
+      const mouseRadiusSq = mouse.radius * mouse.radius;
+
       // Update and draw particles
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -153,16 +156,17 @@ export default function ParticlesBackground({
         ctx.globalAlpha = p.opacity;
         ctx.fill();
 
-        // Connect lines between nearby particles
+        // Connect lines between nearby particles using squared-distance gating
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           if (!p2) continue;
 
           const dx = p.x - p2.x;
           const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const distSq = dx * dx + dy * dy;
 
-          if (dist < maxDistance) {
+          if (distSq < maxDistanceSq) {
+            const dist = Math.sqrt(distSq);
             const lineAlpha = (1 - dist / maxDistance) * 0.26; // Crisp, clearly visible network lines
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
@@ -177,9 +181,10 @@ export default function ParticlesBackground({
         // Connect line to mouse if within mouse.radius
         const mdx = p.x - mouse.x;
         const mdy = p.y - mouse.y;
-        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        const mdistSq = mdx * mdx + mdy * mdy;
 
-        if (mdist < mouse.radius) {
+        if (mdistSq < mouseRadiusSq) {
+          const mdist = Math.sqrt(mdistSq);
           const mouseLineAlpha = (1 - mdist / mouse.radius) * 0.45;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);

@@ -279,13 +279,18 @@ export default function PixelCard({
 
   useEffect(() => {
     initPixels();
+    let resizeTimer: NodeJS.Timeout | null = null;
     const observer = new ResizeObserver(() => {
-      initPixels();
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        initPixels();
+      }, 100);
     });
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
     return () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
       observer.disconnect();
       if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);

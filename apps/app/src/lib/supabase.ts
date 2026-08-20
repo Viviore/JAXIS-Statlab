@@ -10,5 +10,11 @@ export const supabaseClient = createClient(
 // Server client — used in Server Components / API Routes for Storage operations
 export const supabaseAdmin = createClient(
   env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY
+  env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
 );

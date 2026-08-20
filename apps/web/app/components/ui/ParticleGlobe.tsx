@@ -185,13 +185,23 @@ export default function ParticleGlobe() {
     group.add(haloMesh, coreMesh);
     scene.add(group);
 
-    // ── Particle & Color Updates with Continuous Smooth Float Interpolation ───
+    // ── Particle & Color Updates with Zero-Allocation Pre-Allocated Buffers ───
     const invQuat    = new THREE.Quaternion();
     const localDir   = new THREE.Vector3();
     const camDir     = new THREE.Vector3(0, 0, 1);
     const camLocal   = new THREE.Vector3();
     const tmpCNormal = new THREE.Color();
     const tmpCHot    = new THREE.Color();
+    const tmpLocalHit = new THREE.Vector3();
+
+    // Pre-allocated static buffers to eliminate all per-frame Garbage Collection churn
+    const hotDotArray   = new Float32Array(POINT_COUNT);
+    const depthDotArray = new Float32Array(POINT_COUNT);
+    const particleIndices = new Int32Array(POINT_COUNT);
+    const hotRankArray  = new Int32Array(POINT_COUNT);
+    for (let i = 0; i < POINT_COUNT; i++) {
+      particleIndices[i] = i;
+    }
 
     function updateParticles(t: number) {
       camDir.subVectors(camera.position, group.position).normalize();
@@ -200,27 +210,32 @@ export default function ParticleGlobe() {
       localDir.copy(hsCurrent).applyQuaternion(invQuat).normalize();
       camLocal.copy(camDir).applyQuaternion(invQuat).normalize();
 
-      const scored = normals.map((n, i) => ({
-        i,
-        hotDot:   n.dot(localDir),
-        depthDot: n.dot(camLocal),
-      }));
-      scored.sort((a, b) => b.hotDot - a.hotDot);
+      // Compute dot products into flat Float32 buffers
+      for (let i = 0; i < POINT_COUNT; i++) {
+        const n = normals[i]!;
+        hotDotArray[i] = n.dot(localDir);
+        depthDotArray[i] = n.dot(camLocal);
+        particleIndices[i] = i;
+      }
 
-      const hotRank = new Map<number, number>();
-      const depthLookup = new Map<number, number>();
-      scored.forEach((s, rank) => {
-        depthLookup.set(s.i, s.depthDot);
-        if (rank < HOTSPOT_COUNT) hotRank.set(s.i, rank);
-      });
+      // Sort index buffer in-place without creating objects
+      particleIndices.sort((a, b) => (hotDotArray[b] ?? 0) - (hotDotArray[a] ?? 0));
+
+      hotRankArray.fill(-1);
+      for (let r = 0; r < HOTSPOT_COUNT; r++) {
+        const idx = particleIndices[r];
+        if (idx !== undefined) {
+          hotRankArray[idx] = r;
+        }
+      }
 
       // Update positions & colors with seamless continuous decay
       for (let i = 0; i < positions.length; i++) {
         const p = positions[i]!;
         const n = normals[i]!;
-        const depthDot = depthLookup.get(i) ?? 0;
-        const rank     = hotRank.get(i);
-        const hotDot   = n.dot(localDir);
+        const depthDot = depthDotArray[i] ?? 0;
+        const rank     = hotRankArray[i] ?? -1;
+        const hotDot   = hotDotArray[i] ?? 0;
 
         // 🌟 Smooth continuous displacement with zero snapping on exit
         let displacement = 0;
@@ -238,7 +253,7 @@ export default function ParticleGlobe() {
         tmpCNormal.lerpColors(COL_NORMAL_FAR, COL_NORMAL_NEAR, depthFactor);
 
         // 🌟 Smooth color crossfade based on hoverStrength
-        if (rank !== undefined && hoverStrength > 0.005) {
+        if (rank >= 0 && hoverStrength > 0.005) {
           const rankT = rank / (HOTSPOT_COUNT - 1);
           const spotDepth = 0.72 + 0.28 * Math.max(0, depthDot);
           tmpCHot.lerpColors(COL_HOT_CORE, COL_HOT_EDGE, rankT).multiplyScalar(spotDepth);
@@ -284,9 +299,9 @@ export default function ParticleGlobe() {
       const hit = raycaster.ray.intersectSphere(sphereObj, rayTarget);
       if (hit) {
         isPointerOver = true;
-        // Transform hit point to local orientation direction
-        const localHit = rayTarget.clone().sub(group.position).normalize();
-        hsTarget.lerp(localHit, 0.28).normalize();
+        // Transform hit point to local orientation direction without allocation
+        tmpLocalHit.copy(rayTarget).sub(group.position).normalize();
+        hsTarget.lerp(tmpLocalHit, 0.28).normalize();
       } else {
         isPointerOver = false;
         hsTarget.lerp(REST_DIR, 0.04).normalize();

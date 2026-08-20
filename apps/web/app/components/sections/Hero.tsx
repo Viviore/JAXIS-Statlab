@@ -1,11 +1,16 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { globeScrollState } from "@/lib/globeState";
-import ParticleGlobe from "../ui/ParticleGlobe";
+
+const ParticleGlobe = dynamic(() => import("../ui/ParticleGlobe"), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 bg-[#010114]" />,
+});
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, useGSAP);

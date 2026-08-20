@@ -2,8 +2,13 @@
   "name": "JAXIS StatLab",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
+    "build": "turbo run build --concurrency=2",
+    "build:web": "turbo run build --filter=web",
+    "build:app": "turbo run build --filter=app",
+    "dev": "powershell -ExecutionPolicy Bypass -File scripts/clean-processes.ps1 && turbo run dev --concurrency=3",
+    "dev:web": "powershell -ExecutionPolicy Bypass -File scripts/clean-processes.ps1 && turbo run dev --filter=web",
+    "dev:app": "powershell -ExecutionPolicy Bypass -File scripts/clean-processes.ps1 && turbo run dev --filter=app",
+    "clean": "powershell -ExecutionPolicy Bypass -File scripts/clean-processes.ps1",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

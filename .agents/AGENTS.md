@@ -71,6 +71,16 @@ Derived directly from the official **JAXIS StatSpecification Document**:
 - **Form & Input Validation:** All API endpoints receiving body data must validate schema using `zod` prior to database execution.
 - **File Upload Guardrails:** Uploaded datasets (CSV, XLSX, SAV) and payment proof receipts must be validated for MIME type, file size limits, and sanitized before storage (S3 / Cloudflare R2).
 
+### 🧠 Client-Side Memory Safety (Non-Negotiable)
+
+These rules exist because the dev environment runs on memory-constrained hardware. Violations cause system-level freezes.
+
+- **`RULE_MEM_01` — Mandatory Effect Cleanup:** Every `useEffect` that registers event listeners, timers (`setTimeout`/`setInterval`), `requestAnimationFrame` loops, `ResizeObserver`, `IntersectionObserver`, WebSocket connections, or Supabase realtime subscriptions **MUST** return a cleanup function that tears them down. No exceptions.
+- **`RULE_MEM_02` — Zero Allocation in Animation Loops:** Code inside `requestAnimationFrame`, `gsap.ticker`, or any per-frame callback **MUST NOT** create new objects, arrays, `Map`/`Set` instances, or call `.map()`, `.filter()`, `.sort()` on arrays. Pre-allocate typed arrays (`Float32Array`, `Int32Array`) or reuse mutable objects outside the loop.
+- **`RULE_MEM_03` — No Unbounded Caches:** Module-level `Map`, `Set`, or array caches that grow with user interaction (e.g., memoizing per-request data) **MUST** have a bounded size with eviction (LRU) or use `WeakMap`/`WeakRef`.
+- **`RULE_MEM_04` — Three.js / WebGL Disposal:** Any component that creates `THREE.WebGLRenderer`, `THREE.BufferGeometry`, `THREE.Material`, or `THREE.Texture` **MUST** call `.dispose()` on all of them in the `useEffect` cleanup. Failure to dispose leaks GPU memory.
+- **`RULE_MEM_05` — Dev Script Integrity:** The `dev` scripts in `apps/web/package.json` and `apps/app/package.json` **MUST** include `NODE_OPTIONS=--max-old-space-size=1024`. Never remove this cap. It prevents a single Node.js process from consuming more than 1 GB of RAM.
+
 ---
 
 ## 5. Pre-Commit Quality Checklist
