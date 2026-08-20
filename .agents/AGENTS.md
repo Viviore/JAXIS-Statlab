@@ -53,6 +53,7 @@ Derived directly from the official **JAXIS StatSpecification Document**:
 - **Data Fetching:** TanStack Query for client server-state, Next.js Server Actions / API Routes (`/api/v1/...`).
 - **ORM & DB:** Prisma ORM with PostgreSQL.
 - **Animations, 3D & Scrolling:** `gsap`, `lenis`, and `three` (including `@react-three/fiber`) MUST ONLY be installed and used in the `apps/web` (Landing Page) workspace to achieve cinematic designs. The `apps/app` (SaaS Dashboard) workspace MUST remain lightweight and prioritize standard native scroll behaviors without scroll hijacking.
+- **`RULE_UI_01` — Strict Zero-Emoji Policy (Non-Negotiable):** Emojis (e.g. 🔒, ✓, 🚀, 📊, ⚠️, ❌) **MUST NEVER** be used as icons, status indicators, badges, or visual decoration in any user interface across `apps/app`, `apps/web`, or `packages/ui`. Always use clean, scalable vector SVG icons (e.g. Lucide, Heroicons, or custom SVG paths) with explicit stroke/fill styling and theme tokens.
 
 ---
 
@@ -237,6 +238,7 @@ Prioritize **`minimalist-ui`** or **`industrial-brutalist-ui`** for utilitarian,
 
 ## 🎨 Frontend & Styling Guidelines
 - **Tailwind & Utility-First:** Prefer Tailwind utility classes over custom CSS blocks. Keep UI structures modular and readable.
+- **Zero Emojis as UI Icons:** Never use emojis (e.g. 🔒, ✓, 🚀, 📊, ⚠️, ❌) as icons or status badges. Always use vector SVGs (`<svg>`) with explicit theme classes.
 - **Semantic Markup:** Use standard HTML tags (`<main>`, `<nav>`, `<article>`, `<button>`) to ensure accessibility and clear structure.
 - **Component Boundaries:** Keep UI components focused on a single responsibility. Extract reusable sub-views only when reused at least twice.
 

@@ -1,26 +1,17 @@
 @import "tailwindcss";
-@source "../../../packages/ui/src/**/*.{ts,tsx}";
-@source "../src/**/*.{ts,tsx}";
-@source "../app/**/*.{ts,tsx}";
-
-@font-face {
-  font-family: 'Disket Mono';
-  src: url('/fonts/Disket-Mono-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+@source "../";
+@source "../../../packages/ui";
 
 :root {
   /* Backgrounds */
   --bg-base:          #010114;   /* Midnight Navy — page canvas (95% coverage)   */
-  --bg-surface:       #012E57;   /* Deep Ocean Blue — card / panel surface        */
-  --bg-surface-hover: #013d70;   /* Surface hover lift                            */
+  --bg-surface:       #011B38;   /* Deep Ocean Blue Glass — card / panel surface  */
+  --bg-surface-hover: #01244A;   /* Surface hover lift                            */
   --bg-overlay:       rgba(1, 1, 20, 0.85);  /* Modal / drawer backdrop           */
 
   /* Glass / Border */
-  --border-default:   rgba(255, 255, 255, 0.10);
-  --border-hover:     rgba(255, 255, 255, 0.22);
+  --border-default:   rgba(255, 255, 255, 0.08);
+  --border-hover:     rgba(255, 255, 255, 0.18);
   --border-focus:     rgba(204, 102, 0, 0.60);   /* Orange ring on focused inputs  */
 
   /* Brand Accent (5-10% max) */
@@ -31,7 +22,7 @@
 
   /* Typography */
   --text-primary:     #FFFFFF;
-  --text-secondary:   rgba(255, 255, 255, 0.72);
+  --text-secondary:   rgba(255, 255, 255, 0.75);
   --text-muted:       rgba(255, 255, 255, 0.45);
   --text-disabled:    rgba(255, 255, 255, 0.25);
 
@@ -39,12 +30,12 @@
   --status-success:   #10B981;   /* Emerald — Approved, Paid, Released            */
   --status-warning:   #F59E0B;   /* Amber — Pending, Under Review                 */
   --status-danger:    #EF4444;   /* Crimson — Blocked, Rejected, Ethical Breach   */
-  --status-info:      #3B82F6;   /* Blue — Informational, neutral states          */
+  --status-info:      #38BDF8;   /* Sapphire Sky — Informational, neutral states  */
 
   --status-success-bg: rgba(16, 185, 129, 0.12);
   --status-warning-bg: rgba(245, 158, 11, 0.12);
   --status-danger-bg:  rgba(239, 68, 68, 0.12);
-  --status-info-bg:    rgba(59, 130, 246, 0.12);
+  --status-info-bg:    rgba(56, 189, 248, 0.12);
 
   /* Spacing Scale (8px base grid) */
   --space-1:  4px;
@@ -58,28 +49,29 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Border Radius (Sharp Brutalism) */
+  /* Border Radius (Sharp Brutalism / Enterprise Refined) */
   --radius-none:  0px;
   --radius-sm:    2px;
   --radius-md:    4px;
   --radius-full:  9999px;
 
   /* Typography System */
-  --font-sans: 'Inter', var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'Disket Mono', var(--font-disket), 'Courier New', monospace;
+  --font-sans: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--font-mono-code), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-heading: var(--font-sans);
   --font-primary: var(--font-sans);
   --font-secondary: var(--font-mono);
 
   /* Type Scale Tokens */
-  --text-xs:   0.563rem;   /* ~9px */
-  --text-sm:   0.75rem;    /* 12px */
-  --text-base: 1rem;       /* 16px */
-  --text-lg:   1.188rem;   /* 19px */
-  --text-xl:   1.625rem;   /* 26px */
-  --text-2xl:  2rem;       /* 32px */
-  --text-3xl:  2.625rem;   /* 42px */
-  --text-4xl:  3.25rem;    /* 52px */
+  --text-2xs:  0.688rem;  /* 11px — micro labels, status codes */
+  --text-xs:   0.75rem;   /* 12px — badges, captions, metadata */
+  --text-sm:   0.875rem;  /* 14px — body text, table cells, nav links */
+  --text-base: 1rem;      /* 16px — card headings, primary inputs */
+  --text-lg:   1.125rem;  /* 18px — section titles */
+  --text-xl:   1.25rem;   /* 20px — modal titles, emphasized subtitles */
+  --text-2xl:  1.5rem;    /* 24px — page titles (H1) */
+  --text-3xl:  2rem;      /* 32px — hero metrics, KPI counts */
+  --text-4xl:  2.5rem;    /* 40px — display numbers */
 }
 
 @theme {
@@ -145,4 +137,81 @@ a {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-content-fade {
+  animation: contentFadeIn 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Global Modal Animations (Enter & Exit) */
+@keyframes modalBackdropIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes modalBackdropOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes modalDialogIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalDialogOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+}
+
+.animate-modal-backdrop-in {
+  animation: modalBackdropIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-backdrop-out {
+  animation: modalBackdropOut 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.animate-modal-dialog-in {
+  animation: modalDialogIn 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-dialog-out {
+  animation: modalDialogOut 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-content-fade,
+  .animate-modal-backdrop-in,
+  .animate-modal-backdrop-out,
+  .animate-modal-dialog-in,
+  .animate-modal-dialog-out {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
 }

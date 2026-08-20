@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Hero as FooterBackground } from "../ui/tailwind-css-background-snippet";
+import { APP_URL } from "@/lib/config";
 
 export default function FooterCTA() {
   return (
@@ -70,7 +71,7 @@ export default function FooterCTA() {
         </p>
 
         <a
-          href="mailto:submit@jaxisstatlab.com"
+          href={APP_URL}
           id="footer-cta"
           style={{
             fontFamily: "var(--font-sans), sans-serif",

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { APP_URL } from "@/lib/config";
 
 const NAV_LINKS = [
   { label: "Our Approach", href: "#approach" },
@@ -151,7 +152,7 @@ export default function Navbar() {
 
         {/* CTA Button */}
         <a
-          href="#pricing"
+          href={APP_URL}
           id="navbar-cta"
           style={{
             fontFamily: "var(--font-inter), sans-serif",
@@ -249,7 +250,7 @@ export default function Navbar() {
             </a>
           ))}
           <a
-            href="#pricing"
+            href={APP_URL}
             onClick={() => setMenuOpen(false)}
             style={{
               fontFamily: "var(--font-inter), sans-serif",

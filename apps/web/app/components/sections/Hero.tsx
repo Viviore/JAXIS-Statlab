@@ -6,6 +6,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { globeScrollState } from "@/lib/globeState";
+import { APP_URL } from "@/lib/config";
 
 const ParticleGlobe = dynamic(() => import("../ui/ParticleGlobe"), {
   ssr: false,
@@ -333,9 +334,9 @@ export default function Hero() {
               We analyze your survey data, format your APA 7th Edition tables, and give you the exact speaking script to defend your results — with 100% accuracy.
             </p>
 
-            <div className="hero-cta-wrapper" style={{ marginTop: "2rem" }}>
+            <div className="hero-cta-wrapper" style={{ marginTop: "2rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
               <a
-                href="#pricing"
+                href={APP_URL}
                 id="hero-cta"
                 className="hero-caption hero-cta-btn"
                 style={{
@@ -373,7 +374,7 @@ export default function Hero() {
                   if (arrow) arrow.style.transform = "translateX(0)";
                 }}
               >
-                <span>View Packages & Pricing</span>
+                <span>Get Started</span>
                 <span className="hero-cta-arrow" style={{ transition: "transform 0.2s ease", display: "inline-block" }}>→</span>
               </a>
             </div>

@@ -11,3 +11,5 @@ export * from "./DataTable";
 export * from "./PageHeader";
 export * from "./Badge";
 export * from "./Toast";
+export * from "./Drawer";
+export * from "./AnimateHeight";

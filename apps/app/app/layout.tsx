@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-
-const disketMono = localFont({
-  src: "./fonts/Disket-Mono-Regular.ttf",
-  variable: "--font-disket",
-  display: "swap",
-});
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono-code",
   display: "swap",
 });
 
@@ -33,9 +32,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${disketMono.variable} ${inter.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      style={{ backgroundColor: "#010114" }}
     >
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" style={{ backgroundColor: "#010114" }}>
         {children}
       </body>
     </html>
