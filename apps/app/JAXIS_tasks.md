@@ -24,10 +24,10 @@
 
 **Acceptance:** `turbo run build` completes with zero errors. All workspace packages resolve.
 
-- [ ] `turbo.json` pipelines defined
-- [ ] All 5 workspace members recognized
-- [ ] `npm run dev` starts `apps/app` on port 3001
-- [ ] `npm run build` clean across all workspaces
+- [x] `turbo.json` pipelines defined
+- [x] All 5 workspace members recognized
+- [x] `npm run dev` starts `apps/app` on port 3001
+- [x] `npm run build` clean across all workspaces
 
 ---
 
@@ -44,10 +44,10 @@
 
 **Acceptance:** All CSS custom properties render. Fonts load without FOUT in dev.
 
-- [ ] All color tokens from design system in `globals.css`
-- [ ] Inter and Disket Mono loaded via `next/font`
-- [ ] Font variables applied to `<html>` element
-- [ ] Tailwind v4 utility classes resolve
+- [x] All color tokens from design system in `globals.css`
+- [x] Inter and Disket Mono loaded via `next/font`
+- [x] Font variables applied to `<html>` element
+- [x] Tailwind v4 utility classes resolve
 
 ---
 
