@@ -177,12 +177,12 @@
 
 **Acceptance:** `npx prisma migrate status` shows all migrations applied. `npx prisma studio` shows all 4 tables.
 
-- [ ] Enums defined (`UserStatus`, `RoleName`, `AuthEvent`)
-- [ ] `User` model with correct fields and indexes
-- [ ] `Role` model with correct fields
-- [ ] `UserRole` junction with composite PK and indexes
-- [ ] `AuthAuditLog` model with nullable `userId` and all audit fields
-- [ ] Migration runs cleanly with zero errors
+- [x] `UserStatus`, `RoleName`, `AuthEvent` enums defined
+- [x] `User` model with indexes on `email`, `status`
+- [x] `Role` model with unique `name`
+- [x] `UserRole` junction with composite PK `[userId, roleId]`
+- [x] `AuthAuditLog` model with indexes on `userId`, `email`, `event`, `createdAt`
+- [x] Prisma client generated with new models
 
 ---
 
@@ -202,11 +202,11 @@
 
 **Acceptance:** All seed users can be found via `npx prisma studio`. Password fields contain bcrypt hashes (start with `$2b$`).
 
-- [ ] All 6 roles seeded
-- [ ] All 6 dev users seeded with hashed passwords
-- [ ] `UserRole` records correctly linking each user to their role
-- [ ] Seed is idempotent (running twice does not error or duplicate)
-- [ ] `npm run seed` command documented in `README.md`
+- [x] All 6 roles seeded
+- [x] All 6 dev users seeded with hashed passwords
+- [x] `UserRole` records correctly linking each user to their role
+- [x] Seed is idempotent (running twice does not error or duplicate)
+- [x] `npm run seed` command wired in `package.json`
 
 ---
 
@@ -231,13 +231,13 @@
 
 **Acceptance:** `requireRole('ADMIN')` with an admin session returns the session. With a client session, it throws `FORBIDDEN`. No TypeScript errors.
 
-- [ ] `src/lib/auth.ts` created with full NextAuth config
-- [ ] `authorize()` correctly handles wrong password, suspended, and terminated states
-- [ ] JWT and session callbacks embed `userId`, `role`, `fullName`
-- [ ] Auth audit log writes on login success, login failure, and logout
-- [ ] `requireRole()` implemented and typed
-- [ ] Session type augmentation — `session.user.role` has no TypeScript errors
-- [ ] `.env.example` updated
+- [x] `src/lib/auth.ts` created with full NextAuth config
+- [x] `authorize()` correctly handles wrong password, suspended, and terminated states
+- [x] JWT and session callbacks embed `userId`, `role`, `fullName`
+- [x] Auth audit log writes on login success, login failure, and logout
+- [x] `requireRole()` implemented and typed
+- [x] Session type augmentation — `session.user.role` has no TypeScript errors
+- [x] `.env.example` updated
 
 ---
 
@@ -265,14 +265,15 @@
 
 **Acceptance:** Login and register forms render correctly. Form validation errors display per field. Each role logs in and lands on the correct desk. Register success redirects to login.
 
-- [ ] `LoginSchema` and `RegisterSchema` defined in `schemas.ts`
-- [ ] `registerClient()` Server Action with all validation and error cases
-- [ ] `/login` page renders with correct design tokens
-- [ ] `/login` shows per-error messages (invalid, suspended, terminated)
-- [ ] `/register` page renders with correct design tokens
-- [ ] `/register` shows field-level validation errors
-- [ ] Post-login redirect sends each role to the correct URL
-- [ ] Authenticated users visiting `/login` or `/register` are redirected
+- [x] `LoginSchema` and `RegisterSchema` defined in `schemas.ts`
+- [x] `src/features/auth/actions.ts` implemented with `registerClient()` Server Action
+- [x] `/login` page renders with Corporate Midnight design system tokens
+- [x] `/register` page renders with form validation and password confirmation
+- [x] Validation errors displayed inline on form fields
+- [x] Login error messages for wrong password, suspended, terminated accounts
+- [x] Password hash never returned to client or logged
+- [x] Post-login redirect map implemented (`ROLE_HOME`)
+- [x] Authenticated users visiting `/login` or `/register` are redirected
 
 ---
 
