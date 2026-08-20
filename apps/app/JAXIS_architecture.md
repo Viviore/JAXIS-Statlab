@@ -447,6 +447,23 @@ All files > ~1MB or expected to be downloaded repeatedly (research datasets, ana
 
 Vercel Hobby supports 1 cron job. JAXIS needs 3 minimum (3-day expiry, 90-day purge, SLA alerts). Trigger.dev handles all 3 with 250K free runs/month and a first-class TypeScript SDK. Jobs are defined in `src/lib/jobs/` and registered in the Trigger.dev dashboard.
 
+### Decoupled Feature Data Layer (RULE_DATA_01)
+
+All domain features follow a decoupled data layer architecture:
+1. **Strong Contracts (`src/types/`):** Explicit TypeScript interfaces for domain entities.
+2. **Mock Seeds (`src/lib/mock-data/`):** Development seed data isolated from component files.
+3. **Async Services (`src/features/*/services/*.service.ts`):** Centralized async operations. Direct Prisma ORM queries (`prisma.project.findMany()`) plug into this service layer without requiring UI refactoring.
+4. **Reactive Hooks (`src/features/*/hooks/use*.ts`):** Client state management, caching, dynamic filtering, and telemetry sync.
+5. **REST API Endpoints (`app/api/v1/*/route.ts`):** Standard HTTP endpoints with Zod validation.
+
+### Reusable Monorepo UI Component Library (`@repo/ui`)
+
+All mission-critical UI primitives (`Button`, `Modal`, `Card`, `StatusBadge`, `Skeleton`, `AnimateHeight`) live in `packages/ui`. They enforce:
+- Zero external component bloat.
+- Strict client-side memory safety and unmount listener cleanup (`RULE_MEM_01`).
+- Modal exit state preservation caching (`RULE_UI_02`).
+- 100% adherence to the zero-emoji policy (`RULE_UI_01`).
+
 ### Supabase Realtime for Messaging
 
 Module 09 (Messaging) uses Supabase Realtime channels — one channel per project (`project:{projectId}`). The `supabase-js` client subscribes on the client side. Server broadcasts message events via the Supabase REST API. TanStack Query polling (every 5s) is the fallback if Realtime is not configured in dev.

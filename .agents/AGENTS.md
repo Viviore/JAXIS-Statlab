@@ -54,6 +54,8 @@ Derived directly from the official **JAXIS StatSpecification Document**:
 - **ORM & DB:** Prisma ORM with PostgreSQL.
 - **Animations, 3D & Scrolling:** `gsap`, `lenis`, and `three` (including `@react-three/fiber`) MUST ONLY be installed and used in the `apps/web` (Landing Page) workspace to achieve cinematic designs. The `apps/app` (SaaS Dashboard) workspace MUST remain lightweight and prioritize standard native scroll behaviors without scroll hijacking.
 - **`RULE_UI_01` — Strict Zero-Emoji Policy (Non-Negotiable):** Emojis (e.g. 🔒, ✓, 🚀, 📊, ⚠️, ❌) **MUST NEVER** be used as icons, status indicators, badges, or visual decoration in any user interface across `apps/app`, `apps/web`, or `packages/ui`. Always use clean, scalable vector SVG icons (e.g. Lucide, Heroicons, or custom SVG paths) with explicit stroke/fill styling and theme tokens.
+- **`RULE_UI_02` — Modal Content Preservation on Unmount:** All modal dialogs, drawers, and slide-overs must maintain internal state caching of active children during exit animations so that parent state resets (e.g. `setSelected(null)`) never cause empty box collapsing or visual flickers during unmount transitions.
+- **`RULE_DATA_01` — Decoupled Data Layer (Non-Negotiable):** Mock datasets and telemetry arrays **MUST NEVER** be hardcoded directly inside page components. Always extract data models to `src/types/`, mock seeds to `src/lib/mock-data/`, and encapsulate operations within a typed service layer (`*.service.ts`) with custom React hooks. This guarantees seamless Prisma ORM connection without UI refactoring.
 
 ---
 
