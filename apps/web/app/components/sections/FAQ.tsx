@@ -296,7 +296,7 @@ export default function FAQ() {
                           marginBottom: "0.5rem",
                         }}
                       >
-                        // {faq.category}
+                        {"// "}{faq.category}
                       </span>
                       <p
                         style={{

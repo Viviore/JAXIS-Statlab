@@ -1,0 +1,213 @@
+# JAXIS — Module 08: Expert Assignment & Workload
+
+**Module Code:** `08-assignment`\
+**Domain:** Assignment\
+**Depends On:** `07-payments`, `02-staff`\
+**Blocks:** `09-messaging`, `10-analysis`, `13-defenselab`
+
+---
+
+## 1. Module Identity
+
+- **Primary Objective:** Admin assigns a Statistician and Senior QA Lead to an active, paid project. The SLA timer starts at the moment of assignment. Admin can reassign in extreme cases (original Expert payout voided on reassignment).
+- **Core Responsibilities:** `Assignment` model, SLA timer (start, pause, resume), workload capacity view, reassignment logic, 24-hour pre-deadline alert.
+
+---
+
+## 2. Module Scope
+
+### ✅ In Scope
+
+| Feature ID | Feature |
+|---|---|
+| `ASN-F01` | **Expert assignment** — Admin assigns one Statistician + one QA Lead to an active project |
+| `ASN-F02` | **SLA timer start** — `sla_start_at` = assignment timestamp; `sla_due_at` computed from turnaround days |
+| `ASN-F03` | **Specialization suggestion** — System ranks available statisticians by specialization match + open workload count (read-only suggestion; Admin decides) |
+| `ASN-F04` | **Workload capacity view** — Admin sees each Statistician's active project count and current assignments |
+| `ASN-F05` | **Reassignment** — Admin can reassign; original Expert payout record → `VOIDED`; SLA continues from current point |
+| `ASN-F06` | **SLA pause** — Statistician requests pause (client delay); Admin approves; `sla_paused_at` set |
+| `ASN-F07` | **SLA resume** — Admin resumes; elapsed pause time excluded from SLA calculation |
+| `ASN-F08` | **24-hour pre-deadline alert** — In-app badge on Admin desk when `sla_due_at - now() <= 24 hours` |
+| `ASN-F09` | **Statistician workload view** — Statistician sees own assigned projects with SLA countdown |
+| `ASN-F10` | **Holiday exclusion** — SLA calculator excludes `PhilippineHoliday` records from turnaround count |
+
+### ❌ Explicitly Out of Scope
+
+| Feature | Reason |
+|---|---|
+| Statistician declining an assignment | Not in scope — Experts submit interest before selection; they cannot decline once assigned |
+| Automatic Expert selection | System suggests but Admin always makes the final decision |
+| SLA breach auto-action | Admin is alerted; no automated project cancellation or penalty |
+| Email for 24-hour alert | Module 16 (Notifications) |
+
+---
+
+## 3. Database Schema
+
+```prisma
+model Assignment {
+  id             String    @id @default(cuid())
+  projectId      String    @unique // One active assignment per project
+  statisticianId String
+  qaLeadId       String
+  assignedBy     String    // Admin userId
+  assignedAt     DateTime  @default(now())
+
+  // SLA fields
+  slaStartAt     DateTime
+  slaDueAt       DateTime
+  slaPausedAt    DateTime?
+  slaResumedAt   DateTime?
+  slaPauseReason String?
+  slaPausedBy    String?   // Statistician userId who requested pause
+  slaApprovedBy  String?   // Admin userId who approved pause
+
+  // Reassignment tracking
+  isActive       Boolean   @default(true)
+  reassignedAt   DateTime?
+  reassignedBy   String?
+  reassignReason String?
+
+  project      Project @relation(fields: [projectId], references: [id])
+  statistician User    @relation("StatAssignments", fields: [statisticianId], references: [id])
+  qaLead       User    @relation("QAAssignments", fields: [qaLeadId], references: [id])
+
+  @@index([projectId])
+  @@index([statisticianId])
+  @@index([qaLeadId])
+  @@index([slaDueAt])
+  @@map("assignments")
+}
+
+// Assignment history — new row on each reassignment
+model AssignmentHistory {
+  id             String   @id @default(cuid())
+  projectId      String
+  statisticianId String
+  qaLeadId       String
+  assignedAt     DateTime
+  reassignedAt   DateTime
+  reason         String
+  payoutVoided   Boolean  @default(true)
+
+  @@index([projectId])
+  @@map("assignment_histories")
+}
+
+model PhilippineHoliday {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique
+  name      String
+  type      HolidayType
+
+  @@index([date])
+  @@map("philippine_holidays")
+}
+
+enum HolidayType {
+  REGULAR
+  SPECIAL_NON_WORKING
+}
+```
+
+### SLA Calculation
+
+```ts
+// src/lib/sla-calculator.ts
+export async function computeSlaDueDate(startAt: Date, turnaroundDays: number): Promise<Date> {
+  const holidays = await db.philippineHoliday.findMany({
+    where: { date: { gte: startAt } },
+    select: { date: true },
+  });
+  const holidayDates = new Set(holidays.map(h => h.date.toDateString()));
+
+  let daysAdded = 0;
+  let current = new Date(startAt);
+
+  while (daysAdded < turnaroundDays) {
+    current.setDate(current.getDate() + 1);
+    if (!holidayDates.has(current.toDateString())) {
+      daysAdded++;
+    }
+  }
+  return current;
+}
+```
+
+---
+
+## 4. API Routes & Server Actions
+
+| Method | Route | Role | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/assignments` | ADMIN, CEO | Assign Statistician + QA Lead; start SLA |
+| `PATCH` | `/api/v1/assignments/:id/reassign` | ADMIN, CEO | Reassign; void original payout |
+| `POST` | `/api/v1/projects/:id/pause-sla` | STATISTICIAN | Request SLA pause (requires Admin approval) |
+| `POST` | `/api/v1/projects/:id/approve-sla-pause` | ADMIN, CEO | Approve SLA pause |
+| `POST` | `/api/v1/projects/:id/resume-sla` | ADMIN, CEO | Resume SLA timer |
+| `GET` | `/api/v1/assignments/my-workload` | STATISTICIAN | Own assigned projects with SLA countdowns |
+| `GET` | `/api/v1/assignments/capacity` | ADMIN, CEO | All Statisticians with assignment counts |
+
+---
+
+## 5. Page Views
+
+| Page | Route | Role | Description |
+|---|---|---|---|
+| Assignment Panel | `/dashboard/admin/assignments` | Admin, CEO | Project list (active, unassigned) + Statistician roster with capacity bars + assign form |
+| Workload | `/dashboard/statistician` | Statistician | Assigned projects table with SLA countdown timer |
+| Pre-deadline Alert Badge | Admin topbar / admin home | Admin | In-app badge for projects within 24 hrs of SLA |
+
+---
+
+## 6. Seed Data Requirements
+
+```ts
+const seedAssignment = {
+  projectIntakeId: 'JAXIS-202608-0001',
+  statisticianEmail: 'stat@jaxis.dev',
+  qaLeadEmail:       'qa@jaxis.dev',
+  assignedAt:        new Date('2026-08-12T08:00:00Z'),
+  slaDueAt:          new Date('2026-08-17T08:00:00Z'), // 5-day turnaround
+};
+
+const seedHolidays = [
+  { date: new Date('2026-08-21'), name: "Ninoy Aquino Day", type: 'REGULAR' },
+  { date: new Date('2026-08-31'), name: "National Heroes Day", type: 'REGULAR' },
+  { date: new Date('2026-12-25'), name: "Christmas Day", type: 'REGULAR' },
+];
+```
+
+---
+
+## 7. Acceptance Criteria (Done Checklist)
+
+### Assignment
+- [ ] Admin can assign Statistician + QA Lead to an `ACTIVE` project
+- [ ] `slaStartAt` = `assignedAt`; `slaDueAt` computed correctly excluding holidays
+- [ ] Project status → `EXPERT_ASSIGNED` after assignment
+- [ ] Cannot assign to a project not in `ACTIVE` status → 422
+
+### Suggestion
+- [ ] Capacity endpoint returns Statisticians sorted by open assignment count
+- [ ] Specialization filter narrows suggestions (if provided)
+
+### Reassignment
+- [ ] Admin can reassign → new Assignment record created; old marked `isActive = false`
+- [ ] `AssignmentHistory` record created with `payoutVoided = true`
+- [ ] Original `Payout` record (if exists from Module 14) → `VOIDED`
+
+### SLA
+- [ ] SLA pause requested by Statistician → pending Admin approval
+- [ ] Admin approves pause → `slaPausedAt` set; timer suspended
+- [ ] Admin resumes → `slaResumedAt` set; `slaDueAt` recalculated to exclude pause duration
+- [ ] Projects within 24 hours of `slaDueAt` show pre-deadline badge on Admin desk
+
+### Workload
+- [ ] Statistician workload view shows own assignments with SLA countdown
+- [ ] Countdown correctly reflects any paused time
+
+### Quality Gates
+- [ ] `npm run check-types` → 0 errors
+- [ ] `npm run lint` → 0 warnings/errors
+- [ ] `npm run build` → clean
