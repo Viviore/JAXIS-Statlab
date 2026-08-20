@@ -256,48 +256,48 @@ None for Module 00. Seed script is created (empty) with the `prisma db seed` com
 ## 8. Acceptance Criteria (Done Checklist)
 
 ### Workspace
-- [ ] `turbo.json` defines `build`, `dev`, `lint`, `check-types` pipelines
-- [ ] All 5 packages/apps exist and are recognized by Turborepo
-- [ ] `npm run dev` starts `apps/app` on port 3001
+- [x] `turbo.json` defines `build`, `dev`, `lint`, `check-types` pipelines
+- [x] All 5 packages/apps exist and are recognized by Turborepo
+- [x] `npm run dev` starts `apps/app` on port 3001
 
 ### Design System
-- [ ] `globals.css` contains all CSS custom properties from `JAXIS_design-system.md` Section 2
-- [ ] Inter and Disket Mono load correctly (no FOUT in dev)
-- [ ] Tailwind v4 utility classes resolve in all component files
+- [x] `globals.css` contains all CSS custom properties from `JAXIS_design-system.md` Section 2
+- [x] Inter and Disket Mono load correctly (no FOUT in dev)
+- [x] Tailwind v4 utility classes resolve in all component files
 
 ### `@repo/ui`
-- [ ] All 13 components render without TypeScript errors
-- [ ] `Button` — all 4 variants × 3 sizes render correctly
-- [ ] `StatusBadge` — all 14 status values render with correct colors
-- [ ] No `any` types in any `@repo/ui` component
+- [x] All 13 components render without TypeScript errors
+- [x] `Button` — all 4 variants × 3 sizes render correctly
+- [x] `StatusBadge` — all 24 status values render with correct colors
+- [x] No `any` types in any `@repo/ui` component
 
 ### Database (Supabase PostgreSQL + Prisma)
-- [ ] `DATABASE_URL` is the Supabase **pooler** URL (port 6543)
-- [ ] `DIRECT_URL` is the Supabase **direct** URL (port 5432) — used for `prisma migrate`
-- [ ] `npx prisma db push` connects successfully to Supabase
-- [ ] `src/lib/db.ts` exports a singleton Prisma client
-- [ ] `src/lib/env.ts` throws on startup if any required env var is missing
+- [x] `DATABASE_URL` is the Supabase **pooler** URL (port 6543)
+- [x] `DIRECT_URL` is the Supabase **direct** URL (port 5432) — used for `prisma migrate`
+- [x] `npx prisma db push` connects successfully to Supabase
+- [x] `src/lib/db.ts` exports a singleton Prisma client
+- [x] `src/lib/env.ts` throws on startup if any required env var is missing
 
 ### Supabase Client
-- [ ] `supabaseClient` (browser) initializes without error
-- [ ] `supabaseAdmin` (server) initializes without error
-- [ ] Neither client crashes when env vars are present
+- [x] `supabaseClient` (browser) initializes without error
+- [x] `supabaseAdmin` (server) initializes without error
+- [x] Neither client crashes when env vars are present
 
 ### Cloudflare R2 Client
-- [ ] `r2Client` initializes without error
-- [ ] `getR2UploadUrl()` returns a valid pre-signed URL against the dev bucket
-- [ ] `getR2DownloadUrl()` returns a valid pre-signed URL
+- [x] `r2Client` initializes without error
+- [x] `getR2UploadUrl()` returns a valid pre-signed URL against the dev bucket
+- [x] `getR2DownloadUrl()` returns a valid pre-signed URL
 
 ### Email Client
-- [ ] Resend client initializes with `RESEND_API_KEY`
-- [ ] `sendEmail()` function accepts template name + recipient without TypeScript errors
+- [x] Resend client initializes with `RESEND_API_KEY`
+- [x] `sendEmail()` function accepts template name + recipient without TypeScript errors
 
 ### Layout
-- [ ] Root layout renders without error at `/`
-- [ ] Dashboard layout shell renders at `/dashboard` (auth checked after Module 01)
-- [ ] Topbar and Sidebar structurally correct (spacing, colors, font)
+- [x] Root layout renders without error at `/`
+- [x] Dashboard layout shell renders at `/dashboard` (auth checked after Module 01)
+- [x] Topbar and Sidebar structurally correct (spacing, colors, font)
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean build
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean build

@@ -1,102 +1,53 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+import React from "react";
+import { Button, Card, StatusBadge } from "@repo/ui";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
+export default function RootHomePage() {
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
-
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/docs/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-[#010114] text-white flex flex-col items-center justify-center p-6 select-none">
+      <div className="max-w-md w-full flex flex-col items-center gap-6 text-center">
+        {/* Brand mark */}
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-[#CC6600] rounded-[2px] flex items-center justify-center font-mono font-bold text-white text-base tracking-wider shadow-lg">
+            JX
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="font-mono font-bold text-xl tracking-widest text-white">
+              JAXIS
+            </span>
+            <span className="font-mono text-[0.625rem] text-white/40 tracking-widest uppercase">
+              STATLAB WORKSPACE
+            </span>
+          </div>
         </div>
-        <Button appName="docs" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
+
+        <Card className="w-full text-left">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <span className="text-xs font-mono text-white/60 uppercase tracking-wider">Foundation Module</span>
+            <StatusBadge status="ACTIVE" pulse />
+          </div>
+
+          <div className="py-4 text-xs text-white/70 leading-relaxed space-y-2">
+            <p>
+              Welcome to the <strong className="text-white">JAXIS StatLab</strong> SaaS application workspace. Monorepo tooling, design tokens, and shared UI primitives have been initialized.
+            </p>
+            <p className="text-white/50 text-[0.688rem]">
+              Stack: Next.js 16 App Router · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev
+            </p>
+          </div>
+
+          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+            <a href="/dashboard" className="w-full">
+              <Button variant="primary" size="md" className="w-full">
+                Enter Dashboard Workspace
+              </Button>
+            </a>
+          </div>
+        </Card>
+
+        <span className="text-[0.625rem] font-mono text-white/30 tracking-wider uppercase">
+          JAXIS STATLAB · CONFIDENTIAL & PROPRIETARY
+        </span>
+      </div>
     </div>
   );
 }

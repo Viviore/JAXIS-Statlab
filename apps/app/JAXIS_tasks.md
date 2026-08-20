@@ -1,13 +1,13 @@
 # JAXIS — Task List
 
-**Active Module:** `00-foundation` — Project Foundation & Infrastructure\
+**Active Module:** `01-auth` — Authentication & RBAC\
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5\
-**Spec Reference:** [`docs/modules/JAXIS_00-foundation.md`](./docs/modules/JAXIS_00-foundation.md)\
+**Spec Reference:** [`docs/modules/JAXIS_01-auth.md`](./docs/modules/JAXIS_01-auth.md)\
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing this module.
 
 ---
 
-## Module 00 — Project Foundation & Infrastructure
+## Module 00 — Project Foundation & Infrastructure (Completed)
 
 ---
 
@@ -70,14 +70,14 @@
 
 **Acceptance:** `src/lib/env.ts` throws on startup if any var is missing. All 4 clients initialize without error.
 
-- [ ] All packages installed
-- [ ] `src/lib/env.ts` Zod schema — all 13 vars validated
-- [ ] `src/lib/db.ts` Prisma singleton
-- [ ] `src/lib/supabase.ts` browser + admin clients
-- [ ] `src/lib/storage.ts` R2 client + pre-signed URL helpers
-- [ ] `src/lib/email/index.ts` `sendEmail()` abstraction
-- [ ] `.env.example` complete
-- [ ] `.env.local` populated with real credentials
+- [x] All packages installed
+- [x] `src/lib/env.ts` Zod schema — all 13 vars validated
+- [x] `src/lib/db.ts` Prisma singleton
+- [x] `src/lib/supabase.ts` browser + admin clients
+- [x] `src/lib/storage.ts` R2 client + pre-signed URL helpers
+- [x] `src/lib/email/index.ts` `sendEmail()` abstraction
+- [x] `.env.example` complete
+- [x] `.env.local` populated with real credentials
 
 ---
 
@@ -96,11 +96,11 @@
 
 **Acceptance:** `npx prisma db push` succeeds. `npx prisma studio` opens and connects to Supabase.
 
-- [ ] `DATABASE_URL` = Supabase pooler URL (port 6543)
-- [ ] `DIRECT_URL` = Supabase direct URL (port 5432)
-- [ ] `npx prisma db push` succeeds with zero errors
-- [ ] `npx prisma generate` succeeds
-- [ ] Seed script wired (empty stub)
+- [x] `DATABASE_URL` = Supabase pooler URL (port 6543)
+- [x] `DIRECT_URL` = Supabase direct URL (port 5432)
+- [x] `npx prisma db push` succeeds with zero errors
+- [x] `npx prisma generate` succeeds
+- [x] Seed script wired (empty stub)
 
 ---
 
@@ -119,12 +119,12 @@
 
 **Acceptance:** All 13 components render without TypeScript errors. No `any` types.
 
-- [ ] All 13 components created
-- [ ] `Button` — all 4 variants × 3 sizes render
-- [ ] `StatusBadge` — all 22 project statuses mapped
-- [ ] `DataTable` — loading skeleton and empty state work
-- [ ] No `any` types in any component
-- [ ] `@repo/ui` imports resolve in `apps/app`
+- [x] All 13 components created
+- [x] `Button` — all 4 variants × 3 sizes render
+- [x] `StatusBadge` — all 22 project statuses mapped
+- [x] `DataTable` — loading skeleton and empty state work
+- [x] No `any` types in any component
+- [x] `@repo/ui` imports resolve in `apps/app`
 
 ---
 
@@ -147,21 +147,18 @@
 
 **Acceptance:** Dashboard shell renders. All 3 quality gates pass. Module 01 unblocked.
 
-- [ ] Root layout renders without error
-- [ ] `<Topbar>` structural shell correct (height, colors, font)
-- [ ] `<Sidebar>` structural shell correct (width, border, placement)
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
-- [ ] `JAXIS_00-foundation.md` Section 8 checklist fully marked
-- [ ] Active module updated to `01-auth`
+- [x] Root layout renders without error
+- [x] `<Topbar>` structural shell correct (height, colors, font)
+- [x] `<Sidebar>` structural shell correct (width, border, placement)
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean
+- [x] `JAXIS_00-foundation.md` Section 8 checklist fully marked
+- [x] Active module updated to `01-auth`
 
 ---
 
 ## Module 01 — Authentication & RBAC
-
-> ⏳ **Blocked — awaiting Module 00 completion**
-
 
 ### Task 1 — Prisma Schema: Identity Models & Migration
 
@@ -384,7 +381,8 @@
 
 | # | Module | Status |
 |---|---|---|
-| `01` | `01-auth` — Authentication & RBAC | 🔄 In Progress |
+| `00` | `00-foundation` — Project Foundation & Infrastructure | ✅ Completed |
+| `01` | `01-auth` — Authentication & RBAC | 🔄 Active / Ready for Execution |
 | `02` | `02-staff` — Expert Provisioning & Staff Management | ⏳ Blocked — awaiting `01` |
 | `03` | `03-client-profile` — Client Profile & Account | ⏳ Blocked — awaiting `01` |
 | `04` | `04-intake` — Project Intake & Submission | ⏳ Blocked — awaiting `03` |
