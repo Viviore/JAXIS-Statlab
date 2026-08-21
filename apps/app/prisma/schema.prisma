@@ -48,6 +48,7 @@ model User {
   staffProfile   StaffProfile?
   clientProfile  ClientProfile?
   suspensionLogs SuspensionLog[]
+  clientProjects Project[]       @relation("ClientProjects")
 
   @@index([email])
   @@index([status])
@@ -163,5 +164,91 @@ model ClientProfile {
 
   @@index([userId])
   @@map("client_profiles")
+}
+
+// ─── Module 04: Project Intake & Submission ──────────────────────────────────
+
+enum ProjectStatus {
+  NEW_REQUEST
+  AWAITING_INFORMATION
+  UNDER_EVALUATION
+  QUOTE_SENT
+  CLIENT_APPROVED
+  SOW_PENDING
+  SOW_SIGNED
+  AWAITING_PAYMENT
+  ACTIVE
+  EXPERT_ASSIGNED
+  IN_PROGRESS
+  SCOPE_CREEP_HALTED
+  SLA_PAUSED
+  FOR_QA
+  QA_REVISION
+  DELIVERED
+  REVISION_REQUESTED
+  CLOSED
+  HALTED
+  CANCELLED
+  DISPUTED
+  ETHICAL_BREACH
+  EXPIRED
+  REASSIGNMENT_NEEDED
+}
+
+enum FileCategory {
+  RESEARCH_DOCUMENT
+  DATASET
+  QUESTIONNAIRE
+  PAYMENT_PROOF
+  ANALYSIS_OUTPUT
+  DELIVERABLE
+  DISPUTE_EVIDENCE
+}
+
+model Project {
+  id                 String        @id @default(cuid())
+  intakeId           String        @unique
+  clientId           String
+  researchTitle      String
+  researchQuestions  String
+  researchObjectives String
+  hypotheses         String?
+  chapters13         String?
+  questionnaire      String?
+  deadlineRequested  DateTime
+  masterStatus       ProjectStatus @default(NEW_REQUEST)
+  packageName        String?
+  missingInfoReason  String?
+  deliveredAt        DateTime?
+  filesPurgeAt       DateTime?
+  filesPurged        Boolean       @default(false)
+  hasActiveDispute   Boolean       @default(false)
+  hasPendingRefund   Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  client User          @relation("ClientProjects", fields: [clientId], references: [id])
+  files  ProjectFile[]
+
+  @@index([clientId])
+  @@index([masterStatus])
+  @@index([intakeId])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+model ProjectFile {
+  id           String       @id @default(cuid())
+  projectId    String
+  fileName     String
+  filePath     String
+  fileType     String
+  fileCategory FileCategory
+  uploadedAt   DateTime     @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_files")
 }
 

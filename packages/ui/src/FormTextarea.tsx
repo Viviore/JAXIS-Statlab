@@ -48,8 +48,16 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
           rows={rows}
           className={`w-full bg-[#011C38] border ${
             error ? "border-[#EF4444] focus:border-[#EF4444]" : "border-white/12 focus:border-[#CC6600]"
-          } rounded-[2px] px-4 py-3.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-y ${className}`}
-          style={{ outline: "none", boxShadow: "none", ...props.style }}
+          } rounded-[2px] px-5 py-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-y ${className}`}
+          style={{
+            padding: "1rem 1.25rem",
+            boxSizing: "border-box",
+            lineHeight: "1.6",
+            fontSize: "0.875rem",
+            outline: "none",
+            boxShadow: "none",
+            ...props.style,
+          }}
           {...props}
         />
         {error ? (

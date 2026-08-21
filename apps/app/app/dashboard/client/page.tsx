@@ -37,13 +37,14 @@ export default function ClientDashboardPage() {
           { label: "Client Portal" },
         ]}
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => alert("New Study Intake Form will launch.")}
-          >
-            + NEW PROJECT INTAKE
-          </Button>
+          <Link href="/dashboard/client/projects/new">
+            <Button
+              variant="primary"
+              size="sm"
+            >
+              + NEW PROJECT INTAKE
+            </Button>
+          </Link>
         }
       />
 

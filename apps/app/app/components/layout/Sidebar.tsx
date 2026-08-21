@@ -134,49 +134,60 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "RESEARCH DESK",
       items: [
         {
-          label: "Client Portal",
+          label: "Client Overview",
           href: "/dashboard/client",
           icon: Icons.Overview,
         },
         {
-          label: "Institutional Profile",
-          href: "/dashboard/client/profile",
-          icon: Icons.Users,
-        },
-        {
-          label: "My Active Studies",
-          href: "/dashboard/client#studies",
+          label: "Active Studies",
+          href: "/dashboard/client/projects",
           icon: Icons.Studies,
-          count: 4,
         },
         {
           label: "Submit New Intake",
-          href: "/dashboard/client#intake",
+          href: "/dashboard/client/projects/new",
           icon: Icons.Intake,
           badge: "+ NEW",
           badgeColor: "orange",
         },
         {
+          label: "Quotations & SOW",
+          href: "/dashboard/client/quotations",
+          icon: Icons.Receipt,
+          badge: "SOW",
+          badgeColor: "sky",
+        },
+        {
           label: "Deliverables Vault",
-          href: "/dashboard/client#deliverables",
+          href: "/dashboard/client/deliverables",
           icon: Icons.Vault,
           badge: "APA 7th",
           badgeColor: "emerald",
         },
+        {
+          label: "DefenseLab Coaching",
+          href: "/dashboard/client/defenselab",
+          icon: Icons.Terminal,
+        },
       ],
     },
     {
-      groupTitle: "BILLING & SUPPORT",
+      groupTitle: "COMMUNICATION & ACCOUNT",
       items: [
         {
-          label: "Invoices & Receipts",
-          href: "/dashboard/client#billing",
-          icon: Icons.Receipt,
+          label: "Secure Messaging",
+          href: "/dashboard/client/messages",
+          icon: Icons.Feedback,
         },
         {
-          label: "Workspace Telemetry",
-          href: "/dashboard",
-          icon: Icons.Overview,
+          label: "Escrow & Payments",
+          href: "/dashboard/client/payments",
+          icon: Icons.FinanceVault,
+        },
+        {
+          label: "Institutional Profile",
+          href: "/dashboard/client/profile",
+          icon: Icons.Users,
         },
       ],
     },
@@ -193,40 +204,47 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         },
         {
           label: "Assigned Studies",
-          href: "/dashboard/statistician#assigned",
+          href: "/dashboard/statistician/projects",
           icon: Icons.Studies,
-          count: 6,
         },
         {
-          label: "R / SPSS Scripts",
-          href: "/dashboard/statistician#scripts",
+          label: "Analysis & Syntax Lab",
+          href: "/dashboard/statistician/analysis",
           icon: Icons.Scripts,
-          badge: "v4.3",
+          badge: "R / Python",
           badgeColor: "indigo",
         },
         {
           label: "Submit to QA Queue",
-          href: "/dashboard/statistician#submit-qa",
+          href: "/dashboard/statistician/submissions",
           icon: Icons.UploadCloud,
-          count: 2,
+          badge: "QA",
           badgeColor: "amber",
+        },
+        {
+          label: "DefenseLab Panels",
+          href: "/dashboard/statistician/defenselab",
+          icon: Icons.Award,
         },
       ],
     },
     {
-      groupTitle: "AUDIT & GOVERNANCE",
+      groupTitle: "COLLABORATION & PROFILE",
       items: [
         {
-          label: "QA Feedback & Notes",
-          href: "/dashboard/statistician#feedback",
+          label: "Client Collaboration Desk",
+          href: "/dashboard/statistician/messages",
           icon: Icons.Feedback,
-          count: 1,
-          badgeColor: "amber",
         },
         {
-          label: "Global Operations",
-          href: "/dashboard",
-          icon: Icons.Overview,
+          label: "Expert Compensation",
+          href: "/dashboard/statistician/payouts",
+          icon: Icons.FinanceVault,
+        },
+        {
+          label: "Expert Profile & Skills",
+          href: "/dashboard/statistician/profile",
+          icon: Icons.Users,
         },
       ],
     },
@@ -243,33 +261,37 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         },
         {
           label: "Dual-Blind Queue",
-          href: "/dashboard/qa#queue",
+          href: "/dashboard/qa/queue",
           icon: Icons.CheckQueue,
-          count: 4,
-          badge: "URGENT",
+          badge: "BLIND",
           badgeColor: "amber",
         },
         {
           label: "APA 7th Verification",
-          href: "/dashboard/qa#seals",
+          href: "/dashboard/qa/verification",
           icon: Icons.Award,
-          count: 12,
+          badge: "APA 7th",
           badgeColor: "emerald",
+        },
+        {
+          label: "Methodology Audits",
+          href: "/dashboard/qa/audits",
+          icon: Icons.Audit,
         },
       ],
     },
     {
-      groupTitle: "COMPLIANCE GATES",
+      groupTitle: "DELIVERABLES & PROFILE",
       items: [
         {
-          label: "Methodology Audits",
-          href: "/dashboard/qa#methodology",
-          icon: Icons.Audit,
+          label: "Deliverables Sign-Off",
+          href: "/dashboard/qa/deliverables",
+          icon: Icons.Vault,
         },
         {
-          label: "Global Operations",
-          href: "/dashboard",
-          icon: Icons.Overview,
+          label: "QA Lead Profile",
+          href: "/dashboard/qa/profile",
+          icon: Icons.Users,
         },
       ],
     },
@@ -285,32 +307,36 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.FinanceVault,
         },
         {
-          label: "Milestone Releases",
-          href: "/dashboard/finance#releases",
+          label: "Milestone Release Vault",
+          href: "/dashboard/finance/milestones",
           icon: Icons.KeyRelease,
-          count: 3,
           badge: "RULE_REL_01",
           badgeColor: "emerald",
         },
         {
-          label: "Stripe Settlement",
-          href: "/dashboard/finance#stripe",
+          label: "Payment Gateway & Stripe",
+          href: "/dashboard/finance/payments",
           icon: Icons.Receipt,
+        },
+        {
+          label: "Expert Payouts & Payroll",
+          href: "/dashboard/finance/payouts",
+          icon: Icons.Users,
         },
       ],
     },
     {
-      groupTitle: "AUDIT & VAULT",
+      groupTitle: "LEDGER & AUDIT",
       items: [
         {
-          label: "Escrow Ledger",
-          href: "/dashboard/finance#ledger",
+          label: "General Escrow Ledger",
+          href: "/dashboard/finance/ledger",
           icon: Icons.Audit,
         },
         {
-          label: "Global Operations",
-          href: "/dashboard",
-          icon: Icons.Overview,
+          label: "Disputes & Chargebacks",
+          href: "/dashboard/finance/disputes",
+          icon: Icons.Feedback,
         },
       ],
     },
@@ -321,43 +347,41 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "EXECUTIVE INTELLIGENCE",
       items: [
         {
-          label: "CEO Console",
+          label: "CEO Command Console",
           href: "/dashboard/ceo",
           icon: Icons.Activity,
         },
         {
-          label: "Live Telemetry Hub",
-          href: "/dashboard",
-          icon: Icons.Overview,
+          label: "Department SLAs",
+          href: "/dashboard/ceo/slas",
+          icon: Icons.Clock,
         },
         {
           label: "Institutional Retention",
-          href: "/dashboard/ceo#retention",
+          href: "/dashboard/ceo/retention",
           icon: Icons.Award,
           badge: "94.2%",
           badgeColor: "emerald",
         },
-        {
-          label: "Department SLAs",
-          href: "/dashboard/ceo#sla",
-          icon: Icons.Clock,
-        },
       ],
     },
     {
-      groupTitle: "MACRO REVENUE",
+      groupTitle: "MACRO GOVERNANCE",
       items: [
         {
-          label: "Escrow Vault Overview",
+          label: "Escrow Vault Telemetry",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
-          badge: "$64.5k",
-          badgeColor: "emerald",
         },
         {
           label: "QA Verification Index",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
+        },
+        {
+          label: "Executive Analytics",
+          href: "/dashboard/ceo/analytics",
+          icon: Icons.Audit,
         },
       ],
     },
@@ -365,40 +389,39 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   ADMIN: [
     {
-      groupTitle: "OPERATIONS & GOVERNANCE",
+      groupTitle: "PROJECT & INTAKE GOVERNANCE",
       items: [
         {
-          label: "Admin Command",
+          label: "Admin Command Center",
           href: "/dashboard/admin",
           icon: Icons.Terminal,
         },
         {
+          label: "Intake Triage Queue",
+          href: "/dashboard/admin/intake",
+          icon: Icons.CheckQueue,
+          badge: "TRIAGE",
+          badgeColor: "orange",
+        },
+        {
           label: "All Active Studies",
-          href: "/dashboard",
-          icon: Icons.Overview,
-          count: 24,
+          href: "/dashboard/admin/projects",
+          icon: Icons.Studies,
         },
         {
-          label: "Statistician Lab",
-          href: "/dashboard/statistician",
-          icon: Icons.Scripts,
+          label: "Quotation & SOW Desk",
+          href: "/dashboard/admin/quotations",
+          icon: Icons.Receipt,
         },
         {
-          label: "QA Verification Desk",
-          href: "/dashboard/qa",
-          icon: Icons.ShieldCheck,
-          count: 4,
-        },
-        {
-          label: "Escrow Payment Vault",
-          href: "/dashboard/finance",
-          icon: Icons.FinanceVault,
-          count: 3,
+          label: "Expert Assignment Desk",
+          href: "/dashboard/admin/assignments",
+          icon: Icons.KeyRelease,
         },
       ],
     },
     {
-      groupTitle: "SYSTEM ADMINISTRATION",
+      groupTitle: "OPERATIONS & COMPLIANCE",
       items: [
         {
           label: "Staff & Expert Roster",
@@ -406,9 +429,24 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.Users,
         },
         {
-          label: "Cryptographic Audit Log",
-          href: "/dashboard/admin#audit",
+          label: "Communication Firewall",
+          href: "/dashboard/admin/messages",
+          icon: Icons.Feedback,
+        },
+        {
+          label: "Dispute Escalations",
+          href: "/dashboard/admin/disputes",
+          icon: Icons.ShieldCheck,
+        },
+        {
+          label: "Cryptographic Audit Trail",
+          href: "/dashboard/admin/audit",
           icon: Icons.Audit,
+        },
+        {
+          label: "System Analytics & Reports",
+          href: "/dashboard/admin/reporting",
+          icon: Icons.Activity,
         },
       ],
     },
@@ -435,7 +473,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const pathname = usePathname();
   const normalizedRole = (role?.toUpperCase() || "ADMIN") as string;
-  const navGroups = ROLE_NAV_GROUPS[normalizedRole] || ROLE_NAV_GROUPS.ADMIN!;
+  let effectiveRole = normalizedRole;
+  if (normalizedRole === "QA" || normalizedRole === "SENIOR_QA_LEAD") {
+    effectiveRole = "SENIOR_QA_LEAD";
+  } else if (normalizedRole === "FINANCE" || normalizedRole === "FINANCE_OFFICER") {
+    effectiveRole = "FINANCE_OFFICER";
+  }
+  const navGroups = ROLE_NAV_GROUPS[effectiveRole] || ROLE_NAV_GROUPS.ADMIN!;
 
   return (
     <aside

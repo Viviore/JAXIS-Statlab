@@ -211,6 +211,30 @@ async function main() {
     });
     console.log(`✅ Seeded 1 client profile record.`);
   }
+
+  // 6. Upsert Seed Project for Module 04
+  if (clientUser) {
+    await prisma.project.upsert({
+      where: { intakeId: "JAXIS-202608-0001" },
+      update: {
+        researchTitle: "Impact of Study Habits on Academic Performance Among State University Students",
+        researchQuestions: "Does study frequency significantly affect GPA? Is there a gender difference?",
+        researchObjectives: "Determine relationship between study habits and GPA; identify moderating variables.",
+        deadlineRequested: new Date("2026-09-15"),
+        masterStatus: "UNDER_EVALUATION",
+      },
+      create: {
+        intakeId: "JAXIS-202608-0001",
+        clientId: clientUser.id,
+        researchTitle: "Impact of Study Habits on Academic Performance Among State University Students",
+        researchQuestions: "Does study frequency significantly affect GPA? Is there a gender difference?",
+        researchObjectives: "Determine relationship between study habits and GPA; identify moderating variables.",
+        deadlineRequested: new Date("2026-09-15"),
+        masterStatus: "UNDER_EVALUATION",
+      },
+    });
+    console.log(`✅ Seeded 1 sample project record for Module 04.`);
+  }
 }
 
 main()

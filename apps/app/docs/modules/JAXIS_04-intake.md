@@ -238,37 +238,67 @@ const seedProjects = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+#### 1. Client Project Intake & Document Upload Flow
+1. Log in as a Client (`client@jaxis.dev` / `JaxisClient2026!`).
+2. Navigate to `/dashboard/client/projects/new` (or click **"+ NEW PROJECT INTAKE"** on the Client Portal or Sidebar).
+3. **Step 1 (Scope & Objectives)**:
+   - Fill in **Research Study Title** (e.g. *"Predictive Machine Learning in Supply Chain Demand Forecasting"*).
+   - Enter **Core Research Questions** and **Study Objectives**.
+   - Select a target delivery / defense deadline in the future.
+   - Click **"PROCEED TO DOCUMENT ATTACHMENTS →"**.
+4. **Step 2 (Document Attachments)**:
+   - Attach Draft Chapters 1-3 (PDF or DOCX).
+   - Attach Raw Dataset (CSV or XLSX).
+   - Attach Survey Questionnaire / Instrument (PDF or DOCX).
+   - Click **"PROCEED TO REVIEW & SUBMIT →"**.
+5. **Step 3 (Review & Submit)**:
+   - Inspect summary details and verified institutional affiliation.
+   - Check the **Statement of Academic Authorship & Confidentiality** checkbox.
+   - Click **"SUBMIT INTAKE FOR EVALUATION →"**.
+   - You will see a success toast and be redirected to your Client Projects workbench with a newly assigned `JAXIS-YYYYMM-XXXX` identifier.
 
+#### 2. Client Project Detail & Pre-SOW Document Management
+1. Navigate to `/dashboard/client/projects` to view all your active studies filtered by status tabs.
+2. Click **"VIEW STUDY DETAILS →"** on any project to inspect the 6-stage lifecycle progress tracker, research problem, and uploaded files.
+3. In pre-SOW state, click **"Remove"** on any attached file to delete or replace files before the SOW is commissioned.
+
+#### 3. Administrator Intake Triage & Evaluation Queue
+1. Log in as an Administrator (`admin@jaxis.dev` / `JaxisAdmin2026!`).
+2. Navigate to `/dashboard/admin/intake` (or click **"Intake Triage Queue"** with the orange badge on the Sidebar).
+3. Review incoming submissions in the **Triage Queue** table.
+4. **Request Missing Information**: Click **"Request Info"** on a submission, enter a feedback reason, and submit. The project transitions to `AWAITING_INFORMATION` and reflects in both the Admin and Client dashboards.
+5. **Mark Intake Complete**: Click **"Mark Complete"** (or open the **"Inspect Desk →"** at `/dashboard/admin/projects/[id]`). The study advances to `UNDER_EVALUATION` and is ready for quotation modeling in Module 05.
+
+---
 
 ## 8. Acceptance Criteria (Done Checklist)
 
 ### Submission
-- [ ] Client with complete profile can submit a project → `intakeId` auto-generated
-- [ ] Client with incomplete profile gets 422 `PROFILE_INCOMPLETE`
-- [ ] Required fields (title, questions, objectives, deadline) validated — missing fields return 422
-- [ ] Client can upload DOCX, PDF, XLSX, CSV files via pre-signed URL
-- [ ] Invalid MIME type rejected with 422
-- [ ] File exceeding size limit rejected with 422
-- [ ] Client can replace a file before SOW is finalized
+- [x] Client with complete profile can submit a project → `intakeId` auto-generated
+- [x] Client with incomplete profile gets 422 `PROFILE_INCOMPLETE`
+- [x] Required fields (title, questions, objectives, deadline) validated — missing fields return 422
+- [x] Client can upload DOCX, PDF, XLSX, CSV files via pre-signed URL
+- [x] Invalid MIME type rejected with 422
+- [x] File exceeding size limit rejected with 422
+- [x] Client can replace a file before SOW is finalized
 
 ### Status Machine
-- [ ] PATCH with valid transition → status updated, `updatedAt` refreshed
-- [ ] PATCH with invalid transition → 422 `INVALID_STATUS_TRANSITION`
-- [ ] Non-Admin attempting PATCH on project status → 403
+- [x] PATCH with valid transition → status updated, `updatedAt` refreshed
+- [x] PATCH with invalid transition → 422 `INVALID_STATUS_TRANSITION`
+- [x] Non-Admin attempting PATCH on project status → 403
 
 ### Admin Triage
-- [ ] All `NEW_REQUEST` projects appear in Admin intake queue
-- [ ] Admin can request missing info → status → `AWAITING_INFORMATION`, `missingInfoReason` stored
-- [ ] Admin can mark intake complete → status → `UNDER_EVALUATION`
-- [ ] `AWAITING_INFORMATION` projects appear in triage queue alongside `NEW_REQUEST`
+- [x] All `NEW_REQUEST` projects appear in Admin intake queue
+- [x] Admin can request missing info → status → `AWAITING_INFORMATION`, `missingInfoReason` stored
+- [x] Admin can mark intake complete → status → `UNDER_EVALUATION`
+- [x] `AWAITING_INFORMATION` projects appear in triage queue alongside `NEW_REQUEST`
 
 ### Role Scoping
-- [ ] Client list shows own projects only
-- [ ] Admin list shows all projects
-- [ ] Statistician list shows only assigned (empty until Module 08)
+- [x] Client list shows own projects only
+- [x] Admin list shows all projects
+- [x] Statistician list shows only assigned (empty until Module 08)
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

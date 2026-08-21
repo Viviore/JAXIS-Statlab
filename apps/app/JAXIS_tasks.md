@@ -561,6 +561,59 @@
 
 ---
 
+## Module 04: Project Intake & Submission (`04-intake`)
+
+### Task 1 — Database Schema & Models
+**Objective:** Add `Project`, `ProjectFile`, `ProjectStatus`, and `FileCategory` models to Prisma schema.
+- [x] Add `ProjectStatus` enum (24 states including `NEW_REQUEST`, `AWAITING_INFORMATION`, `UNDER_EVALUATION`, etc.)
+- [x] Add `FileCategory` enum (`RESEARCH_DOCUMENT`, `DATASET`, `QUESTIONNAIRE`, `PAYMENT_PROOF`, etc.)
+- [x] Add `Project` model with `intakeId` (`JAXIS-YYYYMM-XXXX`), client relation, research fields, and masterStatus
+- [x] Add `ProjectFile` model linked to Project with cascade delete
+- [x] Update `prisma/seed.ts` with initial sample seed project
+- [x] Run Prisma push and generate client types
+
+### Task 2 — Status State Machine & Core Business Rules
+**Objective:** Implement strict state transition validation and intake ID generator.
+- [x] Implement `VALID_TRANSITIONS` state machine map in `src/lib/project-rules.ts`
+- [x] Create `assertValidStatusTransition` transition assertion helper
+- [x] Implement human-readable intake ID generator: `JAXIS-YYYYMM-XXXX`
+
+### Task 3 — Validation Schemas & Server Actions
+**Objective:** Create Zod schemas and backend server actions for project intake & triage.
+- [x] Create `CreateProjectSchema`, `UpdateProjectStatusSchema`, `RequestMissingInfoSchema` in Zod
+- [x] Create `createProject` action with `assertClientProfileComplete` server-side gate
+- [x] Create `getProjects` action with role-scoped querying (Client sees own, Admin/CEO sees all)
+- [x] Create `getProjectById` action
+- [x] Create `updateProjectStatus` action enforcing state machine transitions
+- [x] Create `requestMissingInfo` action (sets status to `AWAITING_INFORMATION` with reason)
+- [x] Create `markIntakeComplete` action (sets status to `UNDER_EVALUATION`)
+
+### Task 4 — Client Multi-Step Project Intake Form UI
+**Objective:** Build multi-step project submission form for clients.
+- [x] Build `/dashboard/client/projects/new` (Research Information → Document Attachments → Review & Submit)
+- [x] Add file upload component with MIME and size validation (DOCX, PDF, XLSX, CSV)
+- [x] Wire server action submission and redirect to `/dashboard/client/projects`
+
+### Task 5 — Client Projects Workbench & Detail Views
+**Objective:** Build client project list and project detail tracker.
+- [x] Build `/dashboard/client/projects` (Project cards/table with status badges, intake IDs, and deadlines)
+- [x] Build `/dashboard/client/projects/[id]` (Status timeline tracker, intake details, uploaded files, replace document modal)
+
+### Task 6 — Admin Triage Queue & Project Inspection Views
+**Objective:** Build Admin triage queue and governance controls.
+- [x] Build `/dashboard/admin/intake` (Triage table for `NEW_REQUEST` and `AWAITING_INFORMATION` submissions)
+- [x] Build `/dashboard/admin/projects/[id]` (Full project inspection desk, client profile panel, status controls, request missing info modal)
+- [x] Add "Mark Intake Complete" action button to transition project to `UNDER_EVALUATION`
+
+### Task 7 — Quality Gate & Verification
+**Objective:** Run monorepo checks and verify end-to-end functionality.
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] `npm run build` → clean build
+- [x] Module 04 completed
+
+---
+
 ## Upcoming Modules (Roadmap v2)
 
 | #    | Module                                                | Status                           |
@@ -569,8 +622,8 @@
 | `01` | `01-auth` — Authentication & RBAC                     | ✅ Completed                     |
 | `02` | `02-staff` — Expert Provisioning & Staff Management   | ✅ Completed                     |
 | `03` | `03-client-profile` — Client Profile & Account        | ✅ Completed                     |
-| `04` | `04-intake` — Project Intake & Submission             | 🔄 Active / Ready for Execution  |
-| `05` | `05-quotation` — Quotation & Pricing                  | ⏳ Blocked — awaiting `04`       |
+| `04` | `04-intake` — Project Intake & Submission             | ✅ Completed                     |
+| `05` | `05-quotation` — Quotation & Pricing                  | 🔄 Active / Ready for Execution  |
 | `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |
 | `07` | `07-payments` — Payment & Installments                | ⏳ Blocked — awaiting `06`       |
 | `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Blocked — awaiting `07`, `02` |

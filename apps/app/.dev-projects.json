@@ -1,0 +1,55 @@
+[
+  {
+    "id": "proj_sample_001",
+    "intakeId": "JAXIS-202608-0001",
+    "clientId": "usr_dev_admin_001",
+    "researchTitle": "Impact of Study Habits on Academic Performance Among State University Students",
+    "researchQuestions": "Does study frequency significantly affect GPA? Is there a gender difference?",
+    "researchObjectives": "Determine relationship between study habits and GPA; identify moderating variables.",
+    "hypotheses": "H1: Positive correlation between study hours and academic performance.",
+    "chapters13": "https://r2.jaxis.dev/sample-chapters.docx",
+    "questionnaire": "https://r2.jaxis.dev/sample-survey.pdf",
+    "deadlineRequested": "2026-09-04T12:42:18.021Z",
+    "masterStatus": "UNDER_EVALUATION",
+    "packageName": "ADVANCED_STATISTICS",
+    "missingInfoReason": null,
+    "deliveredAt": null,
+    "filesPurgeAt": null,
+    "filesPurged": false,
+    "hasActiveDispute": false,
+    "hasPendingRefund": false,
+    "createdAt": "2026-08-21T12:42:18.021Z",
+    "updatedAt": "2026-08-21T12:42:18.021Z",
+    "client": {
+      "id": "usr_dev_admin_001",
+      "fullName": "Client User",
+      "email": "admin@jaxis.dev",
+      "clientProfile": {
+        "institutionSchool": "University of the Philippines Diliman",
+        "academicProgram": "MS in Data Science",
+        "contactNumber": "0917 123 4567",
+        "region": "NCR"
+      }
+    },
+    "files": [
+      {
+        "id": "file_001",
+        "projectId": "proj_sample_001",
+        "fileName": "research_proposal_draft.docx",
+        "filePath": "uploads/research_proposal_draft.docx",
+        "fileType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-21T12:42:18.021Z"
+      },
+      {
+        "id": "file_002",
+        "projectId": "proj_sample_001",
+        "fileName": "raw_survey_responses.xlsx",
+        "filePath": "uploads/raw_survey_responses.xlsx",
+        "fileType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "fileCategory": "DATASET",
+        "uploadedAt": "2026-08-21T12:42:18.021Z"
+      }
+    ]
+  }
+]
