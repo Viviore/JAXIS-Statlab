@@ -93,41 +93,82 @@ export async function createProject(
   const deadlineDate = new Date(deadlineRequested);
 
   try {
-    const project = await db.project.create({
-      data: {
-        intakeId,
-        clientId: session.user.id,
-        researchTitle: researchTitle.trim(),
-        researchQuestions: researchQuestions.trim(),
-        researchObjectives: researchObjectives.trim(),
-        hypotheses: hypotheses?.trim() || null,
-        deadlineRequested: deadlineDate,
-        chapters13: chapters13?.trim() || null,
-        questionnaire: questionnaire?.trim() || null,
-        masterStatus: "NEW_REQUEST",
-        files: files?.length
-          ? {
-              create: files.map((f) => ({
-                fileName: f.fileName,
-                filePath: f.filePath,
-                fileType: f.fileType,
-                fileCategory: f.fileCategory,
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        client: {
+    const project = await withDbTimeout(
+      db.$transaction(async (tx) => {
+        return tx.project.create({
+          data: {
+            intakeId,
+            clientId: session.user.id,
+            researchTitle: researchTitle.trim(),
+            researchQuestions: researchQuestions.trim(),
+            researchObjectives: researchObjectives.trim(),
+            hypotheses: hypotheses?.trim() || null,
+            deadlineRequested: deadlineDate,
+            chapters13: chapters13?.trim() || null,
+            questionnaire: questionnaire?.trim() || null,
+            masterStatus: "NEW_REQUEST",
+            files: files?.length
+              ? {
+                  create: files.map((f) => ({
+                    fileName: f.fileName,
+                    filePath: f.filePath,
+                    fileType: f.fileType,
+                    fileCategory: f.fileCategory,
+                  })),
+                }
+              : undefined,
+          },
           select: {
             id: true,
-            fullName: true,
-            email: true,
-            clientProfile: true,
+            intakeId: true,
+            clientId: true,
+            researchTitle: true,
+            researchQuestions: true,
+            researchObjectives: true,
+            hypotheses: true,
+            deadlineRequested: true,
+            chapters13: true,
+            questionnaire: true,
+            masterStatus: true,
+            packageName: true,
+            missingInfoReason: true,
+            deliveredAt: true,
+            filesPurgeAt: true,
+            filesPurged: true,
+            hasActiveDispute: true,
+            hasPendingRefund: true,
+            createdAt: true,
+            updatedAt: true,
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                clientProfile: {
+                  select: {
+                    institutionSchool: true,
+                    academicProgram: true,
+                    contactNumber: true,
+                    region: true,
+                  },
+                },
+              },
+            },
+            files: {
+              select: {
+                id: true,
+                projectId: true,
+                fileName: true,
+                filePath: true,
+                fileType: true,
+                fileCategory: true,
+                uploadedAt: true,
+              },
+            },
           },
-        },
-        files: true,
-      },
-    });
+        });
+      })
+    );
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/client");
@@ -136,7 +177,7 @@ export async function createProject(
 
     return {
       success: true,
-      data: project as ProjectDetailItem,
+      data: project as unknown as ProjectDetailItem,
     };
   } catch (dbError) {
     console.warn("[createProject] DB offline, writing to persistent dev projects cache.", dbError);
@@ -234,16 +275,53 @@ export async function getProjects(
               }
             : {}),
         },
-        include: {
+        select: {
+          id: true,
+          intakeId: true,
+          clientId: true,
+          researchTitle: true,
+          researchQuestions: true,
+          researchObjectives: true,
+          hypotheses: true,
+          deadlineRequested: true,
+          chapters13: true,
+          questionnaire: true,
+          masterStatus: true,
+          packageName: true,
+          missingInfoReason: true,
+          deliveredAt: true,
+          filesPurgeAt: true,
+          filesPurged: true,
+          hasActiveDispute: true,
+          hasPendingRefund: true,
+          createdAt: true,
+          updatedAt: true,
           client: {
             select: {
               id: true,
               fullName: true,
               email: true,
-              clientProfile: true,
+              clientProfile: {
+                select: {
+                  institutionSchool: true,
+                  academicProgram: true,
+                  contactNumber: true,
+                  region: true,
+                },
+              },
             },
           },
-          files: true,
+          files: {
+            select: {
+              id: true,
+              projectId: true,
+              fileName: true,
+              filePath: true,
+              fileType: true,
+              fileCategory: true,
+              uploadedAt: true,
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
       })
@@ -251,7 +329,7 @@ export async function getProjects(
 
     return {
       success: true,
-      data: projects as ProjectDetailItem[],
+      data: projects as unknown as ProjectDetailItem[],
     };
   } catch (dbError) {
     console.warn("[getProjects] DB offline, reading from dev projects cache.", dbError);
@@ -362,16 +440,53 @@ export async function getProjectById(
         where: {
           OR: [{ id }, { intakeId: id }],
         },
-        include: {
+        select: {
+          id: true,
+          intakeId: true,
+          clientId: true,
+          researchTitle: true,
+          researchQuestions: true,
+          researchObjectives: true,
+          hypotheses: true,
+          deadlineRequested: true,
+          chapters13: true,
+          questionnaire: true,
+          masterStatus: true,
+          packageName: true,
+          missingInfoReason: true,
+          deliveredAt: true,
+          filesPurgeAt: true,
+          filesPurged: true,
+          hasActiveDispute: true,
+          hasPendingRefund: true,
+          createdAt: true,
+          updatedAt: true,
           client: {
             select: {
               id: true,
               fullName: true,
               email: true,
-              clientProfile: true,
+              clientProfile: {
+                select: {
+                  institutionSchool: true,
+                  academicProgram: true,
+                  contactNumber: true,
+                  region: true,
+                },
+              },
             },
           },
-          files: true,
+          files: {
+            select: {
+              id: true,
+              projectId: true,
+              fileName: true,
+              filePath: true,
+              fileType: true,
+              fileCategory: true,
+              uploadedAt: true,
+            },
+          },
         },
       })
     );
@@ -393,7 +508,7 @@ export async function getProjectById(
 
     return {
       success: true,
-      data: project as ProjectDetailItem,
+      data: project as unknown as ProjectDetailItem,
     };
   } catch (dbError) {
     console.warn("[getProjectById] DB offline, reading from dev projects cache.", dbError);

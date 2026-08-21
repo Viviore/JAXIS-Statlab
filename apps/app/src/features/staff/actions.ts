@@ -204,11 +204,26 @@ export async function getStaffRoster(
               }
             : {}),
         },
-        include: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          status: true,
+          createdAt: true,
           userRoles: {
-            include: { role: true },
+            select: {
+              role: {
+                select: { name: true },
+              },
+            },
           },
-          staffProfile: true,
+          staffProfile: {
+            select: {
+              specializations: true,
+              bio: true,
+              joinedAt: true,
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
       })
@@ -271,10 +286,40 @@ export async function getStaffDetail(
     const user = await withDbTimeout(
       db.user.findUnique({
         where: { id },
-        include: {
-          userRoles: { include: { role: true } },
-          staffProfile: true,
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          userRoles: {
+            select: {
+              role: {
+                select: { name: true },
+              },
+            },
+          },
+          staffProfile: {
+            select: {
+              specializations: true,
+              bio: true,
+              joinedAt: true,
+              updatedAt: true,
+            },
+          },
           suspensionLogs: {
+            select: {
+              id: true,
+              action: true,
+              reason: true,
+              violationType: true,
+              performedBy: true,
+              performedAt: true,
+              liftedAt: true,
+              liftedBy: true,
+            },
             orderBy: { performedAt: "desc" },
           },
         },

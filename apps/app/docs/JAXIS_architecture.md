@@ -489,3 +489,82 @@ Project status is the central coordination mechanism. All transitions validated 
 ### Role-Based Middleware
 
 `src/middleware.ts` protects all `/dashboard/*` routes. Within API routes, `requireRole()` is called at the top of each handler — never delegated to middleware alone.
+
+---
+
+## 5. High-Performance Database & Mutation Architecture (RULE_PERF)
+
+To ensure sub-50ms query latencies, zero memory bloat, and atomic consistency across all 18 modules as institutional volume scales, every feature layer MUST adhere to the following 6 performance standards:
+
+### 1. Selective Projections (`select` over `include`)
+Never query complete database rows or deep nested relations unless explicitly required. Always use `select` to restrict payloads to only the columns displayed on the screen.
+
+```typescript
+// ✅ FAST & MEMORY SAFE: Only queries the specific columns needed by the view
+const projects = await prisma.project.findMany({
+  where: { status: "INTAKE_SUBMITTED" },
+  select: {
+    id: true,
+    intakeId: true,
+    researchTitle: true,
+    status: true,
+    deadlineRequested: true,
+    createdAt: true,
+    user: { select: { fullName: true, email: true } },
+    _count: { select: { files: true } } // Fast count query without pulling file objects
+  },
+  take: 20
+});
+```
+
+### 2. Parallel Fetching (Zero Waterfalls)
+Always execute independent read queries concurrently using `Promise.all` rather than awaiting sequentially.
+
+```typescript
+// ✅ CONCURRENT: Runs all queries in parallel, resolving in ~50ms total
+const [project, kpis, auditLogs] = await Promise.all([
+  prisma.project.findUnique({ where: { id } }),
+  getKpis(),
+  getAuditLogs(id),
+]);
+```
+
+### 3. Atomic Database Transactions (`prisma.$transaction`)
+Group all multi-model operations (e.g. project creation + file associations + audit trail log) into a single atomic transaction batch.
+
+```typescript
+// ✅ SINGLE ROUND-TRIP: Atomic mutation with automatic rollback on error
+const project = await prisma.$transaction(async (tx) => {
+  const p = await tx.project.create({ data: projectData });
+  if (files.length > 0) {
+    await tx.projectFile.createMany({
+      data: files.map(f => ({ ...f, projectId: p.id }))
+    });
+  }
+  await tx.auditLog.create({
+    data: { action: "PROJECT_CREATED", targetId: p.id, userId: currentUser.id }
+  });
+  return p;
+});
+```
+
+### 4. Non-Blocking Background Operations
+Do not block client request lifecycles on external network services (emails, webhooks, analytics sync). Return the response immediately and dispatch external tasks asynchronously.
+
+```typescript
+// 1. Commit DB transaction
+const project = await createProjectInDb(payload);
+
+// 2. Fire and forget notifications in background
+sendConfirmationEmail(project.id).catch(console.error);
+
+// 3. Fast response back to client (<100ms)
+return { success: true, data: project };
+```
+
+### 5. Deterministic Database Indexing
+Every table must maintain composite and single-column indexes on high-frequency filtering fields (`status`, `userId`, `role`, `createdAt`) defined in `schema.prisma`.
+
+### 6. Client-Side Optimistic UI & `useTransition`
+Always wrap Server Action dispatches in React 19 `useTransition` or optimistic state models (`useOptimistic`) to provide instant 0ms user feedback while the backend action processes.
+

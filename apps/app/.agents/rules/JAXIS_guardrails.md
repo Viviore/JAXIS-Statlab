@@ -477,3 +477,47 @@ Components in `packages/ui` must be:
 - Stateless or locally-stateful only (no global store dependencies)
 - Style-token aware (accepts className overrides)
 - Zero dependency on `@/lib/*` internal paths
+
+---
+
+## 14. Database & Mutation Performance Guardrails (RULE_PERF)
+
+```ts
+// RULE_PERF_01 — Selective Projections over Deep Includes
+// ❌ NEVER pull full unconstrained relations:
+const allData = await prisma.project.findMany({ include: { files: true, user: true } });
+// ✅ ALWAYS specify explicit 'select' projections for active table columns:
+const fastData = await prisma.project.findMany({
+  where: { status },
+  select: {
+    id: true,
+    intakeId: true,
+    researchTitle: true,
+    status: true,
+    deadlineRequested: true,
+    user: { select: { fullName: true, email: true } },
+    _count: { select: { files: true } }
+  },
+  take: 20
+});
+
+// RULE_PERF_02 — Concurrent Independent Reads (Zero Waterfalls)
+// ❌ NEVER execute independent reads in sequence:
+const user = await prisma.user.findUnique({ where: { id } });
+const stats = await getKpis();
+// ✅ ALWAYS parallelize with Promise.all:
+const [user, stats] = await Promise.all([
+  prisma.user.findUnique({ where: { id } }),
+  getKpis()
+]);
+
+// RULE_PERF_03 — Atomic Multi-Model Transactions
+// Multi-step mutations (create project + attach files + log audit event) must be wrapped in prisma.$transaction.
+
+// RULE_PERF_04 — Non-Blocking External Side-Effects
+// Never block HTTP responses awaiting email dispatches or webhooks. Dispatch asynchronously in background.
+
+// RULE_PERF_05 — Reactive UI Transitions
+// All client-side server action mutations must use React 19 useTransition or useOptimistic.
+```
+
