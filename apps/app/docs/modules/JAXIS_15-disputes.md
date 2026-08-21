@@ -223,6 +223,11 @@ const seedDisputeResolved = {
 
 ---
 
+### 🎯 Expected Output (What you should be able to do now)
+
+*(Manual testing steps will be defined here during implementation)*
+
+
 ## 9. Acceptance Criteria (Done Checklist)
 
 ### Dispute Submission

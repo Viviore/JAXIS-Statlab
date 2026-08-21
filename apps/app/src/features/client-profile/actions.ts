@@ -10,6 +10,8 @@ export type ActionResponse<T = undefined> =
   | { success: true; data?: T }
   | { success: false; error: { message: string; fieldErrors?: Record<string, string[]> } };
 
+import { cookies } from "next/headers";
+
 /**
  * Upsert the client profile for the authenticated user.
  */
@@ -56,9 +58,28 @@ export async function upsertClientProfile(
         },
       });
     } catch (dbError) {
-      console.warn("[upsertClientProfile] DB Error, simulating success for offline fallback", dbError);
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 600));
+      console.warn("[upsertClientProfile] DB Error, storing in cookie fallback", dbError);
+    }
+
+    // Always mirror to cookie for resilient offline testing
+    try {
+      const cookieStore = await cookies();
+      cookieStore.set(
+        `jaxis_profile_${userId}`,
+        JSON.stringify({
+          id: `profile_${userId}`,
+          userId,
+          institutionSchool,
+          academicProgram,
+          contactNumber,
+          region,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+        { path: "/", maxAge: 60 * 60 * 24 * 7 }
+      );
+    } catch (cookieErr) {
+      console.warn("[upsertClientProfile] Cookie mirror error", cookieErr);
     }
 
     revalidatePath("/dashboard");
@@ -80,23 +101,26 @@ export async function getClientProfile() {
   if (!session?.user?.id) return null;
 
   try {
-    return await db.clientProfile.findUnique({
+    const profile = await db.clientProfile.findUnique({
       where: { userId: session.user.id },
     });
-  } catch (error) {
-    // Offline fallback for development when no Postgres is running
-    console.warn("[getClientProfile] DB Error, falling back to mock", error);
-    return {
-      id: "mock_client_profile_id",
-      userId: session.user.id,
-      institutionSchool: "Stanford University (Mock)",
-      academicProgram: "Ph.D. in Organizational Psychology (Mock)",
-      contactNumber: "+15551234567",
-      region: "NORTH_AMERICA",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    if (profile) return profile;
+  } catch {
+    // DB offline
   }
+
+  // Fallback to cookie for development/demo testing
+  try {
+    const cookieStore = await cookies();
+    const cookieVal = cookieStore.get(`jaxis_profile_${session.user.id}`)?.value;
+    if (cookieVal) {
+      return JSON.parse(cookieVal);
+    }
+  } catch {
+    // Ignore cookie retrieval issues
+  }
+
+  return null;
 }
 
 /**

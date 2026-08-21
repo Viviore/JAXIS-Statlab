@@ -1,0 +1,34 @@
+{
+  "sercenabrayan@gmail.com": {
+    "id": "usr_dev_staff_brayan",
+    "email": "sercenabrayan@gmail.com",
+    "fullName": "Brayan",
+    "role": "STATISTICIAN",
+    "password": "JAXIS-44CBAB6F",
+    "status": "ACTIVE",
+    "staffProfile": {
+      "bio": "Senior Statistician",
+      "specializations": [
+        "Regression",
+        "ANOVA"
+      ],
+      "joinedAt": "2026-08-21T12:00:00.000Z"
+    }
+  },
+  "jerome@gmail.com": {
+    "id": "usr_dev_staff_1787313864352",
+    "email": "jerome@gmail.com",
+    "fullName": "Jerome Gallego",
+    "role": "SENIOR_QA_LEAD",
+    "password": "JAXIS-E6C0B275",
+    "status": "ACTIVE",
+    "staffProfile": {
+      "bio": "POGI",
+      "specializations": [
+        "Regression",
+        "ANOVA"
+      ],
+      "joinedAt": "2026-08-21T12:04:24.352Z"
+    }
+  }
+}

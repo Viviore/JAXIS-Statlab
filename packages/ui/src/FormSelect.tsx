@@ -36,50 +36,84 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
     const selectId = id ?? (label ? label.toLowerCase().replace(/[^a-z0-9]/g, "-") : undefined);
 
     return (
-      <div className={`flex flex-col gap-2 w-full ${containerClassName}`}>
+      <div className={`flex flex-col w-full ${containerClassName}`}>
         {label && (
-          <label
-            htmlFor={selectId}
-            className={`text-xs select-none px-0.5 ${
-              monoLabel
-                ? "font-mono uppercase tracking-wider font-semibold text-slate-200"
-                : "font-sans text-white/80 font-medium"
-            }`}
-            style={{ fontSize: "0.75rem", fontWeight: 600, color: monoLabel ? "#E2E8F0" : undefined }}
+          <div
+            className="flex items-center justify-between px-0.5"
+            style={{ marginBottom: "0.5rem" }}
           >
-            {label}{required && <> <span style={{ color: "#CC6600" }}>*</span></>}
-          </label>
-        )}
-        <select
-          ref={ref}
-          id={selectId}
-          required={required}
-          className={`w-full bg-[#011C38] border ${
-            error ? "border-[#EF4444] focus:border-[#EF4444]" : "border-white/12 focus:border-[#CC6600]"
-          } rounded-[2px] px-4 py-3 text-sm text-white focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-          style={{ outline: "none", boxShadow: "none", ...props.style }}
-          {...props}
-        >
-          {placeholder && (
-            <option value="" disabled className="bg-[#011C38] text-white/40">
-              {placeholder}
-            </option>
-          )}
-          {options.map((opt) => (
-            <option
-              key={opt.value}
-              value={opt.value}
-              disabled={opt.disabled}
-              className="bg-[#01162E] text-white"
+            <label
+              htmlFor={selectId}
+              className={`text-xs select-none ${
+                monoLabel
+                  ? "font-mono uppercase tracking-wider font-semibold text-slate-200"
+                  : "font-sans text-white/80 font-medium"
+              }`}
+              style={{ fontSize: "0.75rem", fontWeight: 600, color: monoLabel ? "#E2E8F0" : undefined }}
             >
-              {opt.label}
-            </option>
-          ))}
-        </select>
+              {label}{required && <> <span style={{ color: "#CC6600" }}>*</span></>}
+            </label>
+          </div>
+        )}
+
+        <div className="relative flex items-center w-full">
+          <select
+            ref={ref}
+            id={selectId}
+            required={required}
+            className={`w-full h-12 px-4 pl-4 pr-10 text-sm rounded-[2px] text-white bg-[#011C38] border ${
+              error ? "!border-[#EF4444] focus:!border-[#EF4444]" : "border-white/12 focus:border-[#CC6600]"
+            } focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border appearance-none ${className}`}
+            style={{
+              height: "3rem",
+              paddingLeft: "1rem",
+              paddingRight: "2.75rem",
+              boxSizing: "border-box",
+              outline: "none",
+              boxShadow: "none",
+              ...props.style,
+            }}
+            {...props}
+          >
+            {placeholder && (
+              <option value="" disabled className="bg-[#011C38] text-white/40">
+                {placeholder}
+              </option>
+            )}
+            {options.map((opt) => (
+              <option
+                key={opt.value}
+                value={opt.value}
+                disabled={opt.disabled}
+                className="bg-[#01162E] text-white"
+              >
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Sleek custom chevron */}
+          <div className="absolute right-3.5 pointer-events-none flex items-center justify-center text-white/40">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
         {error ? (
-          <span className="text-xs text-[#EF4444] font-mono leading-relaxed mt-1 px-0.5">{error}</span>
+          <span
+            className="text-xs text-[#EF4444] font-mono leading-relaxed px-0.5"
+            style={{ marginTop: "0.5rem" }}
+          >
+            {error}
+          </span>
         ) : helper ? (
-          <span className="text-xs text-white/45 font-sans leading-relaxed mt-1 px-0.5">{helper}</span>
+          <span
+            className="text-xs text-white/45 font-sans leading-relaxed px-0.5"
+            style={{ marginTop: "0.5rem" }}
+          >
+            {helper}
+          </span>
         ) : null}
       </div>
     );

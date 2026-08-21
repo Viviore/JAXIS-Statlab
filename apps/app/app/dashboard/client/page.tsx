@@ -1,16 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
+import { getClientProfile } from "@/features/client-profile/actions";
 
 export default function ClientDashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
 
   const { projects } = useProjects({
     initialLoading: false,
   });
+
+  useEffect(() => {
+    async function checkProfile() {
+      const profile = await getClientProfile();
+      if (profile && profile.institutionSchool && profile.contactNumber) {
+        setIsProfileComplete(true);
+      } else {
+        setIsProfileComplete(false);
+      }
+    }
+    checkProfile();
+  }, []);
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full">
@@ -34,11 +49,23 @@ export default function ClientDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="flex flex-col gap-1 p-5 border-l-2 border-l-[#CC6600]">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Profile Status</span>
-          <span className="text-xl font-mono font-bold text-white mt-1">INCOMPLETE</span>
-          <span className="text-[0.688rem] text-[#CC6600] mt-1 font-mono">● Action required</span>
-        </Card>
+        <Link href="/dashboard/client/profile" className="block group">
+          <Card
+            className={`flex flex-col gap-1 p-5 border-l-2 transition-colors ${
+              isProfileComplete
+                ? "border-l-emerald-500 hover:border-l-emerald-400"
+                : "border-l-[#CC6600] hover:border-l-[#ff8000]"
+            }`}
+          >
+            <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Profile Status</span>
+            <span className={`text-xl font-mono font-bold mt-1 ${isProfileComplete ? "text-emerald-400" : "text-[#CC6600]"}`}>
+              {isProfileComplete === null ? "CHECKING..." : isProfileComplete ? "100% COMPLETE" : "INCOMPLETE"}
+            </span>
+            <span className={`text-[0.688rem] mt-1 font-mono ${isProfileComplete ? "text-emerald-400" : "text-[#CC6600]"}`}>
+              {isProfileComplete ? "● Institutional verified" : "● Action required →"}
+            </span>
+          </Card>
+        </Link>
 
         <Card className="flex flex-col gap-1 p-5">
           <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Active Studies</span>

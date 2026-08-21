@@ -262,6 +262,11 @@ None for Module 00. Seed script is created (empty) with the `prisma db seed` com
 
 ---
 
+### 🎯 Expected Output (What you should be able to do now)
+
+*(Manual testing steps will be defined here during implementation)*
+
+
 ## 8. Acceptance Criteria (Done Checklist)
 
 ### Workspace

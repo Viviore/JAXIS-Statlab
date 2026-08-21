@@ -91,19 +91,37 @@ export const DEV_USERS: Record<string, MockUser> = {
   },
 };
 
-const globalStore = globalThis as unknown as {
-  __DEV_USERS_STORE__?: Record<string, MockUser>;
-};
+import fs from "fs";
+import path from "path";
 
-if (!globalStore.__DEV_USERS_STORE__) {
-  globalStore.__DEV_USERS_STORE__ = { ...DEV_USERS };
+const DEV_USERS_FILE = path.join(process.cwd(), ".dev-users.json");
+
+function readPersistedDevUsers(): Record<string, MockUser> {
+  try {
+    if (fs.existsSync(DEV_USERS_FILE)) {
+      const data = fs.readFileSync(DEV_USERS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch {
+    // Ignore read errors
+  }
+  return {};
+}
+
+function writePersistedDevUsers(users: Record<string, MockUser>): void {
+  try {
+    fs.writeFileSync(DEV_USERS_FILE, JSON.stringify(users, null, 2), "utf-8");
+  } catch {
+    // Ignore write errors
+  }
 }
 
 export function getDevUsers(): Record<string, MockUser> {
-  if (!globalStore.__DEV_USERS_STORE__) {
-    globalStore.__DEV_USERS_STORE__ = { ...DEV_USERS };
-  }
-  return globalStore.__DEV_USERS_STORE__;
+  const persisted = readPersistedDevUsers();
+  return {
+    ...DEV_USERS,
+    ...persisted,
+  };
 }
 
 export function getDevUserByEmail(email: string): MockUser | undefined {
@@ -112,6 +130,7 @@ export function getDevUserByEmail(email: string): MockUser | undefined {
 }
 
 export function registerDevUser(user: MockUser): void {
-  const users = getDevUsers();
-  users[user.email.toLowerCase().trim()] = user;
+  const persisted = readPersistedDevUsers();
+  persisted[user.email.toLowerCase().trim()] = user;
+  writePersistedDevUsers(persisted);
 }

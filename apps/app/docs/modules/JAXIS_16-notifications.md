@@ -228,6 +228,11 @@ const seedAlerts = [
 
 ---
 
+### 🎯 Expected Output (What you should be able to do now)
+
+*(Manual testing steps will be defined here during implementation)*
+
+
 ## 10. Acceptance Criteria (Done Checklist)
 
 ### Email Templates

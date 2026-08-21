@@ -334,6 +334,11 @@ All auth errors follow the standard JAXIS error contract:
 
 ---
 
+### 🎯 Expected Output (What you should be able to do now)
+
+*(Manual testing steps will be defined here during implementation)*
+
+
 ## 10. Acceptance Criteria (Done Checklist)
 
 ### Database

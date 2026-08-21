@@ -139,6 +139,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.Overview,
         },
         {
+          label: "Institutional Profile",
+          href: "/dashboard/client/profile",
+          icon: Icons.Users,
+        },
+        {
           label: "My Active Studies",
           href: "/dashboard/client#studies",
           icon: Icons.Studies,
