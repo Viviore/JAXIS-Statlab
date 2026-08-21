@@ -4,6 +4,7 @@ export * from "./StatusBadge";
 export * from "./FormInput";
 export * from "./FormSelect";
 export * from "./FormTextarea";
+export * from "./FormCheckbox";
 export * from "./Modal";
 export * from "./Alert";
 export * from "./Skeleton";

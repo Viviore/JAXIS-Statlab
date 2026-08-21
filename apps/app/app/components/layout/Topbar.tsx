@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export interface TopbarProps {
   userFullName?: string;
@@ -130,6 +131,7 @@ export const Topbar: React.FC<TopbarProps> = ({
               <span className="text-[0.688rem] text-white/45">{userEmail}</span>
             </div>
           </div>
+          <LogoutButton />
         </div>
       </div>
     </header>

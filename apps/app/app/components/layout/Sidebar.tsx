@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export interface NavItem {
   label: string;
@@ -236,15 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <Link
-            href="/login"
-            title="Sign out / Switch account"
-            className="text-white/40 hover:text-[#EF4444] transition-colors p-1.5"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </Link>
+          <LogoutButton />
         </div>
       </div>
     </aside>

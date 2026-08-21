@@ -16,6 +16,7 @@
 **Objective:** Verify or establish the full monorepo workspace so all packages are wired and recognized by Turborepo.
 
 **Steps:**
+
 1. Confirm `turbo.json` defines `build`, `dev`, `lint`, `check-types` pipelines with correct inputs/outputs
 2. Confirm `packages/ui`, `packages/typescript-config`, `packages/eslint-config` exist and are referenced in root `package.json` workspaces
 3. Confirm `apps/app` and `apps/web` are recognized workspace members
@@ -36,6 +37,7 @@
 **Objective:** Populate `globals.css` with all design system tokens and load the two required fonts.
 
 **Steps:**
+
 1. Open `src/app/globals.css` in `apps/app`
 2. Add all CSS custom properties from `JAXIS_design-system.md` Section 2 (color tokens, typography scale, spacing, border-radius)
 3. Open `src/app/layout.tsx` — import `Inter` (sans) + `Disket Mono` (mono) from `next/font/google`
@@ -56,6 +58,7 @@
 **Objective:** Implement the full Zod env schema and all infrastructure client stubs as specified in `JAXIS_00-foundation.md` Section 6.
 
 **Steps:**
+
 1. Install all required packages:
    ```bash
    npm install @supabase/supabase-js @aws-sdk/client-s3 @aws-sdk/s3-request-presigner resend @trigger.dev/sdk zod
@@ -86,6 +89,7 @@
 **Objective:** Initialize the Prisma schema with generator + datasource and verify connection to Supabase PostgreSQL.
 
 **Steps:**
+
 1. Open `prisma/schema.prisma`
 2. Set `provider = "postgresql"`, `url = env("DATABASE_URL")`, `directUrl = env("DIRECT_URL")`
 3. Add `DIRECT_URL` to `.env.example` and `.env.local` (Supabase direct URL, port 5432)
@@ -109,6 +113,7 @@
 **Objective:** Build all 13 shared UI primitives in `packages/ui` per the spec.
 
 **Steps:**
+
 1. Create all 13 components in `packages/ui/src/`: `Button` (4 variants × 3 sizes), `Card`, `StatusBadge`, `FormInput`, `FormSelect`, `FormTextarea`, `Modal`, `Alert`, `Skeleton`, `DataTable`, `PageHeader`, `Badge`, `Toast`
 2. Each component: accepts `className` prop, uses design token CSS variables, zero business logic
 3. `Button`: variants `primary | secondary | ghost | danger`; `loading` prop shows spinner, disables click
@@ -133,6 +138,7 @@
 **Objective:** Build the structural dashboard layout shell and run the full Module 00 gate.
 
 **Steps:**
+
 1. Create `src/app/layout.tsx` — root layout with font variables, providers, `globals.css` import
 2. Create `src/app/dashboard/layout.tsx` — dashboard shell with `<Topbar>` + `<Sidebar>` structural placeholders
 3. `<Topbar>`: 56px height, bg-[#010114], JAXIS logo mark (left), user stub (right)
@@ -165,6 +171,7 @@
 **Objective:** Define all database models for Module 01 and run the initial migration.
 
 **Steps:**
+
 1. Open `prisma/schema.prisma`
 2. Add the `UserStatus` and `AuthEvent` enums, and `RoleName` enum (6 values: `CLIENT`, `STATISTICIAN`, `SENIOR_QA_LEAD`, `ADMIN`, `FINANCE_OFFICER`, `CEO`)
 3. Add the `User` model with fields: `id` (cuid), `email` (unique), `passwordHash`, `fullName`, `phone?`, `status` (default `ACTIVE`), `createdAt`, `updatedAt`
@@ -191,6 +198,7 @@
 **Objective:** Populate the database with all 6 roles and one seed user per role for local development and testing.
 
 **Steps:**
+
 1. Open `prisma/seed.ts`
 2. Import `PrismaClient` and `bcryptjs`
 3. Define the `roles` array with all 6 entries (id, name, label) and upsert them
@@ -215,6 +223,7 @@
 **Objective:** Configure NextAuth.js v5 credentials provider, session callbacks, and implement the `requireRole()` guard utility.
 
 **Steps:**
+
 1. Install: `npm install next-auth@beta bcryptjs && npm install -D @types/bcryptjs`
 2. Create `src/lib/auth.ts`:
    - Configure `NextAuth` with credentials provider
@@ -246,6 +255,7 @@
 **Objective:** Build the `/login` and `/register` pages with proper form validation, error states, and post-auth redirects.
 
 **Steps:**
+
 1. Create `src/features/auth/schemas.ts` with `LoginSchema` and `RegisterSchema` (Zod) per the spec
 2. Create `src/features/auth/actions.ts`:
    - `registerClient(data)`: validates with `RegisterSchema`, checks email uniqueness, hashes password, creates `User` + `UserRole` (CLIENT), writes `REGISTRATION` to `AuthAuditLog`, returns success or typed error
@@ -282,6 +292,7 @@
 **Objective:** Implement `src/middleware.ts` to enforce session presence and role-scoped access on all dashboard routes.
 
 **Steps:**
+
 1. Create `src/middleware.ts`:
    - Use NextAuth `auth` export as middleware
    - Check `request.nextUrl.pathname` — if matches `/dashboard/*`, verify session exists; if not, redirect to `/login`
@@ -300,13 +311,13 @@
 
 **Acceptance:** Middleware correctly blocks unauthenticated access. Cross-role access redirects to `/unauthorized`. Each role desk stub renders.
 
-- [ ] `src/middleware.ts` created with session check and role routing
-- [ ] `config.matcher` scoped correctly — does not block `/api/*`, `/login`, `/register`, `/unauthorized`
-- [ ] Unauthenticated `/dashboard/*` visit → redirect to `/login`
-- [ ] CLIENT visiting `/dashboard/admin/` → redirect to `/unauthorized`
-- [ ] `/unauthorized` page renders with role context and back link
-- [ ] All 6 role dashboard shells render at their correct routes
-- [ ] Topbar shows full name and working logout button
+- [x] `src/middleware.ts` created with session check and role routing
+- [x] `config.matcher` scoped correctly — does not block `/api/*`, `/login`, `/register`, `/unauthorized`
+- [x] Unauthenticated `/dashboard/*` visit → redirect to `/login`
+- [x] CLIENT visiting `/dashboard/admin/` → redirect to `/unauthorized`
+- [x] `/unauthorized` page renders with role context and back link
+- [x] All 6 role dashboard shells render at their correct routes
+- [x] Topbar shows full name and working logout button
 
 ---
 
@@ -315,6 +326,7 @@
 **Objective:** Expose the client registration as a proper API route alongside the Server Action, and verify all audit log entries are being written correctly.
 
 **Steps:**
+
 1. Create `src/app/api/v1/auth/register/route.ts`:
    - `POST` handler: validates body with `RegisterSchema` via Zod `safeParse`
    - On invalid: return `VALIDATION_ERROR` (422) with `parsed.error.flatten()`
@@ -351,6 +363,7 @@
 **Objective:** Run the full acceptance checklist from `JAXIS_01-auth.md` Section 10, confirm all criteria pass, and mark the module complete.
 
 **Steps:**
+
 1. Run `npx prisma migrate status` — confirm all migrations applied
 2. Run `npx prisma db seed` — confirm idempotent (no errors on second run)
 3. Manually test login flow for all 6 seed roles — confirm each lands on the correct desk
@@ -380,23 +393,23 @@
 
 ## Upcoming Modules (Roadmap v2)
 
-| # | Module | Status |
-|---|---|---|
-| `00` | `00-foundation` — Project Foundation & Infrastructure | ✅ Completed |
-| `01` | `01-auth` — Authentication & RBAC | 🔄 Active / Ready for Execution |
-| `02` | `02-staff` — Expert Provisioning & Staff Management | ⏳ Blocked — awaiting `01` |
-| `03` | `03-client-profile` — Client Profile & Account | ⏳ Blocked — awaiting `01` |
-| `04` | `04-intake` — Project Intake & Submission | ⏳ Blocked — awaiting `03` |
-| `05` | `05-quotation` — Quotation & Pricing | ⏳ Blocked — awaiting `04` |
-| `06` | `06-sow` — SOW Generation & Signing | ⏳ Blocked — awaiting `05` |
-| `07` | `07-payments` — Payment & Installments | ⏳ Blocked — awaiting `06` |
-| `08` | `08-assignment` — Expert Assignment & Workload | ⏳ Blocked — awaiting `07`, `02` |
-| `09` | `09-messaging` — Messaging & Communication Firewall | ⏳ Blocked — awaiting `04`, `08` |
-| `10` | `10-analysis` — Analysis Workbench | ⏳ Blocked — awaiting `08`, `09` |
-| `11` | `11-qa` — Quality Assurance | ⏳ Blocked — awaiting `10` |
-| `12` | `12-deliverables` — Deliverables, Release & Revisions | ⏳ Blocked — awaiting `11` |
-| `13` | `13-defenselab` — DefenseLab Scheduling | ⏳ Blocked — awaiting `07`, `08` |
-| `14` | `14-finance` — Finance, Payouts & Ledger | ⏳ Blocked — awaiting `12`, `13` |
-| `15` | `15-disputes` — Disputes, Refunds & Chargebacks | ⏳ Blocked — awaiting `14` |
-| `16` | `16-notifications` — Email Notifications | ⏳ Blocked — awaiting `07–15` |
-| `17` | `17-reporting` — Reporting, Analytics & Archive | ⏳ Blocked — awaiting all |
+| #    | Module                                                | Status                           |
+| ---- | ----------------------------------------------------- | -------------------------------- |
+| `00` | `00-foundation` — Project Foundation & Infrastructure | ✅ Completed                     |
+| `01` | `01-auth` — Authentication & RBAC                     | 🔄 Active / Ready for Execution  |
+| `02` | `02-staff` — Expert Provisioning & Staff Management   | ⏳ Blocked — awaiting `01`       |
+| `03` | `03-client-profile` — Client Profile & Account        | ⏳ Blocked — awaiting `01`       |
+| `04` | `04-intake` — Project Intake & Submission             | ⏳ Blocked — awaiting `03`       |
+| `05` | `05-quotation` — Quotation & Pricing                  | ⏳ Blocked — awaiting `04`       |
+| `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |
+| `07` | `07-payments` — Payment & Installments                | ⏳ Blocked — awaiting `06`       |
+| `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Blocked — awaiting `07`, `02` |
+| `09` | `09-messaging` — Messaging & Communication Firewall   | ⏳ Blocked — awaiting `04`, `08` |
+| `10` | `10-analysis` — Analysis Workbench                    | ⏳ Blocked — awaiting `08`, `09` |
+| `11` | `11-qa` — Quality Assurance                           | ⏳ Blocked — awaiting `10`       |
+| `12` | `12-deliverables` — Deliverables, Release & Revisions | ⏳ Blocked — awaiting `11`       |
+| `13` | `13-defenselab` — DefenseLab Scheduling               | ⏳ Blocked — awaiting `07`, `08` |
+| `14` | `14-finance` — Finance, Payouts & Ledger              | ⏳ Blocked — awaiting `12`, `13` |
+| `15` | `15-disputes` — Disputes, Refunds & Chargebacks       | ⏳ Blocked — awaiting `14`       |
+| `16` | `16-notifications` — Email Notifications              | ⏳ Blocked — awaiting `07–15`    |
+| `17` | `17-reporting` — Reporting, Analytics & Archive       | ⏳ Blocked — awaiting all        |

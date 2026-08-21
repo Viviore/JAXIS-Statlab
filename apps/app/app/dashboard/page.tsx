@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal, KpiCardSkeleton, TableRowSkeleton, AnimateHeight } from "@repo/ui";
 import { Project } from "@/types/project";
 import { useProjects } from "@/features/projects/hooks/useProjects";
