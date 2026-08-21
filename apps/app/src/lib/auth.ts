@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import type { RoleName, UserStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { LoginSchema } from "@/features/auth/schemas";
-import { DEV_USERS } from "@/lib/mock-data/users.data";
+import { DEV_USERS, getDevUserByEmail } from "@/lib/mock-data/users.data";
 
 export type Role = RoleName;
 
@@ -111,12 +111,12 @@ export const authConfig: NextAuthConfig = {
             };
           }
         } catch (dbError) {
-          // If DB is offline/unreachable, fallback to DEV_USERS
-          console.warn("[Auth] Live DB unreachable or offline. Checking DEV_USERS fallback.", dbError);
+          // If DB is offline/unreachable, fallback to dev user store
+          console.warn("[Auth] Live DB unreachable or offline. Checking dev user fallback.", dbError);
         }
 
         // 2. Development Quick Credentials Fallback (Offline Mode)
-        const devUser = DEV_USERS[normalizedEmail];
+        const devUser = getDevUserByEmail(normalizedEmail) || DEV_USERS[normalizedEmail];
         if (devUser) {
           if (devUser.status === "SUSPENDED") {
             throw new Error("ACCOUNT_SUSPENDED");
@@ -135,6 +135,7 @@ export const authConfig: NextAuthConfig = {
             };
           }
         }
+
 
         return null;
       },

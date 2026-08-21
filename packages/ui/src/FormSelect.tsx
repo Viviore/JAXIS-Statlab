@@ -55,8 +55,9 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
           id={selectId}
           required={required}
           className={`w-full bg-[#011C38] border ${
-            error ? "border-[#EF4444] focus:ring-[#EF4444]/40" : "border-white/12 focus:border-[#CC6600] focus:ring-[#CC6600]/40"
-          } rounded-[2px] px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+            error ? "border-[#EF4444] focus:border-[#EF4444]" : "border-white/12 focus:border-[#CC6600]"
+          } rounded-[2px] px-4 py-3 text-sm text-white focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+          style={{ outline: "none", boxShadow: "none", ...props.style }}
           {...props}
         >
           {placeholder && (

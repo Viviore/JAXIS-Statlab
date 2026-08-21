@@ -3,6 +3,10 @@
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { RegisterClientSchema, type ActionResult } from "./schemas";
+import {
+  getDevUserByEmail,
+  registerDevUser,
+} from "@/lib/mock-data/users.data";
 
 export async function registerClient(
   input: unknown
@@ -76,18 +80,51 @@ export async function registerClient(
       void e;
     }
 
+    // Also sync to dev user store for fast credentials fallback
+    registerDevUser({
+      id: user.id,
+      email: user.email,
+      fullName: fullName.trim(),
+      role: "CLIENT",
+      password: password,
+      status: "ACTIVE",
+    });
+
     return {
       success: true,
       data: user,
     };
   } catch (dbError) {
-    console.warn("[Register] DB unavailable in offline mode or error:", dbError);
+    console.warn("[Register] DB unavailable in offline mode. Falling back to dev user store.", dbError);
+
+    const existingDev = getDevUserByEmail(normalizedEmail);
+    if (existingDev) {
+      return {
+        success: false,
+        error: {
+          code: "EMAIL_TAKEN",
+          message: "An institutional account with this email already exists.",
+        },
+      };
+    }
+
+    const newDevUserId = `usr_dev_client_${Date.now()}`;
+    registerDevUser({
+      id: newDevUserId,
+      email: normalizedEmail,
+      fullName: fullName.trim(),
+      role: "CLIENT",
+      password: password,
+      status: "ACTIVE",
+    });
+
     return {
       success: true,
       data: {
-        id: `client-dev-${Date.now()}`,
+        id: newDevUserId,
         email: normalizedEmail,
       },
     };
   }
 }
+

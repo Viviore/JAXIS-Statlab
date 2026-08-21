@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Alert, FormInput } from "@repo/ui";
+import { Button, Alert, FormInput, EyeIcon, EyeOffIcon } from "@repo/ui";
 import { registerClient } from "@/features/auth/actions";
 
 export default function RegisterPage() {
@@ -12,6 +12,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -69,7 +71,11 @@ export default function RegisterPage() {
       )}
 
       {/* Registration Form with Reusable FormInput Components */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col"
+        style={{ gap: "1.375rem" }}
+      >
         <FormInput
           label="Full Name / Primary Investigator"
           name="fullName"
@@ -103,7 +109,7 @@ export default function RegisterPage() {
         <FormInput
           label="Password (min. 8 characters)"
           name="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           required
           monoLabel
           variant="auth"
@@ -111,14 +117,30 @@ export default function RegisterPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={fieldErrors.password?.[0]}
+          errorVariant="banner"
           disabled={isPending}
           autoComplete="new-password"
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
+              title={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOffIcon className="w-4 h-4" />
+              ) : (
+                <EyeIcon className="w-4 h-4" />
+              )}
+            </button>
+          }
         />
 
         <FormInput
           label="Confirm Password"
           name="confirmPassword"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           required
           monoLabel
           variant="auth"
@@ -126,11 +148,27 @@ export default function RegisterPage() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           error={fieldErrors.confirmPassword?.[0]}
+          errorVariant="banner"
           disabled={isPending}
           autoComplete="new-password"
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
+              title={showConfirmPassword ? "Hide password" : "Show password"}
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            >
+              {showConfirmPassword ? (
+                <EyeOffIcon className="w-4 h-4" />
+              ) : (
+                <EyeIcon className="w-4 h-4" />
+              )}
+            </button>
+          }
         />
 
-        <div className="pt-2">
+        <div style={{ paddingTop: "0.25rem" }}>
           <Button
             type="submit"
             variant="primary"

@@ -67,3 +67,28 @@ export const DEV_USERS: Record<string, MockUser> = {
     status: "SUSPENDED",
   },
 };
+
+const globalStore = globalThis as unknown as {
+  __DEV_USERS_STORE__?: Record<string, MockUser>;
+};
+
+if (!globalStore.__DEV_USERS_STORE__) {
+  globalStore.__DEV_USERS_STORE__ = { ...DEV_USERS };
+}
+
+export function getDevUsers(): Record<string, MockUser> {
+  if (!globalStore.__DEV_USERS_STORE__) {
+    globalStore.__DEV_USERS_STORE__ = { ...DEV_USERS };
+  }
+  return globalStore.__DEV_USERS_STORE__;
+}
+
+export function getDevUserByEmail(email: string): MockUser | undefined {
+  const users = getDevUsers();
+  return users[email.toLowerCase().trim()];
+}
+
+export function registerDevUser(user: MockUser): void {
+  const users = getDevUsers();
+  users[user.email.toLowerCase().trim()] = user;
+}

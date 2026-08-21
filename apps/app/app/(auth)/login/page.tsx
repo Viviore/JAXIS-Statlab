@@ -4,7 +4,7 @@ import React, { useState, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Alert, Button, Skeleton, FormInput } from "@repo/ui";
+import { Alert, Button, Skeleton, FormInput, EyeIcon, EyeOffIcon } from "@repo/ui";
 
 const DEV_PRESETS = [
   { label: "Admin", email: "admin@jaxis.dev", pass: "JaxisAdmin2026!", role: "ADMIN" },
@@ -65,7 +65,7 @@ function LoginForm() {
               "This account has been permanently deactivated."
             );
           } else {
-            setErrorMessage("Invalid email or password. Please verify credentials.");
+            setErrorMessage("Incorrect email or password. All passwords must be at least 8 characters.");
           }
           return;
         }
@@ -98,12 +98,6 @@ function LoginForm() {
         </Alert>
       )}
 
-      {errorMessage && (
-        <Alert variant="danger" title="Authentication Error">
-          {errorMessage}
-        </Alert>
-      )}
-
       {/* Stakeholder Preset Dropdown */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between font-mono uppercase tracking-wider text-xs">
@@ -114,12 +108,14 @@ function LoginForm() {
           <select
             value={activeRole}
             onChange={(e) => handleSelectPreset(e.target.value)}
-            className="w-full h-12 px-4 pr-10 rounded-[2px] bg-[#01142B] border border-white/15 focus:border-[#CC6600] focus:ring-1 focus:ring-[#CC6600]/40 text-sm text-white transition-all outline-none font-sans appearance-none cursor-pointer"
+            className="w-full h-12 px-4 pr-10 rounded-[2px] bg-[#01142B] border border-white/15 focus:border-[#CC6600] focus:ring-0 text-sm text-white transition-colors outline-none font-sans appearance-none cursor-pointer"
             style={{
               height: "3rem",
               paddingLeft: "1rem",
               paddingRight: "2.5rem",
               boxSizing: "border-box",
+              outline: "none",
+              boxShadow: "none",
             }}
           >
             {DEV_PRESETS.map((preset) => (
@@ -157,7 +153,11 @@ function LoginForm() {
       </div>
 
       {/* Main Login Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col"
+        style={{ gap: "1.375rem" }}
+      >
         <FormInput
           label="Email Address"
           name="email"
@@ -167,9 +167,11 @@ function LoginForm() {
           variant="auth"
           placeholder="admin@jaxis.dev"
           value={email}
+          isInvalid={Boolean(errorMessage)}
           onChange={(e) => {
             setEmail(e.target.value);
             setActiveRole("");
+            if (errorMessage) setErrorMessage(null);
           }}
           disabled={isPending}
           autoComplete="email"
@@ -187,22 +189,34 @@ function LoginForm() {
           onChange={(e) => {
             setPassword(e.target.value);
             setActiveRole("");
+            if (errorMessage) setErrorMessage(null);
           }}
           disabled={isPending}
           autoComplete="current-password"
+          error={errorMessage || undefined}
+          errorVariant="banner"
           rightIcon={
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="text-[0.688rem] font-mono text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
+              title={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? "HIDE" : "SHOW"}
+              {showPassword ? (
+                <EyeOffIcon className="w-4 h-4" />
+              ) : (
+                <EyeIcon className="w-4 h-4" />
+              )}
             </button>
           }
         />
 
-        {/* Remember Session & Forgot Password */}
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans -mt-1">
+        {/* Remember Session & Forgot Password Row */}
+        <div
+          className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans"
+          style={{ marginTop: "-0.25rem" }}
+        >
           <label className="flex items-center gap-2 cursor-pointer select-none text-slate-300 hover:text-white transition-colors">
             <input
               type="checkbox"
@@ -218,19 +232,20 @@ function LoginForm() {
               e.preventDefault();
               alert("Password reset is managed by JAXIS System Admin in development.");
             }}
-            className="text-[#CC6600] hover:text-[#E67300] font-medium transition-colors cursor-pointer"
+            className="text-[#38BDF8] hover:text-[#7DD3FC] hover:underline font-sans text-xs transition-colors cursor-pointer select-none"
           >
-            Forgot password?
+            Forgot your password?
           </a>
         </div>
 
-        <div className="pt-2">
+        <div style={{ paddingTop: "0.25rem" }}>
           <Button
             type="submit"
             variant="primary"
             size="lg"
             className="w-full py-3.5 font-bold tracking-[0.10em]"
             loading={isPending}
+
             disabled={isPending}
           >
             {isPending ? "AUTHENTICATING..." : "SIGN IN TO WORKSPACE →"}
