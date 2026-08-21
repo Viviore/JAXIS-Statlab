@@ -893,3 +893,104 @@ export async function deleteProjectFile(
     };
   }
 }
+
+/**
+ * 8. Client resolves missing information request, transitioning project back to UNDER_EVALUATION.
+ */
+export async function resolveMissingInfo(
+  projectId: string,
+  resolutionNote?: string
+): Promise<ActionResponse<ProjectDetailItem>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "You must be logged in to update this study." },
+    };
+  }
+
+  try {
+    const existing = await db.project.findUnique({
+      where: { id: projectId },
+      include: {
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            clientProfile: true,
+          },
+        },
+        files: true,
+      },
+    });
+
+    if (!existing) {
+      return {
+        success: false,
+        error: { code: "NOT_FOUND", message: "Project not found." },
+      };
+    }
+
+    // Ensure state transition legality (AWAITING_INFORMATION -> UNDER_EVALUATION)
+    assertValidStatusTransition(existing.masterStatus, "UNDER_EVALUATION");
+
+    const updated = await db.project.update({
+      where: { id: projectId },
+      data: {
+        masterStatus: "UNDER_EVALUATION",
+        missingInfoReason: null,
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            clientProfile: true,
+          },
+        },
+        files: true,
+      },
+    });
+
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/projects");
+    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidatePath("/dashboard/admin/intake");
+    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+
+    return {
+      success: true,
+      data: updated as ProjectDetailItem,
+    };
+  } catch (dbError) {
+    console.warn("[resolveMissingInfo] DB offline, updating in dev cache.", dbError);
+
+    const devProjects = readPersistedDevProjects();
+    const index = devProjects.findIndex((p) => p.id === projectId || p.intakeId === projectId);
+
+    if (index === -1) {
+      return {
+        success: false,
+        error: { code: "NOT_FOUND", message: "Project not found in dev cache." },
+      };
+    }
+
+    devProjects[index]!.masterStatus = "UNDER_EVALUATION";
+    devProjects[index]!.missingInfoReason = null;
+    devProjects[index]!.updatedAt = new Date().toISOString();
+    writePersistedDevProjects(devProjects);
+
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/projects");
+    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidatePath("/dashboard/admin/intake");
+    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+
+    return {
+      success: true,
+      data: devProjects[index]!,
+    };
+  }
+}

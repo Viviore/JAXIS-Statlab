@@ -217,27 +217,27 @@ export default function AdminDashboardPage() {
             </Button>
           }
         >
-          <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-[2px] bg-white/[0.03] border border-white/[0.08]">
+          <div className="flex flex-col gap-5 text-xs font-sans text-white/80">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 sm:px-7 rounded-[3px] bg-white/[0.03] border border-white/[0.08]">
               <div>
-                <span className="font-mono text-white/40 uppercase">Primary Investigator:</span>
-                <p className="text-sm font-semibold text-white mt-0.5">{selectedStudy.client}</p>
-                <p className="text-white/50">{selectedStudy.university}</p>
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Primary Investigator:</span>
+                <p className="text-sm font-semibold text-white mt-1">{selectedStudy.client}</p>
+                <p className="text-white/50 text-xs mt-0.5">{selectedStudy.university}</p>
               </div>
               <div>
-                <span className="font-mono text-white/40 uppercase">Statistical Methodology:</span>
-                <p className="text-sm font-semibold text-white mt-0.5">{selectedStudy.method}</p>
-                <p className="text-white/50">Field: {selectedStudy.field}</p>
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Statistical Methodology:</span>
+                <p className="text-sm font-semibold text-white mt-1 leading-snug">{selectedStudy.method}</p>
+                <p className="text-white/50 text-xs mt-0.5">Field: {selectedStudy.field}</p>
               </div>
             </div>
 
-            <div>
-              <span className="font-mono text-white/40 uppercase">Audit Stream &amp; Verification Trail:</span>
-              <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Audit Stream &amp; Verification Trail:</span>
+              <div className="space-y-2 max-h-52 overflow-y-auto">
                 {auditStream.slice(0, 4).map((log) => (
-                  <div key={log.id} className="p-2.5 rounded-[2px] bg-white/[0.02] border border-white/[0.06] flex items-center justify-between">
-                    <span className="font-mono text-[0.688rem] text-slate-300">{log.action}: {log.detail}</span>
-                    <span className="font-mono text-[0.625rem] text-white/40">{log.timestamp}</span>
+                  <div key={log.id} className="py-3 px-5 rounded-[2px] bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-4">
+                    <span className="font-mono text-[0.72rem] text-slate-300">{log.action}: {log.detail}</span>
+                    <span className="font-mono text-[0.65rem] text-white/40 whitespace-nowrap">{log.timestamp}</span>
                   </div>
                 ))}
               </div>

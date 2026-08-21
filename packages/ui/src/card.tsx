@@ -13,6 +13,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ variant = "default", children, className = "", header, footer, style, ...props }, ref) => {
     const isKpi = variant === "kpi";
+    const hasZeroPadding = className.includes("p-0");
 
     return (
       <div
@@ -22,7 +23,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           borderRadius: "2px",
           border: "1px solid rgba(255, 255, 255, 0.09)",
           backgroundColor: isKpi ? "rgba(1, 22, 46, 0.85)" : "rgba(1, 22, 46, 0.75)",
-          padding: isKpi ? "1.25rem 1.5rem" : "1.5rem 1.75rem",
+          padding: hasZeroPadding ? 0 : isKpi ? "1.25rem 1.5rem" : "1.5rem 1.75rem",
           display: "flex",
           flexDirection: "column",
           justifyContent: isKpi ? "space-between" : "flex-start",

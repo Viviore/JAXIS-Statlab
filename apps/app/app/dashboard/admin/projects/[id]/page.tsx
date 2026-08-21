@@ -279,7 +279,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
           <span className="text-xs font-mono text-amber-400 font-bold uppercase">
             Active Missing Information Request:
           </span>
-          <p className="text-xs text-white/90 leading-relaxed font-sans bg-black/30 p-3.5 rounded-[2px] border border-white/[0.08]">
+          <p
+            className="text-xs text-white/90 leading-relaxed font-sans bg-black/30 p-4 rounded-[2px] border border-white/[0.08]"
+            style={{ padding: "1rem" }}
+          >
             &ldquo;{project.missingInfoReason}&rdquo;
           </p>
         </Card>
@@ -292,7 +295,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
           <Card className="p-6 md:p-8 flex flex-col gap-6">
             <div className="border-b border-white/[0.08] pb-3">
               <h3 className="text-base font-bold text-white font-sans">
-                Research Problem & Analytical Scope
+                Research Problem &amp; Analytical Scope
               </h3>
             </div>
 
@@ -300,7 +303,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               <span className="text-xs font-mono uppercase text-white/40 font-bold">
                 Statement of the Problem / Key Questions
               </span>
-              <div className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans">
+              <div
+                className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans"
+                style={{ padding: "1rem" }}
+              >
                 {project.researchQuestions}
               </div>
             </div>
@@ -309,7 +315,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               <span className="text-xs font-mono uppercase text-white/40 font-bold">
                 Core Research Objectives
               </span>
-              <div className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans">
+              <div
+                className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans"
+                style={{ padding: "1rem" }}
+              >
                 {project.researchObjectives}
               </div>
             </div>
@@ -319,7 +328,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 <span className="text-xs font-mono uppercase text-white/40 font-bold">
                   Theoretical Hypotheses
                 </span>
-                <div className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans">
+                <div
+                  className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans"
+                  style={{ padding: "1rem" }}
+                >
                   {project.hypotheses}
                 </div>
               </div>
@@ -330,7 +342,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
           <Card className="p-6 md:p-8 flex flex-col gap-5">
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
               <h3 className="text-base font-bold text-white font-sans">
-                Attached Research Documents & Datasets ({project.files.length})
+                Attached Research Documents &amp; Datasets ({project.files.length})
               </h3>
               <span className="text-xs font-mono text-white/40">
                 Cloud Storage
@@ -347,6 +359,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                   <div
                     key={file.id}
                     className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] flex items-center justify-between gap-4"
+                    style={{ padding: "1rem" }}
                   >
                     <div className="flex flex-col gap-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -365,7 +378,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                     <a
                       href={`/${file.filePath}`}
                       download={file.fileName}
-                      className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] text-white text-xs font-mono rounded-[2px] transition-colors whitespace-nowrap"
+                      className="px-3.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] text-white text-xs font-mono rounded-[2px] transition-colors whitespace-nowrap"
                     >
                       Download ⬇
                     </a>

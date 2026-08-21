@@ -10,7 +10,7 @@ import {
   Alert,
   Modal,
 } from "@repo/ui";
-import { getProjectById, deleteProjectFile } from "@/features/projects/actions";
+import { getProjectById, deleteProjectFile, resolveMissingInfo } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import type { ProjectDetailItem, ProjectFileItem } from "@/features/projects/schemas";
 
@@ -36,9 +36,10 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // File deletion state
+  // File deletion & resolution state
   const [fileToDelete, setFileToDelete] = useState<ProjectFileItem | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [isResolving, startResolveTransition] = useTransition();
 
   useEffect(() => {
     async function loadProject() {

@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useMemo } from "react";
 import Link from "next/link";
 import {
   PageHeader,
   Card,
+  KpiCard,
+  FilterToolbar,
   StatusBadge,
   Button,
-  FormInput,
   FormTextarea,
   Modal,
   Alert,
+  DropdownMenu,
 } from "@repo/ui";
 import {
   getProjects,
@@ -22,75 +24,101 @@ import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 export default function AdminIntakeTriagePage() {
   const [projects, setProjects] = useState<ProjectDetailItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filterTab, setFilterTab] = useState<string>("TRIAGE");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  // Modals state
+  const [selectedStudyForInspect, setSelectedStudyForInspect] =
+    useState<ProjectDetailItem | null>(null);
   const [selectedForMissingInfo, setSelectedForMissingInfo] =
     useState<ProjectDetailItem | null>(null);
-  const [missingInfoReasonText, setMissingInfoReasonText] = useState("");
+  const [missingInfoReasonText, setMissingInfoReasonText] = useState<string>("");
   const [missingInfoError, setMissingInfoError] = useState<string | null>(null);
 
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const loadData = async () => {
     setIsLoading(true);
-    const res = await getProjects();
-    if (res.success) {
-      setProjects(res.data);
+    try {
+      const res = await getProjects();
+      if (res.success) {
+        setProjects(res.data);
+      }
+    } catch (e) {
+      console.error("Failed to load intake projects", e);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // Filter projects based on tab & search
-  const filteredProjects = projects.filter((p) => {
-    // Tab filter
-    if (filterTab === "TRIAGE") {
-      if (
-        p.masterStatus !== "NEW_REQUEST" &&
-        p.masterStatus !== "AWAITING_INFORMATION"
-      ) {
+  // Filter projects based on STATUS dropdown and search query
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      // 1. Status Filter
+      if (selectedStatus === "TRIAGE") {
+        if (
+          p.masterStatus !== "NEW_REQUEST" &&
+          p.masterStatus !== "AWAITING_INFORMATION"
+        ) {
+          return false;
+        }
+      } else if (selectedStatus === "NEW_REQUEST") {
+        if (p.masterStatus !== "NEW_REQUEST") return false;
+      } else if (selectedStatus === "AWAITING_INFORMATION") {
+        if (p.masterStatus !== "AWAITING_INFORMATION") return false;
+      } else if (selectedStatus === "UNDER_EVALUATION") {
+        if (p.masterStatus !== "UNDER_EVALUATION") return false;
+      } else if (selectedStatus === "ALL") {
+        // View all intakes
+      } else if (p.masterStatus !== selectedStatus) {
         return false;
       }
-    } else if (filterTab === "NEW_REQUEST") {
-      if (p.masterStatus !== "NEW_REQUEST") return false;
-    } else if (filterTab === "AWAITING_INFORMATION") {
-      if (p.masterStatus !== "AWAITING_INFORMATION") return false;
-    } else if (filterTab === "UNDER_EVALUATION") {
-      if (p.masterStatus !== "UNDER_EVALUATION") return false;
-    }
 
-    // Search filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const matches =
-        p.intakeId.toLowerCase().includes(q) ||
-        p.researchTitle.toLowerCase().includes(q) ||
-        p.client.fullName.toLowerCase().includes(q) ||
-        (p.client.clientProfile?.institutionSchool || "")
-          .toLowerCase()
-          .includes(q);
-      if (!matches) return false;
-    }
+      // 2. Search Filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matches =
+          p.intakeId.toLowerCase().includes(q) ||
+          p.researchTitle.toLowerCase().includes(q) ||
+          p.client.fullName.toLowerCase().includes(q) ||
+          (p.client.clientProfile?.institutionSchool || "")
+            .toLowerCase()
+            .includes(q);
+        if (!matches) return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [projects, selectedStatus, searchQuery]);
 
-  // KPI counters
-  const newRequestsCount = projects.filter(
-    (p) => p.masterStatus === "NEW_REQUEST"
-  ).length;
-  const awaitingInfoCount = projects.filter(
-    (p) => p.masterStatus === "AWAITING_INFORMATION"
-  ).length;
-  const underEvaluationCount = projects.filter(
-    (p) => p.masterStatus === "UNDER_EVALUATION"
-  ).length;
+  // Comprehensive Master Status & KPI calculations
+  const kpis = useMemo(() => {
+    const total = projects.length;
+    const newRequests = projects.filter(
+      (p) => p.masterStatus === "NEW_REQUEST"
+    ).length;
+    const awaitingInfo = projects.filter(
+      (p) => p.masterStatus === "AWAITING_INFORMATION"
+    ).length;
+    const underEvaluation = projects.filter(
+      (p) => p.masterStatus === "UNDER_EVALUATION"
+    ).length;
+
+    return {
+      total,
+      activeTriage: newRequests + awaitingInfo,
+      newRequests,
+      awaitingInfo,
+      underEvaluation,
+    };
+  }, [projects]);
 
   const handleMarkComplete = (projectId: string, intakeId: string) => {
     setFeedbackMessage(null);
@@ -139,8 +167,15 @@ export default function AdminIntakeTriagePage() {
     });
   };
 
+  const handleCopyId = (intakeId: string) => {
+    navigator.clipboard.writeText(intakeId);
+    setCopiedId(intakeId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
+      {/* ── Page Header ── */}
       <PageHeader
         title="Project Intake Triage & Evaluation Queue"
         description="Evaluate incoming research submissions, verify methodology feasibility, request missing dataset artifacts, and approve complete studies for pricing quotation."
@@ -151,265 +186,531 @@ export default function AdminIntakeTriagePage() {
         ]}
       />
 
-      {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
+      {feedbackMessage && (
+        <Alert
+          variant="success"
+          onClose={() => setFeedbackMessage(null)}
+          className="animate-content-fade"
+        >
+          {feedbackMessage}
+        </Alert>
+      )}
 
-      {/* ── KPI Header Counters ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-5 border-l-2 border-l-amber-500 flex flex-col gap-1">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Active Triage Queue
-          </span>
-          <span className="text-2xl font-mono font-bold text-amber-400">
-            {newRequestsCount + awaitingInfoCount}
-          </span>
-          <span className="text-[0.688rem] font-mono text-white/40">
-            Requires administrative action
-          </span>
-        </Card>
+      {copiedId && (
+        <Alert variant="info" className="animate-content-fade">
+          Intake ID <strong className="font-mono">{copiedId}</strong> copied to clipboard.
+        </Alert>
+      )}
 
-        <Card className="p-5 border-l-2 border-l-sky-500 flex flex-col gap-1">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            New Submissions
-          </span>
-          <span className="text-2xl font-mono font-bold text-sky-400">
-            {newRequestsCount}
-          </span>
-          <span className="text-[0.688rem] font-mono text-white/40">
-            Pending initial review
-          </span>
-        </Card>
+      {/* ── KPI Metrics Ribbon ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          label="ACTIVE TRIAGE QUEUE"
+          value={kpis.activeTriage}
+          variant="amber"
+          badge="ACTION REQUIRED"
+          badgeColor="amber"
+          description="Awaiting administrator evaluation"
+        />
 
-        <Card className="p-5 border-l-2 border-l-amber-400 flex flex-col gap-1">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Awaiting Info
-          </span>
-          <span className="text-2xl font-mono font-bold text-amber-300">
-            {awaitingInfoCount}
-          </span>
-          <span className="text-[0.688rem] font-mono text-white/40">
-            Client response pending
-          </span>
-        </Card>
+        <KpiCard
+          label="NEW SUBMISSIONS"
+          value={kpis.newRequests}
+          variant="sky"
+          badge="INITIAL REVIEW"
+          badgeColor="sky"
+          description="Fresh student & faculty intakes"
+        />
 
-        <Card className="p-5 border-l-2 border-l-emerald-500 flex flex-col gap-1">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Under Evaluation
-          </span>
-          <span className="text-2xl font-mono font-bold text-emerald-400">
-            {underEvaluationCount}
-          </span>
-          <span className="text-[0.688rem] font-mono text-white/40">
-            Ready for quotation modeling
-          </span>
-        </Card>
+        <KpiCard
+          label="AWAITING INFO"
+          value={kpis.awaitingInfo}
+          variant="orange"
+          badge="CLIENT ACTION"
+          badgeColor="orange"
+          description="Clarification or dataset pending"
+        />
+
+        <KpiCard
+          label="UNDER EVALUATION"
+          value={kpis.underEvaluation}
+          variant="emerald"
+          badge="QUOTATION READY"
+          badgeColor="emerald"
+          description="Feasibility approved for pricing"
+        />
       </div>
 
-      {/* ── Filter Bar & Search ── */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-          {[
-            { label: "Triage Queue", value: "TRIAGE" },
-            { label: "New Requests", value: "NEW_REQUEST" },
-            { label: "Awaiting Info", value: "AWAITING_INFORMATION" },
-            { label: "Under Evaluation", value: "UNDER_EVALUATION" },
-            { label: "All Submissions", value: "ALL" },
-          ].map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => setFilterTab(tab.value)}
-              className={`px-3.5 py-1.5 text-xs font-mono font-medium rounded-[2px] transition-colors whitespace-nowrap ${
-                filterTab === tab.value
-                  ? "bg-[#CC6600] text-white font-bold"
-                  : "bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.08]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* ── Main Triage & Queue Glass Card ── */}
+      <Card
+        className="p-0 border-white/[0.08] overflow-hidden bg-gradient-to-b from-[#01142B]/90 via-[#010E20]/95 to-[#010A17] shadow-2xl"
+        style={{ padding: 0 }}
+      >
+        {/* Filter Toolbar */}
+        <FilterToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search study title, client, or JAXIS ID..."
+          filters={[
+            {
+              key: "status",
+              label: "STATUS",
+              value: selectedStatus,
+              defaultValue: "ALL",
+              options: [
+                { value: "ALL", label: `All Intakes (${kpis.total})` },
+                { value: "TRIAGE", label: `Active Triage (${kpis.activeTriage})` },
+                { value: "NEW_REQUEST", label: `New Requests (${kpis.newRequests})` },
+                { value: "AWAITING_INFORMATION", label: `Awaiting Info (${kpis.awaitingInfo})` },
+                { value: "UNDER_EVALUATION", label: `Under Evaluation (${kpis.underEvaluation})` },
+              ],
+            },
+          ]}
+          onFilterChange={(key, value) => {
+            if (key === "status") setSelectedStatus(value);
+          }}
+          onClear={() => {
+            setSelectedStatus("ALL");
+            setSearchQuery("");
+          }}
+        />
 
-        <div className="w-full md:w-80">
-          <FormInput
-            placeholder="Search study title, client, or JAXIS ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* ── Triage Table ── */}
-      <Card className="overflow-hidden p-0 border border-white/[0.08]">
-        {isLoading ? (
-          <div className="p-8 animate-pulse flex flex-col gap-3">
-            <div className="h-6 bg-white/10 w-1/4 rounded-[2px]" />
-            <div className="h-12 bg-white/10 w-full rounded-[2px]" />
-            <div className="h-12 bg-white/10 w-full rounded-[2px]" />
-          </div>
-        ) : filteredProjects.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center gap-3">
-            <span className="text-2xl font-mono text-white/30">∅</span>
-            <h3 className="text-sm font-bold text-white">
-              No Submissions Found
-            </h3>
-            <p className="text-xs text-white/50">
-              No project records match the active filter criteria.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+        {/* ── Table Container ── */}
+        <div style={{ padding: "1.25rem 1.75rem 1.75rem 1.75rem" }}>
+          <div className="w-full overflow-x-auto rounded-[3px] border border-white/[0.08]">
+            <table className="data-table">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-white/[0.02]">
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold">
-                    Intake ID
-                  </th>
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold">
-                    Principal Investigator
-                  </th>
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold">
-                    Research Study Title
-                  </th>
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold">
-                    Target Deadline
-                  </th>
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold">
-                    Files
-                  </th>
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold">
-                    Status
-                  </th>
-                  <th className="py-3 px-4 text-[0.688rem] font-mono uppercase text-white/50 font-bold text-right">
-                    Triage Actions
-                  </th>
+                <tr>
+                  <th>Research Study &amp; Intake</th>
+                  <th className="w-[200px] whitespace-nowrap">Principal Investigator</th>
+                  <th className="w-[140px] whitespace-nowrap">Target Deadline</th>
+                  <th className="w-[130px] whitespace-nowrap">Status</th>
+                  <th className="w-[120px] text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05]">
-                {filteredProjects.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="hover:bg-white/[0.02] transition-colors group"
-                  >
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="text-xs font-mono font-bold text-[#CC6600] bg-[#CC6600]/10 px-2 py-0.5 rounded-[2px]">
-                        {p.intakeId}
-                      </span>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-20 text-center text-white/30 font-mono text-xs"
+                    >
+                      Loading intake queue records...
                     </td>
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-white">
-                          {p.client.fullName}
+                  </tr>
+                ) : filteredProjects.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-20 text-center text-white/30 font-mono text-xs"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <span className="text-2xl font-mono text-white/20">∅</span>
+                        <span className="text-sm font-semibold text-white/70">
+                          No Intakes Found
                         </span>
-                        <span className="text-[0.688rem] text-white/50 truncate max-w-[180px]">
-                          {p.client.clientProfile?.institutionSchool ||
-                            p.client.email}
+                        <span className="text-xs text-white/40">
+                          No research project records match the active filter criteria.
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 min-w-[260px] max-w-[340px]">
-                      <Link
-                        href={`/dashboard/admin/projects/${p.id}`}
-                        className="text-xs font-semibold text-white group-hover:text-[#CC6600] transition-colors line-clamp-2"
-                      >
-                        {p.researchTitle}
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="text-xs font-mono text-amber-400 font-bold">
-                        {new Date(p.deadlineRequested).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric", year: "numeric" }
-                        )}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="text-xs font-mono text-white/70 bg-white/[0.05] px-2 py-0.5 rounded-[2px]">
-                        {p.files.length} doc(s)
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <StatusBadge
-                        status={p.masterStatus}
-                        label={
-                          PROJECT_STATUS_LABELS[p.masterStatus] || p.masterStatus
-                        }
-                      />
-                    </td>
-                    <td className="py-4 px-4 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {p.masterStatus === "NEW_REQUEST" && (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() =>
-                              handleMarkComplete(p.id, p.intakeId)
-                            }
-                            disabled={isPending}
-                            className="text-xs font-mono"
-                          >
-                            Mark Complete
-                          </Button>
-                        )}
-                        {(p.masterStatus === "NEW_REQUEST" ||
-                          p.masterStatus === "UNDER_EVALUATION") && (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedForMissingInfo(p);
-                              setMissingInfoReasonText(
-                                p.missingInfoReason || ""
-                              );
-                            }}
-                            className="text-xs font-mono"
-                          >
-                            Request Info
-                          </Button>
-                        )}
-                        <Link href={`/dashboard/admin/projects/${p.id}`}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs font-mono"
-                          >
-                            Inspect Desk →
-                          </Button>
-                        </Link>
                       </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredProjects.map((p) => {
+                    return (
+                      <tr key={p.id} className="group">
+                        {/* Research Study & Intake */}
+                        <td>
+                          <div className="flex flex-col gap-1 min-w-0 pr-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
+                                {p.intakeId}
+                              </span>
+                              {p.files.length > 0 && (
+                                <span className="text-[0.6875rem] font-mono text-sky-300 bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 rounded-[2px] whitespace-nowrap">
+                                  {p.files.length} doc{p.files.length === 1 ? "" : "s"}
+                                </span>
+                              )}
+                            </div>
+                            <Link
+                              href={`/dashboard/admin/projects/${p.id}`}
+                              className="text-xs font-semibold text-white group-hover:text-sky-300 transition-colors line-clamp-2 leading-snug"
+                              title={p.researchTitle}
+                            >
+                              {p.researchTitle}
+                            </Link>
+                            {p.missingInfoReason && p.masterStatus === "AWAITING_INFORMATION" && (
+                              <span className="text-[0.6875rem] text-amber-300/80 font-mono line-clamp-1 italic">
+                                Pending info: {p.missingInfoReason}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Principal Investigator */}
+                        <td>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-[2px] bg-[#011B38] border border-white/[0.10] flex items-center justify-center font-mono font-bold text-[0.6875rem] text-[#CC6600] flex-shrink-0">
+                              {p.client.fullName
+                                .split(" ")
+                                .map((n) => n[0])
+                                .slice(0, 2)
+                                .join("")}
+                            </div>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
+                                {p.client.fullName}
+                              </span>
+                              <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate max-w-[180px]">
+                                {p.client.clientProfile?.institutionSchool ||
+                                  p.client.email}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Target Deadline */}
+                        <td className="whitespace-nowrap">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-mono text-amber-400 font-bold">
+                              {new Date(p.deadlineRequested).toLocaleDateString(
+                                "en-US",
+                                { month: "short", day: "numeric", year: "numeric" }
+                              )}
+                            </span>
+                            <span className="text-[0.6875rem] text-white/40 font-mono">
+                              Requested
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="whitespace-nowrap">
+                          <StatusBadge
+                            status={p.masterStatus}
+                            label={
+                              PROJECT_STATUS_LABELS[p.masterStatus] ||
+                              p.masterStatus
+                            }
+                          />
+                        </td>
+
+                        {/* Actions */}
+                        <td className="text-right whitespace-nowrap">
+                          <div className="relative inline-flex items-center justify-end gap-2">
+                            {p.masterStatus === "NEW_REQUEST" ? (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() =>
+                                  handleMarkComplete(p.id, p.intakeId)
+                                }
+                                disabled={isPending}
+                                className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
+                              >
+                                APPROVE →
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedStudyForInspect(p)}
+                                className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
+                              >
+                                DETAILS
+                              </Button>
+                            )}
+
+                            <DropdownMenu
+                              items={[
+                                {
+                                  label: "Quick Overview",
+                                  subtitle: "Inspect study scope & files",
+                                  icon: (
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.8"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                      />
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.8"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                      />
+                                    </svg>
+                                  ),
+                                  onClick: () => setSelectedStudyForInspect(p),
+                                },
+                                {
+                                  label: "Full Desk Inspector",
+                                  subtitle: "Navigate to dedicated project desk",
+                                  icon: (
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.8"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                      />
+                                    </svg>
+                                  ),
+                                  onClick: () => {
+                                    window.location.href = `/dashboard/admin/projects/${p.id}`;
+                                  },
+                                },
+                                {
+                                  label: "Request Missing Info",
+                                  subtitle: "Solicit artifacts or clarifications",
+                                  variant: "warning",
+                                  icon: (
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.8"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                  ),
+                                  onClick: () => {
+                                    setSelectedForMissingInfo(p);
+                                    setMissingInfoReasonText(
+                                      p.missingInfoReason || ""
+                                    );
+                                  },
+                                },
+                                ...(p.masterStatus === "NEW_REQUEST"
+                                  ? [
+                                      {
+                                        label: "Approve & Mark Complete",
+                                        subtitle: "Transition to UNDER_EVALUATION",
+                                        variant: "success" as const,
+                                        icon: (
+                                          <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth="1.8"
+                                              d="M5 13l4 4L19 7"
+                                            />
+                                          </svg>
+                                        ),
+                                        onClick: () =>
+                                          handleMarkComplete(p.id, p.intakeId),
+                                      },
+                                    ]
+                                  : []),
+                                {
+                                  label: "Copy Intake ID",
+                                  subtitle: p.intakeId,
+                                  dividerBefore: true,
+                                  icon: (
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.8"
+                                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                  ),
+                                  onClick: () => handleCopyId(p.intakeId),
+                                },
+                              ]}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
-        )}
+        </div>
       </Card>
 
-      {/* ── Request Missing Info Modal ── */}
+      {/* ── 1. Quick Study Overview Modal ── */}
+      {selectedStudyForInspect && (
+        <Modal
+          open={Boolean(selectedStudyForInspect)}
+          onClose={() => setSelectedStudyForInspect(null)}
+          title={`Intake Evaluation: ${selectedStudyForInspect.intakeId}`}
+          description={selectedStudyForInspect.researchTitle}
+          size="xl"
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs font-mono text-white/40">
+                Created: {new Date(selectedStudyForInspect.createdAt).toLocaleDateString()}
+              </span>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setSelectedStudyForInspect(null)}
+                >
+                  CLOSE
+                </Button>
+                <Link
+                  href={`/dashboard/admin/projects/${selectedStudyForInspect.id}`}
+                >
+                  <Button variant="primary">
+                    OPEN FULL PROJECT DESK →
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-6 font-sans">
+            {/* Investigator & Institution Card */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 sm:px-7 rounded-[3px] bg-[#011B38] border border-white/10">
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                  Principal Investigator
+                </span>
+                <p className="text-sm font-semibold text-white">
+                  {selectedStudyForInspect.client.fullName}
+                </p>
+                <p className="text-xs text-white/50">
+                  {selectedStudyForInspect.client.email}
+                </p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                  Academic Institution & Program
+                </span>
+                <p className="text-sm font-semibold text-white">
+                  {selectedStudyForInspect.client.clientProfile?.institutionSchool ||
+                    "Institution Not Specified"}
+                </p>
+                <p className="text-xs text-white/50">
+                  {selectedStudyForInspect.client.clientProfile?.academicProgram ||
+                    "Graduate / Faculty Research"}
+                </p>
+              </div>
+            </div>
+
+            {/* Research Scope & Objectives */}
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                Core Research Objectives
+              </span>
+              <p
+                className="text-xs text-slate-300 bg-white/[0.02] p-4 rounded-[3px] border border-white/10 leading-relaxed whitespace-pre-wrap"
+                style={{ padding: "1rem" }}
+              >
+                {selectedStudyForInspect.researchObjectives}
+              </p>
+            </div>
+
+            {/* Research Questions */}
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                Key Research Questions
+              </span>
+              <p
+                className="text-xs text-slate-300 bg-white/[0.02] p-4 rounded-[3px] border border-white/10 leading-relaxed whitespace-pre-wrap"
+                style={{ padding: "1rem" }}
+              >
+                {selectedStudyForInspect.researchQuestions}
+              </p>
+            </div>
+
+            {/* Uploaded Artifacts & Files */}
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                Submitted Artifacts ({selectedStudyForInspect.files.length})
+              </span>
+              {selectedStudyForInspect.files.length === 0 ? (
+                <div
+                  className="text-xs text-white/40 italic p-4 bg-white/[0.02] border border-white/10 rounded-[3px]"
+                  style={{ padding: "1rem" }}
+                >
+                  No files or dataset packages attached to this intake record.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-52 overflow-y-auto">
+                  {selectedStudyForInspect.files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="rounded-[2px] bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-4"
+                      style={{ padding: "0.75rem 1rem" }}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="font-mono text-[0.6875rem] uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20 whitespace-nowrap">
+                          {file.fileCategory.replace(/_/g, " ")}
+                        </span>
+                        <span className="text-xs text-white truncate font-medium">
+                          {file.fileName}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[0.65rem] text-white/40 whitespace-nowrap">
+                        {new Date(file.uploadedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── 2. Request Missing Information Modal ── */}
       {selectedForMissingInfo && (
         <Modal
-          isOpen={Boolean(selectedForMissingInfo)}
+          open={Boolean(selectedForMissingInfo)}
           onClose={() => setSelectedForMissingInfo(null)}
-          title={`Request Missing Information: ${selectedForMissingInfo.intakeId}`}
+          title={`Request Missing Artifacts: ${selectedForMissingInfo.intakeId}`}
+          description={selectedForMissingInfo.researchTitle}
+          size="lg"
         >
-          <div className="flex flex-col gap-4">
-            <p className="text-xs text-white/70 font-sans leading-relaxed">
-              Specify the missing dataset files, questionnaire instruments, or research clarification required from{" "}
+          <div className="flex flex-col gap-6 font-sans">
+            <div className="p-5 sm:px-7 rounded-[3px] bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 leading-relaxed">
+              <strong>GOVERNANCE NOTICE:</strong> Specify the missing raw dataset files, validated survey instrument, or statistical scope clarification required from{" "}
               <strong className="text-white">
                 {selectedForMissingInfo.client.fullName}
               </strong>
-              . This will transition the project to{" "}
-              <code className="text-amber-400 font-mono">
+              . Submitting this request will automatically transition the intake to{" "}
+              <code className="text-amber-300 font-mono font-bold">
                 AWAITING_INFORMATION
-              </code>
-              .
-            </p>
+              </code>{" "}
+              and notify the client.
+            </div>
 
             <FormTextarea
-              label="Feedback & Required Information Note"
+              label="Mandatory Information Request / Missing Items Note"
               required
               rows={4}
-              placeholder="e.g. Please attach the validated Likert-scale survey instrument and confirm whether demographic covariates (age, sex) are included in the CSV dataset."
+              placeholder="e.g. Please attach the raw SPSS / Excel survey responses with column codebook and confirm whether demographic covariates are required in Chapter 4."
               value={missingInfoReasonText}
               onChange={(e) => setMissingInfoReasonText(e.target.value)}
               error={missingInfoError || undefined}
@@ -418,20 +719,21 @@ export default function AdminIntakeTriagePage() {
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
               <Button
-                variant="secondary"
-                size="sm"
+                type="button"
+                variant="ghost"
                 onClick={() => setSelectedForMissingInfo(null)}
                 disabled={isPending}
               >
                 Cancel
               </Button>
               <Button
+                type="button"
                 variant="primary"
-                size="sm"
                 onClick={handleRequestMissingInfoSubmit}
                 loading={isPending}
+                disabled={missingInfoReasonText.trim().length < 5}
               >
-                Send Request & Set Status
+                SEND REQUEST TO CLIENT →
               </Button>
             </div>
           </div>

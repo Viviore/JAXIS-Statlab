@@ -124,10 +124,21 @@ export default function StatisticianDashboardPage() {
             </Button>
           }
         >
-          <div className="flex flex-col gap-3 text-xs text-white/80">
-            <p><strong>Dataset:</strong> {selectedStudy.datasetName} ({selectedStudy.datasetSize})</p>
-            <p><strong>Syntax File:</strong> {selectedStudy.syntaxName}</p>
-            <p><strong>Methodology:</strong> {selectedStudy.method}</p>
+          <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
+            <div className="p-5 sm:px-7 rounded-[3px] bg-white/[0.03] border border-white/[0.08] flex flex-col gap-3.5">
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Dataset Package:</span>
+                <p className="text-sm font-semibold text-white">{selectedStudy.datasetName || "Dataset_Archived.csv"} ({selectedStudy.datasetSize || "2.4 MB"})</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Syntax &amp; Model Script:</span>
+                <p className="text-sm text-slate-200">{selectedStudy.syntaxName || "Syntax_Analysis_Script.R"}</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Methodology:</span>
+                <p className="text-sm text-slate-200">{selectedStudy.method}</p>
+              </div>
+            </div>
           </div>
         </Modal>
       )}

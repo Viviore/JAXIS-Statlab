@@ -124,10 +124,21 @@ export default function QALeadDashboardPage() {
             </Button>
           }
         >
-          <div className="flex flex-col gap-3 text-xs text-white/80">
-            <p><strong>Primary Statistician:</strong> {selectedStudy.statisticians}</p>
-            <p><strong>Methodology:</strong> {selectedStudy.method}</p>
-            <p><strong>Dataset:</strong> {selectedStudy.datasetName}</p>
+          <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
+            <div className="p-5 sm:px-7 rounded-[3px] bg-white/[0.03] border border-white/[0.08] flex flex-col gap-3.5">
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Primary Statistician:</span>
+                <p className="text-sm font-semibold text-white">{selectedStudy.statisticians || "Dr. Aris Thorne"}</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Methodology:</span>
+                <p className="text-sm text-slate-200">{selectedStudy.method}</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Dataset:</span>
+                <p className="text-sm text-slate-200">{selectedStudy.datasetName || "Dataset_Archived_v1.0.csv"}</p>
+              </div>
+            </div>
           </div>
         </Modal>
       )}

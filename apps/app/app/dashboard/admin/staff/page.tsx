@@ -6,7 +6,6 @@ import React, {
   useTransition,
   useMemo,
   useCallback,
-  useRef,
 } from "react";
 import {
   PageHeader,
@@ -20,6 +19,8 @@ import {
   FilterToolbar,
   KpiCard,
   FormFooter,
+  TagsOverflow,
+  DropdownMenu,
 } from "@repo/ui";
 import {
   getStaffRoster,
@@ -71,10 +72,6 @@ export default function StaffRosterPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isPending, startTransition] = useTransition();
 
-  // Dropdown menu state
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
   // Modals state
   const [selectedStaff, setSelectedStaff] = useState<StaffListItem | null>(
     null,
@@ -118,17 +115,6 @@ export default function StaffRosterPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   // Load roster
   const loadRoster = useCallback(async () => {
     setIsLoading(true);
@@ -171,7 +157,6 @@ export default function StaffRosterPage() {
   // View details
   const handleOpenDetail = async (staff: StaffListItem) => {
     setSelectedStaff(staff);
-    setOpenMenuId(null);
     setIsDetailOpen(true);
     try {
       const res = await getStaffDetail(staff.id);
@@ -274,7 +259,6 @@ export default function StaffRosterPage() {
 
   // Lift suspension action
   const handleLiftSuspension = async (staff: StaffListItem) => {
-    setOpenMenuId(null);
     if (
       !confirm(
         `Are you sure you want to restore active status for ${staff.fullName}?`,
@@ -613,29 +597,11 @@ export default function StaffRosterPage() {
 
                     {/* Specializations */}
                     <td>
-                      <div className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
-                        {staff.specializations.length > 0 ? (
-                          <>
-                            <span className="text-[0.6875rem] font-mono px-2 py-0.5 rounded-[2px] bg-white/[0.03] text-slate-300/80 border border-white/[0.08] whitespace-nowrap truncate max-w-[130px]">
-                              {staff.specializations[0]}
-                            </span>
-                            {staff.specializations.length > 1 && (
-                              <span className="text-[0.6875rem] font-mono px-2 py-0.5 rounded-[2px] bg-white/[0.03] text-slate-300/80 border border-white/[0.08] whitespace-nowrap truncate max-w-[130px]">
-                                {staff.specializations[1]}
-                              </span>
-                            )}
-                            {staff.specializations.length > 2 && (
-                              <span className="text-[0.6875rem] font-mono px-1.5 py-0.5 rounded-[2px] bg-[#012E57]/60 text-[#38BDF8]/80 border border-[#38BDF8]/20 whitespace-nowrap">
-                                +{staff.specializations.length - 2}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-xs text-white/25 italic">
-                            --
-                          </span>
-                        )}
-                      </div>
+                      <TagsOverflow
+                        tags={staff.specializations}
+                        limit={2}
+                        title="Other Specializations"
+                      />
                     </td>
 
                     {/* Status */}
@@ -645,10 +611,7 @@ export default function StaffRosterPage() {
 
                     {/* Actions */}
                     <td className="text-right whitespace-nowrap">
-                      <div
-                        className="relative inline-flex items-center justify-end gap-2"
-                        ref={openMenuId === staff.id ? menuRef : null}
-                      >
+                      <div className="relative inline-flex items-center justify-end gap-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -658,64 +621,14 @@ export default function StaffRosterPage() {
                           DETAILS
                         </Button>
 
-                        {/* Action Menu Trigger */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenMenuId(
-                              openMenuId === staff.id ? null : staff.id,
-                            )
-                          }
-                          className="w-8 h-8 rounded-[2px] flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.06] border border-white/[0.08] transition-colors cursor-pointer text-sm font-bold select-none"
-                          title="More actions"
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-                        </button>
-
-                        {/* Floating Action Menu Dropdown */}
-                        {openMenuId === staff.id && (
-                          <div className="absolute right-0 top-full mt-2 w-56 bg-[#01142B] border border-white/15 rounded-[2px] shadow-2xl z-50 py-1 flex flex-col font-sans text-xs">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenDetail(staff)}
-                              className="px-3.5 py-2.5 text-left text-slate-200 hover:bg-white/10 hover:text-white flex items-center gap-2.5 cursor-pointer transition-colors"
-                            >
-                              <svg
-                                className="w-3.5 h-3.5 text-slate-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                />
-                              </svg>
-                              <span className="font-mono text-xs font-semibold">
-                                VIEW PROFILE &amp; LOGS
-                              </span>
-                            </button>
-
-                            {staff.status === "ACTIVE" && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedStaff(staff);
-                                  setOpenMenuId(null);
-                                  setIsSuspendOpen(true);
-                                }}
-                                className="px-3.5 py-2.5 text-left text-amber-400 hover:bg-amber-500/10 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-white/5"
-                              >
+                        <DropdownMenu
+                          items={[
+                            {
+                              label: "View Profile & Logs",
+                              subtitle: "Inspect activity records",
+                              icon: (
                                 <svg
-                                  className="w-3.5 h-3.5 text-amber-400"
+                                  className="w-4 h-4"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   stroke="currentColor"
@@ -723,77 +636,112 @@ export default function StaffRosterPage() {
                                   <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                  />
-                                </svg>
-                                <span className="font-mono text-xs font-semibold">
-                                  SUSPEND ACCOUNT
-                                </span>
-                              </button>
-                            )}
-
-                            {staff.status === "SUSPENDED" && (
-                              <button
-                                type="button"
-                                onClick={() => handleLiftSuspension(staff)}
-                                className="px-3.5 py-2.5 text-left text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-white/5"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5 text-emerald-400"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                    strokeWidth="1.8"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                                   />
                                   <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    strokeWidth="1.8"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                   />
                                 </svg>
-                                <span className="font-mono text-xs font-semibold">
-                                  LIFT SUSPENSION
-                                </span>
-                              </button>
-                            )}
-
-                            {staff.status !== "TERMINATED" && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedStaff(staff);
-                                  setOpenMenuId(null);
-                                  setIsTerminateOpen(true);
-                                }}
-                                className="px-3.5 py-2.5 text-left text-red-400 hover:bg-red-500/10 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-white/5"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5 text-red-400"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                  />
-                                </svg>
-                                <span className="font-mono text-xs font-semibold">
-                                  TERMINATE (CEO)
-                                </span>
-                              </button>
-                            )}
-                          </div>
-                        )}
+                              ),
+                              onClick: () => handleOpenDetail(staff),
+                            },
+                            ...(staff.status === "ACTIVE"
+                              ? [
+                                  {
+                                    dividerBefore: true,
+                                    label: "Suspend Account",
+                                    subtitle: "Temporarily halt access",
+                                    variant: "warning" as const,
+                                    icon: (
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="1.8"
+                                          d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                      </svg>
+                                    ),
+                                    onClick: () => {
+                                      setSelectedStaff(staff);
+                                      setIsSuspendOpen(true);
+                                    },
+                                  },
+                                ]
+                              : []),
+                            ...(staff.status === "SUSPENDED"
+                              ? [
+                                  {
+                                    dividerBefore: true,
+                                    label: "Lift Suspension",
+                                    subtitle: "Restore active access",
+                                    variant: "success" as const,
+                                    icon: (
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="1.8"
+                                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                        />
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="1.8"
+                                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                      </svg>
+                                    ),
+                                    onClick: () => handleLiftSuspension(staff),
+                                  },
+                                ]
+                              : []),
+                            ...(staff.status !== "TERMINATED"
+                              ? [
+                                  {
+                                    dividerBefore: true,
+                                    label: "Terminate Staff",
+                                    subtitle: "Revoke role & credentials",
+                                    badge: "CEO",
+                                    variant: "danger" as const,
+                                    icon: (
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="1.8"
+                                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                        />
+                                      </svg>
+                                    ),
+                                    onClick: () => {
+                                      setSelectedStaff(staff);
+                                      setIsTerminateOpen(true);
+                                    },
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -813,10 +761,10 @@ export default function StaffRosterPage() {
           title={`Staff Profile: ${selectedStaff.fullName}`}
           size="lg"
         >
-          <div className="flex flex-col gap-6 p-2">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-[2px] bg-[#011B38] border border-white/10">
-              <div className="flex flex-col">
-                <span className="text-xs font-mono text-white/50 uppercase">
+          <div className="flex flex-col gap-6 font-sans">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:px-7 rounded-[3px] bg-[#011B38] border border-white/10">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
                   Email Address
                 </span>
                 <span className="text-sm font-semibold text-white">
@@ -834,7 +782,7 @@ export default function StaffRosterPage() {
               <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
                 Professional Bio &amp; Focus
               </span>
-              <p className="text-sm text-slate-300 bg-white/[0.02] p-4 rounded-[2px] border border-white/10 leading-relaxed">
+              <p className="text-sm text-slate-300 bg-white/[0.02] p-5 sm:px-7 rounded-[3px] border border-white/10 leading-relaxed">
                 {detailData?.bio ||
                   selectedStaff.bio ||
                   "No biographical profile entered yet."}
@@ -867,40 +815,40 @@ export default function StaffRosterPage() {
               </span>
               {detailData?.suspensionLogs &&
               detailData.suspensionLogs.length > 0 ? (
-                <div className="overflow-x-auto border border-white/10 rounded-[2px]">
-                  <table className="w-full text-xs text-left font-mono">
-                    <thead className="bg-white/5 text-white/50">
+                <div className="overflow-x-auto border border-white/10 rounded-[3px]">
+                  <table className="w-full text-xs text-left font-sans">
+                    <thead className="bg-white/[0.03] text-white/50 border-b border-white/[0.08]">
                       <tr>
-                        <th className="p-2.5">Action</th>
-                        <th className="p-2.5">Reason</th>
-                        <th className="p-2.5">Violation Type</th>
-                        <th className="p-2.5">Date</th>
-                        <th className="p-2.5">Status</th>
+                        <th className="py-3.5 px-5 font-mono font-semibold">Action</th>
+                        <th className="py-3.5 px-5 font-mono font-semibold">Reason</th>
+                        <th className="py-3.5 px-5 font-mono font-semibold">Violation Type</th>
+                        <th className="py-3.5 px-5 font-mono font-semibold">Date</th>
+                        <th className="py-3.5 px-5 font-mono font-semibold">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {detailData.suspensionLogs.map((log) => (
                         <tr key={log.id} className="hover:bg-white/[0.02]">
-                          <td className="p-2.5 font-bold text-amber-400">
+                          <td className="py-3.5 px-5 font-mono font-bold text-amber-400">
                             {log.action}
                           </td>
-                          <td className="p-2.5 text-slate-300 max-w-[200px]">
+                          <td className="py-3.5 px-5 text-slate-300 max-w-[200px]">
                             {log.reason}
                           </td>
-                          <td className="p-2.5 text-slate-400">
+                          <td className="py-3.5 px-5 text-slate-400">
                             {log.violationType || "N/A"}
                           </td>
-                          <td className="p-2.5 text-white/50">
+                          <td className="py-3.5 px-5 text-white/50 font-mono">
                             {new Date(log.performedAt).toLocaleDateString()}
                           </td>
-                          <td className="p-2.5">
+                          <td className="py-3.5 px-5">
                             {log.liftedAt ? (
-                              <span className="text-emerald-400">
+                              <span className="text-emerald-400 font-mono">
                                 Lifted on{" "}
                                 {new Date(log.liftedAt).toLocaleDateString()}
                               </span>
                             ) : (
-                              <span className="text-amber-400">
+                              <span className="text-amber-400 font-mono">
                                 Active Record
                               </span>
                             )}
@@ -911,9 +859,8 @@ export default function StaffRosterPage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-xs text-white/40 italic p-3 bg-white/[0.02] border border-white/10 rounded-[2px]">
-                  Clean record — zero disciplinary actions or suspensions
-                  logged.
+                <div className="text-xs text-white/40 italic p-4 sm:px-7 bg-white/[0.02] border border-white/10 rounded-[3px]">
+                  Clean record — zero disciplinary actions or suspensions logged.
                 </div>
               )}
             </div>
@@ -1142,42 +1089,42 @@ export default function StaffRosterPage() {
           title="Staff Account Successfully Provisioned"
           size="md"
         >
-          <div className="flex flex-col gap-5 p-2 animate-content-fade">
+          <div className="flex flex-col gap-5 font-sans animate-content-fade">
             <Alert variant="success">
               Staff record created in institutional directory. Credentials ready
               for secure distribution.
             </Alert>
 
-            <div className="p-4 rounded-[2px] bg-[#011B38] border border-white/10 flex flex-col gap-3 font-mono text-xs">
-              <div className="flex justify-between border-b border-white/5 pb-2">
-                <span className="text-white/50 uppercase">Full Name</span>
+            <div className="p-5 sm:px-7 rounded-[3px] bg-[#011B38] border border-white/10 flex flex-col gap-3.5 font-mono text-xs">
+              <div className="flex justify-between border-b border-white/5 pb-2.5">
+                <span className="text-white/50 uppercase tracking-wider">Full Name</span>
                 <span className="font-bold text-white">
                   {provisionedData.fullName}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-white/5 pb-2">
-                <span className="text-white/50 uppercase">Internal Role</span>
+              <div className="flex justify-between border-b border-white/5 pb-2.5">
+                <span className="text-white/50 uppercase tracking-wider">Internal Role</span>
                 <span className="text-[#CC6600] font-bold">
                   {provisionedData.role}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-white/5 pb-2">
-                <span className="text-white/50 uppercase">
+              <div className="flex justify-between border-b border-white/5 pb-2.5">
+                <span className="text-white/50 uppercase tracking-wider">
                   Institutional Email
                 </span>
                 <span className="text-white">{provisionedData.email}</span>
               </div>
               <div className="flex justify-between items-center pt-1">
-                <span className="text-white/50 uppercase">
+                <span className="text-white/50 uppercase tracking-wider">
                   Temporary Password
                 </span>
-                <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[2px] border border-emerald-500/20 text-sm">
+                <span className="font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-[2px] border border-emerald-500/20 text-sm">
                   {provisionedData.temporaryPassword}
                 </span>
               </div>
             </div>
 
-            <div className="p-3 rounded-[2px] bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
+            <div className="p-4 sm:px-6 rounded-[3px] bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
               <strong>Notice:</strong> Temporary passwords will not be displayed
               again. Transmit these credentials via secure institutional
               channels.
@@ -1226,7 +1173,7 @@ export default function StaffRosterPage() {
         >
           <form
             onSubmit={handleSuspendSubmit}
-            className="flex flex-col gap-4 p-2"
+            className="flex flex-col gap-4 font-sans"
           >
             <Alert variant="warning">
               Suspending this staff member will immediately block login access
@@ -1288,7 +1235,7 @@ export default function StaffRosterPage() {
         >
           <form
             onSubmit={handleTerminateSubmit}
-            className="flex flex-col gap-4 p-2"
+            className="flex flex-col gap-4 font-sans"
           >
             <Alert variant="danger">
               <strong>EXECUTIVE ACTION (RULE_ROL_01):</strong> Permanent account

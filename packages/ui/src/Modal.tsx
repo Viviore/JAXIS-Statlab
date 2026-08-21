@@ -174,7 +174,7 @@ export const Modal: React.FC<ModalProps> = ({
             alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "1rem",
-            padding: "1.25rem 1.75rem",
+            padding: "0.875rem 1rem", // 14px top/bottom, 1rem (16px) left/right
             borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
             boxSizing: "border-box",
           }}
@@ -220,7 +220,7 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           className="text-sm text-white/90 overflow-y-auto"
           style={{
-            padding: "1.5rem 1.75rem",
+            padding: "1rem", // 1rem (16px) padding
             maxHeight: "82vh",
             overflowY: "auto",
             boxSizing: "border-box",
@@ -239,7 +239,7 @@ export const Modal: React.FC<ModalProps> = ({
               justifyContent: "flex-end",
               alignItems: "center",
               gap: "0.75rem",
-              padding: "1.125rem 1.75rem",
+              padding: "0.875rem 1rem", // 14px top/bottom, 1rem (16px) left/right
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",
               backgroundColor: "rgba(0, 0, 0, 0.35)",
               boxSizing: "border-box",
