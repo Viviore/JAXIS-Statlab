@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth.config";
 import { NextResponse } from "next/server";
 import { ROLE_HOME } from "@/features/auth/schemas";
 import type { RoleName } from "@prisma/client";

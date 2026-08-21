@@ -22,6 +22,11 @@ JAXIS StatLab follows a high-precision, industrial-scientific design system tail
 | **Escrow / Attention** | `#F59E0B` (Amber) | Escrow locked indicators, pending recalculation stages, urgent QA queue. |
 | **Border Division** | `rgba(255, 255, 255, 0.08)` | Hairline dividers, table row borders, card perimeter lines. |
 
+### 1.2. Iconography & Strict Visual Standard (NO EMOJIS)
+- **Strict Prohibition on Emojis**: Emojis (e.g. 🔍, ⏸, ⛔, 📋, 🚀, 💡) are **strictly forbidden** across the entire UI codebase, dropdown menus, action items, notifications, toasts, table columns, and form labels.
+- **Enterprise Precision SVGs**: All iconography must use crisp, vector inline SVGs (e.g. Lucide/Heroicon paths) or pure typographic uppercase badges.
+- **Zero Glow Policy**: Blurry box-shadow glows (`shadow-[0_0_...px]`) are prohibited. Use high-contrast flat borders (`border-white/10` to `border-white/20`) and calibrated opacity tints (`bg-white/[0.04]` or `bg-sky-500/10`).
+
 ---
 
 ## 2. Global Layout Shell Architecture (`dashboard/layout.tsx`)

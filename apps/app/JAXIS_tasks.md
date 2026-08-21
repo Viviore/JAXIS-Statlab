@@ -447,11 +447,11 @@
 
 **Acceptance:** All staff operations validated via Zod and guarded by role requirements.
 
-- [ ] Zod schemas defined in `schemas.ts`
-- [ ] `provisionStaff` generates temporary password and creates profile
-- [ ] `suspendStaff` and `liftSuspension` update status and write `SuspensionLog`
-- [ ] `terminateStaff` enforces CEO role check and sets `TERMINATED`
-- [ ] `updateOwnProfile` updates bio and specializations
+- [x] Zod schemas defined in `schemas.ts`
+- [x] `provisionStaff` generates temporary password and creates profile
+- [x] `suspendStaff` and `liftSuspension` update status and write `SuspensionLog`
+- [x] `terminateStaff` enforces CEO role check and sets `TERMINATED`
+- [x] `updateOwnProfile` updates bio and specializations
 
 ---
 
@@ -469,11 +469,11 @@
 
 **Acceptance:** All routes return typed JSON and enforce role-based access.
 
-- [ ] `POST /api/v1/admin/staff` provisions staff
-- [ ] `GET /api/v1/admin/staff` lists staff with filters
-- [ ] `PATCH /api/v1/admin/staff/[id]/suspend` suspends staff
-- [ ] `PATCH /api/v1/admin/staff/[id]/terminate` enforces CEO role
-- [ ] `GET/PATCH /api/v1/staff/profile` handles self-profile
+- [x] `POST /api/v1/admin/staff` provisions staff
+- [x] `GET /api/v1/admin/staff` lists staff with filters
+- [x] `PATCH /api/v1/admin/staff/[id]/suspend` suspends staff
+- [x] `PATCH /api/v1/admin/staff/[id]/terminate` enforces CEO role
+- [x] `GET/PATCH /api/v1/staff/profile` handles self-profile
 
 ---
 
@@ -488,10 +488,10 @@
 
 **Acceptance:** Admin can view, provision, suspend, and manage staff members from the UI.
 
-- [ ] Staff Roster page rendered with search and role/status filters
-- [ ] Provision staff form with temporary password generation dialog
-- [ ] Suspend and terminate modals with audit reasons
-- [ ] Fully responsive on mobile, tablet, and desktop
+- [x] Staff Roster page rendered with search and role/status filters
+- [x] Provision staff form with temporary password generation dialog
+- [x] Suspend and terminate modals with audit reasons
+- [x] Fully responsive on mobile, tablet, and desktop
 
 ---
 
@@ -505,9 +505,9 @@
 
 **Acceptance:** Staff can update their specializations and biographical profile.
 
-- [ ] Statistician profile editor with specialization tags
-- [ ] Senior QA Lead profile editor
-- [ ] Real-time validation and responsive layout
+- [x] Statistician profile editor with specialization tags
+- [x] Senior QA Lead profile editor
+- [x] Real-time validation and responsive layout
 
 ---
 
@@ -520,10 +520,10 @@
 2. `npm run lint` → 0 warnings
 3. `npm run build` → clean
 
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings
-- [ ] `npm run build` → clean
-- [ ] Module 02 completed
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] `npm run build` → clean
+- [x] Module 02 completed
 
 ---
 
@@ -533,8 +533,8 @@
 | ---- | ----------------------------------------------------- | -------------------------------- |
 | `00` | `00-foundation` — Project Foundation & Infrastructure | ✅ Completed                     |
 | `01` | `01-auth` — Authentication & RBAC                     | ✅ Completed                     |
-| `02` | `02-staff` — Expert Provisioning & Staff Management   | 🔄 Active / Ready for Execution  |
-| `03` | `03-client-profile` — Client Profile & Account        | ⏳ Blocked — awaiting `02`       |
+| `02` | `02-staff` — Expert Provisioning & Staff Management   | ✅ Completed                     |
+| `03` | `03-client-profile` — Client Profile & Account        | 🔄 Active / Ready for Execution  |
 | `04` | `04-intake` — Project Intake & Submission             | ⏳ Blocked — awaiting `03`       |
 | `05` | `05-quotation` — Quotation & Pricing                  | ⏳ Blocked — awaiting `04`       |
 | `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |

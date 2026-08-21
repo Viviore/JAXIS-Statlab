@@ -5,7 +5,8 @@ import React, { useState, useEffect, useRef } from "react";
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl";
 
 export interface ModalProps {
-  open: boolean;
+  open?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   title?: React.ReactNode;
   description?: string;
@@ -25,6 +26,7 @@ const sizeClasses: Record<ModalSize, string> = {
 
 export const Modal: React.FC<ModalProps> = ({
   open,
+  isOpen,
   onClose,
   title,
   description,
@@ -33,9 +35,10 @@ export const Modal: React.FC<ModalProps> = ({
   className = "",
   size = "lg",
 }) => {
+  const actualOpen = open ?? isOpen ?? false;
   // Global Enter / Exit Animation Lifecycle
-  const [isRendered, setIsRendered] = useState(open);
-  const [isVisible, setIsVisible] = useState(open);
+  const [isRendered, setIsRendered] = useState(actualOpen);
+  const [isVisible, setIsVisible] = useState(actualOpen);
   const exitTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Content preservation cache to prevent empty body during exit transitions
@@ -47,7 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
   });
 
   useEffect(() => {
-    if (open && (children !== null || title !== null)) {
+    if (actualOpen && (children !== null || title !== null)) {
       setCachedContent({
         title,
         description,
@@ -55,10 +58,10 @@ export const Modal: React.FC<ModalProps> = ({
         footer,
       });
     }
-  }, [open, title, description, children, footer]);
+  }, [actualOpen, title, description, children, footer]);
 
   useEffect(() => {
-    if (open) {
+    if (actualOpen) {
       if (exitTimerRef.current) {
         clearTimeout(exitTimerRef.current);
         exitTimerRef.current = null;
@@ -72,15 +75,14 @@ export const Modal: React.FC<ModalProps> = ({
       setIsVisible(false);
       exitTimerRef.current = setTimeout(() => {
         setIsRendered(false);
-      }, 190);
+      }, 200);
+      return () => {
+        if (exitTimerRef.current) {
+          clearTimeout(exitTimerRef.current);
+        }
+      };
     }
-
-    return () => {
-      if (exitTimerRef.current) {
-        clearTimeout(exitTimerRef.current);
-      }
-    };
-  }, [open]);
+  }, [actualOpen]);
 
   // RULE_MEM_01: Strict Keyboard Listener Cleanup
   useEffect(() => {

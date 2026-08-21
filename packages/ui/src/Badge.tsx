@@ -44,7 +44,7 @@ export const Badge: React.FC<BadgeProps> = ({
 }) => {
   return (
     <span
-      className={`inline-flex items-center gap-1 font-mono uppercase tracking-wider font-medium rounded-[2px] border select-none ${badgeVariants[variant]} ${badgeSizes[size]} ${className}`}
+      className={`inline-flex items-center gap-1 font-mono uppercase tracking-wider font-medium rounded-[2px] border select-none whitespace-nowrap ${badgeVariants[variant]} ${badgeSizes[size]} ${className}`}
       {...props}
     >
       {children ?? label}

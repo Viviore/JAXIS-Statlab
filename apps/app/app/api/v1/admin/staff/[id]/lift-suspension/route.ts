@@ -1,0 +1,57 @@
+import { NextResponse } from "next/server";
+import { liftSuspension } from "@/features/staff/actions";
+
+export async function PATCH(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const result = await liftSuspension(id);
+
+    if (!result.success) {
+      const statusCode =
+        result.error.code === "NOT_FOUND"
+          ? 404
+          : result.error.code === "FORBIDDEN"
+            ? 403
+            : result.error.code === "UNAUTHENTICATED"
+              ? 401
+              : 400;
+
+      return NextResponse.json(result, { status: statusCode });
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Staff member suspension lifted successfully.",
+        data: result.data,
+      },
+      { status: 200 }
+    );
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === "UNAUTHENTICATED") {
+      return NextResponse.json(
+        { success: false, error: { code: "UNAUTHENTICATED", message: "Authentication required." } },
+        { status: 401 }
+      );
+    }
+    if (err.message === "FORBIDDEN") {
+      return NextResponse.json(
+        { success: false, error: { code: "FORBIDDEN", message: "Access forbidden. Requires ADMIN or CEO role." } },
+        { status: 403 }
+      );
+    }
+
+    console.error("[API Staff Lift Suspension Error]:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: "INTERNAL_SERVER_ERROR", message: "An unexpected error occurred." },
+      },
+      { status: 500 }
+    );
+  }
+}

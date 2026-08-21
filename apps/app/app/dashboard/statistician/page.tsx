@@ -5,6 +5,8 @@ import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
+import Link from "next/link";
+
 export default function StatisticianDashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
 
@@ -21,6 +23,13 @@ export default function StatisticianDashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Statistician Workbench" },
         ]}
+        actions={
+          <Link href="/dashboard/statistician/profile">
+            <Button variant="outline" size="sm">
+              SPECIALIZATION PROFILE
+            </Button>
+          </Link>
+        }
       />
 
       {/* KPI Cards */}

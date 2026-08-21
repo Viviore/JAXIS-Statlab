@@ -396,8 +396,8 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "SYSTEM ADMINISTRATION",
       items: [
         {
-          label: "Stakeholder Directory",
-          href: "/dashboard/admin#users",
+          label: "Staff & Expert Roster",
+          href: "/dashboard/admin/staff",
           icon: Icons.Users,
         },
         {

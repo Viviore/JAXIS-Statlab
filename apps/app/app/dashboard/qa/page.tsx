@@ -5,6 +5,8 @@ import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
+import Link from "next/link";
+
 export default function QALeadDashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
 
@@ -21,6 +23,13 @@ export default function QALeadDashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "QA Studio" },
         ]}
+        actions={
+          <Link href="/dashboard/qa/profile">
+            <Button variant="outline" size="sm">
+              AUDIT PROFILE &amp; DOMAINS
+            </Button>
+          </Link>
+        }
       />
 
       {/* KPI Cards */}

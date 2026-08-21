@@ -1,0 +1,1306 @@
+"use client";
+
+import React, {
+  useState,
+  useEffect,
+  useTransition,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
+import {
+  PageHeader,
+  Card,
+  Button,
+  Modal,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  Alert,
+  FilterToolbar,
+} from "@repo/ui";
+import {
+  getStaffRoster,
+  getStaffDetail,
+  provisionStaff,
+  suspendStaff,
+  liftSuspension,
+  terminateStaff,
+} from "@/features/staff/actions";
+import {
+  STANDARD_SPECIALIZATIONS,
+  type StaffRole,
+  type StaffListItem,
+  type StaffDetailItem,
+} from "@/features/staff/schemas";
+import { ViolationType } from "@prisma/client";
+
+const VIOLATION_OPTIONS = [
+  { value: "ETHICAL_BREACH", label: "Ethical Breach (Code of Conduct)" },
+  {
+    value: "DIRECT_PAYMENT_BYPASS",
+    label: "Direct Payment Bypass / Off-Platform Solicitation",
+  },
+  { value: "DATA_FALSIFICATION", label: "Data Falsification / Fabrication" },
+  { value: "GHOSTWRITING", label: "Ghostwriting Policy Violation" },
+  { value: "POLICY_VIOLATION", label: "General Operational Policy Violation" },
+];
+
+const PROVISION_ROLE_OPTIONS = [
+  {
+    value: "STATISTICIAN",
+    label: "Quantitative Statistician (Data Analysis & Modeling)",
+  },
+  {
+    value: "SENIOR_QA_LEAD",
+    label: "Senior QA Lead (Peer Review & Audit Verification)",
+  },
+  {
+    value: "FINANCE_OFFICER",
+    label: "Finance Officer (Escrow Vault & Ledger Management)",
+  },
+];
+
+export default function StaffRosterPage() {
+  const [staffList, setStaffList] = useState<StaffListItem[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isPending, startTransition] = useTransition();
+
+  // Dropdown menu state
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Modals state
+  const [selectedStaff, setSelectedStaff] = useState<StaffListItem | null>(
+    null,
+  );
+  const [detailData, setDetailData] = useState<StaffDetailItem | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false);
+  const [isSuspendOpen, setIsSuspendOpen] = useState<boolean>(false);
+  const [isTerminateOpen, setIsTerminateOpen] = useState<boolean>(false);
+
+  // Provision modal states
+  const [isProvisionOpen, setIsProvisionOpen] = useState<boolean>(false);
+  const [provFullName, setProvFullName] = useState<string>("");
+  const [provEmail, setProvEmail] = useState<string>("");
+  const [provRole, setProvRole] = useState<StaffRole>("STATISTICIAN");
+  const [provSpecs, setProvSpecs] = useState<string[]>(["Regression", "ANOVA"]);
+  const [provCustomTag, setProvCustomTag] = useState<string>("");
+  const [provBio, setProvBio] = useState<string>("");
+  const [provFormError, setProvFormError] = useState<string | null>(null);
+  const [provFieldErrors, setProvFieldErrors] = useState<
+    Record<string, string[]>
+  >({});
+
+  // Credentials Generated Modal
+  const [provisionedData, setProvisionedData] = useState<{
+    id: string;
+    email: string;
+    fullName: string;
+    role: string;
+    temporaryPassword: string;
+  } | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  // Action form states inside modals
+  const [suspendReason, setSuspendReason] = useState<string>("");
+  const [suspendViolation, setSuspendViolation] = useState<string>("");
+  const [terminateReason, setTerminateReason] = useState<string>("");
+  const [terminateViolation, setTerminateViolation] =
+    useState<string>("POLICY_VIOLATION");
+  const [forfeitPayouts, setForfeitPayouts] = useState<boolean>(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Load roster
+  const loadRoster = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await getStaffRoster({
+        role: selectedRole,
+        status: selectedStatus,
+        search: searchQuery,
+      });
+      if (res.success) {
+        setStaffList(res.data);
+      }
+    } catch (e) {
+      console.error("Failed to load staff roster", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedRole, selectedStatus, searchQuery]);
+
+  useEffect(() => {
+    loadRoster();
+  }, [loadRoster]);
+
+  // KPI Calculations
+  const kpis = useMemo(() => {
+    const total = staffList.length;
+    const stats = staffList.filter((s) => s.role === "STATISTICIAN").length;
+    const qa = staffList.filter((s) => s.role === "SENIOR_QA_LEAD").length;
+    const finance = staffList.filter(
+      (s) => s.role === "FINANCE_OFFICER",
+    ).length;
+    const active = staffList.filter((s) => s.status === "ACTIVE").length;
+    const suspended = staffList.filter((s) => s.status === "SUSPENDED").length;
+    const terminated = staffList.filter(
+      (s) => s.status === "TERMINATED",
+    ).length;
+    return { total, stats, qa, finance, active, suspended, terminated };
+  }, [staffList]);
+
+  // View details
+  const handleOpenDetail = async (staff: StaffListItem) => {
+    setSelectedStaff(staff);
+    setOpenMenuId(null);
+    setIsDetailOpen(true);
+    try {
+      const res = await getStaffDetail(staff.id);
+      if (res.success) {
+        setDetailData(res.data);
+      }
+    } catch (e) {
+      console.error("Failed to load staff detail", e);
+    }
+  };
+
+  // Provision staff handlers
+  const toggleProvSpec = (spec: string) => {
+    if (provSpecs.includes(spec)) {
+      setProvSpecs(provSpecs.filter((s) => s !== spec));
+    } else {
+      setProvSpecs([...provSpecs, spec]);
+    }
+  };
+
+  const handleAddProvCustomTag = (e: React.FormEvent) => {
+    e.preventDefault();
+    const tag = provCustomTag.trim();
+    if (tag && !provSpecs.includes(tag)) {
+      setProvSpecs([...provSpecs, tag]);
+      setProvCustomTag("");
+    }
+  };
+
+  const handleProvisionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setProvFormError(null);
+    setProvFieldErrors({});
+
+    startTransition(async () => {
+      const res = await provisionStaff({
+        fullName: provFullName,
+        email: provEmail,
+        role: provRole,
+        specializations: provSpecs,
+        bio: provBio,
+      });
+
+      if (!res.success) {
+        setProvFormError(res.error.message);
+        if (res.error.fieldErrors) {
+          setProvFieldErrors(res.error.fieldErrors);
+        }
+        return;
+      }
+
+      setIsProvisionOpen(false);
+      setProvFullName("");
+      setProvEmail("");
+      setProvRole("STATISTICIAN");
+      setProvSpecs(["Regression", "ANOVA"]);
+      setProvBio("");
+      setProvisionedData(res.data);
+      setIsSuccessModalOpen(true);
+      loadRoster();
+    });
+  };
+
+  const copyCredentials = () => {
+    if (!provisionedData) return;
+    const text = `JAXIS StatLab Internal Account Credentials\nName: ${provisionedData.fullName}\nRole: ${provisionedData.role}\nEmail: ${provisionedData.email}\nTemporary Password: ${provisionedData.temporaryPassword}\nLogin URL: http://localhost:3001/login`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  // Suspend action
+  const handleSuspendSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaff) return;
+    setActionError(null);
+
+    startTransition(async () => {
+      const res = await suspendStaff(selectedStaff.id, {
+        reason: suspendReason,
+        violationType: suspendViolation
+          ? (suspendViolation as ViolationType)
+          : undefined,
+      });
+
+      if (!res.success) {
+        setActionError(res.error.message);
+        return;
+      }
+
+      setIsSuspendOpen(false);
+      setSuspendReason("");
+      setSuspendViolation("");
+      setActionSuccess(
+        `Staff member ${selectedStaff.fullName} has been suspended.`,
+      );
+      loadRoster();
+    });
+  };
+
+  // Lift suspension action
+  const handleLiftSuspension = async (staff: StaffListItem) => {
+    setOpenMenuId(null);
+    if (
+      !confirm(
+        `Are you sure you want to restore active status for ${staff.fullName}?`,
+      )
+    )
+      return;
+    setActionError(null);
+
+    startTransition(async () => {
+      const res = await liftSuspension(staff.id);
+      if (!res.success) {
+        alert(res.error.message);
+        return;
+      }
+      setActionSuccess(`Suspension lifted for ${staff.fullName}.`);
+      loadRoster();
+    });
+  };
+
+  // Terminate action (CEO Authority)
+  const handleTerminateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaff) return;
+    setActionError(null);
+
+    startTransition(async () => {
+      const res = await terminateStaff(selectedStaff.id, {
+        reason: terminateReason,
+        violationType: terminateViolation as ViolationType,
+        forfeitPayouts,
+      });
+
+      if (!res.success) {
+        setActionError(res.error.message);
+        return;
+      }
+
+      setIsTerminateOpen(false);
+      setTerminateReason("");
+      setForfeitPayouts(false);
+      setActionSuccess(
+        `Account for ${selectedStaff.fullName} permanently terminated.`,
+      );
+      loadRoster();
+    });
+  };
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "STATISTICIAN":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-xs font-mono font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 whitespace-nowrap">
+            STATISTICIAN
+          </span>
+        );
+      case "SENIOR_QA_LEAD":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-xs font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
+            SENIOR QA LEAD
+          </span>
+        );
+      case "FINANCE_OFFICER":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+            FINANCE OFFICER
+          </span>
+        );
+      case "CEO":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-xs font-mono font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 whitespace-nowrap">
+            CEO / OWNER
+          </span>
+        );
+      case "ADMIN":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-xs font-mono font-semibold bg-white/10 text-white border border-white/20 whitespace-nowrap">
+            ADMIN
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-[2px] text-xs font-mono font-semibold text-slate-300 border border-white/10 whitespace-nowrap">
+            {role}
+          </span>
+        );
+    }
+  };
+
+  const getStatusIndicator = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return (
+          <span className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+            Active
+          </span>
+        );
+      case "SUSPENDED":
+        return (
+          <span className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-amber-400 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+            Suspended
+          </span>
+        );
+      case "TERMINATED":
+        return (
+          <span className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-red-400 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
+            Terminated
+          </span>
+        );
+      default:
+        return (
+          <span className="text-xs font-mono text-white/50">{status}</span>
+        );
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-9 max-w-7xl mx-auto pb-16 w-full">
+      {/* ── Page Header ── */}
+      <PageHeader
+        title="Staff & Expert Management"
+        description="System-wide command console for provisioning, managing, and governing internal statisticians, senior QA leads, and finance officers across all specialization domains."
+        breadcrumbs={[
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Admin Operations", href: "/dashboard/admin" },
+          { label: "Staff Directory" },
+        ]}
+        actions={
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadRoster}
+              loading={isLoading}
+            >
+              REFRESH ROSTER
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setProvFormError(null);
+                setProvFieldErrors({});
+                setIsProvisionOpen(true);
+              }}
+            >
+              + PROVISION NEW STAFF
+            </Button>
+          </div>
+        }
+      />
+
+      {/* ── Alert Notices ── */}
+      {actionSuccess && (
+        <Alert variant="success" onClose={() => setActionSuccess(null)}>
+          {actionSuccess}
+        </Alert>
+      )}
+
+      {/* ── KPI Grid (Consistent with Admin Dashboard Standard) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <Card className="flex flex-col gap-1 p-5">
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            Total Staff Directory
+          </span>
+          <span className="text-3xl font-mono font-bold text-white">
+            {kpis.total}
+          </span>
+          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">
+            ● {kpis.active} active accounts
+          </span>
+        </Card>
+
+        <Card className="flex flex-col gap-1 p-5">
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            Quantitative Statisticians
+          </span>
+          <span className="text-3xl font-mono font-bold text-[#38BDF8]">
+            {kpis.stats}
+          </span>
+          <span className="text-[0.688rem] text-slate-400 mt-1 font-mono">
+            Regression, SEM &amp; Time Series
+          </span>
+        </Card>
+
+        <Card className="flex flex-col gap-1 p-5">
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            Senior QA Review Leads
+          </span>
+          <span className="text-3xl font-mono font-bold text-[#CC6600]">
+            {kpis.qa}
+          </span>
+          <span className="text-[0.688rem] text-slate-400 mt-1 font-mono">
+            Dual-Blind Methodology Audits
+          </span>
+        </Card>
+
+        <Card className="flex flex-col gap-1 p-5">
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            Governance &amp; Holds
+          </span>
+          <span className="text-3xl font-mono font-bold text-amber-400">
+            {kpis.suspended + kpis.terminated}
+          </span>
+          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">
+            ● {kpis.suspended} Suspended / {kpis.terminated} Terminated
+          </span>
+        </Card>
+      </div>
+
+      {/* ── Staff Roster Card ── */}
+      <Card
+        className="p-0 overflow-hidden border border-white/[0.08] bg-[#010D1F]"
+        style={{ padding: 0 }}
+      >
+        {/* ─ Header ─ */}
+        <div
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          style={{ padding: '1.75rem 1.75rem 1.25rem 1.75rem' }}
+        >
+          <div>
+            <h2 className="text-base font-bold text-white tracking-wide font-sans">
+              Staff Roster Directory
+            </h2>
+            <p className="text-xs text-white/50 mt-1.5 font-sans leading-relaxed">
+              Active domain experts, verified specializations, and disciplinary
+              governance logs
+            </p>
+          </div>
+          <span className="text-xs font-mono text-white/60 bg-white/[0.04] px-3.5 py-1.5 rounded-[2px] border border-white/10 self-start sm:self-auto whitespace-nowrap">
+            {staffList.length}{" "}
+            {staffList.length === 1
+              ? "registered member"
+              : "registered members"}
+          </span>
+        </div>
+
+        {/* ─ Filter Toolbar ─ */}
+        <FilterToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search by name, email, or specialization..."
+          onSearchSubmit={loadRoster}
+          filters={[
+            {
+              key: "role",
+              label: "Role",
+              value: selectedRole,
+              defaultValue: "ALL",
+              options: [
+                { value: "ALL", label: "All Roles" },
+                { value: "STATISTICIAN", label: "Statistician" },
+                { value: "SENIOR_QA_LEAD", label: "QA Lead" },
+                { value: "FINANCE_OFFICER", label: "Finance" },
+              ],
+            },
+            {
+              key: "status",
+              label: "Status",
+              value: selectedStatus,
+              defaultValue: "ALL",
+              options: [
+                { value: "ALL", label: "All" },
+                { value: "ACTIVE", label: "Active" },
+                { value: "SUSPENDED", label: "Suspended" },
+                { value: "TERMINATED", label: "Terminated" },
+              ],
+            },
+          ]}
+          onFilterChange={(key, value) => {
+            if (key === "role") setSelectedRole(value);
+            if (key === "status") setSelectedStatus(value);
+          }}
+          onClear={() => {
+            setSelectedRole("ALL");
+            setSelectedStatus("ALL");
+            setSearchQuery("");
+          }}
+        />
+
+        {/* ─ Table ─ */}
+        <div style={{ padding: '1.25rem 1.75rem 1.75rem 1.75rem' }}>
+          <div className="w-full overflow-x-auto rounded-[3px]" style={{ border: '1px solid rgba(255, 255, 255, 0.07)' }}>
+            <table className="w-full min-w-[840px] text-left border-collapse font-sans text-sm table-fixed">
+              <thead>
+                <tr className="border-b border-white/[0.06] bg-white/[0.015] text-[0.65rem] font-mono text-white/45 uppercase tracking-widest">
+                  <th className="py-3.5 px-7 whitespace-nowrap w-[30%] font-medium">
+                    Staff Member
+                  </th>
+                  <th className="py-3.5 px-5 whitespace-nowrap w-[16%] font-medium">
+                    Role
+                  </th>
+                  <th className="py-3.5 px-5 whitespace-nowrap w-[28%] font-medium">
+                    Specializations
+                  </th>
+                  <th className="py-3.5 px-5 whitespace-nowrap w-[12%] font-medium">
+                    Status
+                  </th>
+                  <th className="py-3.5 px-7 text-right whitespace-nowrap w-[14%] font-medium">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-20 text-center text-white/30 font-mono text-xs"
+                    >
+                      Loading staff directory records...
+                    </td>
+                  </tr>
+                ) : staffList.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-20 text-center text-white/30 font-mono text-xs"
+                    >
+                      No staff members match the selected filters.
+                    </td>
+                  </tr>
+                ) : (
+                staffList.map((staff) => (
+                  <tr
+                    key={staff.id}
+                    className="hover:bg-white/[0.02] transition-colors group"
+                  >
+                    {/* Staff Member */}
+                    <td className="py-4.5 px-7 align-middle">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-9 h-9 rounded-[2px] bg-[#011B38] border border-white/[0.10] flex items-center justify-center font-mono font-bold text-xs text-[#CC6600] flex-shrink-0">
+                          {staff.fullName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .slice(0, 2)
+                            .join("")}
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
+                            {staff.fullName}
+                          </span>
+                          <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate">
+                            {staff.email}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Role */}
+                    <td className="py-4.5 px-5 align-middle whitespace-nowrap">
+                      {getRoleBadge(staff.role)}
+                    </td>
+
+                    {/* Specializations */}
+                    <td className="py-4.5 px-5 align-middle">
+                      <div className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
+                        {staff.specializations.length > 0 ? (
+                          <>
+                            <span className="text-[0.6875rem] font-mono px-2 py-0.5 rounded-[2px] bg-white/[0.03] text-slate-300/80 border border-white/[0.08] whitespace-nowrap truncate max-w-[130px]">
+                              {staff.specializations[0]}
+                            </span>
+                            {staff.specializations.length > 1 && (
+                              <span className="text-[0.6875rem] font-mono px-2 py-0.5 rounded-[2px] bg-white/[0.03] text-slate-300/80 border border-white/[0.08] whitespace-nowrap truncate max-w-[130px]">
+                                {staff.specializations[1]}
+                              </span>
+                            )}
+                            {staff.specializations.length > 2 && (
+                              <span className="text-[0.6875rem] font-mono px-1.5 py-0.5 rounded-[2px] bg-[#012E57]/60 text-[#38BDF8]/80 border border-[#38BDF8]/20 whitespace-nowrap">
+                                +{staff.specializations.length - 2}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-white/25 italic">
+                            --
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-4.5 px-5 align-middle whitespace-nowrap">
+                      {getStatusIndicator(staff.status)}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4.5 px-7 align-middle text-right whitespace-nowrap">
+                      <div
+                        className="relative inline-flex items-center justify-end gap-2"
+                        ref={openMenuId === staff.id ? menuRef : null}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenDetail(staff)}
+                          className="text-xs py-1.5 px-3 h-auto whitespace-nowrap"
+                        >
+                          DETAILS
+                        </Button>
+
+                        {/* Action Menu Trigger */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenMenuId(
+                              openMenuId === staff.id ? null : staff.id,
+                            )
+                          }
+                          className="w-8 h-8 rounded-[2px] flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.06] border border-white/[0.08] transition-colors cursor-pointer text-sm font-bold select-none"
+                          title="More actions"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                        </button>
+
+                        {/* Floating Action Menu Dropdown */}
+                        {openMenuId === staff.id && (
+                          <div className="absolute right-0 top-full mt-2 w-56 bg-[#01142B] border border-white/15 rounded-[2px] shadow-2xl z-50 py-1 flex flex-col font-sans text-xs">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDetail(staff)}
+                              className="px-3.5 py-2.5 text-left text-slate-200 hover:bg-white/10 hover:text-white flex items-center gap-2.5 cursor-pointer transition-colors"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5 text-slate-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                              </svg>
+                              <span className="font-mono text-xs font-semibold">
+                                VIEW PROFILE &amp; LOGS
+                              </span>
+                            </button>
+
+                            {staff.status === "ACTIVE" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedStaff(staff);
+                                  setOpenMenuId(null);
+                                  setIsSuspendOpen(true);
+                                }}
+                                className="px-3.5 py-2.5 text-left text-amber-400 hover:bg-amber-500/10 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-white/5"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 text-amber-400"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="font-mono text-xs font-semibold">
+                                  SUSPEND ACCOUNT
+                                </span>
+                              </button>
+                            )}
+
+                            {staff.status === "SUSPENDED" && (
+                              <button
+                                type="button"
+                                onClick={() => handleLiftSuspension(staff)}
+                                className="px-3.5 py-2.5 text-left text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-white/5"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 text-emerald-400"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="font-mono text-xs font-semibold">
+                                  LIFT SUSPENSION
+                                </span>
+                              </button>
+                            )}
+
+                            {staff.status !== "TERMINATED" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedStaff(staff);
+                                  setOpenMenuId(null);
+                                  setIsTerminateOpen(true);
+                                }}
+                                className="px-3.5 py-2.5 text-left text-red-400 hover:bg-red-500/10 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-white/5"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 text-red-400"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                  />
+                                </svg>
+                                <span className="font-mono text-xs font-semibold">
+                                  TERMINATE (CEO)
+                                </span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        </div>
+      </Card>
+
+      {/* ── 1. Staff Detail Modal ── */}
+      {selectedStaff && (
+        <Modal
+          open={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          title={`Staff Profile: ${selectedStaff.fullName}`}
+          size="lg"
+        >
+          <div className="flex flex-col gap-6 p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-[2px] bg-[#011B38] border border-white/10">
+              <div className="flex flex-col">
+                <span className="text-xs font-mono text-white/50 uppercase">
+                  Email Address
+                </span>
+                <span className="text-sm font-semibold text-white">
+                  {selectedStaff.email}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                {getRoleBadge(selectedStaff.role)}
+                {getStatusIndicator(selectedStaff.status)}
+              </div>
+            </div>
+
+            {/* Bio Section */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+                Professional Bio &amp; Focus
+              </span>
+              <p className="text-sm text-slate-300 bg-white/[0.02] p-4 rounded-[2px] border border-white/10 leading-relaxed">
+                {detailData?.bio ||
+                  selectedStaff.bio ||
+                  "No biographical profile entered yet."}
+              </p>
+            </div>
+
+            {/* Specializations List */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+                Certified Specializations
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  detailData?.specializations || selectedStaff.specializations
+                ).map((spec, i) => (
+                  <span
+                    key={i}
+                    className="text-xs font-mono px-3 py-1 rounded-[2px] bg-[#012E57] text-sky-200 border border-sky-400/30"
+                  >
+                    {spec}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Disciplinary / Suspension Logs */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+                Governance &amp; Disciplinary History
+              </span>
+              {detailData?.suspensionLogs &&
+              detailData.suspensionLogs.length > 0 ? (
+                <div className="overflow-x-auto border border-white/10 rounded-[2px]">
+                  <table className="w-full text-xs text-left font-mono">
+                    <thead className="bg-white/5 text-white/50">
+                      <tr>
+                        <th className="p-2.5">Action</th>
+                        <th className="p-2.5">Reason</th>
+                        <th className="p-2.5">Violation Type</th>
+                        <th className="p-2.5">Date</th>
+                        <th className="p-2.5">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {detailData.suspensionLogs.map((log) => (
+                        <tr key={log.id} className="hover:bg-white/[0.02]">
+                          <td className="p-2.5 font-bold text-amber-400">
+                            {log.action}
+                          </td>
+                          <td className="p-2.5 text-slate-300 max-w-[200px]">
+                            {log.reason}
+                          </td>
+                          <td className="p-2.5 text-slate-400">
+                            {log.violationType || "N/A"}
+                          </td>
+                          <td className="p-2.5 text-white/50">
+                            {new Date(log.performedAt).toLocaleDateString()}
+                          </td>
+                          <td className="p-2.5">
+                            {log.liftedAt ? (
+                              <span className="text-emerald-400">
+                                Lifted on{" "}
+                                {new Date(log.liftedAt).toLocaleDateString()}
+                              </span>
+                            ) : (
+                              <span className="text-amber-400">
+                                Active Record
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-xs text-white/40 italic p-3 bg-white/[0.02] border border-white/10 rounded-[2px]">
+                  Clean record — zero disciplinary actions or suspensions
+                  logged.
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── 2. Provision Staff Modal ── */}
+      <Modal
+        open={isProvisionOpen}
+        onClose={() => setIsProvisionOpen(false)}
+        title="Provision Internal Staff Account"
+        size="lg"
+      >
+        <form
+          onSubmit={handleProvisionSubmit}
+          className="flex flex-col gap-5 p-2"
+        >
+          {provFormError && <Alert variant="danger">{provFormError}</Alert>}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput
+              label="Full Legal Name"
+              required
+              placeholder="Dr. Eleanor Vance"
+              value={provFullName}
+              onChange={(e) => setProvFullName(e.target.value)}
+              error={provFieldErrors.fullName?.[0]}
+              disabled={isPending}
+              monoLabel
+            />
+
+            <FormInput
+              label="Institutional Email Address"
+              type="email"
+              required
+              placeholder="vance@jaxis.dev"
+              value={provEmail}
+              onChange={(e) => setProvEmail(e.target.value)}
+              error={provFieldErrors.email?.[0]}
+              disabled={isPending}
+              monoLabel
+            />
+          </div>
+
+          <FormSelect
+            label="Designated Internal Role"
+            required
+            options={PROVISION_ROLE_OPTIONS}
+            value={provRole}
+            onChange={(e) => setProvRole(e.target.value as StaffRole)}
+            disabled={isPending}
+            monoLabel
+          />
+
+          {/* Specialization Tags Picker */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-200">
+              Certified Specialization Areas{" "}
+              <span className="text-[#CC6600]">*</span>
+            </label>
+            <p className="text-xs text-white/50">
+              Select key statistical methodologies or domain competencies
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {STANDARD_SPECIALIZATIONS.map((spec) => {
+                const isSelected = provSpecs.includes(spec);
+                return (
+                  <button
+                    key={spec}
+                    type="button"
+                    onClick={() => toggleProvSpec(spec)}
+                    className={`px-2.5 py-1 rounded-[2px] text-xs font-mono transition-colors cursor-pointer select-none border ${
+                      isSelected
+                        ? "bg-[#CC6600] text-white border-[#CC6600] font-semibold"
+                        : "bg-[#011B38] text-slate-300 border-white/10 hover:border-white/30 hover:text-white"
+                    }`}
+                  >
+                    {isSelected ? `✓ ${spec}` : `+ ${spec}`}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-2 pt-1.5">
+              <input
+                type="text"
+                placeholder="Add custom specialization..."
+                value={provCustomTag}
+                onChange={(e) => setProvCustomTag(e.target.value)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" &&
+                  (e.preventDefault(), handleAddProvCustomTag(e))
+                }
+                className="flex-1 bg-[#011227] border border-white/10 rounded-[2px] px-3.5 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#CC6600]"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddProvCustomTag}
+                disabled={!provCustomTag.trim()}
+                className="text-xs py-1.5 px-3 h-auto"
+              >
+                + Add Tag
+              </Button>
+            </div>
+          </div>
+
+          <FormTextarea
+            label="Professional Biography / Domain Scope"
+            placeholder="Brief overview of research background or operational scope..."
+            value={provBio}
+            onChange={(e) => setProvBio(e.target.value)}
+            rows={3}
+            disabled={isPending}
+            monoLabel
+          />
+
+          <div className="p-3.5 rounded-[2px] bg-[#011B38] border border-white/10 text-xs text-slate-300 flex flex-col gap-1">
+            <span className="font-mono uppercase font-bold text-[#38BDF8]">
+              Automated Temporary Password Generation
+            </span>
+            <p>
+              Upon submission, a cryptographically secure temporary password (
+              <code>JAXIS-XXXXXXXX</code>) will be generated for immediate
+              secure delivery.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsProvisionOpen(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" loading={isPending}>
+              PROVISION ACCOUNT
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ── 3. Credentials Generated Success Modal ── */}
+      {provisionedData && (
+        <Modal
+          open={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          title="Staff Account Successfully Provisioned"
+          size="md"
+        >
+          <div className="flex flex-col gap-5 p-2 animate-content-fade">
+            <Alert variant="success">
+              Staff record created in institutional directory. Credentials ready
+              for secure distribution.
+            </Alert>
+
+            <div className="p-4 rounded-[2px] bg-[#011B38] border border-white/10 flex flex-col gap-3 font-mono text-xs">
+              <div className="flex justify-between border-b border-white/5 pb-2">
+                <span className="text-white/50 uppercase">Full Name</span>
+                <span className="font-bold text-white">
+                  {provisionedData.fullName}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-white/5 pb-2">
+                <span className="text-white/50 uppercase">Internal Role</span>
+                <span className="text-[#CC6600] font-bold">
+                  {provisionedData.role}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-white/5 pb-2">
+                <span className="text-white/50 uppercase">
+                  Institutional Email
+                </span>
+                <span className="text-white">{provisionedData.email}</span>
+              </div>
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-white/50 uppercase">
+                  Temporary Password
+                </span>
+                <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[2px] border border-emerald-500/20 text-sm">
+                  {provisionedData.temporaryPassword}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-[2px] bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
+              <strong>Notice:</strong> Temporary passwords will not be displayed
+              again. Transmit these credentials via secure institutional
+              channels.
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={copyCredentials}
+                className="font-mono text-xs flex items-center gap-2"
+              >
+                <svg
+                  className="w-3.5 h-3.5 text-white/60"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                  />
+                </svg>
+                {copied ? "COPIED TO CLIPBOARD!" : "COPY CREDENTIALS"}
+              </Button>
+
+              <Button
+                variant="primary"
+                onClick={() => setIsSuccessModalOpen(false)}
+              >
+                DONE
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── 4. Suspend Staff Modal ── */}
+      {selectedStaff && (
+        <Modal
+          open={isSuspendOpen}
+          onClose={() => setIsSuspendOpen(false)}
+          title={`Temporary Suspension: ${selectedStaff.fullName}`}
+          size="md"
+        >
+          <form
+            onSubmit={handleSuspendSubmit}
+            className="flex flex-col gap-4 p-2"
+          >
+            <Alert variant="warning">
+              Suspending this staff member will immediately block login access
+              and flag their active study assignments for administrator review.
+            </Alert>
+
+            {actionError && <Alert variant="danger">{actionError}</Alert>}
+
+            <FormSelect
+              label="Violation Classification (Optional)"
+              options={[
+                { value: "", label: "Standard Operational Hold / Review" },
+                ...VIOLATION_OPTIONS,
+              ]}
+              value={suspendViolation}
+              onChange={(e) => setSuspendViolation(e.target.value)}
+              monoLabel
+            />
+
+            <FormTextarea
+              label="Mandatory Reason for Suspension"
+              required
+              placeholder="Detail the operational reason or policy grounds for this temporary suspension (minimum 10 characters)..."
+              value={suspendReason}
+              onChange={(e) => setSuspendReason(e.target.value)}
+              rows={4}
+              monoLabel
+            />
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsSuspendOpen(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="danger"
+                loading={isPending}
+                disabled={suspendReason.trim().length < 10}
+              >
+                CONFIRM SUSPENSION
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── 5. Terminate Staff Modal (CEO Authority) ── */}
+      {selectedStaff && (
+        <Modal
+          open={isTerminateOpen}
+          onClose={() => setIsTerminateOpen(false)}
+          title={`Permanent Termination: ${selectedStaff.fullName}`}
+          size="md"
+        >
+          <form
+            onSubmit={handleTerminateSubmit}
+            className="flex flex-col gap-4 p-2"
+          >
+            <Alert variant="danger">
+              <strong>EXECUTIVE ACTION (RULE_ROL_01):</strong> Permanent account
+              termination revokes all access indefinitely. Active projects will
+              be flagged for emergency reassignment.
+            </Alert>
+
+            {actionError && <Alert variant="danger">{actionError}</Alert>}
+
+            <FormSelect
+              label="Required Violation Grounds"
+              required
+              options={VIOLATION_OPTIONS}
+              value={terminateViolation}
+              onChange={(e) => setTerminateViolation(e.target.value)}
+              monoLabel
+            />
+
+            <FormTextarea
+              label="Mandatory Termination Rationale"
+              required
+              placeholder="Provide exhaustive justification for permanent termination and audit record (minimum 10 characters)..."
+              value={terminateReason}
+              onChange={(e) => setTerminateReason(e.target.value)}
+              rows={4}
+              monoLabel
+            />
+
+            <div className="p-3 rounded-[2px] bg-red-500/10 border border-red-500/20 flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="forfeitPayouts"
+                checked={forfeitPayouts}
+                onChange={(e) => setForfeitPayouts(e.target.checked)}
+                className="h-4 w-4 rounded-[2px] accent-[#CC6600] cursor-pointer"
+              />
+              <label
+                htmlFor="forfeitPayouts"
+                className="text-xs text-red-200 cursor-pointer select-none"
+              >
+                <strong>Enforce Payout Forfeiture:</strong> Void pending
+                milestone payouts due to severe ethical breach or off-platform
+                direct payment solicitation.
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsTerminateOpen(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="danger"
+                loading={isPending}
+                disabled={terminateReason.trim().length < 10}
+              >
+                EXECUTE PERMANENT TERMINATION
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </div>
+  );
+}
