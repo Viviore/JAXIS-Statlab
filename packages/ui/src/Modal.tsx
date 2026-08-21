@@ -221,7 +221,7 @@ export const Modal: React.FC<ModalProps> = ({
           className="text-sm text-white/90 overflow-y-auto"
           style={{
             padding: "1.5rem 1.75rem",
-            maxHeight: "70vh",
+            maxHeight: "82vh",
             overflowY: "auto",
             boxSizing: "border-box",
             fontSize: "0.875rem",

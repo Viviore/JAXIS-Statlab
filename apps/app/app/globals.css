@@ -232,6 +232,62 @@ a {
   animation: modalDialogOut 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
+/* ── Global Enterprise Data Table System ── */
+.data-table {
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+.data-table thead tr th {
+  padding: 0.875rem 1rem !important; /* 14px vertical, 16px horizontal */
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: rgba(255, 255, 255, 0.50) !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  white-space: nowrap !important;
+  user-select: none;
+}
+
+.data-table thead tr th:first-child {
+  padding-left: 1.25rem !important;
+}
+
+.data-table thead tr th:last-child {
+  padding-right: 1.25rem !important;
+}
+
+.data-table tbody tr td {
+  padding: 1.125rem 1rem !important; /* 18px vertical breathing room, 16px horizontal */
+  vertical-align: middle !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.4 !important;
+  color: rgba(255, 255, 255, 0.90);
+  transition: background-color 0.15s ease-out;
+}
+
+.data-table tbody tr td:first-child {
+  padding-left: 1.25rem !important;
+}
+
+.data-table tbody tr td:last-child {
+  padding-right: 1.25rem !important;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.data-table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-content-fade,
   .animate-modal-backdrop-in,

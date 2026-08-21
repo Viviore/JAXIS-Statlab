@@ -102,32 +102,40 @@ export default function ClientDashboardPage() {
 
         {/* ─ Table ─ */}
         <div style={{ padding: '0 1.75rem 1.75rem 1.75rem' }}>
-          <div className="w-full overflow-x-auto rounded-[3px]" style={{ border: '1px solid rgba(255, 255, 255, 0.07)' }}>
-            <table className="w-full min-w-[620px] text-left border-collapse font-sans text-sm">
+          <div className="w-full overflow-x-auto rounded-[3px] border border-white/[0.08]">
+            <table className="data-table">
               <thead>
-                <tr className="border-b border-white/[0.06] bg-white/[0.015] text-[0.65rem] font-mono text-white/45 uppercase tracking-widest">
-                  <th className="py-3.5 px-5 whitespace-nowrap font-medium">Study ID</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap font-medium">Title</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap font-medium">Methodology</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap font-medium">Status</th>
-                  <th className="py-3.5 px-5 text-right whitespace-nowrap font-medium">Actions</th>
+                <tr>
+                  <th className="w-[120px] whitespace-nowrap">Study ID</th>
+                  <th>Title</th>
+                  <th className="w-[200px] whitespace-nowrap">Methodology</th>
+                  <th className="w-[170px] whitespace-nowrap">Status</th>
+                  <th className="w-[120px] text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody>
                 {projects.slice(0, 4).map((study) => (
-                  <tr key={study.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="py-4 px-5 align-middle font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">{study.id}</td>
-                    <td className="py-4 px-4 align-middle text-white font-medium text-xs">{study.title}</td>
-                    <td className="py-4 px-4 align-middle font-mono text-[0.65rem] text-white/60 uppercase">{study.method}</td>
-                    <td className="py-4 px-4 align-middle whitespace-nowrap">
+                  <tr key={study.id} className="group">
+                    <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+                      {study.id}
+                    </td>
+                    <td className="text-white font-medium text-sm">
+                      <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
+                        {study.title}
+                      </span>
+                    </td>
+                    <td className="text-slate-300 text-xs font-sans whitespace-nowrap truncate max-w-[200px]">
+                      {study.method}
+                    </td>
+                    <td className="whitespace-nowrap">
                       <StatusBadge status={study.status} />
                     </td>
-                    <td className="py-4 px-5 align-middle text-right whitespace-nowrap">
+                    <td className="text-right whitespace-nowrap">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedStudy(study)}
-                        className="text-[0.65rem] py-1.5 px-3 h-auto whitespace-nowrap font-mono tracking-wider"
+                        className="py-1 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
                       >
                         VIEW STUDY
                       </Button>

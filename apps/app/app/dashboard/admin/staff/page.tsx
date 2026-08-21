@@ -19,6 +19,7 @@ import {
   Alert,
   FilterToolbar,
   KpiCard,
+  FormFooter,
 } from "@repo/ui";
 import {
   getStaffRoster,
@@ -50,15 +51,15 @@ const VIOLATION_OPTIONS = [
 const PROVISION_ROLE_OPTIONS = [
   {
     value: "STATISTICIAN",
-    label: "Quantitative Statistician (Data Analysis & Modeling)",
+    label: "Statistician (Data Analysis & Modeling)",
   },
   {
     value: "SENIOR_QA_LEAD",
-    label: "Senior QA Lead (Peer Review & Audit Verification)",
+    label: "Senior QA Lead (Peer Review & Audit)",
   },
   {
     value: "FINANCE_OFFICER",
-    label: "Finance Officer (Escrow Vault & Ledger Management)",
+    label: "Finance Officer (Escrow Vault & Ledger)",
   },
 ];
 
@@ -538,28 +539,28 @@ export default function StaffRosterPage() {
 
         {/* ─ Table ─ */}
         <div style={{ padding: '1.25rem 1.75rem 1.75rem 1.75rem' }}>
-          <div className="w-full overflow-x-auto rounded-[3px]" style={{ border: '1px solid rgba(255, 255, 255, 0.07)' }}>
-            <table className="w-full min-w-[840px] text-left border-collapse font-sans text-sm table-fixed">
+          <div className="w-full overflow-x-auto rounded-[3px] border border-white/[0.08]">
+            <table className="data-table">
               <thead>
-                <tr className="border-b border-white/[0.06] bg-white/[0.015] text-[0.65rem] font-mono text-white/45 uppercase tracking-widest">
-                  <th className="py-3.5 px-7 whitespace-nowrap w-[30%] font-medium">
+                <tr>
+                  <th>
                     Staff Member
                   </th>
-                  <th className="py-3.5 px-5 whitespace-nowrap w-[16%] font-medium">
+                  <th className="w-[160px] whitespace-nowrap">
                     Role
                   </th>
-                  <th className="py-3.5 px-5 whitespace-nowrap w-[28%] font-medium">
+                  <th className="w-[240px] whitespace-nowrap">
                     Specializations
                   </th>
-                  <th className="py-3.5 px-5 whitespace-nowrap w-[12%] font-medium">
+                  <th className="w-[120px] whitespace-nowrap">
                     Status
                   </th>
-                  <th className="py-3.5 px-7 text-right whitespace-nowrap w-[14%] font-medium">
+                  <th className="w-[110px] text-right whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody>
                 {isLoading ? (
                   <tr>
                     <td
@@ -582,10 +583,10 @@ export default function StaffRosterPage() {
                 staffList.map((staff) => (
                   <tr
                     key={staff.id}
-                    className="hover:bg-white/[0.02] transition-colors group"
+                    className="group"
                   >
                     {/* Staff Member */}
-                    <td className="py-4.5 px-7 align-middle">
+                    <td>
                       <div className="flex items-center gap-3.5 min-w-0">
                         <div className="w-9 h-9 rounded-[2px] bg-[#011B38] border border-white/[0.10] flex items-center justify-center font-mono font-bold text-xs text-[#CC6600] flex-shrink-0">
                           {staff.fullName
@@ -606,12 +607,12 @@ export default function StaffRosterPage() {
                     </td>
 
                     {/* Role */}
-                    <td className="py-4.5 px-5 align-middle whitespace-nowrap">
+                    <td className="whitespace-nowrap">
                       {getRoleBadge(staff.role)}
                     </td>
 
                     {/* Specializations */}
-                    <td className="py-4.5 px-5 align-middle">
+                    <td>
                       <div className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden">
                         {staff.specializations.length > 0 ? (
                           <>
@@ -638,12 +639,12 @@ export default function StaffRosterPage() {
                     </td>
 
                     {/* Status */}
-                    <td className="py-4.5 px-5 align-middle whitespace-nowrap">
+                    <td className="whitespace-nowrap">
                       {getStatusIndicator(staff.status)}
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4.5 px-7 align-middle text-right whitespace-nowrap">
+                    <td className="text-right whitespace-nowrap">
                       <div
                         className="relative inline-flex items-center justify-end gap-2"
                         ref={openMenuId === staff.id ? menuRef : null}
@@ -652,7 +653,7 @@ export default function StaffRosterPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenDetail(staff)}
-                          className="text-xs py-1.5 px-3 h-auto whitespace-nowrap"
+                          className="py-1.5 px-3.5 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
                         >
                           DETAILS
                         </Button>
@@ -920,131 +921,204 @@ export default function StaffRosterPage() {
         </Modal>
       )}
 
-      {/* ── 2. Provision Staff Modal ── */}
+      {/* ── 2. Provision Staff Modal (2-Column Zero-Scroll Layout) ── */}
       <Modal
         open={isProvisionOpen}
         onClose={() => setIsProvisionOpen(false)}
         title="Provision Internal Staff Account"
-        size="lg"
+        size="2xl"
       >
         <form
           onSubmit={handleProvisionSubmit}
-          className="flex flex-col gap-5 p-2"
+          className="flex flex-col gap-5 p-1 font-sans"
         >
           {provFormError && <Alert variant="danger">{provFormError}</Alert>}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput
-              label="Full Legal Name"
-              required
-              placeholder="Dr. Eleanor Vance"
-              value={provFullName}
-              onChange={(e) => setProvFullName(e.target.value)}
-              error={provFieldErrors.fullName?.[0]}
-              disabled={isPending}
-              monoLabel
-            />
-
-            <FormInput
-              label="Institutional Email Address"
-              type="email"
-              required
-              placeholder="vance@jaxis.dev"
-              value={provEmail}
-              onChange={(e) => setProvEmail(e.target.value)}
-              error={provFieldErrors.email?.[0]}
-              disabled={isPending}
-              monoLabel
-            />
-          </div>
-
-          <FormSelect
-            label="Designated Internal Role"
-            required
-            options={PROVISION_ROLE_OPTIONS}
-            value={provRole}
-            onChange={(e) => setProvRole(e.target.value as StaffRole)}
-            disabled={isPending}
-            monoLabel
-          />
-
-          {/* Specialization Tags Picker */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-200">
-              Certified Specialization Areas{" "}
-              <span className="text-[#CC6600]">*</span>
-            </label>
-            <p className="text-xs text-white/50">
-              Select key statistical methodologies or domain competencies
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {STANDARD_SPECIALIZATIONS.map((spec) => {
-                const isSelected = provSpecs.includes(spec);
-                return (
-                  <button
-                    key={spec}
-                    type="button"
-                    onClick={() => toggleProvSpec(spec)}
-                    className={`px-2.5 py-1 rounded-[2px] text-xs font-mono transition-colors cursor-pointer select-none border ${
-                      isSelected
-                        ? "bg-[#CC6600] text-white border-[#CC6600] font-semibold"
-                        : "bg-[#011B38] text-slate-300 border-white/10 hover:border-white/30 hover:text-white"
-                    }`}
-                  >
-                    {isSelected ? `✓ ${spec}` : `+ ${spec}`}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center gap-2 pt-1.5">
-              <input
-                type="text"
-                placeholder="Add custom specialization..."
-                value={provCustomTag}
-                onChange={(e) => setProvCustomTag(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  (e.preventDefault(), handleAddProvCustomTag(e))
-                }
-                className="flex-1 bg-[#011227] border border-white/10 rounded-[2px] px-3.5 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#CC6600]"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {/* ── Left Column: Identity, Role & Security (50%) ── */}
+            <div className="flex flex-col gap-4">
+              <FormInput
+                label="Full Legal Name"
+                required
+                placeholder="Dr. Eleanor Vance"
+                value={provFullName}
+                onChange={(e) => setProvFullName(e.target.value)}
+                error={provFieldErrors.fullName?.[0]}
+                disabled={isPending}
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddProvCustomTag}
-                disabled={!provCustomTag.trim()}
-                className="text-xs py-1.5 px-3 h-auto"
-              >
-                + Add Tag
-              </Button>
+
+              <FormInput
+                label="Institutional Email Address"
+                type="email"
+                required
+                placeholder="vance@jaxis.dev"
+                value={provEmail}
+                onChange={(e) => setProvEmail(e.target.value)}
+                error={provFieldErrors.email?.[0]}
+                disabled={isPending}
+              />
+
+              <FormSelect
+                label="Designated Internal Role"
+                required
+                options={PROVISION_ROLE_OPTIONS}
+                value={provRole}
+                onChange={(e) => setProvRole(e.target.value as StaffRole)}
+                disabled={isPending}
+              />
+
+              {/* Automated Credentials Notice Badge */}
+              <div className="p-3.5 rounded-[2px] bg-[#011B38]/80 border border-sky-500/25 text-xs text-slate-300 flex items-start gap-3 mt-0.5">
+                <div className="p-1.5 rounded-[2px] bg-sky-500/10 border border-sky-500/20 text-sky-400 mt-0.5 flex-shrink-0">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 2l-2 2m-1.5 6.1L19 8l-4-4-1.9 1.5A7 7 0 1 0 5 19a7 7 0 0 0 9.9-9.9z" />
+                  </svg>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-mono uppercase font-bold text-sky-400 text-[0.688rem] tracking-wider">
+                    Automated Credentials
+                  </span>
+                  <p className="text-[0.688rem] text-slate-300/80 leading-relaxed font-sans">
+                    A cryptographically secure password (<code className="text-sky-300 font-mono">JAXIS-XXXXXXXX</code>) will be generated for immediate one-time handoff.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Right Column: Certified Specializations & Bio (50%) ── */}
+            <div className="flex flex-col gap-4">
+              {/* Specialization Tags Picker */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-slate-200 whitespace-nowrap">
+                    Certified Specializations <span className="text-[#CC6600]">*</span>
+                  </span>
+                  <div className="flex items-center gap-2 text-[0.688rem] font-mono text-white/40 flex-shrink-0">
+                    {provSpecs.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setProvSpecs([])}
+                        className="text-white/40 hover:text-[#CC6600] transition-colors underline cursor-pointer"
+                      >
+                        Clear ({provSpecs.length})
+                      </button>
+                    )}
+                    <span>{provSpecs.length} selected</span>
+                  </div>
+                </div>
+                <p className="text-xs text-white/50">
+                  Select methodologies, modeling frameworks, or domain competencies
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {[
+                    ...STANDARD_SPECIALIZATIONS,
+                    ...provSpecs.filter(
+                      (s) => !(STANDARD_SPECIALIZATIONS as readonly string[]).includes(s)
+                    ),
+                  ].map((spec) => {
+                    const isSelected = provSpecs.includes(spec);
+                    const isCustom = !(STANDARD_SPECIALIZATIONS as readonly string[]).includes(spec);
+                    return (
+                      <button
+                        key={spec}
+                        type="button"
+                        onClick={() => toggleProvSpec(spec)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-xs font-mono transition-all duration-150 cursor-pointer select-none border ${
+                          isSelected
+                            ? "bg-[#CC6600]/15 text-[#FF9433] border-[#CC6600] font-medium shadow-sm shadow-[#CC6600]/10"
+                            : "bg-[#01142B] text-slate-300 border-white/10 hover:border-white/25 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        {isSelected ? (
+                          <svg
+                            className="w-3 h-3 text-[#CC6600] flex-shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <span className="text-white/30 font-bold text-xs leading-none">+</span>
+                        )}
+                        <span className="max-w-[180px] truncate">{spec}</span>
+                        {isCustom && isSelected && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProvSpecs(provSpecs.filter((s) => s !== spec));
+                            }}
+                            className="ml-1 text-[#FF9433]/70 hover:text-red-400 font-bold text-xs px-1 hover:bg-red-500/20 rounded-[2px] transition-colors"
+                            title="Remove custom tag"
+                          >
+                            ×
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-stretch gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Add custom specialization..."
+                    value={provCustomTag}
+                    onChange={(e) => setProvCustomTag(e.target.value)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" &&
+                      (e.preventDefault(), handleAddProvCustomTag(e))
+                    }
+                    className="flex-1 bg-[#011227] border border-white/10 rounded-[2px] text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#CC6600] transition-colors font-sans"
+                    style={{
+                      height: "2.25rem",
+                      paddingLeft: "1rem",
+                      paddingRight: "1rem",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddProvCustomTag}
+                    disabled={!provCustomTag.trim()}
+                    className="text-xs px-3.5 font-mono whitespace-nowrap flex items-center justify-center rounded-[2px]"
+                    style={{
+                      height: "2.25rem",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    + ADD TAG
+                  </Button>
+                </div>
+              </div>
+
+              <FormTextarea
+                label="Professional Biography / Domain Scope"
+                placeholder="Brief overview of research background, publications, or statistical focus areas..."
+                value={provBio}
+                onChange={(e) => setProvBio(e.target.value)}
+                rows={3}
+                disabled={isPending}
+              />
             </div>
           </div>
 
-          <FormTextarea
-            label="Professional Biography / Domain Scope"
-            placeholder="Brief overview of research background or operational scope..."
-            value={provBio}
-            onChange={(e) => setProvBio(e.target.value)}
-            rows={3}
-            disabled={isPending}
-            monoLabel
-          />
-
-          <div className="p-3.5 rounded-[2px] bg-[#011B38] border border-white/10 text-xs text-slate-300 flex flex-col gap-1">
-            <span className="font-mono uppercase font-bold text-[#38BDF8]">
-              Automated Temporary Password Generation
-            </span>
-            <p>
-              Upon submission, a cryptographically secure temporary password (
-              <code>JAXIS-XXXXXXXX</code>) will be generated for immediate
-              secure delivery.
-            </p>
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-2">
+          {/* ── Modal Footer: Action Buttons (Full width) ── */}
+          <FormFooter className="mt-5">
             <Button
               type="button"
               variant="ghost"
@@ -1054,9 +1128,9 @@ export default function StaffRosterPage() {
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={isPending}>
-              PROVISION ACCOUNT
+              PROVISION ACCOUNT →
             </Button>
-          </div>
+          </FormFooter>
         </form>
       </Modal>
 
@@ -1109,7 +1183,7 @@ export default function StaffRosterPage() {
               channels.
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-2">
+            <FormFooter align="between" className="mt-4">
               <Button
                 variant="outline"
                 onClick={copyCredentials}
@@ -1137,7 +1211,7 @@ export default function StaffRosterPage() {
               >
                 DONE
               </Button>
-            </div>
+            </FormFooter>
           </div>
         </Modal>
       )}
@@ -1182,7 +1256,7 @@ export default function StaffRosterPage() {
               monoLabel
             />
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <FormFooter className="mt-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -1199,7 +1273,7 @@ export default function StaffRosterPage() {
               >
                 CONFIRM SUSPENSION
               </Button>
-            </div>
+            </FormFooter>
           </form>
         </Modal>
       )}
@@ -1261,7 +1335,7 @@ export default function StaffRosterPage() {
               </label>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <FormFooter className="mt-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -1278,7 +1352,7 @@ export default function StaffRosterPage() {
               >
                 EXECUTE PERMANENT TERMINATION
               </Button>
-            </div>
+            </FormFooter>
           </form>
         </Modal>
       )}

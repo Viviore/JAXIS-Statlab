@@ -66,30 +66,39 @@ export default function QALeadDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-left border-collapse font-sans text-sm">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase">
-                <th className="py-3 px-4">Study ID</th>
-                <th className="py-3 px-4">Project Title</th>
-                <th className="py-3 px-4">Statistician</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr>
+                <th className="w-[120px] whitespace-nowrap">Study ID</th>
+                <th>Project Title</th>
+                <th className="w-[170px] whitespace-nowrap">Statistician</th>
+                <th className="w-[170px] whitespace-nowrap">Status</th>
+                <th className="w-[130px] text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody>
               {projects.slice(0, 4).map((study) => (
-                <tr key={study.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 px-4 font-mono text-xs text-[#CC6600] font-semibold">{study.id}</td>
-                  <td className="py-3.5 px-4 text-white font-medium">{study.title}</td>
-                  <td className="py-3.5 px-4 text-white/70">{study.statisticians || "Dr. Aris Thorne"}</td>
-                  <td className="py-3.5 px-4">
+                <tr key={study.id} className="group">
+                  <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+                    {study.id}
+                  </td>
+                  <td className="text-white font-medium text-sm">
+                    <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
+                      {study.title}
+                    </span>
+                  </td>
+                  <td className="text-slate-300 font-sans text-xs whitespace-nowrap truncate max-w-[170px]">
+                    {study.statisticians || "Dr. Aris Thorne"}
+                  </td>
+                  <td className="whitespace-nowrap">
                     <StatusBadge status={study.status} />
                   </td>
-                  <td className="py-3.5 px-4 text-right">
+                  <td className="text-right whitespace-nowrap">
                     <Button
                       variant="primary"
                       size="sm"
                       onClick={() => setSelectedStudy(study)}
+                      className="px-3.5 py-1 font-mono text-xs whitespace-nowrap tracking-wider"
                     >
                       VERIFY STUDY
                     </Button>

@@ -8,6 +8,7 @@ import {
   Button,
   FormTextarea,
   Alert,
+  FormFooter,
 } from "@repo/ui";
 import { getOwnProfile, updateOwnProfile } from "@/features/staff/actions";
 
@@ -245,8 +246,7 @@ export default function QAProfilePage() {
               </div>
             </div>
 
-            {/* Add Custom Tag */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-stretch gap-2">
               <input
                 type="text"
                 placeholder="Type custom audit domain (e.g., Psychometric Invariance)..."
@@ -258,7 +258,13 @@ export default function QAProfilePage() {
                     handleAddTag(customTag);
                   }
                 }}
-                className="flex-1 h-10 bg-[#011B38] border border-white/[0.12] rounded-[2px] px-3.5 text-xs font-mono text-white placeholder-white/40 focus:outline-none focus:border-[#CC6600] transition-colors"
+                className="flex-1 bg-[#011B38] border border-white/[0.12] rounded-[2px] text-xs font-mono text-white placeholder-white/40 focus:outline-none focus:border-[#CC6600] transition-colors"
+                style={{
+                  height: "2.5rem",
+                  paddingLeft: "1rem",
+                  paddingRight: "1rem",
+                  boxSizing: "border-box",
+                }}
               />
               <Button
                 type="button"
@@ -266,7 +272,11 @@ export default function QAProfilePage() {
                 size="sm"
                 onClick={() => handleAddTag(customTag)}
                 disabled={!customTag.trim()}
-                className="h-10 px-4 text-xs font-mono"
+                className="h-10 px-4 text-xs font-mono whitespace-nowrap flex items-center justify-center rounded-[2px]"
+                style={{
+                  height: "2.5rem",
+                  boxSizing: "border-box",
+                }}
               >
                 + ADD DOMAIN
               </Button>
@@ -295,7 +305,7 @@ export default function QAProfilePage() {
           </Card>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <FormFooter className="mt-4">
             <Link href="/dashboard/qa">
               <Button type="button" variant="ghost" disabled={isPending}>
                 Cancel
@@ -308,7 +318,7 @@ export default function QAProfilePage() {
             >
               SAVE QA PROFILE CHANGES
             </Button>
-          </div>
+          </FormFooter>
         </form>
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PageHeader, Card, FormInput, Button, FormSelect, Alert } from "@repo/ui";
+import { PageHeader, Card, FormInput, Button, FormSelect, Alert, FormFooter } from "@repo/ui";
 import { upsertClientProfile, getClientProfile } from "@/features/client-profile/actions";
 import { ClientProfileFormData } from "@/features/client-profile/schemas";
 
@@ -188,7 +188,7 @@ export default function ClientProfilePage() {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-6 mt-2 border-t border-white/[0.08]">
+          <FormFooter className="mt-6 pt-6">
             <Button
               type="submit"
               variant="primary"
@@ -198,7 +198,7 @@ export default function ClientProfilePage() {
             >
               SAVE PROFILE →
             </Button>
-          </div>
+          </FormFooter>
         </form>
       </Card>
     </div>

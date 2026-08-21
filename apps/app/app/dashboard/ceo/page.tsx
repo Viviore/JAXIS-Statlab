@@ -66,30 +66,35 @@ export default function CEODashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[650px] text-left border-collapse font-sans text-sm">
+          <table className="w-full min-w-[680px] text-left border-collapse font-sans text-sm">
             <thead>
-              <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase">
-                <th className="py-3 px-4">Study ID</th>
-                <th className="py-3 px-4">Institution / Client</th>
-                <th className="py-3 px-4">Methodology</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase tracking-wider">
+                <th className="py-4 px-6">Study ID</th>
+                <th className="py-4 px-6">Institution / Client</th>
+                <th className="py-4 px-6">Methodology</th>
+                <th className="py-4 px-6">Status</th>
+                <th className="py-4 px-6 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-white/[0.06]">
               {projects.map((study) => (
-                <tr key={study.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 px-4 font-mono text-xs text-[#CC6600] font-semibold">{study.id}</td>
-                  <td className="py-3.5 px-4 text-white font-medium">{study.client} ({study.university})</td>
-                  <td className="py-3.5 px-4 font-mono text-xs text-white/60">{study.method}</td>
-                  <td className="py-3.5 px-4">
+                <tr key={study.id} className="hover:bg-white/[0.03] transition-colors group">
+                  <td className="py-5 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap align-middle">{study.id}</td>
+                  <td className="py-5 px-6 text-white font-medium align-middle">
+                    <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors">
+                      {study.client} <span className="text-white/40 text-xs">({study.university})</span>
+                    </span>
+                  </td>
+                  <td className="py-5 px-6 font-mono text-xs text-white/60 whitespace-nowrap align-middle">{study.method}</td>
+                  <td className="py-5 px-6 whitespace-nowrap align-middle">
                     <StatusBadge status={study.status} />
                   </td>
-                  <td className="py-3.5 px-4 text-right">
+                  <td className="py-5 px-6 text-right whitespace-nowrap align-middle">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setSelectedStudy(study)}
+                      className="py-2 px-3.5 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
                     >
                       EXECUTIVE AUDIT
                     </Button>

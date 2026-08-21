@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, withDbTimeout } from "@/lib/db";
 import { ClientProfileSchema, type ClientProfileFormData } from "./schemas";
 import { redirect } from "next/navigation";
 
@@ -41,24 +41,27 @@ export async function upsertClientProfile(
     const { institutionSchool, academicProgram, contactNumber, region } = parsed.data;
 
     try {
-      await db.clientProfile.upsert({
-        where: { userId },
-        update: {
-          institutionSchool,
-          academicProgram,
-          contactNumber,
-          region,
-        },
-        create: {
-          userId,
-          institutionSchool,
-          academicProgram,
-          contactNumber,
-          region,
-        },
-      });
-    } catch (dbError) {
-      console.warn("[upsertClientProfile] DB Error, storing in cookie fallback", dbError);
+      await withDbTimeout(
+        db.clientProfile.upsert({
+          where: { userId },
+          update: {
+            institutionSchool,
+            academicProgram,
+            contactNumber,
+            region,
+          },
+          create: {
+            userId,
+            institutionSchool,
+            academicProgram,
+            contactNumber,
+            region,
+          },
+        }),
+        300
+      );
+    } catch {
+      // DB offline, graceful fallback
     }
 
     // Always mirror to cookie for resilient offline testing
@@ -101,12 +104,15 @@ export async function getClientProfile() {
   if (!session?.user?.id) return null;
 
   try {
-    const profile = await db.clientProfile.findUnique({
-      where: { userId: session.user.id },
-    });
+    const profile = await withDbTimeout(
+      db.clientProfile.findUnique({
+        where: { userId: session.user.id },
+      }),
+      250
+    );
     if (profile) return profile;
   } catch {
-    // DB offline
+    // DB offline, fallback to cookie
   }
 
   // Fallback to cookie for development/demo testing

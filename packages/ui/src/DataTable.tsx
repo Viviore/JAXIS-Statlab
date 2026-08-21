@@ -31,15 +31,15 @@ export function DataTable<T extends Record<string, unknown>>({
   skeletonRowCount = 5,
 }: DataTableProps<T>): React.ReactElement {
   return (
-    <div className={`w-full overflow-x-auto border border-white/10 rounded-[2px] bg-[#012E57] ${className}`}>
-      <table className="w-full text-left border-collapse">
+    <div className={`w-full overflow-x-auto border border-white/10 rounded-[2px] bg-[#010D1F] ${className}`}>
+      <table className="data-table">
         <thead>
-          <tr className="border-b border-white/10 bg-[#010114]/60">
+          <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
                 style={{ width: col.width }}
-                className={`py-4 px-5 text-xs font-mono font-semibold text-white/70 tracking-wider uppercase select-none whitespace-nowrap ${
+                className={`py-4 px-6 text-xs font-mono font-semibold text-white/60 tracking-wider uppercase select-none whitespace-nowrap ${
                   col.align === "center"
                     ? "text-center"
                     : col.align === "right"
@@ -52,12 +52,12 @@ export function DataTable<T extends Record<string, unknown>>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5 text-sm text-white/90">
+        <tbody className="divide-y divide-white/[0.06] text-sm text-white/90">
           {loading ? (
             Array.from({ length: skeletonRowCount }).map((_, rIdx) => (
               <tr key={rIdx} className="animate-pulse">
                 {columns.map((col) => (
-                  <td key={col.key} className="py-5 px-5 align-middle">
+                  <td key={col.key} className="py-5 px-6 align-middle">
                     <Skeleton height={16} className="bg-white/10" />
                   </td>
                 ))}
@@ -65,11 +65,11 @@ export function DataTable<T extends Record<string, unknown>>({
             ))
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="py-16 px-5 text-center text-white/40">
+              <td colSpan={columns.length} className="py-16 px-6 text-center text-white/40 font-mono text-xs">
                 {emptyState ?? (
                   <div className="flex flex-col items-center justify-center gap-2">
                     <p className="text-sm font-medium">No records found</p>
-                    <p className="text-xs text-white/40">There is no data to display at this time.</p>
+                    <p className="text-xs text-white/40 font-sans">There is no data to display at this time.</p>
                   </div>
                 )}
               </td>
@@ -79,7 +79,7 @@ export function DataTable<T extends Record<string, unknown>>({
               <tr
                 key={(row.id as string) ?? rIdx}
                 onClick={() => onRowClick?.(row)}
-                className={`transition-colors hover:bg-white/[0.03] ${
+                className={`transition-colors hover:bg-white/[0.03] group ${
                   onRowClick ? "cursor-pointer" : ""
                 }`}
               >
@@ -88,7 +88,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   return (
                     <td
                       key={col.key}
-                      className={`py-5 px-5 align-middle ${
+                      className={`py-5 px-6 align-middle ${
                         col.align === "center"
                           ? "text-center"
                           : col.align === "right"

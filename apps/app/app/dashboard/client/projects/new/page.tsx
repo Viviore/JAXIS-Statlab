@@ -11,6 +11,7 @@ import {
   FormCheckbox,
   Button,
   Alert,
+  FormFooter,
 } from "@repo/ui";
 import { createProject } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
@@ -538,7 +539,7 @@ export default function NewProjectIntakePage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-4 pt-8 border-t border-white/[0.08]">
+            <FormFooter className="mt-8 pt-6">
               <Button
                 type="submit"
                 variant="primary"
@@ -547,7 +548,7 @@ export default function NewProjectIntakePage() {
               >
                 PROCEED TO DOCUMENT ATTACHMENTS →
               </Button>
-            </div>
+            </FormFooter>
           </form>
         </Card>
       )}
@@ -869,7 +870,7 @@ export default function NewProjectIntakePage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-8 border-t border-white/[0.08]">
+          <FormFooter align="between" className="mt-8 pt-6">
             <Button
               type="button"
               variant="secondary"
@@ -888,7 +889,7 @@ export default function NewProjectIntakePage() {
             >
               Proceed to Review & Submit →
             </Button>
-          </div>
+          </FormFooter>
         </Card>
       )}
 
@@ -949,31 +950,29 @@ export default function NewProjectIntakePage() {
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Attached Files</span>
                 <span className="text-sm font-mono text-emerald-400 font-bold">
-                  {filesList.length > 0
-                    ? `${filesList.length} files attached`
-                    : "No attachments provided"}
+                  {filesList.length} documents uploaded
                 </span>
               </div>
             </div>
 
             <div className="flex flex-col gap-2 pt-4 border-t border-white/[0.06]">
-              <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Research Questions</span>
-              <p className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans bg-black/20 p-4 rounded-[2px] border border-white/[0.05]">
+              <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Statement of the Problem / Research Questions</span>
+              <p className="text-xs text-slate-300 font-sans leading-relaxed whitespace-pre-wrap">
                 {researchQuestions}
               </p>
             </div>
 
             <div className="flex flex-col gap-2 pt-4 border-t border-white/[0.06]">
-              <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Objectives</span>
-              <p className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans bg-black/20 p-4 rounded-[2px] border border-white/[0.05]">
+              <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Core Research Objectives</span>
+              <p className="text-xs text-slate-300 font-sans leading-relaxed whitespace-pre-wrap">
                 {researchObjectives}
               </p>
             </div>
 
             {hypotheses && (
               <div className="flex flex-col gap-2 pt-4 border-t border-white/[0.06]">
-                <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Hypotheses</span>
-                <p className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans bg-black/20 p-4 rounded-[2px] border border-white/[0.05]">
+                <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Theoretical Hypotheses</span>
+                <p className="text-xs text-slate-300 font-sans leading-relaxed whitespace-pre-wrap">
                   {hypotheses}
                 </p>
               </div>
@@ -994,7 +993,7 @@ export default function NewProjectIntakePage() {
             />
           </div>
 
-          <div className="flex items-center justify-between pt-8 border-t border-white/[0.08]">
+          <FormFooter align="between" className="mt-8 pt-6">
             <Button
               type="button"
               variant="secondary"
@@ -1016,7 +1015,7 @@ export default function NewProjectIntakePage() {
             >
               SUBMIT INTAKE FOR EVALUATION →
             </Button>
-          </div>
+          </FormFooter>
         </Card>
       )}
     </div>

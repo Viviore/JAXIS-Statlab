@@ -1,8 +1,8 @@
 # JAXIS — Task List
 
-**Active Module:** `02-staff` — Expert Provisioning & Staff Management\
+**Active Module:** `05-quotation` — Quotation & Pricing\
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5\
-**Spec Reference:** [`docs/modules/JAXIS_02-staff.md`](./docs/modules/JAXIS_02-staff.md)\
+**Spec Reference:** [`docs/modules/JAXIS_05-quotation.md`](./docs/modules/JAXIS_05-quotation.md)\
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing this module.
 
 ---
@@ -614,6 +614,71 @@
 
 ---
 
+## Module 05: Quotation & Pricing (`05-quotation`)
+
+### Task 1 — Database Schema & Prisma Models
+**Objective:** Add `Quotation`, `QuotationLineItem`, `PackagePriceConfig`, and associated enums to `prisma/schema.prisma`.
+- [ ] Add `PackageName` enum (`JX_01_DATACHECK`, `JX_02_START`, `JX_03_CORE`, `JX_04_ADVANCED`)
+- [ ] Add `AddOnName` enum (`DEFENSELAB`, `RUSH`, `EXPRESS`, `EMERGENCY`)
+- [ ] Add `QuotationStatus` enum (`DRAFT`, `QUOTE_SENT`, `CLIENT_APPROVED`, `QUOTE_DECLINED`, `QUOTE_EXPIRED`, `SUPERSEDED`)
+- [ ] Add `LineItemType` enum (`PACKAGE`, `ADDON`)
+- [ ] Add `Quotation` model with relation to `Project` and `QuotationLineItem`
+- [ ] Add `QuotationLineItem` model with cascade delete
+- [ ] Add `PackagePriceConfig` model for package price floor rules
+- [ ] Add seed data in `prisma/seed.ts` (pricing configurations and initial test quote)
+- [ ] Run `npx prisma db push` and `npx prisma generate`
+
+### Task 2 — Pricing Guardrails & Core Business Rules
+**Objective:** Implement pricing calculations and security constraints in `src/lib/pricing-rules.ts`.
+- [ ] Enforce `RULE_QUO_01` — only ADMIN and CEO roles may create or modify quotations (Statisticians → 403)
+- [ ] Enforce `RULE_QUO_02` — 100% upfront downpayment required for `JX_01_DATACHECK` and `JX_02_START` (`downpaymentRequired = totalAmount`)
+- [ ] Implement package minimum price floor validation (reject bids below package minimums)
+- [ ] Implement add-on restriction check (add-ons cannot be added if project `status >= ACTIVE`)
+- [ ] Implement 3-day quotation expiry computation (`expiresAt = now + 3 days`)
+
+### Task 3 — Validation Schemas & Server Actions
+**Objective:** Create Zod schemas and server actions with `RULE_PERF` compliance.
+- [ ] Create `CreateQuotationSchema`, `UpdateQuotationSchema`, `IssueQuotationSchema`, and `RespondQuotationSchema` in `src/features/quotations/schemas.ts`
+- [ ] Create `createQuotation` action (Admin creates draft proposal in `UNDER_EVALUATION`)
+- [ ] Create `updateQuotation` action (Modify draft quote prior to sending)
+- [ ] Create `issueQuotation` action (Transitions quotation to `QUOTE_SENT`, updates project to `QUOTE_SENT`)
+- [ ] Create `respondQuotation` action (Client accepts → `CLIENT_APPROVED` / project `SOW_PENDING`; or declines → `QUOTE_DECLINED`)
+- [ ] Create `getQuotationByProject` action with role-based selective projections (`RULE_PERF_01`)
+- [ ] Ensure all multi-model operations use atomic `prisma.$transaction` (`RULE_PERF_03`)
+
+### Task 4 — Admin Commercial Quotation Builder UI
+**Objective:** Build intuitive commercial proposal builder for Admin and CEO.
+- [ ] Build `/dashboard/admin/quotations` and integration drawer on `/dashboard/admin/projects/[id]`
+- [ ] Package selector with dynamic price range guidance and description cards
+- [ ] Add-on checkboxes with real-time total and downpayment recalculation
+- [ ] Notes and custom terms textarea
+- [ ] "Save Draft" and "Issue Commercial Quote to Client" action controls with confirmation modal
+
+### Task 5 — Client Commercial Proposal Review UI
+**Objective:** Build client quote inspection and decision interface.
+- [ ] Build `/dashboard/client/projects/[id]/quote` review view
+- [ ] Itemized pricing breakdown table with base package and optional add-ons
+- [ ] Milestone payment schedule card (downpayment amount vs deliverable release balance)
+- [ ] 3-day quotation validity countdown timer and expiry notice
+- [ ] "Accept Proposal & Proceed to SOW" and "Decline Proposal" decision buttons with feedback prompt
+
+### Task 6 — Integration, Navigation & State Machine Wiring
+**Objective:** Connect quotation flow seamlessly into project lifecycles.
+- [ ] Update Admin intake and project views with direct link to Quote Builder when in `UNDER_EVALUATION`
+- [ ] Update Client project timeline and dashboard to highlight pending quote responses
+- [ ] Update Sidebar active/disabled badge indicators if appropriate
+- [ ] Wire email notification trigger stubs for Quote Issued, Quote Accepted, and Quote Declined
+
+### Task 7 — Quality Gate & Verification
+**Objective:** Run monorepo validation scripts and generate verification report.
+- [ ] `npm run check-types` → 0 errors
+- [ ] `npm run lint` → 0 warnings
+- [ ] `npm run build` → clean production build
+- [ ] Generate `docs/modules/JAXIS_05-verification_report.md`
+- [ ] Mark Module 05 completed
+
+---
+
 ## Upcoming Modules (Roadmap v2)
 
 | #    | Module                                                | Status                           |
@@ -623,7 +688,7 @@
 | `02` | `02-staff` — Expert Provisioning & Staff Management   | ✅ Completed                     |
 | `03` | `03-client-profile` — Client Profile & Account        | ✅ Completed                     |
 | `04` | `04-intake` — Project Intake & Submission             | ✅ Completed                     |
-| `05` | `05-quotation` — Quotation & Pricing                  | 🔄 Active / Ready for Execution  |
+| `05` | `05-quotation` — Quotation & Pricing                  | 🔄 Active / In Progress          |
 | `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |
 | `07` | `07-payments` — Payment & Installments                | ⏳ Blocked — awaiting `06`       |
 | `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Blocked — awaiting `07`, `02` |
@@ -636,4 +701,5 @@
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks       | ⏳ Blocked — awaiting `14`       |
 | `16` | `16-notifications` — Email Notifications              | ⏳ Blocked — awaiting `07–15`    |
 | `17` | `17-reporting` — Reporting, Analytics & Archive       | ⏳ Blocked — awaiting all        |
+
 

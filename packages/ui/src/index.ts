@@ -16,3 +16,4 @@ export * from "./Toast";
 export * from "./Drawer";
 export * from "./AnimateHeight";
 export * from "./FilterToolbar";
+export * from "./FormFooter";
