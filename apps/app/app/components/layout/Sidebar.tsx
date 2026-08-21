@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
@@ -26,6 +27,8 @@ export interface SidebarProps {
   userFullName?: string;
   userEmail?: string;
   className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
@@ -419,10 +422,11 @@ const BADGE_STYLES: Record<string, string> = {
 
 export const Sidebar: React.FC<SidebarProps> = ({
   role = "ADMIN",
-  roleLabel = "ADMIN",
   userFullName = "Developer Account",
   userEmail = "dev@jaxis.local",
   className = "",
+  isOpen = false,
+  onClose,
 }) => {
   const pathname = usePathname();
   const normalizedRole = (role?.toUpperCase() || "ADMIN") as string;
@@ -430,7 +434,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`w-[18.5rem] min-w-[18.5rem] max-w-[18.5rem] h-full max-h-full bg-[#010114]/95 border-r border-white/[0.08] flex flex-col justify-between select-none z-20 flex-shrink-0 overflow-hidden ${className}`}
+      className={`
+        fixed lg:static inset-y-0 left-0 z-50 lg:z-20
+        w-[18.5rem] min-w-[18.5rem] max-w-[18.5rem] h-full max-h-full
+        bg-[#010114] border-r border-white/[0.08] flex flex-col justify-between
+        select-none flex-shrink-0 overflow-hidden
+        transition-transform duration-200 ease-out shadow-2xl lg:shadow-none
+        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        ${className}
+      `}
       style={{
         width: "18.5rem",
         minWidth: "18.5rem",
@@ -438,7 +450,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         height: "100%",
         maxHeight: "100%",
         flexShrink: 0,
-        backgroundColor: "rgba(1, 1, 20, 0.95)",
+        backgroundColor: "#010114",
         borderRight: "1px solid rgba(255, 255, 255, 0.08)",
         display: "flex",
         flexDirection: "column",
@@ -449,16 +461,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Top Navigation Sections */}
       <div
-        className="p-4 sm:p-5 flex flex-col gap-6 overflow-y-auto flex-1"
+        className="p-4 sm:p-5 flex flex-col gap-5 overflow-y-auto flex-1"
         style={{
           padding: "1.25rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.5rem",
+          gap: "1.25rem",
           overflowY: "auto",
           flex: 1,
         }}
       >
+        {/* Mobile Header with Official Logo & Close Button */}
+        <div className="flex lg:hidden items-center justify-between pb-3.5 border-b border-white/[0.08] -mt-1">
+          <div className="flex items-center gap-2 font-sans">
+            <Image
+              src="/jaxislogo.png"
+              alt="JAXIS Logo"
+              width={22}
+              height={22}
+              className="h-5.5 w-auto"
+            />
+            <div className="flex items-baseline gap-1 font-sans">
+              <span className="font-bold text-sm tracking-wider text-white">JAXIS</span>
+              <span className="font-bold text-sm tracking-wider text-[#CC6600]">STATLAB</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+            aria-label="Close navigation"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         {/* Navigation Groups */}
         <nav aria-label="Sidebar navigation" className="flex flex-col gap-5" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           {navGroups.map((group, gIdx) => (
@@ -476,6 +515,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => {
+                      if (onClose) onClose();
+                    }}
                     className={`flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-md transition-colors duration-150 ease-out group ${
                       isActive
                         ? "bg-[#CC6600]/15 text-white font-semibold"
@@ -551,7 +593,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* User Info Card (Bottom) */}
-      <div className="p-4 sm:p-4.5 border-t border-white/[0.08] bg-[#011833]/50 flex-shrink-0" style={{ padding: "1rem 1.25rem", flexShrink: 0 }}>
+      <div className="p-4 sm:p-4.5 border-t border-white/[0.08] bg-white/[0.02] flex-shrink-0" style={{ padding: "1rem 1.25rem", flexShrink: 0, backgroundColor: "rgba(255, 255, 255, 0.02)" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div

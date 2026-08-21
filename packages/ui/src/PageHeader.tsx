@@ -56,24 +56,29 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </nav>
       )}
 
-      <div
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", width: "100%" }}
-      >
-        <div className="flex items-center gap-3" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <h1 className="text-2xl font-bold tracking-tight text-white font-sans" style={{ fontSize: "1.5rem", letterSpacing: "-0.025em" }}>{title}</h1>
-          {badge}
-        </div>
-        {actions && <div className="flex items-center gap-2.5" style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>{actions}</div>}
+      {/* 1. Header (Title & Badge) */}
+      <div className="flex items-center gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-sans" style={{ letterSpacing: "-0.025em" }}>
+          {title}
+        </h1>
+        {badge}
       </div>
 
+      {/* 2. Description */}
       {description && (
         <p
-          className="text-sm text-white/60 leading-relaxed max-w-3xl font-sans mt-1"
-          style={{ margin: "0.25rem 0 0 0", fontSize: "0.875rem", lineHeight: 1.6 }}
+          className="text-sm text-white/60 leading-relaxed max-w-3xl font-sans"
+          style={{ margin: 0, fontSize: "0.875rem", lineHeight: 1.6 }}
         >
           {description}
         </p>
+      )}
+
+      {/* 3. Buttons (Actions) */}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
+          {actions}
+        </div>
       )}
     </div>
   );

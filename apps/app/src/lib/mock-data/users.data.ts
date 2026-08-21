@@ -58,4 +58,12 @@ export const DEV_USERS: Record<string, MockUser> = {
     password: "JaxisClient2026!",
     status: "ACTIVE",
   },
+  "suspended@jaxis.dev": {
+    id: "usr_dev_suspended_001",
+    email: "suspended@jaxis.dev",
+    fullName: "Suspended Test User",
+    role: "CLIENT",
+    password: "JaxisSuspended2026!",
+    status: "SUSPENDED",
+  },
 };

@@ -54,7 +54,7 @@ export default function StatisticianDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse font-sans text-sm">
+          <table className="w-full min-w-[620px] text-left border-collapse font-sans text-sm">
             <thead>
               <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase">
                 <th className="py-3 px-4">Study ID</th>

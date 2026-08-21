@@ -44,7 +44,7 @@ export default function DashboardOverviewPage() {
           { label: "Command & Control" },
         ]}
         actions={
-          <div className="flex items-center gap-3" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               variant="secondary"
               size="md"
@@ -280,8 +280,8 @@ export default function DashboardOverviewPage() {
         }
       >
         <AnimateHeight duration={280}>
-          <div className="w-full">
-            <table className="w-full text-left border-collapse" style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-[800px] text-left border-collapse" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr
                   className="border-b border-white/[0.08] text-xs font-mono font-semibold uppercase tracking-wider text-white/45 bg-white/[0.02]"

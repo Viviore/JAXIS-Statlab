@@ -14,6 +14,7 @@ interface SeedUser {
   email: string;
   role: RoleName;
   password: string;
+  status?: "ACTIVE" | "SUSPENDED" | "TERMINATED";
 }
 
 const roles: SeedRole[] = [
@@ -62,6 +63,13 @@ const seedUsers: SeedUser[] = [
     role: "CLIENT",
     password: "JaxisClient2026!",
   },
+  {
+    fullName: "Suspended Test User",
+    email: "suspended@jaxis.dev",
+    role: "CLIENT",
+    password: "JaxisSuspended2026!",
+    status: "SUSPENDED",
+  },
 ];
 
 async function main() {
@@ -101,13 +109,13 @@ async function main() {
       update: {
         fullName: user.fullName,
         passwordHash,
-        status: "ACTIVE",
+        status: user.status ?? "ACTIVE",
       },
       create: {
         email: user.email,
         fullName: user.fullName,
         passwordHash,
-        status: "ACTIVE",
+        status: user.status ?? "ACTIVE",
       },
     });
 
@@ -128,6 +136,48 @@ async function main() {
   }
 
   console.log(`✅ Seeded ${seedUsers.length} test accounts across all 6 roles.`);
+
+  // 4. Upsert StaffProfile for Statistician, QA Lead, and Finance Officer
+  const seedStaffProfiles = [
+    {
+      email: "stat@jaxis.dev",
+      specializations: ["Regression", "ANOVA", "SEM", "Factor Analysis", "Time Series"],
+      bio: "Senior PhD statistician specializing in multivariate quantitative models, structural equation modeling, and APA-compliant statistical reporting.",
+    },
+    {
+      email: "qa@jaxis.dev",
+      specializations: ["Instrument Validation", "Descriptive Statistics", "Mixed Methods", "Reliability Analysis"],
+      bio: "Senior QA Peer Review Lead ensuring data integrity, calculation verifiability, and methodological rigor across all statistical deliverables.",
+    },
+    {
+      email: "finance@jaxis.dev",
+      specializations: ["Escrow Management", "Ledger Auditing", "Disbursement Protocol"],
+      bio: "Finance Officer overseeing institutional escrow vault release gates, dispute resolutions, and milestone disbursements.",
+    },
+  ];
+
+  for (const staff of seedStaffProfiles) {
+    const user = await prisma.user.findUnique({
+      where: { email: staff.email },
+    });
+
+    if (user) {
+      await prisma.staffProfile.upsert({
+        where: { userId: user.id },
+        update: {
+          bio: staff.bio,
+          specializations: staff.specializations,
+        },
+        create: {
+          userId: user.id,
+          bio: staff.bio,
+          specializations: staff.specializations,
+        },
+      });
+    }
+  }
+
+  console.log(`✅ Seeded ${seedStaffProfiles.length} staff profile records.`);
 }
 
 main()

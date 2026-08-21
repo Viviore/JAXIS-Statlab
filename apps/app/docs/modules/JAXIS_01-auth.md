@@ -338,54 +338,54 @@ All auth errors follow the standard JAXIS error contract:
 
 ### Database
 
-- [ ] `User`, `Role`, `UserRole`, `AuthAuditLog` tables exist in PostgreSQL after `prisma migrate dev`
-- [ ] All 6 roles exist in the `roles` table after `prisma db seed`
-- [ ] One seed user per role exists with a hashed password (bcrypt verifiable)
-- [ ] `users.email` has a unique constraint enforced at DB level
+- [x] `User`, `Role`, `UserRole`, `AuthAuditLog` tables exist in PostgreSQL after `prisma migrate dev`
+- [x] All 6 roles exist in the `roles` table after `prisma db seed`
+- [x] One seed user per role exists with a hashed password (bcrypt verifiable)
+- [x] `users.email` has a unique constraint enforced at DB level
 
 ### Authentication Flow
 
-- [ ] Client can register at `/register` with valid email + password → account created, role = CLIENT
-- [ ] Registration with an existing email returns `EMAIL_TAKEN` (409)
-- [ ] Registration with mismatched passwords returns `VALIDATION_ERROR` (422)
-- [ ] All 6 seed users can log in at `/login` with correct credentials
-- [ ] Login with wrong password returns `INVALID_CREDENTIALS` (401)
-- [ ] Login attempt for a SUSPENDED user returns `ACCOUNT_SUSPENDED` (403)
-- [ ] Login attempt for a TERMINATED user returns `ACCOUNT_TERMINATED` (403)
-- [ ] Successful login redirects each role to their correct dashboard desk URL
-- [ ] Logout destroys session and redirects to `/login`
+- [x] Client can register at `/register` with valid email + password → account created, role = CLIENT
+- [x] Registration with an existing email returns `EMAIL_TAKEN` (409)
+- [x] Registration with mismatched passwords returns `VALIDATION_ERROR` (422)
+- [x] All 6 seed users can log in at `/login` with correct credentials
+- [x] Login with wrong password returns `INVALID_CREDENTIALS` (401)
+- [x] Login attempt for a SUSPENDED user returns `ACCOUNT_SUSPENDED` (403)
+- [x] Login attempt for a TERMINATED user returns `ACCOUNT_TERMINATED` (403)
+- [x] Successful login redirects each role to their correct dashboard desk URL
+- [x] Logout destroys session and redirects to `/login`
 
 ### Session & Middleware
 
-- [ ] Session JWT contains `userId`, `role`, `fullName` — no password hash, no sensitive data
-- [ ] Visiting any `/dashboard/*` route without a session redirects to `/login`
-- [ ] CLIENT session visiting `/dashboard/admin/` redirects to `/unauthorized`
-- [ ] STATISTICIAN session visiting `/dashboard/finance/` redirects to `/unauthorized`
-- [ ] Visiting `/login` while already authenticated redirects to the role's home desk
+- [x] Session JWT contains `userId`, `role`, `fullName` — no password hash, no sensitive data
+- [x] Visiting any `/dashboard/*` route without a session redirects to `/login`
+- [x] CLIENT session visiting `/dashboard/admin/` redirects to `/unauthorized`
+- [x] STATISTICIAN session visiting `/dashboard/finance/` redirects to `/unauthorized`
+- [x] Visiting `/login` while already authenticated redirects to the role's home desk
 
 ### `requireRole()` Guard
 
-- [ ] Calling `requireRole('ADMIN')` from a Client session throws `FORBIDDEN`
-- [ ] Calling `requireRole('ADMIN')` from an Admin session returns the session object
-- [ ] Calling `requireRole()` from an unauthenticated context throws `UNAUTHENTICATED`
+- [x] Calling `requireRole('ADMIN')` from a Client session throws `FORBIDDEN`
+- [x] Calling `requireRole('ADMIN')` from an Admin session returns the session object
+- [x] Calling `requireRole()` from an unauthenticated context throws `UNAUTHENTICATED`
 
 ### Audit Logging
 
-- [ ] Successful login writes a `LOGIN_SUCCESS` event to `AuthAuditLog`
-- [ ] Failed login writes a `LOGIN_FAILED` event to `AuthAuditLog` (email recorded, userId null)
-- [ ] Logout writes a `LOGOUT` event to `AuthAuditLog`
-- [ ] New client registration writes a `REGISTRATION` event to `AuthAuditLog`
+- [x] Successful login writes a `LOGIN_SUCCESS` event to `AuthAuditLog`
+- [x] Failed login writes a `LOGIN_FAILED` event to `AuthAuditLog` (email recorded, userId null)
+- [x] Logout writes a `LOGOUT` event to `AuthAuditLog`
+- [x] New client registration writes a `REGISTRATION` event to `AuthAuditLog`
 
 ### Dashboard Stubs
 
-- [ ] Each role has a working dashboard shell (topbar + sidebar with role label) at their respective `/dashboard/[role]` route
-- [ ] Sidebar shows the correct role label and user's full name
-- [ ] `/unauthorized` page renders with a clear message and a "Go back" button
+- [x] Each role has a working dashboard shell (topbar + sidebar with role label) at their respective `/dashboard/[role]` route
+- [x] Sidebar shows the correct role label and user's full name
+- [x] `/unauthorized` page renders with a clear message and a "Go back" button
 
 ### Quality Gates
 
-- [ ] `npm run check-types` → 0 TypeScript errors
-- [ ] `npm run lint` → 0 ESLint warnings or errors
-- [ ] `npm run build` → clean build with no Next.js errors
-- [ ] No `any` types in any auth-related file
-- [ ] Password hash never appears in any API response or session token
+- [x] `npm run check-types` → 0 TypeScript errors
+- [x] `npm run lint` → 0 ESLint warnings or errors
+- [x] `npm run build` → clean build with no Next.js errors
+- [x] No `any` types in any auth-related file
+- [x] Password hash never appears in any API response or session token

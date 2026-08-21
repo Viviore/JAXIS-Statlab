@@ -1,8 +1,8 @@
 # JAXIS — Task List
 
-**Active Module:** `01-auth` — Authentication & RBAC\
+**Active Module:** `02-staff` — Expert Provisioning & Staff Management\
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5\
-**Spec Reference:** [`docs/modules/JAXIS_01-auth.md`](./docs/modules/JAXIS_01-auth.md)\
+**Spec Reference:** [`docs/modules/JAXIS_02-staff.md`](./docs/modules/JAXIS_02-staff.md)\
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing this module.
 
 ---
@@ -344,17 +344,17 @@
 
 **Acceptance:** API route returns correct status codes. All 5 audit event types are verifiable in the DB. Build is clean.
 
-- [ ] `POST /api/v1/auth/register` route created and validated
-- [ ] Returns 422 on schema failure with field-level error detail
-- [ ] Returns 409 on duplicate email
-- [ ] Returns 201 on success (no sensitive data in response)
-- [ ] `REGISTRATION` event in `AuthAuditLog` after successful register
-- [ ] `LOGIN_SUCCESS` event after correct login
-- [ ] `LOGIN_FAILED` event (userId=null) after wrong password
-- [ ] `ACCOUNT_SUSPENDED_BLOCK` event when suspended user attempts login
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings
-- [ ] `npm run build` → clean
+- [x] `POST /api/v1/auth/register` route created and validated
+- [x] Returns 422 on schema failure with field-level error detail
+- [x] Returns 409 on duplicate email
+- [x] Returns 201 on success (no sensitive data in response)
+- [x] `REGISTRATION` event in `AuthAuditLog` after successful register
+- [x] `LOGIN_SUCCESS` event after correct login
+- [x] `LOGIN_FAILED` event (userId=null) after wrong password
+- [x] `ACCOUNT_SUSPENDED_BLOCK` event when suspended user attempts login
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] `npm run build` → clean
 
 ---
 
@@ -375,19 +375,155 @@
 9. Run `npm run lint` → must be 0 warnings/errors
 10. Run `npm run build` → must succeed cleanly
 11. Mark all checklist items in `JAXIS_01-auth.md` Section 10 as `[x]`
-12. Update this file: mark all Task 1–7 items `[x]`, set Active Module to `02-client-profile`
+12. Update this file: mark all Task 1–7 items `[x]`, set Active Module to `02-staff`
 
 **Acceptance:** Every acceptance criterion in `JAXIS_01-auth.md` Section 10 is checked. Build is clean. Module 02 can begin.
 
-- [ ] All 6 roles can log in and land on the correct desk
-- [ ] Register flow works end-to-end
-- [ ] RBAC enforcement verified for all role/route combinations
-- [ ] Audit log verified for all 5 event types
+- [x] All 6 roles can log in and land on the correct desk
+- [x] Register flow works end-to-end
+- [x] RBAC enforcement verified for all role/route combinations
+- [x] Audit log verified for all 5 event types
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean
+- [x] `JAXIS_01-auth.md` Section 10 checklist fully marked
+- [x] Active module updated to `02-staff`
+
+---
+
+## Module 02 — Expert Provisioning & Staff Management
+
+### Task 1 — Prisma Schema: `StaffProfile`, `SuspensionLog`, Enums & Migration
+
+**Objective:** Define data models for staff specializations, suspension history, and run database migration.
+
+**Steps:**
+1. Open `prisma/schema.prisma`
+2. Add `ViolationType` enum (`ETHICAL_BREACH`, `DIRECT_PAYMENT_BYPASS`, `DATA_FALSIFICATION`, `GHOSTWRITING`, `POLICY_VIOLATION`)
+3. Add `SuspensionAction` enum (`SUSPENDED`, `SUSPENSION_LIFTED`, `TERMINATED`)
+4. Add `StaffProfile` model with `userId`, `bio`, `specializations String[]`, `joinedAt`, `updatedAt`
+5. Add `SuspensionLog` model with `userId`, `action`, `reason`, `violationType`, `performedBy`, `performedAt`, `liftedAt`, `liftedBy`
+6. Run `npx prisma db push` and `npx prisma generate`
+
+**Acceptance:** `npx prisma generate` succeeds with new models.
+
+- [x] `ViolationType` and `SuspensionAction` enums defined
+- [x] `StaffProfile` model defined and linked to `User`
+- [x] `SuspensionLog` model defined with indexes on `userId` and `performedAt`
+- [x] Prisma client generated
+
+---
+
+### Task 2 — Database Seed: Staff Profiles
+
+**Objective:** Populate default specializations and bio data for seed staff accounts (`stat@jaxis.dev`, `qa@jaxis.dev`, `finance@jaxis.dev`).
+
+**Steps:**
+1. Update `prisma/seed.ts` to upsert `StaffProfile` for seed staff members
+2. Run `npm run seed` or `npx tsx prisma/seed.ts`
+
+**Acceptance:** All seed staff accounts have corresponding `StaffProfile` records.
+
+- [x] `StaffProfile` seeded for Statistician (`stat@jaxis.dev`)
+- [x] `StaffProfile` seeded for QA Lead (`qa@jaxis.dev`)
+- [x] `StaffProfile` seeded for Finance Officer (`finance@jaxis.dev`)
+
+---
+
+### Task 3 — Server Actions & Zod Schemas (`src/features/staff/`)
+
+**Objective:** Implement Zod schemas and service logic for staff provisioning, profile management, and suspension lifecycles.
+
+**Steps:**
+1. Create `src/features/staff/schemas.ts` (`ProvisionStaffSchema`, `SuspendStaffSchema`, `TerminateStaffSchema`, `UpdateStaffProfileSchema`)
+2. Create `src/features/staff/actions.ts`:
+   - `provisionStaff(data)`
+   - `getStaffRoster(filters)`
+   - `getStaffDetail(id)`
+   - `suspendStaff(id, data)`
+   - `liftSuspension(id)`
+   - `terminateStaff(id, data)` (CEO only guard)
+   - `updateOwnProfile(data)`
+
+**Acceptance:** All staff operations validated via Zod and guarded by role requirements.
+
+- [ ] Zod schemas defined in `schemas.ts`
+- [ ] `provisionStaff` generates temporary password and creates profile
+- [ ] `suspendStaff` and `liftSuspension` update status and write `SuspensionLog`
+- [ ] `terminateStaff` enforces CEO role check and sets `TERMINATED`
+- [ ] `updateOwnProfile` updates bio and specializations
+
+---
+
+### Task 4 — Admin Staff API Routes
+
+**Objective:** Expose REST API endpoints for staff management.
+
+**Steps:**
+1. Create `src/app/api/v1/admin/staff/route.ts` (`POST`, `GET`)
+2. Create `src/app/api/v1/admin/staff/[id]/route.ts` (`GET`)
+3. Create `src/app/api/v1/admin/staff/[id]/suspend/route.ts` (`PATCH`)
+4. Create `src/app/api/v1/admin/staff/[id]/lift-suspension/route.ts` (`PATCH`)
+5. Create `src/app/api/v1/admin/staff/[id]/terminate/route.ts` (`PATCH`)
+6. Create `src/app/api/v1/staff/profile/route.ts` (`GET`, `PATCH`)
+
+**Acceptance:** All routes return typed JSON and enforce role-based access.
+
+- [ ] `POST /api/v1/admin/staff` provisions staff
+- [ ] `GET /api/v1/admin/staff` lists staff with filters
+- [ ] `PATCH /api/v1/admin/staff/[id]/suspend` suspends staff
+- [ ] `PATCH /api/v1/admin/staff/[id]/terminate` enforces CEO role
+- [ ] `GET/PATCH /api/v1/staff/profile` handles self-profile
+
+---
+
+### Task 5 — Admin Staff Roster & Provisioning Views
+
+**Objective:** Build high-precision UI for Admin staff management.
+
+**Steps:**
+1. Build `/dashboard/admin/staff` — responsive staff roster table with role badges, status, specializations, and action menus
+2. Build `/dashboard/admin/staff/new` — staff provisioning form with role selection and specialization tags
+3. Build suspend/terminate modal dialogs with reason tracking
+
+**Acceptance:** Admin can view, provision, suspend, and manage staff members from the UI.
+
+- [ ] Staff Roster page rendered with search and role/status filters
+- [ ] Provision staff form with temporary password generation dialog
+- [ ] Suspend and terminate modals with audit reasons
+- [ ] Fully responsive on mobile, tablet, and desktop
+
+---
+
+### Task 6 — Staff Self-Profile Workbench Views
+
+**Objective:** Build profile management views for Statisticians and QA Leads.
+
+**Steps:**
+1. Build `/dashboard/statistician/profile` — view/edit bio and specializations
+2. Build `/dashboard/qa/profile` — view/edit bio and specializations
+
+**Acceptance:** Staff can update their specializations and biographical profile.
+
+- [ ] Statistician profile editor with specialization tags
+- [ ] Senior QA Lead profile editor
+- [ ] Real-time validation and responsive layout
+
+---
+
+### Task 7 — Quality Gate & Verification
+
+**Objective:** Execute all monorepo gates and verify end-to-end functionality.
+
+**Steps:**
+1. `npm run check-types` → 0 errors
+2. `npm run lint` → 0 warnings
+3. `npm run build` → clean
+
 - [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
+- [ ] `npm run lint` → 0 warnings
 - [ ] `npm run build` → clean
-- [ ] `JAXIS_01-auth.md` Section 10 checklist fully marked
-- [ ] Active module updated to `02-client-profile`
+- [ ] Module 02 completed
 
 ---
 
@@ -396,9 +532,9 @@
 | #    | Module                                                | Status                           |
 | ---- | ----------------------------------------------------- | -------------------------------- |
 | `00` | `00-foundation` — Project Foundation & Infrastructure | ✅ Completed                     |
-| `01` | `01-auth` — Authentication & RBAC                     | 🔄 Active / Ready for Execution  |
-| `02` | `02-staff` — Expert Provisioning & Staff Management   | ⏳ Blocked — awaiting `01`       |
-| `03` | `03-client-profile` — Client Profile & Account        | ⏳ Blocked — awaiting `01`       |
+| `01` | `01-auth` — Authentication & RBAC                     | ✅ Completed                     |
+| `02` | `02-staff` — Expert Provisioning & Staff Management   | 🔄 Active / Ready for Execution  |
+| `03` | `03-client-profile` — Client Profile & Account        | ⏳ Blocked — awaiting `02`       |
 | `04` | `04-intake` — Project Intake & Submission             | ⏳ Blocked — awaiting `03`       |
 | `05` | `05-quotation` — Quotation & Pricing                  | ⏳ Blocked — awaiting `04`       |
 | `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |
@@ -413,3 +549,4 @@
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks       | ⏳ Blocked — awaiting `14`       |
 | `16` | `16-notifications` — Email Notifications              | ⏳ Blocked — awaiting `07–15`    |
 | `17` | `17-reporting` — Reporting, Analytics & Archive       | ⏳ Blocked — awaiting all        |
+

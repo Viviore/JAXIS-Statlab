@@ -43,8 +43,10 @@ model User {
   updatedAt     DateTime       @updatedAt
 
   // Relations
-  userRoles     UserRole[]
-  authAuditLogs AuthAuditLog[]
+  userRoles      UserRole[]
+  authAuditLogs  AuthAuditLog[]
+  staffProfile   StaffProfile?
+  suspensionLogs SuspensionLog[]
 
   @@index([email])
   @@index([status])
@@ -95,3 +97,52 @@ model AuthAuditLog {
   @@index([createdAt])
   @@map("auth_audit_logs")
 }
+
+// ─── Module 02: Staff Profile & Suspension Logs ──────────────────────────────
+
+enum ViolationType {
+  ETHICAL_BREACH
+  DIRECT_PAYMENT_BYPASS
+  DATA_FALSIFICATION
+  GHOSTWRITING
+  POLICY_VIOLATION
+}
+
+enum SuspensionAction {
+  SUSPENDED
+  SUSPENSION_LIFTED
+  TERMINATED
+}
+
+model StaffProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  bio             String?
+  specializations String[]
+  joinedAt        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("staff_profiles")
+}
+
+model SuspensionLog {
+  id            String           @id @default(cuid())
+  userId        String
+  action        SuspensionAction
+  reason        String
+  violationType ViolationType?
+  performedBy   String
+  performedAt   DateTime         @default(now())
+  liftedAt      DateTime?
+  liftedBy      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([performedAt])
+  @@map("suspension_logs")
+}
+

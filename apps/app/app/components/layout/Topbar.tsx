@@ -10,6 +10,7 @@ export interface TopbarProps {
   userRole?: string;
   userEmail?: string;
   className?: string;
+  onToggleMobileSidebar?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -17,6 +18,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   userRole = "ADMIN",
   userEmail = "dev@jaxis.local",
   className = "",
+  onToggleMobileSidebar,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -62,15 +64,14 @@ export const Topbar: React.FC<TopbarProps> = ({
 
   return (
     <header
-      className={`h-14 w-full bg-[#010114]/90 backdrop-blur-md border-b border-white/[0.08] px-6 sm:px-8 md:px-10 flex items-center justify-between z-30 select-none ${className}`}
+      className={`h-14 w-full bg-[#010114] border-b border-white/[0.08] px-4 sm:px-6 md:px-8 flex items-center justify-between z-30 select-none ${className}`}
       style={{
         height: "3.5rem",
         width: "100%",
-        backgroundColor: "rgba(1, 1, 20, 0.90)",
-        backdropFilter: "blur(12px)",
+        backgroundColor: "#010114",
         borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-        paddingLeft: "2rem",
-        paddingRight: "2rem",
+        paddingLeft: "clamp(1.25rem, 2.5vw, 2rem)",
+        paddingRight: "clamp(1.25rem, 2.5vw, 2rem)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -80,17 +81,17 @@ export const Topbar: React.FC<TopbarProps> = ({
       }}
     >
       {/* Brand logo mark & search */}
-      <div className="flex items-center gap-6" style={{ display: "flex", alignItems: "center", gap: "1.75rem" }}>
-        <Link href="/dashboard" className="flex items-center gap-2.5 text-decoration-none group" style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+      <div className="flex items-center gap-4 sm:gap-6">
+        <Link href="/dashboard" className="flex items-center gap-2 text-decoration-none group">
           <Image
             src="/jaxislogo.png"
             alt="JAXIS Logo"
-            width={26}
-            height={26}
-            className="h-6.5 w-auto"
+            width={24}
+            height={24}
+            className="h-6 w-auto"
             priority
           />
-          <div className="flex items-baseline gap-1.5 font-sans" style={{ display: "flex", alignItems: "baseline", gap: "0.375rem" }}>
+          <div className="flex items-baseline gap-1.5 font-sans">
             <span className="font-bold text-sm tracking-wider text-white">
               JAXIS
             </span>
@@ -107,9 +108,6 @@ export const Topbar: React.FC<TopbarProps> = ({
         <div
           className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-sm bg-[#011B38]/50 border border-white/[0.08] text-white/40 text-xs w-72 hover:border-white/[0.18] transition-colors cursor-pointer"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
             padding: "0.375rem 0.875rem",
             backgroundColor: "rgba(1, 27, 56, 0.5)",
             border: "1px solid rgba(255, 255, 255, 0.08)",
@@ -126,23 +124,25 @@ export const Topbar: React.FC<TopbarProps> = ({
         </div>
       </div>
 
-      {/* Right User Profile Dropdown Trigger */}
-      <div className="relative" ref={dropdownRef}>
-        <button
-          type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          className="flex items-center gap-2.5 py-1 px-2 rounded-md hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer focus:outline-none"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.625rem",
-            padding: "0.25rem 0.5rem",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-          aria-expanded={isOpen}
-          aria-haspopup="true"
-        >
+      {/* Right Controls: User Profile + Mobile Hamburger */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* User Profile Dropdown Trigger */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            type="button"
+            onClick={() => setIsOpen((prev) => !prev)}
+            className="flex items-center gap-2 py-1 px-1.5 sm:px-2 rounded-md hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer focus:outline-none"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.25rem 0.5rem",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+            aria-expanded={isOpen}
+            aria-haspopup="true"
+          >
           {/* Circular Avatar */}
           <div
             className="h-8 w-8 rounded-full bg-gradient-to-tr from-[#012E57] to-[#011B38] border border-white/20 flex items-center justify-center font-sans text-xs text-white font-semibold shadow-inner flex-shrink-0"
@@ -159,14 +159,14 @@ export const Topbar: React.FC<TopbarProps> = ({
             {userFullName.charAt(0).toUpperCase()}
           </div>
 
-          {/* User Full Name */}
-          <span className="text-sm font-medium text-white tracking-tight" style={{ fontSize: "0.875rem" }}>
+          {/* User Full Name (Hidden on Mobile) */}
+          <span className="hidden sm:inline-block text-sm font-medium text-white tracking-tight" style={{ fontSize: "0.875rem" }}>
             {userFullName}
           </span>
 
-          {/* Down Chevron */}
+          {/* Down Chevron (Hidden on Mobile) */}
           <svg
-            className={`w-3.5 h-3.5 text-white/60 transition-transform duration-200 ${
+            className={`hidden sm:block w-3.5 h-3.5 text-white/60 transition-transform duration-200 ${
               isOpen ? "rotate-180 text-white" : ""
             }`}
             fill="none"
@@ -277,6 +277,19 @@ export const Topbar: React.FC<TopbarProps> = ({
           </div>
         )}
       </div>
-    </header>
-  );
+
+      {/* Mobile Sidebar Hamburger Button (Right Side) */}
+      <button
+        type="button"
+        onClick={onToggleMobileSidebar}
+        className="lg:hidden p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+        aria-label="Toggle navigation menu"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </header>
+);
 };
