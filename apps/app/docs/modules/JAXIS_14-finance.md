@@ -43,6 +43,14 @@
 | Multi-currency | PHP only |
 | Partial refund processing | Module 15; full refunds only per policy |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Financial Revenue Ledger:** Finance Officer and CEO can view itemized gross revenue, platform margin, and expert earnings across all projects.
+- [ ] **Automated Payout Computation:** System applies seeded payout rate configuration by package tier (`JX-01`, `JX-02`, `JX-03`, `JX-04`, `DefenseLab`).
+- [ ] **Disbursement Eligibility Gate (RULE_PAY_01):** Payouts are strictly locked until project status is `DELIVERED`/`CLOSED`, `paymentStatus === FULLY_PAID`, and zero active disputes exist.
+- [ ] **Finance Disbursement Workflow:** Finance Officer logs disbursement reference (GCash/bank ref) and marks payout `DISBURSED`.
+- [ ] **Expert Earnings & History:** Statisticians and QA Leads can view their individual verified earnings, pending balances, and payout history.
+
 ---
 
 ## 3. Database Schema

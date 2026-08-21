@@ -40,6 +40,14 @@
 | Automated data deletion (no client request) | Data deletion only on explicit client request |
 | Report scheduling (email reports) | Future feature |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Operational & Financial Reports:** Admin, Finance, and CEO can query and view 8 parameterized reports (Revenue Summary, Expert Performance, Project Volume, Turnaround Analytics, Dispute/Refund, Client Acquisition, Ledger Export, Expert Payouts).
+- [ ] **PDF Report Export:** Download formatted, branded PDF summaries for any report generated within selected date ranges.
+- [ ] **Project Archival Engine:** Admin can archive `CLOSED` projects into read-only snapshot records (`ArchivedProject`).
+- [ ] **Automated 90-Day Storage Purge:** Trigger.dev background cron automatically purges raw storage files for projects 90 days post-delivery while preserving report records.
+- [ ] **Client Data Deletion Request Workflow:** Compliant client account deletion handling honoring mandatory financial and legal audit retention windows.
+
 ---
 
 ## 3. Report Types

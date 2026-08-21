@@ -44,6 +44,15 @@
 - Supabase Realtime subscriptions in feature code (Module 09 wires this)
 - File upload API routes (Module 04 and later)
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [x] **Clean Monorepo Build:** Able to run `npm run build` with 0 errors across `@repo/ui`, `@repo/typescript-config`, `@repo/eslint-config`, `apps/app`, and `apps/web`.
+- [x] **Dual Development Servers:** Able to run `npm run dev` and access `apps/app` on `http://localhost:3001` and `apps/web` on `http://localhost:3000`.
+- [x] **Design Token System:** Able to verify CSS custom properties (`#010114` master background, color tokens, typography) rendered from `globals.css`.
+- [x] **Custom Typography:** Able to verify `Inter` (sans) and `Disket Mono` (mono) fonts loaded via `next/font` without layout shifts.
+- [x] **UI Component Library:** Able to render and test all shared primitives from `@repo/ui` (`Button`, `Card`, `StatusBadge`, `FormInput`, `FormSelect`, `FormTextarea`, `Modal`, `Alert`, `Skeleton`, `DataTable`, `PageHeader`, `Badge`, `Toast`).
+- [x] **Infrastructure & Environment Validation:** Able to boot application with valid environment schema validation (`env.ts`) and Prisma database singleton connection.
+
 ---
 
 ## 3. Environment Variables Schema

@@ -40,6 +40,15 @@
 | SLA breach auto-action | Admin is alerted; no automated project cancellation or penalty |
 | Email for 24-hour alert | Module 16 (Notifications) |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Expert Assignment:** Admin can assign a primary Statistician and Senior QA Lead to an active paid project.
+- [ ] **SLA Countdown Timer:** System automatically calculates and initiates `slaDueAt` based on agreed turnaround days, excluding Philippine holidays.
+- [ ] **Specialization & Workload Matching:** System surfaces recommendations matching the project's statistical tests against staff specialization and current load.
+- [ ] **Statistician Workbench Population:** Assigned project automatically appears on the Statistician and QA Lead's active workbenches.
+- [ ] **SLA Pause & Resume Lifecycle:** Statistician can request an SLA freeze for client document delays; Admin can approve pause and resume timers.
+- [ ] **Reassignment Protocol:** Admin can reassign project in emergency scenarios; original expert payout is voided and SLA timeline persists.
+
 ---
 
 ## 3. Database Schema

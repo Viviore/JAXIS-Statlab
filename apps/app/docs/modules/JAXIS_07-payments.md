@@ -42,6 +42,15 @@
 | Refund processing | Module 15 (Disputes) |
 | Online payment form (GCash API, Maya, Stripe) | Out of MVP |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Payment Proof Upload:** Client can upload official bank transfer or GCash payment receipt screenshots (PNG, JPG, PDF) with reference number and amount.
+- [ ] **Finance Verification Queue:** Finance Officer and Admin access queue of all pending proofs (`PROOF_SUBMITTED`).
+- [ ] **Payment Verification & Ledger:** Finance Officer reviews receipt, confirms cleared funds, and updates project balance.
+- [ ] **Escrow Activation:** When verified balance meets required downpayment, project activates (`ACTIVE`) and unlocks expert assignment.
+- [ ] **Payment Rejection:** Finance Officer can reject invalid or unverified proofs with clear reason; Client is prompted to re-upload.
+- [ ] **Full Payment Gate (RULE_REL_01):** When project is `FULLY_PAID`, release lock is flagged ready for final deliverables in Module 12.
+
 ---
 
 ## 3. Database Schema

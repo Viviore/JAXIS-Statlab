@@ -44,6 +44,16 @@
 | Leave management / attendance | Not in JAXIS scope. |
 | Assigning staff to projects | Module 08 (`08-assignment`). |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Admin Staff Provisioning:** Admin can provision internal staff accounts (`STATISTICIAN`, `SENIOR_QA_LEAD`, `FINANCE_OFFICER`, `CEO`) with name, email, role, and temporary password.
+- [ ] **Staff Roster Workbench:** Admin can view the staff roster directory with role badges, status indicators, specializations, and active project counters.
+- [ ] **Specialization Taxonomy:** Staff profiles support standardized specialization tags (Regression, ANOVA, SEM, Factor Analysis, Time Series, Instrument Validation, Mixed Methods).
+- [ ] **Staff Profile Management:** Statisticians and QA Leads can view and edit their own bio and specialization areas.
+- [ ] **Staff Suspension & Audit:** Admin can temporarily suspend staff with mandatory reason logging in `SuspensionLog`.
+- [ ] **CEO Account Termination:** CEO can permanently terminate staff accounts, auto-flagging active projects for `REASSIGNMENT_NEEDED`.
+- [ ] **Suspension Reversal:** Admin can lift suspensions, restoring active status and recording `liftedAt` timestamp.
+
 ---
 
 ## 3. Database Schema

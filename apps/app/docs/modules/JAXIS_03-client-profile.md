@@ -37,6 +37,14 @@
 | Multiple clients on one project | Out of MVP — only the account creator is authorized communicator (per `JAXIS_scope.md` §3) |
 | Client role management | Clients cannot be promoted to staff roles |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Client Profile Creation & Editing:** Client can enter and update their institutional details (school/institution, academic program, degree, contact number, region).
+- [ ] **Profile Completion Gate:** Server-side gate verifies `isProfileComplete` status; incomplete profiles are blocked from creating projects.
+- [ ] **Profile Completion Banner:** Persistent visual banner on the client dashboard nudging users with incomplete profiles to finish setup.
+- [ ] **Client Dashboard Home Shell:** Client lands on customized workbench with profile overview, project summary, and primary call-to-actions.
+- [ ] **Admin Read-Only Inspection:** Admin can view client academic profile data on project detail views.
+
 ---
 
 ## 3. Database Schema

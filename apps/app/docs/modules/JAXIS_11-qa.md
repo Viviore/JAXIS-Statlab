@@ -43,6 +43,15 @@
 | Client requesting QA re-review | Clients have no awareness of QA process |
 | QA lead reassignment | Done through Module 02/08 |
 
+### 🎯 Expected Outputs (QA Verification Checklist)
+
+- [ ] **Senior QA Lead Queue:** QA Lead accesses review queue of projects in `FOR_QA` status with complete analysis outputs.
+- [ ] **QA Evaluation Decision:** QA Lead submits structured review: `QA_APPROVED`, `QA_REJECTED`, or `ESCALATED_TO_CEO`.
+- [ ] **Internal 24-Hour Revision Clock:** When rejected, project transitions to `QA_REVISION` with error categorization (`MINOR`, `MAJOR`, `CRITICAL`) and a 24-hour turnaround deadline for the Statistician.
+- [ ] **Client Status Masking:** Internal QA stages are masked to the Client as `IN_ANALYSIS` to ensure seamless UX.
+- [ ] **Ethical Breach Escalation (RULE_ETH_01):** Severe data fabrication or ethical issues trigger immediate project lock (`ETHICAL_BREACH`) and alerts the CEO desk.
+- [ ] **Quality Approval Gate (RULE_REL_02):** Tier 2 projects (`JX-03`, `JX-04`) enforce `QA_APPROVED` validation before deliverables can be released.
+
 ---
 
 ## 3. Database Schema
