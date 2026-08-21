@@ -21,12 +21,6 @@ export default function QALeadDashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "QA Studio" },
         ]}
-        badge={
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[2px] bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-mono font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-            DUAL-BLIND VERIFICATION QUEUE
-          </span>
-        }
       />
 
       {/* KPI Cards */}

@@ -9,54 +9,20 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className="min-h-screen w-full bg-[#010114] text-white flex flex-col lg:flex-row overflow-hidden font-sans selection:bg-[#CC6600]/30 selection:text-white"
-      style={{
-        minHeight: "100vh",
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "#010114",
-        display: "flex",
-        overflow: "hidden",
-      }}
-    >
+    <div className="min-h-screen w-full bg-[#010114] text-white flex flex-col lg:flex-row font-sans selection:bg-[#CC6600]/30 selection:text-white">
       {/* ── Left Side: Industrial Executive Auth Command Panel ─────────── */}
       <aside
-        className="flex-shrink-0 bg-[#010B18] border-r border-white/[0.08] z-10 shadow-2xl relative"
+        className="w-full lg:w-[560px] min-h-screen lg:h-screen lg:max-h-screen flex-shrink-0 bg-[#010B18] border-b lg:border-b-0 lg:border-r border-white/[0.08] z-10 shadow-2xl relative flex flex-col justify-between overflow-y-auto"
         style={{
-          width: "560px",
-          minWidth: "480px",
-          maxWidth: "600px",
-          height: "100vh",
-          minHeight: "100vh",
-          maxHeight: "100vh",
-          flexShrink: 0,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "2.75rem 3rem",
+          padding: "2.5rem 2rem",
           boxSizing: "border-box",
-          backgroundColor: "#010B18",
-          borderRight: "1px solid rgba(255, 255, 255, 0.08)",
-          overflowY: "auto",
-          zIndex: 10,
         }}
       >
         {/* Top Header: Brand Logo */}
-        <header
-          className="flex items-center justify-between w-full flex-shrink-0"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            flexShrink: 0,
-          }}
-        >
+        <header className="flex items-center justify-between w-full flex-shrink-0 mb-6 lg:mb-0">
           <Link
             href="/login"
             className="flex items-center gap-2.5 text-decoration-none group"
-            style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}
           >
             <Image
               src="/jaxislogo.png"
@@ -66,38 +32,26 @@ export default function AuthLayout({
               className="h-6.5 w-auto"
               priority
             />
-            <div
-              className="flex items-baseline gap-1.5 font-sans"
-              style={{ display: "flex", alignItems: "baseline", gap: "0.375rem" }}
-            >
+            <div className="flex items-baseline gap-1.5 font-sans">
               <span className="font-bold text-sm tracking-wider text-white">
                 JAXIS
               </span>
               <span className="font-bold text-sm tracking-wider text-[#CC6600]">
                 STATLAB
               </span>
-              <span
-                className="hidden sm:inline-block text-[0.625rem] font-mono uppercase px-1.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 text-white/50 tracking-wider ml-1"
-                style={{ padding: "0.125rem 0.375rem", marginLeft: "0.25rem" }}
-              >
+              <span className="text-[0.625rem] font-mono uppercase px-1.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 text-white/50 tracking-wider ml-1">
                 Workspace
               </span>
             </div>
           </Link>
         </header>
 
-        {/* Dynamic Form Content: Centered in vertical space */}
+        {/* Dynamic Form Content: With comfortable horizontal breathing room */}
         <div
-          className="w-full flex-shrink-0"
+          className="w-full my-auto py-8 lg:py-6"
           style={{
-            width: "100%",
-            maxWidth: "420px",
-            marginLeft: "auto",
-            marginRight: "auto",
-            marginTop: "auto",
-            marginBottom: "auto",
-            paddingTop: "1.5rem",
-            paddingBottom: "1.5rem",
+            paddingLeft: "0.5rem",
+            paddingRight: "0.5rem",
             boxSizing: "border-box",
           }}
         >
@@ -105,25 +59,9 @@ export default function AuthLayout({
         </div>
 
         {/* Bottom Compliance & Security Footer */}
-        <footer
-          className="border-t border-white/[0.08] flex items-center justify-between text-[0.688rem] text-slate-400 font-mono w-full flex-shrink-0"
-          style={{
-            paddingTop: "1.25rem",
-            borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            fontSize: "0.688rem",
-            color: "#94A3B8",
-            width: "100%",
-            flexShrink: 0,
-          }}
-        >
+        <footer className="border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-2 text-[0.688rem] text-slate-400 font-mono w-full flex-shrink-0 pt-4 sm:pt-5 mt-6 lg:mt-0">
           <span>© 2026 JAXIS StatLab Inc.</span>
-          <div
-            className="flex items-center gap-3 text-slate-500"
-            style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#64748B" }}
-          >
+          <div className="flex items-center gap-3 text-slate-500">
             <span>ISO/IEC 27001</span>
             <span>·</span>
             <span>APA 7th</span>
@@ -132,19 +70,7 @@ export default function AuthLayout({
       </aside>
 
       {/* ── Right Side: Atmospheric 3D Particle Globe Viewport ─────────── */}
-      <main
-        className="hidden lg:flex flex-1 relative bg-[#010114] items-center justify-center overflow-hidden"
-        style={{
-          flex: 1,
-          position: "relative",
-          backgroundColor: "#010114",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          height: "100vh",
-        }}
-      >
+      <main className="hidden lg:flex flex-1 relative bg-[#010114] items-center justify-center overflow-hidden h-screen">
         {/* Ambient Glows */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_85%_50%,rgba(2,132,199,0.20),transparent_70%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_40%,rgba(1,46,87,0.35),transparent_60%)] pointer-events-none" />

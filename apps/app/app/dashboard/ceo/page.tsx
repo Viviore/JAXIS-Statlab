@@ -21,12 +21,6 @@ export default function CEODashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "CEO Console" },
         ]}
-        badge={
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 text-[#CC6600] text-xs font-mono font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#CC6600] animate-pulse" />
-            EXECUTIVE OVERSIGHT ACTIVE
-          </span>
-        }
       />
 
       {/* KPI Cards */}

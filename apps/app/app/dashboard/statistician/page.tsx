@@ -21,12 +21,6 @@ export default function StatisticianDashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Statistician Workbench" },
         ]}
-        badge={
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[2px] bg-sky-500/15 border border-sky-500/30 text-sky-400 text-xs font-mono font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse" />
-            COMPUTATIONAL WORKBENCH ACTIVE
-          </span>
-        }
       />
 
       {/* KPI Cards */}

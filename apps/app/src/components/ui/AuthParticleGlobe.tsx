@@ -6,15 +6,10 @@ import * as THREE from "three";
 // ─── Tuning: Crisp, High-Definition Spherical Starfield ────────────────────────
 const POINT_COUNT   = 850;   // Crisp particle density
 const SPHERE_RADIUS = 2.4;
-const HOTSPOT_COUNT = 40;    // Interactive hover cone size
-
-const REST_DIR = new THREE.Vector3(0, 0, 1).normalize();
 
 // ─── Luminous Palette ─────────────────────────────────────────────────────────
 const COL_NORMAL_NEAR = new THREE.Color(0x7dd3fc);   // Front: crisp ice-cyan
 const COL_NORMAL_FAR  = new THREE.Color(0x06182c);   // Back: deep sapphire navy
-const COL_HOT_CORE    = new THREE.Color(0xf0f9ff);   // Hover core: glowing brilliant white
-const COL_HOT_EDGE    = new THREE.Color(0x0284c7);   // Hover rim: azure blue
 
 // ─── Texture factories ────────────────────────────────────────────────────────
 
@@ -113,12 +108,7 @@ export default function AuthParticleGlobe() {
     const camera = new THREE.PerspectiveCamera(42, initW / initH, 0.1, 100);
     camera.position.set(0, 0, 7.8);
 
-    // ── Dynamic Buffers ───────────────────────────────────────────────────────
-    const hsTarget  = REST_DIR.clone();
-    const hsCurrent = REST_DIR.clone();
-    let   isPointerOver = false;
-    let   hoverStrength = 0;
-
+    // ── Static Particle Buffers ───────────────────────────────────────────────
     const posBuf  = new Float32Array(POINT_COUNT * 3);
     positions.forEach((p, i) => {
       posBuf[i * 3 + 0] = p.x;
@@ -126,7 +116,6 @@ export default function AuthParticleGlobe() {
       posBuf[i * 3 + 2] = p.z;
     });
     const posAttr = new THREE.BufferAttribute(posBuf, 3);
-    posAttr.setUsage(THREE.DynamicDrawUsage);
 
     const colBuf  = new Float32Array(POINT_COUNT * 3);
     const colAttr = new THREE.BufferAttribute(colBuf, 3);
@@ -174,81 +163,27 @@ export default function AuthParticleGlobe() {
     const group = new THREE.Group();
     group.add(haloMesh, coreMesh);
 
-    // Positioned gracefully on the right viewport edge as a half-moon hemisphere
     group.position.set(2.35, 0, 0);
     group.scale.setScalar(1.35);
 
     scene.add(group);
 
-    // ── Particle & Color Updates ─────────────────────────────────────────────
-    const invQuat    = new THREE.Quaternion();
-    const localDir   = new THREE.Vector3();
+    // ── Color and Shimmer Updates ────────────────────────────────────────────
     const camDir     = new THREE.Vector3(0, 0, 1);
     const camLocal   = new THREE.Vector3();
+    const invQuat    = new THREE.Quaternion();
     const tmpCNormal = new THREE.Color();
-    const tmpCHot    = new THREE.Color();
-    const tmpLocalHit = new THREE.Vector3();
-
-    const hotDotArray   = new Float32Array(POINT_COUNT);
-    const depthDotArray = new Float32Array(POINT_COUNT);
-    const particleIndices = new Int32Array(POINT_COUNT);
-    const hotRankArray  = new Int32Array(POINT_COUNT);
-    for (let i = 0; i < POINT_COUNT; i++) {
-      particleIndices[i] = i;
-    }
 
     function updateParticles(t: number) {
       camDir.subVectors(camera.position, group.position).normalize();
-
       invQuat.copy(group.quaternion).invert();
-      localDir.copy(hsCurrent).applyQuaternion(invQuat).normalize();
       camLocal.copy(camDir).applyQuaternion(invQuat).normalize();
 
-      for (let i = 0; i < POINT_COUNT; i++) {
-        const n = normals[i]!;
-        hotDotArray[i] = n.dot(localDir);
-        depthDotArray[i] = n.dot(camLocal);
-        particleIndices[i] = i;
-      }
-
-      particleIndices.sort((a, b) => (hotDotArray[b] ?? 0) - (hotDotArray[a] ?? 0));
-
-      hotRankArray.fill(-1);
-      for (let r = 0; r < HOTSPOT_COUNT; r++) {
-        const idx = particleIndices[r];
-        if (idx !== undefined) {
-          hotRankArray[idx] = r;
-        }
-      }
-
       for (let i = 0; i < positions.length; i++) {
-        const p = positions[i]!;
         const n = normals[i]!;
-        const depthDot = depthDotArray[i] ?? 0;
-        const rank     = hotRankArray[i] ?? -1;
-        const hotDot   = hotDotArray[i] ?? 0;
-
-        let displacement = 0;
-        if (hoverStrength > 0.005 && hotDot > 0.45) {
-          const intensity = Math.min(1, Math.max(0, (hotDot - 0.45) / 0.55));
-          displacement = intensity * hoverStrength * (0.12 + Math.sin(t * 4.5 + hotDot * 6) * 0.02);
-        }
-
-        posBuf[i * 3 + 0] = p.x + n.x * displacement;
-        posBuf[i * 3 + 1] = p.y + n.y * displacement;
-        posBuf[i * 3 + 2] = p.z + n.z * displacement;
-
+        const depthDot = n.dot(camLocal);
         const depthFactor = Math.pow(Math.max(0, depthDot), 1.25);
         tmpCNormal.lerpColors(COL_NORMAL_FAR, COL_NORMAL_NEAR, depthFactor);
-
-        if (rank >= 0 && hoverStrength > 0.005) {
-          const rankT = rank / (HOTSPOT_COUNT - 1);
-          const spotDepth = 0.72 + 0.28 * Math.max(0, depthDot);
-          tmpCHot.lerpColors(COL_HOT_CORE, COL_HOT_EDGE, rankT).multiplyScalar(spotDepth);
-
-          const blend = hoverStrength * (1 - rankT * 0.65);
-          tmpCNormal.lerp(tmpCHot, blend);
-        }
 
         const shimmer = 0.88 + Math.sin(t * 1.6 + i * 0.35) * 0.12;
 
@@ -257,64 +192,10 @@ export default function AuthParticleGlobe() {
         colBuf[i * 3 + 2] = tmpCNormal.b * shimmer;
       }
 
-      posAttr.needsUpdate = true;
       colAttr.needsUpdate = true;
     }
 
-    // ── Mouse & Pointer tracking ──────────────────────────────────────────────
-    const mouseTarget = new THREE.Vector2(0, 0);
-    const mouseSmooth = new THREE.Vector2(0, 0);
-    const raycaster   = new THREE.Raycaster();
-    const sphereObj   = new THREE.Sphere(new THREE.Vector3(0, 0, 0), SPHERE_RADIUS);
-    const rayTarget   = new THREE.Vector3();
-
-    const onPointerMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-
-      // Disable microinteractions when cursor is inside auth panel or outside globe viewport
-      if (
-        e.clientX < rect.left ||
-        e.clientX > rect.right ||
-        e.clientY < rect.top ||
-        e.clientY > rect.bottom
-      ) {
-        isPointerOver = false;
-        mouseTarget.set(0, 0);
-        hsTarget.lerp(REST_DIR, 0.05).normalize();
-        return;
-      }
-
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-
-      mouseTarget.x = x;
-      mouseTarget.y = y;
-
-      sphereObj.center.copy(group.position);
-      sphereObj.radius = SPHERE_RADIUS * Math.max(0.1, group.scale.x) * 1.15;
-
-      raycaster.setFromCamera(mouseTarget, camera);
-      const hit = raycaster.ray.intersectSphere(sphereObj, rayTarget);
-      if (hit) {
-        isPointerOver = true;
-        tmpLocalHit.copy(rayTarget).sub(group.position).normalize();
-        hsTarget.lerp(tmpLocalHit, 0.28).normalize();
-      } else {
-        isPointerOver = false;
-        hsTarget.lerp(REST_DIR, 0.04).normalize();
-      }
-    };
-
-    const onPointerLeave = () => {
-      isPointerOver = false;
-      mouseTarget.set(0, 0);
-      hsTarget.lerp(REST_DIR, 0.04).normalize();
-    };
-
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    document.addEventListener("mouseleave", onPointerLeave, { passive: true });
-
-    // ── Animation loop ────────────────────────────────────────────────────────
+    // ── Animation loop (Pure Ambient Motion) ──────────────────────────────────
     let animId: number;
     const clock = new THREE.Clock();
 
@@ -328,24 +209,15 @@ export default function AuthParticleGlobe() {
       const introProgress = Math.min(1, t / FADE_DURATION);
       const eased = 1 - Math.pow(1 - introProgress, 3);
 
-      const targetHover = isPointerOver ? 1.0 : 0.0;
-      hoverStrength += (targetHover - hoverStrength) * 0.07;
-
-      mouseSmooth.x += (mouseTarget.x - mouseSmooth.x) * 0.06;
-      mouseSmooth.y += (mouseTarget.y - mouseSmooth.y) * 0.06;
-
-      const currentHaloOpacity = HALO_BASE_OPACITY + hoverStrength * 0.16;
-
       coreMat.opacity = eased;
-      haloMat.opacity = eased * (currentHaloOpacity + Math.sin(t * 1.2) * 0.03);
+      haloMat.opacity = eased * (HALO_BASE_OPACITY + Math.sin(t * 1.2) * 0.03);
 
-      group.rotation.x = Math.sin(t * 0.05) * 0.06 - mouseSmooth.y * 0.14;
-      group.rotation.y = t * 0.09 + mouseSmooth.x * 0.20;
+      // Smooth ambient axial spin
+      group.rotation.x = Math.sin(t * 0.05) * 0.04;
+      group.rotation.y = t * 0.08;
 
-      const breathe = (1 + Math.sin(t * 0.8) * 0.01) * (1 + hoverStrength * 0.025);
+      const breathe = 1 + Math.sin(t * 0.8) * 0.01;
       group.scale.setScalar(1.35 * breathe);
-
-      hsCurrent.lerp(hsTarget, 0.10).normalize();
 
       updateParticles(t);
       renderer.render(scene, camera);
@@ -374,8 +246,6 @@ export default function AuthParticleGlobe() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("mouseleave", onPointerLeave);
       renderer.dispose();
       coreGeo.dispose(); coreMat.dispose(); coreTex.dispose();
       haloGeo.dispose(); haloMat.dispose(); haloTex.dispose();

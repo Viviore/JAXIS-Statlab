@@ -43,30 +43,6 @@ export default function DashboardOverviewPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Command & Control" },
         ]}
-        badge={
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold"
-            style={{
-              padding: "0.3rem 0.875rem",
-              borderRadius: "2px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              backgroundColor: "rgba(16, 185, 129, 0.12)",
-              color: "#10B981",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              lineHeight: 1,
-            }}
-          >
-            <span
-              className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"
-              style={{ height: "0.45rem", width: "0.45rem", borderRadius: "9999px", backgroundColor: "#10B981" }}
-            />
-            LIVE TELEMETRY v2.4
-          </span>
-        }
         actions={
           <div className="flex items-center gap-3" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <Button

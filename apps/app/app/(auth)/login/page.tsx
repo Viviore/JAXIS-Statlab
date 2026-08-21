@@ -202,7 +202,7 @@ function LoginForm() {
         />
 
         {/* Remember Session & Forgot Password */}
-        <div className="flex items-center justify-between text-xs font-sans -mt-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans -mt-1">
           <label className="flex items-center gap-2 cursor-pointer select-none text-slate-300 hover:text-white transition-colors">
             <input
               type="checkbox"

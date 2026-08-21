@@ -28,12 +28,6 @@ export default function AdminDashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Admin Operations" },
         ]}
-        badge={
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            ADMIN CONSOLE READY
-          </span>
-        }
         actions={
           <div className="flex items-center gap-3">
             <Button
