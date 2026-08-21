@@ -9,6 +9,7 @@ export interface DashboardShellProps {
   userFullName: string;
   userRole: RoleName | string;
   userEmail: string;
+  clientProfileIncomplete?: boolean;
   children: React.ReactNode;
 }
 
@@ -16,6 +17,7 @@ export function DashboardShell({
   userFullName,
   userRole,
   userEmail,
+  clientProfileIncomplete = false,
   children,
 }: DashboardShellProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -98,6 +100,24 @@ export function DashboardShell({
               boxSizing: "border-box",
             }}
           >
+            {clientProfileIncomplete && (
+              <div className="mb-6 bg-[#CC6600]/10 border border-[#CC6600]/30 rounded-[2px] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[#CC6600] font-mono text-sm font-bold uppercase tracking-wider">
+                    Action Required: Institutional Profile Incomplete
+                  </span>
+                  <span className="text-white/70 text-sm font-sans">
+                    You must complete your institutional affiliation details before submitting project intake requests.
+                  </span>
+                </div>
+                <a
+                  href="/dashboard/client/profile"
+                  className="whitespace-nowrap px-4 py-2 bg-[#CC6600] text-white text-xs font-mono font-bold uppercase tracking-wider rounded-[2px] hover:bg-[#b35a00] transition-colors"
+                >
+                  Complete Profile →
+                </a>
+              </div>
+            )}
             {children}
           </div>
         </main>

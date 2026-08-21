@@ -208,31 +208,31 @@ const seedStaffProfiles = [
 ## 8. Acceptance Criteria (Done Checklist)
 
 ### Provisioning
-- [ ] Admin can provision a Statistician account with email + role + specializations
-- [ ] Provisioned account receives a temporary password (hashed via bcrypt)
-- [ ] Duplicate email returns 409 `EMAIL_TAKEN`
-- [ ] Statistician cannot self-register at `/register`
+- [x] Admin can provision a Statistician account with email + role + specializations
+- [x] Provisioned account receives a temporary password (hashed via bcrypt)
+- [x] Duplicate email returns 409 `EMAIL_TAKEN`
+- [x] Statistician cannot self-register at `/register`
 
 ### Profile
-- [ ] `StaffProfile` created on provisioning for all staff roles
-- [ ] Statistician can edit own bio and specializations
-- [ ] Admin can view full staff profile with suspension history
-- [ ] Specialization tags display correctly in roster and profile views
+- [x] `StaffProfile` created on provisioning for all staff roles
+- [x] Statistician can edit own bio and specializations
+- [x] Admin can view full staff profile with suspension history
+- [x] Specialization tags display correctly in roster and profile views
 
 ### Suspension & Termination
-- [ ] Admin can suspend with reason → account status `SUSPENDED` → login blocked
-- [ ] Admin can lift suspension → status `ACTIVE` → `SuspensionLog.liftedAt` set
-- [ ] CEO can terminate with violation type → status `TERMINATED` → login permanently blocked
-- [ ] Non-CEO Admin gets 403 on termination endpoint
-- [ ] Active assignments flagged `REASSIGNMENT_NEEDED` on suspension/termination
-- [ ] Serious violation + `forfeitPayouts: true` → pending payout records voided
+- [x] Admin can suspend with reason → account status `SUSPENDED` → login blocked
+- [x] Admin can lift suspension → status `ACTIVE` → `SuspensionLog.liftedAt` set
+- [x] CEO can terminate with violation type → status `TERMINATED` → login permanently blocked
+- [x] Non-CEO Admin gets 403 on termination endpoint
+- [x] Active assignments flagged `REASSIGNMENT_NEEDED` on suspension/termination
+- [x] Serious violation + `forfeitPayouts: true` → pending payout records voided
 
 ### Roster Views
-- [ ] Staff roster table renders with correct role badge, status, specialization count, active project count
-- [ ] Filter by role works
-- [ ] Filter by status (ACTIVE, SUSPENDED) works
+- [x] Staff roster table renders with correct role badge, status, specialization count, active project count
+- [x] Filter by role works
+- [x] Filter by status (ACTIVE, SUSPENDED) works
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

@@ -527,6 +527,40 @@
 
 ---
 
+## Module 03: Client Profile & Account (`03-client-profile`)
+
+### Task 1 — Database Schema & Seeding
+**Objective:** Create `ClientProfile` model and seed data.
+- [x] Add `ClientProfile` model linked 1:1 with `User`
+- [x] Update `seed.ts` to include a sample ClientProfile
+- [x] Run Prisma push and generate
+
+### Task 2 — Backend Logic & Server Actions
+**Objective:** Validation schemas and actions for client profiles.
+- [x] Create `ClientProfileSchema` in Zod
+- [x] Create `upsertClientProfile` action
+- [x] Create profile completion gate check (`assertClientProfileComplete`)
+
+### Task 3 — Client Profile Form UI
+**Objective:** Form page for clients to input their institutional details.
+- [x] Build `/dashboard/client/profile` utilizing `@repo/ui` components
+
+### Task 4 — Profile Completion Banner & Gating
+**Objective:** Visual enforcement of profile completion.
+- [x] Add conditional banner in dashboard layout for incomplete profiles
+
+### Task 5 — Client Dashboard Updates
+**Objective:** Adjust client landing page to display profile status.
+- [x] Add Profile Status card to `/dashboard/client`
+- [x] Convert project table to padded layout
+
+### Task 6 — Quality Gate & Verification
+- [x] `npm run check-types`
+- [x] `npm run lint`
+- [x] `npm run build`
+
+---
+
 ## Upcoming Modules (Roadmap v2)
 
 | #    | Module                                                | Status                           |
@@ -534,8 +568,8 @@
 | `00` | `00-foundation` — Project Foundation & Infrastructure | ✅ Completed                     |
 | `01` | `01-auth` — Authentication & RBAC                     | ✅ Completed                     |
 | `02` | `02-staff` — Expert Provisioning & Staff Management   | ✅ Completed                     |
-| `03` | `03-client-profile` — Client Profile & Account        | 🔄 Active / Ready for Execution  |
-| `04` | `04-intake` — Project Intake & Submission             | ⏳ Blocked — awaiting `03`       |
+| `03` | `03-client-profile` — Client Profile & Account        | ✅ Completed                     |
+| `04` | `04-intake` — Project Intake & Submission             | 🔄 Active / Ready for Execution  |
 | `05` | `05-quotation` — Quotation & Pricing                  | ⏳ Blocked — awaiting `04`       |
 | `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |
 | `07` | `07-payments` — Payment & Installments                | ⏳ Blocked — awaiting `06`       |

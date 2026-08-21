@@ -33,68 +33,88 @@ export default function ClientDashboardPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <Card className="flex flex-col gap-1 p-5 border-l-2 border-l-[#CC6600]">
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Profile Status</span>
+          <span className="text-xl font-mono font-bold text-white mt-1">INCOMPLETE</span>
+          <span className="text-[0.688rem] text-[#CC6600] mt-1 font-mono">● Action required</span>
+        </Card>
+
         <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">My Active Studies</span>
-          <span className="text-3xl font-mono font-bold text-white">4</span>
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Active Studies</span>
+          <span className="text-2xl font-mono font-bold text-white mt-1">4</span>
           <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● All milestones on schedule</span>
         </Card>
 
         <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">QA Verification Stage</span>
-          <span className="text-3xl font-mono font-bold text-amber-400">2</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Dual-blind recalculation in progress</span>
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">QA Stage</span>
+          <span className="text-2xl font-mono font-bold text-amber-400 mt-1">2</span>
+          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Dual-blind review pending</span>
         </Card>
 
         <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Ready For Download</span>
-          <span className="text-3xl font-mono font-bold text-sky-400">1</span>
-          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● Signed APA 7th report released</span>
+          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Downloads</span>
+          <span className="text-2xl font-mono font-bold text-sky-400 mt-1">1</span>
+          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● APA 7th report released</span>
         </Card>
       </div>
 
       {/* Studies Table */}
-      <Card className="p-0 overflow-hidden">
-        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between">
+      <Card
+        className="p-0 overflow-hidden border border-white/[0.08] bg-[#010D1F]"
+        style={{ padding: 0 }}
+      >
+        <div
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          style={{ padding: '1.75rem 1.75rem 1.25rem 1.75rem' }}
+        >
           <div>
-            <h2 className="text-base font-bold text-white">Active Research Projects</h2>
-            <p className="text-xs text-white/50">Real-time status of your commissioned statistical analyses</p>
+            <h2 className="text-base font-bold text-white tracking-wide font-sans">
+              Active Research Projects
+            </h2>
+            <p className="text-xs text-white/50 mt-1.5 font-sans leading-relaxed">
+              Real-time status of your commissioned statistical analyses
+            </p>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-left border-collapse font-sans text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase">
-                <th className="py-3 px-4">Study ID</th>
-                <th className="py-3 px-4">Title</th>
-                <th className="py-3 px-4">Methodology</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.04]">
-              {projects.slice(0, 4).map((study) => (
-                <tr key={study.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3.5 px-4 font-mono text-xs text-[#CC6600] font-semibold">{study.id}</td>
-                  <td className="py-3.5 px-4 text-white font-medium">{study.title}</td>
-                  <td className="py-3.5 px-4 font-mono text-xs text-white/60">{study.method}</td>
-                  <td className="py-3.5 px-4">
-                    <StatusBadge status={study.status} />
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedStudy(study)}
-                    >
-                      VIEW STUDY
-                    </Button>
-                  </td>
+        {/* ─ Table ─ */}
+        <div style={{ padding: '0 1.75rem 1.75rem 1.75rem' }}>
+          <div className="w-full overflow-x-auto rounded-[3px]" style={{ border: '1px solid rgba(255, 255, 255, 0.07)' }}>
+            <table className="w-full min-w-[620px] text-left border-collapse font-sans text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] bg-white/[0.015] text-[0.65rem] font-mono text-white/45 uppercase tracking-widest">
+                  <th className="py-3.5 px-5 whitespace-nowrap font-medium">Study ID</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap font-medium">Title</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap font-medium">Methodology</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap font-medium">Status</th>
+                  <th className="py-3.5 px-5 text-right whitespace-nowrap font-medium">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {projects.slice(0, 4).map((study) => (
+                  <tr key={study.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="py-4 px-5 align-middle font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">{study.id}</td>
+                    <td className="py-4 px-4 align-middle text-white font-medium text-xs">{study.title}</td>
+                    <td className="py-4 px-4 align-middle font-mono text-[0.65rem] text-white/60 uppercase">{study.method}</td>
+                    <td className="py-4 px-4 align-middle whitespace-nowrap">
+                      <StatusBadge status={study.status} />
+                    </td>
+                    <td className="py-4 px-5 align-middle text-right whitespace-nowrap">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedStudy(study)}
+                        className="text-[0.65rem] py-1.5 px-3 h-auto whitespace-nowrap font-mono tracking-wider"
+                      >
+                        VIEW STUDY
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </Card>
 

@@ -32,10 +32,20 @@
 
 | Feature | Reason |
 |---|---|
+| Admin editing client profiles | Admin should only view. Modules 04/05 use the data read-only. |
+| Complex multi-step onboarding | Single-page form is sufficient. |
 | Project submission | Module 04 (`04-intake`) |
 | Client account deletion | Module 17 (`17-reporting` archive sub-domain handles data deletion requests) |
 | Multiple clients on one project | Out of MVP — only the account creator is authorized communicator (per `JAXIS_scope.md` §3) |
 | Client role management | Clients cannot be promoted to staff roles |
+
+### 🎯 Expected Output (What you should be able to do now)
+
+1. **See the Warning Banner**: If you log in as a new Client (or `client@jaxis.dev` with an empty profile), you should see a persistent orange warning banner in the dashboard sidebar telling you to complete your profile.
+2. **Access the Profile Form**: You should be able to navigate to `/dashboard/client/profile` and see a form for Institutional Details and Contact Information.
+3. **Save and Remove Banner**: Filling out the form and clicking Save should update your profile, redirect you to the main dashboard, and the warning banner should disappear.
+4. **See Profile Status KPI**: On the main `/dashboard/client` page, you should see a card showing your Profile Status as "100% Complete".
+5. **Route Protection**: If you try to bypass the profile form (e.g. by trying to submit a new project in the future), the system is wired to redirect you back to the profile page.
 
 ### 🎯 Expected Outputs (QA Verification Checklist)
 
@@ -144,27 +154,27 @@ const seedClientProfile = {
 ## 7. Acceptance Criteria (Done Checklist)
 
 ### Profile Creation & Update
-- [ ] Client can create profile with all required fields → `ClientProfile` row created
-- [ ] Client can update any profile field → `updatedAt` refreshed
-- [ ] Creating a second profile returns 409 (one profile per user enforced)
-- [ ] Missing required fields returns 422 with field-level errors
+- [x] Client can create profile with all required fields → `ClientProfile` row created
+- [x] Client can update any profile field → `updatedAt` refreshed
+- [x] Creating a second profile returns 409 (one profile per user enforced)
+- [x] Missing required fields returns 422 with field-level errors
 
 ### Profile Gate
-- [ ] `POST /api/v1/projects` with incomplete profile returns 422 `PROFILE_INCOMPLETE` (gate enforcement — actual projects route in Module 04)
-- [ ] `isProfileComplete` returns `false` when any required field is blank
-- [ ] `isProfileComplete` returns `true` when all 4 fields are set
+- [x] `POST /api/v1/projects` with incomplete profile returns 422 `PROFILE_INCOMPLETE` (gate enforcement — actual projects route in Module 04)
+- [x] `isProfileComplete` returns `false` when any required field is blank
+- [x] `isProfileComplete` returns `true` when all 4 fields are set
 
 ### UI
-- [ ] Incomplete profile banner renders in sidebar until profile is complete
-- [ ] Banner disappears after profile is completed
-- [ ] Client dashboard home renders correctly with profile status card
-- [ ] Profile form pre-fills existing values on update
+- [x] Incomplete profile banner renders in sidebar until profile is complete
+- [x] Banner disappears after profile is completed
+- [x] Client dashboard home renders correctly with profile status card
+- [x] Profile form pre-fills existing values on update
 
 ### Admin Access
-- [ ] Admin can view client profile from project detail panel (Module 04 wires this)
-- [ ] Admin cannot edit client profile (read-only 403 on PATCH from admin session)
+- [x] Admin can view client profile from project detail panel (Module 04 wires this)
+- [x] Admin cannot edit client profile (read-only 403 on PATCH from admin session)
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

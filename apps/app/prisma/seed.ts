@@ -178,6 +178,39 @@ async function main() {
   }
 
   console.log(`✅ Seeded ${seedStaffProfiles.length} staff profile records.`);
+
+  // 5. Upsert ClientProfile for the main test Client
+  const seedClientProfile = {
+    email: "client@jaxis.dev",
+    institutionSchool: "Stanford University",
+    academicProgram: "Ph.D. in Organizational Psychology",
+    contactNumber: "+15551234567",
+    region: "NORTH_AMERICA",
+  };
+
+  const clientUser = await prisma.user.findUnique({
+    where: { email: seedClientProfile.email },
+  });
+
+  if (clientUser) {
+    await prisma.clientProfile.upsert({
+      where: { userId: clientUser.id },
+      update: {
+        institutionSchool: seedClientProfile.institutionSchool,
+        academicProgram: seedClientProfile.academicProgram,
+        contactNumber: seedClientProfile.contactNumber,
+        region: seedClientProfile.region,
+      },
+      create: {
+        userId: clientUser.id,
+        institutionSchool: seedClientProfile.institutionSchool,
+        academicProgram: seedClientProfile.academicProgram,
+        contactNumber: seedClientProfile.contactNumber,
+        region: seedClientProfile.region,
+      },
+    });
+    console.log(`✅ Seeded 1 client profile record.`);
+  }
 }
 
 main()
