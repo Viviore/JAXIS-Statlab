@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Hero as FooterBackground } from "../ui/tailwind-css-background-snippet";
-import { APP_URL } from "@/lib/config";
+import { REGISTER_URL } from "@/lib/config";
 
 export default function FooterCTA() {
   return (
@@ -71,7 +71,7 @@ export default function FooterCTA() {
         </p>
 
         <a
-          href={APP_URL}
+          href={REGISTER_URL}
           id="footer-cta"
           style={{
             fontFamily: "var(--font-sans), sans-serif",

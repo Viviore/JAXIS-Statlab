@@ -1,196 +1,401 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
-interface Point3D {
-  x: number;
-  y: number;
-  z: number;
-  baseAlpha: number;
-  size: number;
-  isHotspot: boolean;
+// ─── Tuning: Crisp, High-Definition Spherical Starfield ────────────────────────
+const POINT_COUNT   = 850;   // Crisp particle density
+const SPHERE_RADIUS = 2.4;
+const HOTSPOT_COUNT = 40;    // Interactive hover cone size
+
+const REST_DIR = new THREE.Vector3(0, 0, 1).normalize();
+
+// ─── Luminous Palette ─────────────────────────────────────────────────────────
+const COL_NORMAL_NEAR = new THREE.Color(0x7dd3fc);   // Front: crisp ice-cyan
+const COL_NORMAL_FAR  = new THREE.Color(0x06182c);   // Back: deep sapphire navy
+const COL_HOT_CORE    = new THREE.Color(0xf0f9ff);   // Hover core: glowing brilliant white
+const COL_HOT_EDGE    = new THREE.Color(0x0284c7);   // Hover rim: azure blue
+
+// ─── Texture factories ────────────────────────────────────────────────────────
+
+/** Sharp core dot — crisp luminous center */
+function makeCoreGlowTex(size = 64): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const half = size / 2;
+  const g = ctx.createRadialGradient(half, half, 0, half, half, half);
+  g.addColorStop(0,    "rgba(255,255,255,1.0)");
+  g.addColorStop(0.20, "rgba(255,255,255,0.9)");
+  g.addColorStop(0.50, "rgba(255,255,255,0.25)");
+  g.addColorStop(0.80, "rgba(255,255,255,0.03)");
+  g.addColorStop(1,    "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(canvas);
 }
 
+/** Soft feathered halo bloom */
+function makeHaloTex(size = 128): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const half = size / 2;
+  const g = ctx.createRadialGradient(half, half, 0, half, half, half);
+  g.addColorStop(0,    "rgba(125,211,252,0.50)");
+  g.addColorStop(0.25, "rgba(56,189,248,0.22)");
+  g.addColorStop(0.55, "rgba(2,132,199,0.07)");
+  g.addColorStop(0.85, "rgba(2,132,199,0.01)");
+  g.addColorStop(1,    "rgba(2,132,199,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(canvas);
+}
+
+// ─── Geometry helper: Fibonacci Sphere ───────────────────────────────────────
+function fibonacciSphere(count: number, radius: number): THREE.Vector3[] {
+  const pts: THREE.Vector3[] = [];
+  const phi = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < count; i++) {
+    const y = 1 - (i / (count - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const t = phi * i;
+    pts.push(new THREE.Vector3(Math.cos(t) * r * radius, y * radius, Math.sin(t) * r * radius));
+  }
+  return pts;
+}
+
+const positions = fibonacciSphere(POINT_COUNT, SPHERE_RADIUS);
+const normals   = positions.map(p => p.clone().normalize());
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function AuthParticleGlobe() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = canvasRef.current;
+    if (!container) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || 1000);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || 800);
-
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const handleResize = () => {
-      if (!canvas || !canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth;
-      height = canvas.height = canvas.parentElement.clientHeight;
-    };
-    window.addEventListener("resize", handleResize);
-
-    // Generate Fibonacci Sphere points
-    const POINT_COUNT = 1100;
-    const SPHERE_RADIUS = Math.min(width, height) * 0.42;
-    const points: Point3D[] = [];
-    const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
-
-    for (let i = 0; i < POINT_COUNT; i++) {
-      const y = 1 - (i / (POINT_COUNT - 1)) * 2;
-      const r = Math.sqrt(Math.max(0, 1 - y * y));
-      const theta = phi * i;
-
-      const x = Math.cos(theta) * r;
-      const z = Math.sin(theta) * r;
-
-      const isHotspot = Math.sin(x * 3 + y * 2) * Math.cos(z * 3) > 0.3;
-
-      points.push({
-        x: x * SPHERE_RADIUS,
-        y: y * SPHERE_RADIUS,
-        z: z * SPHERE_RADIUS,
-        baseAlpha: isHotspot ? 0.85 : 0.2 + Math.random() * 0.3,
-        size: isHotspot ? 2.0 : 0.9 + Math.random() * 0.8,
-        isHotspot,
-      });
+    // ── Renderer ─────────────────────────────────────────────────────────────
+    let isWebGLSupported = false;
+    try {
+      const testCanvas = document.createElement("canvas");
+      isWebGLSupported = !!(
+        window.WebGLRenderingContext &&
+        (testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl"))
+      );
+    } catch {
+      isWebGLSupported = false;
     }
 
-    let rotX = 0.2;
-    let rotY = 0;
-    const speed = prefersReducedMotion ? 0 : 0.003;
+    if (!isWebGLSupported) {
+      console.warn("WebGL not supported.");
+      return;
+    }
 
-    let targetRotY = 0;
-    let targetRotX = 0.2;
+    const initW = container.clientWidth || window.innerWidth;
+    const initH = container.clientHeight || window.innerHeight;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const nx = (e.clientX - rect.left) / width - 0.5;
-      const ny = (e.clientY - rect.top) / height - 0.5;
-      targetRotY = nx * 0.5;
-      targetRotX = 0.2 + ny * 0.25;
-    };
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(initW, initH);
+      renderer.setClearColor(0x010114, 1);
+      container.appendChild(renderer.domElement);
+    } catch {
+      console.warn("WebGL renderer failed.");
+      return;
+    }
 
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    // ── Scene & Camera ────────────────────────────────────────────────────────
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, initW / initH, 0.1, 100);
+    camera.position.set(0, 0, 7.8);
 
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
+    // ── Dynamic Buffers ───────────────────────────────────────────────────────
+    const hsTarget  = REST_DIR.clone();
+    const hsCurrent = REST_DIR.clone();
+    let   isPointerOver = false;
+    let   hoverStrength = 0;
 
-      rotX += (targetRotX - rotX) * 0.05;
-      rotY += (targetRotY - rotY) * 0.05;
+    const posBuf  = new Float32Array(POINT_COUNT * 3);
+    positions.forEach((p, i) => {
+      posBuf[i * 3 + 0] = p.x;
+      posBuf[i * 3 + 1] = p.y;
+      posBuf[i * 3 + 2] = p.z;
+    });
+    const posAttr = new THREE.BufferAttribute(posBuf, 3);
+    posAttr.setUsage(THREE.DynamicDrawUsage);
 
-      if (!prefersReducedMotion) {
-        rotY += speed;
+    const colBuf  = new Float32Array(POINT_COUNT * 3);
+    const colAttr = new THREE.BufferAttribute(colBuf, 3);
+    colAttr.setUsage(THREE.DynamicDrawUsage);
+
+    // ── Layer 1: sharp core dots ──────────────────────────────────────────────
+    const coreGeo = new THREE.BufferGeometry();
+    coreGeo.setAttribute("position", posAttr);
+    coreGeo.setAttribute("color", colAttr);
+
+    const coreTex = makeCoreGlowTex(64);
+    const coreMat = new THREE.PointsMaterial({
+      size: 0.10,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: true,
+      map: coreTex,
+      alphaTest: 0.001,
+    });
+    const coreMesh = new THREE.Points(coreGeo, coreMat);
+
+    // ── Layer 2: wide halo bloom ──────────────────────────────────────────────
+    const haloGeo = new THREE.BufferGeometry();
+    haloGeo.setAttribute("position", posAttr);
+    haloGeo.setAttribute("color", colAttr);
+
+    const haloTex = makeHaloTex(128);
+    const haloMat = new THREE.PointsMaterial({
+      size: 0.45,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: true,
+      map: haloTex,
+      alphaTest: 0.001,
+    });
+    const haloMesh = new THREE.Points(haloGeo, haloMat);
+
+    // ── Group: Dramatic Half-Moon Framing on Right Edge ──────────────────────
+    const group = new THREE.Group();
+    group.add(haloMesh, coreMesh);
+
+    // Positioned gracefully on the right viewport edge as a half-moon hemisphere
+    group.position.set(2.35, 0, 0);
+    group.scale.setScalar(1.35);
+
+    scene.add(group);
+
+    // ── Particle & Color Updates ─────────────────────────────────────────────
+    const invQuat    = new THREE.Quaternion();
+    const localDir   = new THREE.Vector3();
+    const camDir     = new THREE.Vector3(0, 0, 1);
+    const camLocal   = new THREE.Vector3();
+    const tmpCNormal = new THREE.Color();
+    const tmpCHot    = new THREE.Color();
+    const tmpLocalHit = new THREE.Vector3();
+
+    const hotDotArray   = new Float32Array(POINT_COUNT);
+    const depthDotArray = new Float32Array(POINT_COUNT);
+    const particleIndices = new Int32Array(POINT_COUNT);
+    const hotRankArray  = new Int32Array(POINT_COUNT);
+    for (let i = 0; i < POINT_COUNT; i++) {
+      particleIndices[i] = i;
+    }
+
+    function updateParticles(t: number) {
+      camDir.subVectors(camera.position, group.position).normalize();
+
+      invQuat.copy(group.quaternion).invert();
+      localDir.copy(hsCurrent).applyQuaternion(invQuat).normalize();
+      camLocal.copy(camDir).applyQuaternion(invQuat).normalize();
+
+      for (let i = 0; i < POINT_COUNT; i++) {
+        const n = normals[i]!;
+        hotDotArray[i] = n.dot(localDir);
+        depthDotArray[i] = n.dot(camLocal);
+        particleIndices[i] = i;
       }
 
-      const centerX = width * 0.5; // Centered
-      const centerY = height * 0.5;
+      particleIndices.sort((a, b) => (hotDotArray[b] ?? 0) - (hotDotArray[a] ?? 0));
 
-      const cosX = Math.cos(rotX);
-      const sinX = Math.sin(rotX);
-      const cosY = Math.cos(rotY);
-      const sinY = Math.sin(rotY);
+      hotRankArray.fill(-1);
+      for (let r = 0; r < HOTSPOT_COUNT; r++) {
+        const idx = particleIndices[r];
+        if (idx !== undefined) {
+          hotRankArray[idx] = r;
+        }
+      }
 
-      // Background atmospheric glow
-      const bgGrad = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        SPHERE_RADIUS * 0.1,
-        centerX,
-        centerY,
-        SPHERE_RADIUS * 1.3
-      );
-      bgGrad.addColorStop(0, "rgba(2, 132, 199, 0.25)");
-      bgGrad.addColorStop(0.45, "rgba(1, 46, 87, 0.15)");
-      bgGrad.addColorStop(0.85, "rgba(1, 1, 20, 0.05)");
-      bgGrad.addColorStop(1, "rgba(1, 1, 20, 0)");
-      ctx.fillStyle = bgGrad;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, SPHERE_RADIUS * 1.3, 0, Math.PI * 2);
-      ctx.fill();
+      for (let i = 0; i < positions.length; i++) {
+        const p = positions[i]!;
+        const n = normals[i]!;
+        const depthDot = depthDotArray[i] ?? 0;
+        const rank     = hotRankArray[i] ?? -1;
+        const hotDot   = hotDotArray[i] ?? 0;
 
-      // Outer luminous crescent highlight
-      const rimGrad = ctx.createRadialGradient(
-        centerX - SPHERE_RADIUS * 0.3,
-        centerY - SPHERE_RADIUS * 0.2,
-        SPHERE_RADIUS * 0.5,
-        centerX,
-        centerY,
-        SPHERE_RADIUS * 1.02
-      );
-      rimGrad.addColorStop(0, "rgba(56, 189, 248, 0)");
-      rimGrad.addColorStop(0.75, "rgba(56, 189, 248, 0.06)");
-      rimGrad.addColorStop(0.97, "rgba(125, 211, 252, 0.4)");
-      rimGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
-
-      ctx.fillStyle = rimGrad;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, SPHERE_RADIUS * 1.02, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Project & Render 3D Points
-      for (const pt of points) {
-        if (!pt) continue;
-
-        const x1 = pt.x * cosY + pt.z * sinY;
-        const z1 = -pt.x * sinY + pt.z * cosY;
-
-        const y2 = pt.y * cosX - z1 * sinX;
-        const z2 = pt.y * sinX + z1 * cosX;
-
-        const perspective = 1200 / (1200 + z2);
-        const projX = centerX + x1 * perspective;
-        const projY = centerY + y2 * perspective;
-
-        const depthRatio = (z2 + SPHERE_RADIUS) / (SPHERE_RADIUS * 2);
-        if (depthRatio < 0.08) continue;
-
-        const alpha = Math.min(1, Math.max(0.05, pt.baseAlpha * depthRatio * (0.35 + 0.65 * depthRatio)));
-        const pointSize = Math.max(0.6, pt.size * perspective * (0.5 + 0.5 * depthRatio));
-
-        ctx.beginPath();
-        ctx.arc(projX, projY, pointSize, 0, Math.PI * 2);
-
-        if (pt.isHotspot && depthRatio > 0.6) {
-          ctx.fillStyle = `rgba(240, 249, 255, ${alpha})`;
-          ctx.shadowColor = "rgba(56, 189, 248, 0.85)";
-          ctx.shadowBlur = 8;
-        } else if (depthRatio > 0.45) {
-          ctx.fillStyle = `rgba(125, 211, 252, ${alpha * 0.95})`;
-          ctx.shadowColor = "rgba(14, 165, 233, 0.45)";
-          ctx.shadowBlur = 4;
-        } else {
-          ctx.fillStyle = `rgba(14, 116, 144, ${alpha * 0.7})`;
-          ctx.shadowBlur = 0;
+        let displacement = 0;
+        if (hoverStrength > 0.005 && hotDot > 0.45) {
+          const intensity = Math.min(1, Math.max(0, (hotDot - 0.45) / 0.55));
+          displacement = intensity * hoverStrength * (0.12 + Math.sin(t * 4.5 + hotDot * 6) * 0.02);
         }
 
-        ctx.fill();
+        posBuf[i * 3 + 0] = p.x + n.x * displacement;
+        posBuf[i * 3 + 1] = p.y + n.y * displacement;
+        posBuf[i * 3 + 2] = p.z + n.z * displacement;
+
+        const depthFactor = Math.pow(Math.max(0, depthDot), 1.25);
+        tmpCNormal.lerpColors(COL_NORMAL_FAR, COL_NORMAL_NEAR, depthFactor);
+
+        if (rank >= 0 && hoverStrength > 0.005) {
+          const rankT = rank / (HOTSPOT_COUNT - 1);
+          const spotDepth = 0.72 + 0.28 * Math.max(0, depthDot);
+          tmpCHot.lerpColors(COL_HOT_CORE, COL_HOT_EDGE, rankT).multiplyScalar(spotDepth);
+
+          const blend = hoverStrength * (1 - rankT * 0.65);
+          tmpCNormal.lerp(tmpCHot, blend);
+        }
+
+        const shimmer = 0.88 + Math.sin(t * 1.6 + i * 0.35) * 0.12;
+
+        colBuf[i * 3 + 0] = tmpCNormal.r * shimmer;
+        colBuf[i * 3 + 1] = tmpCNormal.g * shimmer;
+        colBuf[i * 3 + 2] = tmpCNormal.b * shimmer;
       }
 
-      ctx.shadowBlur = 0;
-      animId = requestAnimationFrame(render);
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
+    }
+
+    // ── Mouse & Pointer tracking ──────────────────────────────────────────────
+    const mouseTarget = new THREE.Vector2(0, 0);
+    const mouseSmooth = new THREE.Vector2(0, 0);
+    const raycaster   = new THREE.Raycaster();
+    const sphereObj   = new THREE.Sphere(new THREE.Vector3(0, 0, 0), SPHERE_RADIUS);
+    const rayTarget   = new THREE.Vector3();
+
+    const onPointerMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+
+      // Disable microinteractions when cursor is inside auth panel or outside globe viewport
+      if (
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
+      ) {
+        isPointerOver = false;
+        mouseTarget.set(0, 0);
+        hsTarget.lerp(REST_DIR, 0.05).normalize();
+        return;
+      }
+
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+
+      mouseTarget.x = x;
+      mouseTarget.y = y;
+
+      sphereObj.center.copy(group.position);
+      sphereObj.radius = SPHERE_RADIUS * Math.max(0.1, group.scale.x) * 1.15;
+
+      raycaster.setFromCamera(mouseTarget, camera);
+      const hit = raycaster.ray.intersectSphere(sphereObj, rayTarget);
+      if (hit) {
+        isPointerOver = true;
+        tmpLocalHit.copy(rayTarget).sub(group.position).normalize();
+        hsTarget.lerp(tmpLocalHit, 0.28).normalize();
+      } else {
+        isPointerOver = false;
+        hsTarget.lerp(REST_DIR, 0.04).normalize();
+      }
     };
 
-    animId = requestAnimationFrame(render);
+    const onPointerLeave = () => {
+      isPointerOver = false;
+      mouseTarget.set(0, 0);
+      hsTarget.lerp(REST_DIR, 0.04).normalize();
+    };
 
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("mouseleave", onPointerLeave, { passive: true });
+
+    // ── Animation loop ────────────────────────────────────────────────────────
+    let animId: number;
+    const clock = new THREE.Clock();
+
+    const FADE_DURATION     = 1.8;
+    const HALO_BASE_OPACITY = 0.35;
+
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      const introProgress = Math.min(1, t / FADE_DURATION);
+      const eased = 1 - Math.pow(1 - introProgress, 3);
+
+      const targetHover = isPointerOver ? 1.0 : 0.0;
+      hoverStrength += (targetHover - hoverStrength) * 0.07;
+
+      mouseSmooth.x += (mouseTarget.x - mouseSmooth.x) * 0.06;
+      mouseSmooth.y += (mouseTarget.y - mouseSmooth.y) * 0.06;
+
+      const currentHaloOpacity = HALO_BASE_OPACITY + hoverStrength * 0.16;
+
+      coreMat.opacity = eased;
+      haloMat.opacity = eased * (currentHaloOpacity + Math.sin(t * 1.2) * 0.03);
+
+      group.rotation.x = Math.sin(t * 0.05) * 0.06 - mouseSmooth.y * 0.14;
+      group.rotation.y = t * 0.09 + mouseSmooth.x * 0.20;
+
+      const breathe = (1 + Math.sin(t * 0.8) * 0.01) * (1 + hoverStrength * 0.025);
+      group.scale.setScalar(1.35 * breathe);
+
+      hsCurrent.lerp(hsTarget, 0.10).normalize();
+
+      updateParticles(t);
+      renderer.render(scene, camera);
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      coreMat.opacity = 1;
+      haloMat.opacity = HALO_BASE_OPACITY;
+      group.rotation.y = 0;
+      updateParticles(0);
+      renderer.render(scene, camera);
+    } else {
+      animate();
+    }
+
+    // ── Resize ────────────────────────────────────────────────────────────────
+    const onResize = () => {
+      const w = container.clientWidth, h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener("resize", onResize);
+
+    // ── Cleanup ───────────────────────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("mouseleave", onPointerLeave);
+      renderer.dispose();
+      coreGeo.dispose(); coreMat.dispose(); coreTex.dispose();
+      haloGeo.dispose(); haloMat.dispose(); haloTex.dispose();
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
     };
   }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[500px] overflow-hidden select-none pointer-events-none">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full object-cover"
-        style={{ display: "block" }}
-      />
-    </div>
+    <div
+      ref={canvasRef}
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+      }}
+    />
   );
 }

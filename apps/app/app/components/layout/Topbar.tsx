@@ -37,7 +37,7 @@ export const Topbar: React.FC<TopbarProps> = ({
     >
       {/* Brand logo mark & search */}
       <div className="flex items-center gap-6" style={{ display: "flex", alignItems: "center", gap: "1.75rem" }}>
-        <Link href="/" className="flex items-center gap-2.5 text-decoration-none group" style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+        <Link href="/dashboard" className="flex items-center gap-2.5 text-decoration-none group" style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <Image
             src="/jaxislogo.png"
             alt="JAXIS Logo"

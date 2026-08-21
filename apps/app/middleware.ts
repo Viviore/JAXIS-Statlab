@@ -8,6 +8,15 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const userRole = req.auth?.user?.role as RoleName | undefined;
 
+  // 0. If visiting root "/" -> redirect to role dashboard if logged in, or /login if not
+  if (nextUrl.pathname === "/") {
+    if (isLoggedIn && userRole) {
+      const targetHome = ROLE_HOME[userRole] || "/dashboard";
+      return NextResponse.redirect(new URL(targetHome, nextUrl));
+    }
+    return NextResponse.redirect(new URL("/login", nextUrl));
+  }
+
   const isAuthRoute =
     nextUrl.pathname.startsWith("/login") ||
     nextUrl.pathname.startsWith("/register");
@@ -59,6 +68,7 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
+    "/",
     "/dashboard/:path*",
     "/login",
     "/register",

@@ -6,7 +6,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { globeScrollState } from "@/lib/globeState";
-import { APP_URL } from "@/lib/config";
+import { REGISTER_URL } from "@/lib/config";
 
 const ParticleGlobe = dynamic(() => import("../ui/ParticleGlobe"), {
   ssr: false,
@@ -336,7 +336,7 @@ export default function Hero() {
 
             <div className="hero-cta-wrapper" style={{ marginTop: "2rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
               <a
-                href={APP_URL}
+                href={REGISTER_URL}
                 id="hero-cta"
                 className="hero-caption hero-cta-btn"
                 style={{

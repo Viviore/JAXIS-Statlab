@@ -42,12 +42,12 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
             htmlFor={selectId}
             className={`text-xs select-none px-0.5 ${
               monoLabel
-                ? "font-mono uppercase tracking-wider text-white/75 font-medium"
+                ? "font-mono uppercase tracking-wider font-semibold text-slate-200"
                 : "font-sans text-white/80 font-medium"
             }`}
+            style={{ fontSize: "0.75rem", fontWeight: 600, color: monoLabel ? "#E2E8F0" : undefined }}
           >
-            {label}
-            {required && <span className="text-[#CC6600] ml-1.5">*</span>}
+            {label}{required && <> <span style={{ color: "#CC6600" }}>*</span></>}
           </label>
         )}
         <select

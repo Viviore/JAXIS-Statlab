@@ -42,7 +42,7 @@ export default function AuthLayout({
           zIndex: 10,
         }}
       >
-        {/* Top Header: Logo + Live Operational Status */}
+        {/* Top Header: Brand Logo */}
         <header
           className="flex items-center justify-between w-full flex-shrink-0"
           style={{
@@ -54,7 +54,7 @@ export default function AuthLayout({
           }}
         >
           <Link
-            href="/"
+            href="/login"
             className="flex items-center gap-2.5 text-decoration-none group"
             style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}
           >
@@ -84,34 +84,6 @@ export default function AuthLayout({
               </span>
             </div>
           </Link>
-
-          {/* Operational Status Pill */}
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-emerald-500/10 border border-emerald-500/25 text-[0.688rem] text-emerald-400 font-mono font-semibold tracking-wider"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.375rem 0.75rem",
-              borderRadius: "2px",
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              border: "1px solid rgba(16, 185, 129, 0.25)",
-              color: "#34D399",
-              fontSize: "0.688rem",
-              fontWeight: 600,
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"
-              style={{
-                height: "0.375rem",
-                width: "0.375rem",
-                borderRadius: "9999px",
-                backgroundColor: "#34D399",
-              }}
-            />
-            <span>PORTAL ONLINE</span>
-          </div>
         </header>
 
         {/* Dynamic Form Content: Centered in vertical space */}
@@ -174,31 +146,12 @@ export default function AuthLayout({
         }}
       >
         {/* Ambient Glows */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(2,132,199,0.18),transparent_70%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(1,46,87,0.30),transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_85%_50%,rgba(2,132,199,0.20),transparent_70%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_40%,rgba(1,46,87,0.35),transparent_60%)] pointer-events-none" />
 
         {/* 3D Hardware-Accelerated Particle Canvas */}
         <div className="absolute inset-0 w-full h-full">
           <AuthParticleGlobe />
-        </div>
-
-        {/* Floating Atmospheric Telemetry Highlights */}
-        <div className="absolute bottom-10 right-10 flex flex-col gap-3 z-10 pointer-events-none">
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-[2px] bg-[#01142B]/80 border border-white/[0.12] backdrop-blur-md shadow-2xl">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold text-white">Dual-Blind Verification</span>
-              <span className="font-mono text-[0.625rem] text-white/50 uppercase">Zero Hypothesis Leaks</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-[2px] bg-[#01142B]/80 border border-white/[0.12] backdrop-blur-md shadow-2xl">
-            <span className="h-2 w-2 rounded-full bg-[#CC6600]" />
-            <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold text-white">98.4% Defense Pass Rate</span>
-              <span className="font-mono text-[0.625rem] text-white/50 uppercase">APA 7th Standardized Outputs</span>
-            </div>
-          </div>
         </div>
       </main>
     </div>

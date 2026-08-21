@@ -144,9 +144,9 @@ export default function RegisterPage() {
         </div>
       </form>
 
-      {/* Back to Login */}
+      {/* Footer Login Link */}
       <div className="pt-2 text-center text-xs text-white/60 font-sans">
-        <span>Already have an account? </span>
+        <span>Already have an account?</span>{" "}
         <Link
           href="/login"
           className="text-[#CC6600] hover:text-[#E67300] font-semibold transition-colors ml-1"

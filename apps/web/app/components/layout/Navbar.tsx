@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { APP_URL } from "@/lib/config";
+import { REGISTER_URL, LOGIN_URL } from "@/lib/config";
 
 const NAV_LINKS = [
   { label: "Our Approach", href: "#approach" },
@@ -19,73 +19,52 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.history.scrollRestoration = "manual";
-      window.scrollTo(0, 0);
-      if (window.location.hash) {
-        window.history.replaceState(null, "", window.location.pathname);
-      }
-    }
-
-    const onScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth > 768) setMenuOpen(false);
-    };
-    window.addEventListener("resize", onResize, { passive: true });
-    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   return (
     <header
+      id="main-header"
       style={{
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 100,
-        transition:
-          "background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease",
-        background: !scrolled
-          ? "transparent"
-          : "rgba(1, 1, 20, 0.75)",
-        backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-        borderBottom: !scrolled
-          ? "1px solid transparent"
-          : "1px solid rgba(255, 255, 255, 0.12)",
-        boxShadow: scrolled ? "0 8px 32px rgba(0, 0, 0, 0.4)" : "none",
+        zIndex: 50,
+        transition: "all 0.3s ease",
+        backgroundColor: scrolled
+          ? "rgba(1, 1, 20, 0.88)"
+          : "rgba(1, 1, 20, 0.40)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: scrolled
+          ? "1px solid rgba(255, 255, 255, 0.10)"
+          : "1px solid rgba(255, 255, 255, 0.05)",
       }}
     >
       <nav
+        id="navbar"
+        aria-label="Main navigation"
         style={{
           maxWidth: "1280px",
           margin: "0 auto",
-          padding: "0 2rem",
-          height: "64px",
+          padding: "0.85rem 1.5rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
         }}
       >
-        {/* Logo */}
         <Link
           href="/"
+          id="navbar-brand"
           style={{
             display: "flex",
             alignItems: "center",
             gap: "8px",
             textDecoration: "none",
             color: "#FFFFFF",
-            transition: "color 0.3s ease",
           }}
           aria-label="JAXIS StatLab Home"
         >
@@ -95,6 +74,7 @@ export default function Navbar() {
             width={26}
             height={26}
             style={{ height: "26px", width: "auto" }}
+            priority
           />
           <span
             style={{
@@ -110,17 +90,17 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Nav Links */}
         <ul
+          id="navbar-nav-links"
+          className="nav-links-desktop"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "2.2rem",
+            gap: "2rem",
             listStyle: "none",
             margin: 0,
             padding: 0,
           }}
-          className="nav-links-desktop"
         >
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
@@ -130,7 +110,7 @@ export default function Navbar() {
                   fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "0.72rem",
                   fontWeight: 500,
-                  letterSpacing: "0.12em",
+                  letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   color: "rgba(255, 255, 255, 0.70)",
                   textDecoration: "none",
@@ -150,42 +130,71 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* CTA Button */}
-        <a
-          href={APP_URL}
-          id="navbar-cta"
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#FFFFFF",
-            textDecoration: "none",
-            padding: "8px 20px",
-            border: "1px solid rgba(255, 255, 255, 0.40)",
-            borderRadius: "0px",
-            transition: "all 0.2s ease",
-            background: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "#CC6600";
-            el.style.background = "rgba(204, 102, 0, 0.12)";
-            el.style.color = "#CC6600";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(255, 255, 255, 0.40)";
-            el.style.background = "transparent";
-            el.style.color = "#FFFFFF";
-          }}
+        <div
           className="nav-cta-desktop"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "1.25rem",
+          }}
         >
-          Get Started
-        </a>
+          <a
+            href={LOGIN_URL}
+            id="navbar-signin"
+            style={{
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.72rem",
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "rgba(255, 255, 255, 0.70)",
+              textDecoration: "none",
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#FFFFFF";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "rgba(255, 255, 255, 0.70)";
+            }}
+          >
+            Sign In
+          </a>
 
-        {/* Mobile hamburger */}
+          <a
+            href={REGISTER_URL}
+            id="navbar-cta"
+            style={{
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "#FFFFFF",
+              textDecoration: "none",
+              padding: "8px 20px",
+              border: "1px solid rgba(255, 255, 255, 0.40)",
+              borderRadius: "0px",
+              transition: "all 0.2s ease",
+              background: "transparent",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "#CC6600";
+              el.style.background = "rgba(204, 102, 0, 0.12)";
+              el.style.color = "#CC6600";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "rgba(255, 255, 255, 0.40)";
+              el.style.background = "transparent";
+              el.style.color = "#FFFFFF";
+            }}
+          >
+            Get Started
+          </a>
+        </div>
+
         <button
           id="mobile-menu-toggle"
           aria-label="Toggle mobile menu"
@@ -218,7 +227,6 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile Drawer */}
       {menuOpen && (
         <div
           id="mobile-drawer"
@@ -228,7 +236,7 @@ export default function Navbar() {
             padding: "2rem",
             display: "flex",
             flexDirection: "column",
-            gap: "1.5rem",
+            gap: "1.25rem",
           }}
         >
           {NAV_LINKS.map((link) => (
@@ -249,25 +257,51 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <a
-            href={APP_URL}
-            onClick={() => setMenuOpen(false)}
+          <div
             style={{
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "#CC6600",
-              textDecoration: "none",
-              padding: "12px",
-              border: "1px solid #CC6600",
-              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem",
               marginTop: "0.5rem",
             }}
           >
-            Get Started
-          </a>
+            <a
+              href={LOGIN_URL}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                fontFamily: "var(--font-inter), sans-serif",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "rgba(255, 255, 255, 0.8)",
+                textDecoration: "none",
+                padding: "10px",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                textAlign: "center",
+              }}
+            >
+              Sign In
+            </a>
+            <a
+              href={REGISTER_URL}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                fontFamily: "var(--font-inter), sans-serif",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#CC6600",
+                textDecoration: "none",
+                padding: "12px",
+                border: "1px solid #CC6600",
+                textAlign: "center",
+              }}
+            >
+              Get Started
+            </a>
+          </div>
         </div>
       )}
     </header>

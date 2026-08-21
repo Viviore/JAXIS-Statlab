@@ -33,14 +33,14 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   ) => {
     const inputId = id ?? (label ? label.toLowerCase().replace(/[^a-z0-9]/g, "-") : undefined);
 
-    const variantClasses = {
-      default: "bg-[#011C38] border-white/12 focus:border-[#CC6600] focus:ring-[#CC6600]/40 px-4 h-12 text-sm",
-      terminal: "bg-[#010E21] border-white/15 focus:border-[#CC6600] focus:ring-[#CC6600]/40 font-mono px-3.5 h-11 text-sm",
-      auth: "bg-[#011227] border-white/[0.14] focus:border-[#CC6600] focus:ring-[#CC6600]/40 px-4 h-12 text-sm",
+    const variantStyles = {
+      default: "bg-[#011C38] border-white/12 focus:border-[#CC6600] focus:ring-[#CC6600]/40",
+      terminal: "bg-[#010E21] border-white/15 focus:border-[#CC6600] focus:ring-[#CC6600]/40 font-mono",
+      auth: "bg-[#01142B] border-white/15 focus:border-[#CC6600] focus:ring-[#CC6600]/40",
     };
 
     return (
-      <div className={`flex flex-col w-full mb-4 ${containerClassName}`}>
+      <div className={`flex flex-col w-full ${containerClassName}`}>
         {/* Label Row with explicit bottom spacing */}
         {(label || labelRightAction) && (
           <div className="flex items-center justify-between px-0.5 mb-2">
@@ -49,12 +49,12 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                 htmlFor={inputId}
                 className={`text-xs select-none ${
                   monoLabel
-                    ? "font-mono uppercase tracking-wider text-white/75 font-medium"
+                    ? "font-mono uppercase tracking-wider font-semibold text-slate-200"
                     : "font-sans text-white/80 font-medium"
                 }`}
+                style={{ fontSize: "0.75rem", fontWeight: 600, color: monoLabel ? "#E2E8F0" : undefined }}
               >
-                {label}
-                {required && <span className="text-[#CC6600] ml-1.5">*</span>}
+                {label}{required && <> <span style={{ color: "#CC6600" }}>*</span></>}
               </label>
             )}
             {labelRightAction && (
@@ -64,9 +64,9 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         )}
 
         {/* Input Field with optional left/right icons */}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center w-full">
           {leftIcon && (
-            <div className="absolute left-3.5 flex items-center justify-center text-white/40 pointer-events-none">
+            <div className="absolute left-3.5 flex items-center justify-center text-white/40 pointer-events-none z-10">
               {leftIcon}
             </div>
           )}
@@ -75,18 +75,25 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
             ref={ref}
             id={inputId}
             required={required}
-            className={`w-full border ${
+            className={`w-full h-12 px-4 text-sm rounded-[2px] text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border border ${
+              variantStyles[variant]
+            } ${
               error
-                ? "border-[#EF4444] focus:ring-[#EF4444]/40"
-                : variantClasses[variant]
-            } rounded-[2px] text-white placeholder:text-white/25 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-              leftIcon ? "pl-11" : ""
-            } ${rightIcon ? "pr-11" : "" } ${className}`}
+                ? "!border-[#EF4444] focus:!border-[#EF4444] focus:!ring-[#EF4444]/40"
+                : ""
+            } ${leftIcon ? "!pl-11" : ""} ${rightIcon ? "!pr-11" : ""} ${className}`}
+            style={{
+              height: "3rem",
+              paddingLeft: leftIcon ? "2.75rem" : "1rem",
+              paddingRight: rightIcon ? "2.75rem" : "1rem",
+              boxSizing: "border-box",
+              ...props.style,
+            }}
             {...props}
           />
 
           {rightIcon && (
-            <div className="absolute right-3.5 flex items-center justify-center text-white/40">
+            <div className="absolute right-3.5 flex items-center justify-center text-white/40 z-10">
               {rightIcon}
             </div>
           )}
