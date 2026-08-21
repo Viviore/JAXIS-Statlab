@@ -1,5 +1,6 @@
 export * from "./Button";
 export * from "./Card";
+export * from "./KpiCard";
 export * from "./StatusBadge";
 export * from "./FormInput";
 export * from "./FormSelect";

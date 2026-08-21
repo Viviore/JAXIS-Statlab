@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -34,23 +34,26 @@ export default function QALeadDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Awaiting QA Audit</span>
-          <span className="text-3xl font-mono font-bold text-amber-400">4</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Requires blind recalculation</span>
-        </Card>
+        <KpiCard
+          label="Awaiting QA Audit"
+          value={4}
+          variant="amber"
+          description="Requires blind recalculation"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Approved This Month</span>
-          <span className="text-3xl font-mono font-bold text-emerald-400">12</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● Zero statistical anomalies</span>
-        </Card>
+        <KpiCard
+          label="Approved This Month"
+          value={12}
+          variant="emerald"
+          description="Zero statistical anomalies"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Revision Requested</span>
-          <span className="text-3xl font-mono font-bold text-red-400">1</span>
-          <span className="text-[0.688rem] text-red-400 mt-1 font-mono">● Returned to statistician desk</span>
-        </Card>
+        <KpiCard
+          label="Revision Requested"
+          value={1}
+          variant="red"
+          description="Returned to statistician desk"
+        />
       </div>
 
       {/* QA Verification Queue */}

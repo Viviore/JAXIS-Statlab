@@ -36,7 +36,7 @@ export interface FilterToolbarProps {
   onFilterChange: (key: string, value: string) => void;
 
   /* ── Clear / Reset ── */
-  /** Called when user clicks "Clear filters". If omitted, the clear button will
+  /** Called when user clicks "Clear filters" or "Reset". If omitted, the clear button will
    *  auto-reset search to "" and each filter to its defaultValue (first option). */
   onClear?: () => void;
 
@@ -86,16 +86,6 @@ const KBD_STYLE: React.CSSProperties = {
   backgroundColor: "rgba(255, 255, 255, 0.06)",
   color: "rgba(255, 255, 255, 0.3)",
   border: "1px solid rgba(255, 255, 255, 0.06)",
-};
-
-const CLEAR_STYLE: React.CSSProperties = {
-  height: "2.25rem",
-  padding: "0 0.75rem",
-  fontSize: "0.65rem",
-  letterSpacing: "0.05em",
-  borderRadius: "3px",
-  border: "1px solid rgba(245, 158, 11, 0.15)",
-  color: "rgba(245, 158, 11, 0.7)",
 };
 
 const DIVIDER_STYLE: React.CSSProperties = {
@@ -151,6 +141,21 @@ const ChevronIcon = () => (
     strokeLinejoin="round"
   >
     <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const ResetIcon = () => (
+  <svg
+    className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 group-hover:-rotate-90"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
   </svg>
 );
 
@@ -221,6 +226,7 @@ export const FilterToolbar = React.forwardRef<HTMLDivElement, FilterToolbarProps
                 type="button"
                 onClick={() => onSearchChange("")}
                 className="text-white/40 hover:text-white cursor-pointer"
+                title="Clear search text"
               >
                 <ClearIcon />
               </button>
@@ -265,17 +271,26 @@ export const FilterToolbar = React.forwardRef<HTMLDivElement, FilterToolbarProps
             </div>
           ))}
 
-          {/* ── Clear Filters ── */}
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleClear}
-              style={CLEAR_STYLE}
-              className="font-mono uppercase hover:text-amber-300 hover:border-amber-500/30 hover:bg-amber-500/5 transition-colors cursor-pointer whitespace-nowrap flex-shrink-0"
-            >
-              Clear filters
-            </button>
-          )}
+          {/* ── Reset / Clear Filters Icon Button ── */}
+          <button
+            type="button"
+            onClick={handleClear}
+            disabled={!hasActiveFilters}
+            title={hasActiveFilters ? "Reset search and filters to default" : "Filters are at default values"}
+            aria-label="Reset filters"
+            className={`w-9 h-9 flex items-center justify-center rounded-[3px] transition-all duration-150 group flex-shrink-0 border ${
+              hasActiveFilters
+                ? "border-[#CC6600]/40 bg-[#CC6600]/10 text-[#CC6600] hover:bg-[#CC6600]/20 hover:border-[#CC6600] cursor-pointer shadow-sm shadow-[#CC6600]/10"
+                : "border-white/[0.06] bg-white/[0.02] text-white/20 cursor-not-allowed opacity-50"
+            }`}
+            style={{
+              height: "2.25rem",
+              width: "2.25rem",
+              boxSizing: "border-box",
+            }}
+          >
+            <ResetIcon />
+          </button>
         </div>
       </div>
     );

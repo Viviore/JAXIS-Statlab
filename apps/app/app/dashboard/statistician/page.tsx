@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -34,23 +34,26 @@ export default function StatisticianDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Assigned Analyses</span>
-          <span className="text-3xl font-mono font-bold text-sky-400">3</span>
-          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● Active computation pipelines</span>
-        </Card>
+        <KpiCard
+          label="Assigned Analyses"
+          value={3}
+          variant="sky"
+          description="Active computation pipelines"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Pending QA Feedback</span>
-          <span className="text-3xl font-mono font-bold text-amber-400">2</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Under peer verification</span>
-        </Card>
+        <KpiCard
+          label="Pending QA Feedback"
+          value={2}
+          variant="amber"
+          description="Under peer verification"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Approved Deliverables</span>
-          <span className="text-3xl font-mono font-bold text-emerald-400">18</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● 100% Defense Pass Rate</span>
-        </Card>
+        <KpiCard
+          label="Approved Deliverables"
+          value={18}
+          variant="emerald"
+          description="100% Defense Pass Rate"
+        />
       </div>
 
       {/* Assigned Workbench Projects */}

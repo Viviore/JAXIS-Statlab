@@ -50,7 +50,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             {header}
           </div>
         )}
-        <div className="flex-1 w-full" style={{ flex: 1, width: "100%", boxSizing: "border-box" }}>
+        <div className="flex-1 w-full flex flex-col" style={{ flex: 1, width: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
           {children}
         </div>
         {footer && (

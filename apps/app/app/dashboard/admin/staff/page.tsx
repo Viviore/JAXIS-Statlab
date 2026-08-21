@@ -18,6 +18,7 @@ import {
   FormTextarea,
   Alert,
   FilterToolbar,
+  KpiCard,
 } from "@repo/ui";
 import {
   getStaffRoster,
@@ -436,53 +437,33 @@ export default function StaffRosterPage() {
 
       {/* ── KPI Grid (Consistent with Admin Dashboard Standard) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Total Staff Directory
-          </span>
-          <span className="text-3xl font-mono font-bold text-white">
-            {kpis.total}
-          </span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">
-            ● {kpis.active} active accounts
-          </span>
-        </Card>
+        <KpiCard
+          label="Total Staff Directory"
+          value={kpis.total}
+          variant="default"
+          description={`${kpis.active} active accounts`}
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Quantitative Statisticians
-          </span>
-          <span className="text-3xl font-mono font-bold text-[#38BDF8]">
-            {kpis.stats}
-          </span>
-          <span className="text-[0.688rem] text-slate-400 mt-1 font-mono">
-            Regression, SEM &amp; Time Series
-          </span>
-        </Card>
+        <KpiCard
+          label="Quantitative Statisticians"
+          value={kpis.stats}
+          variant="sky"
+          description="Regression, SEM & Time Series"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Senior QA Review Leads
-          </span>
-          <span className="text-3xl font-mono font-bold text-[#CC6600]">
-            {kpis.qa}
-          </span>
-          <span className="text-[0.688rem] text-slate-400 mt-1 font-mono">
-            Dual-Blind Methodology Audits
-          </span>
-        </Card>
+        <KpiCard
+          label="Senior QA Review Leads"
+          value={kpis.qa}
+          variant="orange"
+          description="Dual-Blind Methodology Audits"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
-            Governance &amp; Holds
-          </span>
-          <span className="text-3xl font-mono font-bold text-amber-400">
-            {kpis.suspended + kpis.terminated}
-          </span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">
-            ● {kpis.suspended} Suspended / {kpis.terminated} Terminated
-          </span>
-        </Card>
+        <KpiCard
+          label="Governance & Holds"
+          value={kpis.suspended + kpis.terminated}
+          variant="amber"
+          description={`${kpis.suspended} Suspended / ${kpis.terminated} Terminated`}
+        />
       </div>
 
       {/* ── Staff Roster Card ── */}

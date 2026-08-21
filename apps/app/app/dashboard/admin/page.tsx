@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -56,31 +56,35 @@ export default function AdminDashboardPage() {
 
       {/* ── KPI Grid ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Total Active Studies</span>
-          <span className="text-3xl font-mono font-bold text-white">{kpis?.totalActiveStudies ?? 24}</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● {kpis?.totalActiveStudiesTrend ?? "+14% MoM"}</span>
-        </Card>
+        <KpiCard
+          label="Total Active Studies"
+          value={kpis?.totalActiveStudies ?? 24}
+          variant="default"
+          badge={kpis?.totalActiveStudiesTrend ?? "+14%"}
+          badgeColor="emerald"
+          description="MoM active growth"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Under Evaluation</span>
-          <span className="text-3xl font-mono font-bold text-sky-400">{kpis?.underEvaluationCount ?? 7}</span>
-          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● Computational run in progress</span>
-        </Card>
+        <KpiCard
+          label="Under Evaluation"
+          value={kpis?.underEvaluationCount ?? 7}
+          variant="sky"
+          description="Computational run in progress"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">QA Review Gates</span>
-          <span className="text-3xl font-mono font-bold text-amber-400">{kpis?.qaReviewGateCount ?? 5}</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Dual-blind review pending</span>
-        </Card>
+        <KpiCard
+          label="QA Review Gates"
+          value={kpis?.qaReviewGateCount ?? 5}
+          variant="amber"
+          description="Dual-blind review pending"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Monthly Revenue Escrow</span>
-          <span className="text-3xl font-mono font-bold text-emerald-400">
-            {kpis?.monthlyRevenueEscrow ?? "$42,800"}
-          </span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● {kpis?.escrowSecuredRatio ?? "99.4% Secured"}</span>
-        </Card>
+        <KpiCard
+          label="Monthly Revenue Escrow"
+          value={kpis?.monthlyRevenueEscrow ?? "$42,800"}
+          variant="emerald"
+          description={kpis?.escrowSecuredRatio ?? "99.4% Secured"}
+        />
       </div>
 
       {/* ── Live Pipeline Table ── */}

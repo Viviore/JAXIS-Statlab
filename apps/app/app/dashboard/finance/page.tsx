@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -25,23 +25,26 @@ export default function FinanceDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Total Escrow Vault</span>
-          <span className="text-3xl font-mono font-bold text-emerald-400">$64,500</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● Secured in institutional vaults</span>
-        </Card>
+        <KpiCard
+          label="Total Escrow Vault"
+          value="$64,500"
+          variant="emerald"
+          description="Secured in institutional vaults"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Pending Release</span>
-          <span className="text-3xl font-mono font-bold text-amber-400">$18,200</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Awaiting QA sign-off</span>
-        </Card>
+        <KpiCard
+          label="Pending Release"
+          value="$18,200"
+          variant="amber"
+          description="Awaiting QA sign-off"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Disbursed This Month</span>
-          <span className="text-3xl font-mono font-bold text-sky-400">$46,300</span>
-          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● 100% milestone fulfillment</span>
-        </Card>
+        <KpiCard
+          label="Disbursed This Month"
+          value="$46,300"
+          variant="sky"
+          description="100% milestone fulfillment"
+        />
       </div>
 
       {/* Escrow Table */}

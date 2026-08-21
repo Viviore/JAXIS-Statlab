@@ -13,7 +13,8 @@ export interface NavItem {
   icon: React.ReactNode;
   count?: number;
   badge?: string;
-  badgeColor?: "orange" | "emerald" | "sky" | "amber" | "indigo";
+  badgeColor?: "orange" | "emerald" | "sky" | "amber" | "indigo" | "gray";
+  disabled?: boolean;
 }
 
 export interface NavGroup {
@@ -127,6 +128,7 @@ const Icons = {
 };
 
 // ─── Role-Specific Navigation Definitions ─────────────────────────────────────
+// Only fully functional/implemented modules are active; upcoming modules are greyed out with "SOON".
 
 const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
   CLIENT: [
@@ -154,20 +156,25 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Quotations & SOW",
           href: "/dashboard/client/quotations",
           icon: Icons.Receipt,
-          badge: "SOW",
-          badgeColor: "sky",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Deliverables Vault",
           href: "/dashboard/client/deliverables",
           icon: Icons.Vault,
-          badge: "APA 7th",
-          badgeColor: "emerald",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "DefenseLab Coaching",
           href: "/dashboard/client/defenselab",
           icon: Icons.Terminal,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -178,11 +185,17 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Secure Messaging",
           href: "/dashboard/client/messages",
           icon: Icons.Feedback,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Escrow & Payments",
           href: "/dashboard/client/payments",
           icon: Icons.FinanceVault,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Institutional Profile",
@@ -206,25 +219,33 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Assigned Studies",
           href: "/dashboard/statistician/projects",
           icon: Icons.Studies,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Analysis & Syntax Lab",
           href: "/dashboard/statistician/analysis",
           icon: Icons.Scripts,
-          badge: "R / Python",
-          badgeColor: "indigo",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Submit to QA Queue",
           href: "/dashboard/statistician/submissions",
           icon: Icons.UploadCloud,
-          badge: "QA",
-          badgeColor: "amber",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "DefenseLab Panels",
           href: "/dashboard/statistician/defenselab",
           icon: Icons.Award,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -235,11 +256,17 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Client Collaboration Desk",
           href: "/dashboard/statistician/messages",
           icon: Icons.Feedback,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Expert Compensation",
           href: "/dashboard/statistician/payouts",
           icon: Icons.FinanceVault,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Expert Profile & Skills",
@@ -263,20 +290,25 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Dual-Blind Queue",
           href: "/dashboard/qa/queue",
           icon: Icons.CheckQueue,
-          badge: "BLIND",
-          badgeColor: "amber",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "APA 7th Verification",
           href: "/dashboard/qa/verification",
           icon: Icons.Award,
-          badge: "APA 7th",
-          badgeColor: "emerald",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Methodology Audits",
           href: "/dashboard/qa/audits",
           icon: Icons.Audit,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -287,6 +319,9 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Deliverables Sign-Off",
           href: "/dashboard/qa/deliverables",
           icon: Icons.Vault,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "QA Lead Profile",
@@ -310,18 +345,25 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Milestone Release Vault",
           href: "/dashboard/finance/milestones",
           icon: Icons.KeyRelease,
-          badge: "RULE_REL_01",
-          badgeColor: "emerald",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Payment Gateway & Stripe",
           href: "/dashboard/finance/payments",
           icon: Icons.Receipt,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Expert Payouts & Payroll",
           href: "/dashboard/finance/payouts",
           icon: Icons.Users,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -332,11 +374,17 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "General Escrow Ledger",
           href: "/dashboard/finance/ledger",
           icon: Icons.Audit,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Disputes & Chargebacks",
           href: "/dashboard/finance/disputes",
           icon: Icons.Feedback,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -355,13 +403,17 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Department SLAs",
           href: "/dashboard/ceo/slas",
           icon: Icons.Clock,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Institutional Retention",
           href: "/dashboard/ceo/retention",
           icon: Icons.Award,
-          badge: "94.2%",
-          badgeColor: "emerald",
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -382,6 +434,9 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Executive Analytics",
           href: "/dashboard/ceo/analytics",
           icon: Icons.Audit,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -407,16 +462,25 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "All Active Studies",
           href: "/dashboard/admin/projects",
           icon: Icons.Studies,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Quotation & SOW Desk",
           href: "/dashboard/admin/quotations",
           icon: Icons.Receipt,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Expert Assignment Desk",
           href: "/dashboard/admin/assignments",
           icon: Icons.KeyRelease,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -432,21 +496,33 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Communication Firewall",
           href: "/dashboard/admin/messages",
           icon: Icons.Feedback,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Dispute Escalations",
           href: "/dashboard/admin/disputes",
           icon: Icons.ShieldCheck,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "Cryptographic Audit Trail",
           href: "/dashboard/admin/audit",
           icon: Icons.Audit,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
         {
           label: "System Analytics & Reports",
           href: "/dashboard/admin/reporting",
           icon: Icons.Activity,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
         },
       ],
     },
@@ -459,6 +535,7 @@ const BADGE_STYLES: Record<string, string> = {
   sky: "bg-sky-500/20 text-sky-300 border-sky-500/30",
   amber: "bg-amber-500/20 text-amber-300 border-amber-500/30",
   indigo: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+  gray: "bg-white/[0.04] text-white/30 border-white/[0.08]",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -559,6 +636,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
               {group.items.map((item) => {
                 const isActive = pathname === item.href;
+                const isDisabled = Boolean(item.disabled);
+
+                if (isDisabled) {
+                  return (
+                    <div
+                      key={item.href + item.label}
+                      className="flex items-center justify-between px-3.5 py-2 text-sm rounded-md select-none opacity-40 cursor-not-allowed"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "0.5rem 0.875rem",
+                        borderRadius: "4px",
+                        boxSizing: "border-box",
+                        fontSize: "0.875rem",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={`${item.label} (Under Active Development)`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0 }}>
+                        <span className="text-white/30 flex-shrink-0">
+                          {item.icon}
+                        </span>
+                        <span className="font-sans font-normal text-white/40 whitespace-nowrap">{item.label}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span
+                          className="text-xs font-sans px-1.5 py-0.5 rounded-[3px] border font-medium flex-shrink-0 bg-white/[0.04] text-white/30 border-white/[0.08]"
+                          style={{
+                            padding: "0.1rem 0.4rem",
+                            borderRadius: "3px",
+                            fontSize: "0.625rem",
+                            fontWeight: 500,
+                            height: "18px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {item.badge || "SOON"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
 
                 return (
                   <Link
@@ -570,7 +694,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className={`flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-md transition-colors duration-150 ease-out group ${
                       isActive
                         ? "bg-[#CC6600]/15 text-white font-semibold"
-                        : "text-white/65 hover:text-white hover:bg-white/[0.05]"
+                        : "text-white/75 hover:text-white hover:bg-white/[0.05]"
                     }`}
                     style={{
                       display: "flex",
@@ -584,7 +708,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }}
                   >
                     <div className="flex items-center gap-2.5 min-w-0" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0 }}>
-                      <span className={`${isActive ? "text-[#CC6600]" : "text-white/50 group-hover:text-white"} transition-colors flex-shrink-0`}>
+                      <span className={`${isActive ? "text-[#CC6600]" : "text-white/60 group-hover:text-white"} transition-colors flex-shrink-0`}>
                         {item.icon}
                       </span>
                       <span className="font-sans font-medium whitespace-nowrap">{item.label}</span>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 import { getClientProfile } from "@/features/client-profile/actions";
@@ -50,41 +50,35 @@ export default function ClientDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Link href="/dashboard/client/profile" className="block group">
-          <Card
-            className={`flex flex-col gap-1 p-5 border-l-2 transition-colors ${
-              isProfileComplete
-                ? "border-l-emerald-500 hover:border-l-emerald-400"
-                : "border-l-[#CC6600] hover:border-l-[#ff8000]"
-            }`}
-          >
-            <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Profile Status</span>
-            <span className={`text-xl font-mono font-bold mt-1 ${isProfileComplete ? "text-emerald-400" : "text-[#CC6600]"}`}>
-              {isProfileComplete === null ? "CHECKING..." : isProfileComplete ? "100% COMPLETE" : "INCOMPLETE"}
-            </span>
-            <span className={`text-[0.688rem] mt-1 font-mono ${isProfileComplete ? "text-emerald-400" : "text-[#CC6600]"}`}>
-              {isProfileComplete ? "● Institutional verified" : "● Action required →"}
-            </span>
-          </Card>
-        </Link>
+        <KpiCard
+          label="Profile Status"
+          value={isProfileComplete === null ? "CHECKING..." : isProfileComplete ? "100% COMPLETE" : "INCOMPLETE"}
+          variant={isProfileComplete ? "emerald" : "orange"}
+          description={isProfileComplete ? "Institutional verified" : "Action required →"}
+          href="/dashboard/client/profile"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Active Studies</span>
-          <span className="text-2xl font-mono font-bold text-white mt-1">4</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● All milestones on schedule</span>
-        </Card>
+        <KpiCard
+          label="Active Studies"
+          value={4}
+          variant="default"
+          description="All milestones on schedule"
+          href="/dashboard/client/projects"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">QA Stage</span>
-          <span className="text-2xl font-mono font-bold text-amber-400 mt-1">2</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Dual-blind review pending</span>
-        </Card>
+        <KpiCard
+          label="QA Stage"
+          value={2}
+          variant="amber"
+          description="Dual-blind review pending"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Downloads</span>
-          <span className="text-2xl font-mono font-bold text-sky-400 mt-1">1</span>
-          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● APA 7th report released</span>
-        </Card>
+        <KpiCard
+          label="Downloads"
+          value={1}
+          variant="sky"
+          description="APA 7th report released"
+        />
       </div>
 
       {/* Studies Table */}

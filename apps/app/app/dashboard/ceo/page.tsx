@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -25,29 +25,35 @@ export default function CEODashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Gross Pipeline Value</span>
-          <span className="text-3xl font-mono font-bold text-white">$142,500</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">+18.4% MoM growth</span>
-        </Card>
+        <KpiCard
+          label="Gross Pipeline Value"
+          value="$142,500"
+          variant="default"
+          badge="+18.4%"
+          badgeColor="emerald"
+          description="MoM growth trend"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Avg Turnaround SLA</span>
-          <span className="text-3xl font-mono font-bold text-sky-400">4.2 Days</span>
-          <span className="text-[0.688rem] text-sky-400 mt-1 font-mono">● 99.2% on-time delivery</span>
-        </Card>
+        <KpiCard
+          label="Avg Turnaround SLA"
+          value="4.2 Days"
+          variant="sky"
+          description="99.2% on-time delivery"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">QA Rejection Rate</span>
-          <span className="text-3xl font-mono font-bold text-emerald-400">0.8%</span>
-          <span className="text-[0.688rem] text-emerald-400 mt-1 font-mono">● Elite statistical accuracy</span>
-        </Card>
+        <KpiCard
+          label="QA Rejection Rate"
+          value="0.8%"
+          variant="emerald"
+          description="Elite statistical accuracy"
+        />
 
-        <Card className="flex flex-col gap-1 p-5">
-          <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Active Institutional Orgs</span>
-          <span className="text-3xl font-mono font-bold text-amber-400">14</span>
-          <span className="text-[0.688rem] text-amber-400 mt-1 font-mono">● Universities &amp; Labs</span>
-        </Card>
+        <KpiCard
+          label="Active Institutional Orgs"
+          value={14}
+          variant="amber"
+          description="Universities & Labs"
+        />
       </div>
 
       {/* Global Pipeline Registry */}
