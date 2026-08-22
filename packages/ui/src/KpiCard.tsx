@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Card } from "./Card";
@@ -67,15 +69,22 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 }) => {
   const content = (
     <Card
-      className={`p-5 transition-all duration-150 group ${VARIANT_BORDER_ACCENTS[variant]} ${
+      className={`p-5 transition-all duration-150 group h-full flex flex-col justify-between min-h-[140px] ${VARIANT_BORDER_ACCENTS[variant]} ${
         href ? "cursor-pointer hover:bg-white/[0.03]" : ""
       } ${className}`}
+      style={{
+        height: "100%",
+        minHeight: "140px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
     >
-      <div className="flex flex-col justify-between h-full gap-3">
-        {/* Header Row: Label + Icon / Badge */}
-        <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col justify-between h-full w-full gap-2.5 flex-1" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", flex: 1 }}>
+        {/* Header Row: Label + Icon / Badge (Level Height) */}
+        <div className="flex items-center justify-between gap-2 min-h-[1.5rem]">
           <span
-            className={`text-xs select-none uppercase tracking-wider font-medium ${
+            className={`text-xs select-none uppercase tracking-wider font-medium truncate ${
               monoLabel ? "font-mono text-white/50" : "font-sans text-white/60"
             }`}
             style={{ fontSize: "0.75rem", letterSpacing: "0.05em" }}
@@ -96,30 +105,46 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           </div>
         </div>
 
-        {/* Value Row: Large prominent metric display */}
-        <div className="my-1">
+        {/* Value Row: Large prominent metric display (Vertically Level) */}
+        <div className="my-auto py-0.5">
           <span
-            className={`text-3xl font-mono font-bold tracking-tight block ${VARIANT_VALUE_COLORS[variant]}`}
-            style={{ fontSize: "1.875rem", lineHeight: "2.25rem", fontWeight: 700 }}
+            className={`font-mono font-bold tracking-tight block ${
+              typeof value === "string" && value.length > 8
+                ? "text-2xl"
+                : "text-3xl"
+            } ${VARIANT_VALUE_COLORS[variant]}`}
+            style={{
+              fontSize: typeof value === "string" && value.length > 8 ? "1.5rem" : "1.875rem",
+              lineHeight: "2.25rem",
+              fontWeight: 700,
+            }}
           >
             {value}
           </span>
         </div>
 
-        {/* Footer / Subtitle Row */}
-        {description && (
-          <div className="flex items-center gap-1.5 text-[0.688rem] font-mono select-none">
-            <span className={`${VARIANT_DOT_COLORS[variant]} flex-shrink-0 leading-none`}>●</span>
-            <span className="text-white/60 truncate">{description}</span>
-          </div>
-        )}
+        {/* Footer / Subtitle Row (Level Baseline Divider) */}
+        <div className="pt-2 border-t border-white/[0.06] flex items-center min-h-[1.75rem]">
+          {description ? (
+            <div className="flex items-center gap-1.5 text-[0.688rem] font-mono select-none w-full">
+              <span className={`${VARIANT_DOT_COLORS[variant]} flex-shrink-0 leading-none`}>●</span>
+              <span className="text-white/60 truncate">{description}</span>
+            </div>
+          ) : (
+            <div className="text-[0.688rem] text-transparent select-none">&nbsp;</div>
+          )}
+        </div>
       </div>
     </Card>
   );
 
   if (href) {
     return (
-      <Link href={href} className="block no-underline">
+      <Link
+        href={href}
+        className="block no-underline h-full flex flex-col"
+        style={{ height: "100%", display: "flex", flexDirection: "column" }}
+      >
         {content}
       </Link>
     );

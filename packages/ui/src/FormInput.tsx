@@ -94,7 +94,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
             ref={ref}
             id={inputId}
             required={required}
-            className={`w-full h-12 px-4 text-sm rounded-[2px] text-white placeholder:text-slate-500 focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border border ${
+            className={`w-full h-12 px-4 text-sm rounded-[2px] text-white placeholder:text-slate-500 focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border border [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 ${
               variantStyles[variant]
             } ${
               hasError

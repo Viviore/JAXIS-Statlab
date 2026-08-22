@@ -162,6 +162,24 @@ a {
   text-decoration: none;
 }
 
+/* Native Date & Time Input Calendar Indicators — Pure White Telemetry */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1) !important;
+  cursor: pointer !important;
+  opacity: 0.9 !important;
+  transition: opacity 0.15s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1 !important;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

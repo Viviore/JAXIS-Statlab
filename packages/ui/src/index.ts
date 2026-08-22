@@ -19,3 +19,4 @@ export * from "./FilterToolbar";
 export * from "./FormFooter";
 export * from "./Tooltip";
 export * from "./DropdownMenu";
+export * from "./Stepper";

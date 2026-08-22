@@ -12,8 +12,17 @@ import {
   Button,
   Alert,
   FormFooter,
+  Stepper,
 } from "@repo/ui";
-import { IconCheck } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconLock,
+  IconFileText,
+  IconDatabase,
+  IconListCheck,
+  IconCloudUpload,
+  IconTrash,
+} from "@tabler/icons-react";
 import { createProject } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import type { FileCategory } from "@prisma/client";
@@ -387,87 +396,32 @@ export default function NewProjectIntakePage() {
         ]}
       />
 
-      {/* Step Indicator Header */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Step 1 */}
-        <div
-          onClick={() => currentStep > 1 && setCurrentStep(1)}
-          className={`p-5 rounded-[2px] border transition-colors flex flex-col justify-between gap-2.5 ${
-            currentStep === 1
-              ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-md shadow-[#CC6600]/5"
-              : currentStep > 1
-              ? "bg-emerald-500/10 border-emerald-500/30 text-white cursor-pointer hover:bg-emerald-500/15"
-              : "bg-white/[0.02] border-white/[0.08] text-white/40"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider">
-              01. Scope & Details
-            </span>
-            {currentStep > 1 ? (
-              <span className="text-emerald-400 font-mono text-xs font-semibold flex items-center gap-1">
-                <IconCheck size={12} stroke={2.5} />
-                Done
-              </span>
-            ) : currentStep === 1 ? (
-              <span className="text-[#CC6600] font-mono text-xs font-semibold">Active</span>
-            ) : null}
-          </div>
-          <p className="text-xs text-white/60 font-sans leading-relaxed">
-            Study title, research questions, objectives, and target deadline
-          </p>
-        </div>
-
-        {/* Step 2 */}
-        <div
-          onClick={() => currentStep > 2 && setCurrentStep(2)}
-          className={`p-5 rounded-[2px] border transition-colors flex flex-col justify-between gap-2.5 ${
-            currentStep === 2
-              ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-md shadow-[#CC6600]/5"
-              : currentStep > 2
-              ? "bg-emerald-500/10 border-emerald-500/30 text-white cursor-pointer hover:bg-emerald-500/15"
-              : "bg-white/[0.02] border-white/[0.08] text-white/40"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider">
-              02. Document Uploads
-            </span>
-            {currentStep > 2 ? (
-              <span className="text-emerald-400 font-mono text-xs font-semibold flex items-center gap-1">
-                <IconCheck size={12} stroke={2.5} />
-                Done
-              </span>
-            ) : currentStep === 2 ? (
-              <span className="text-[#CC6600] font-mono text-xs font-semibold">Active</span>
-            ) : null}
-          </div>
-          <p className="text-xs text-white/60 font-sans leading-relaxed">
-            Draft chapters, raw datasets, and survey questionnaires
-          </p>
-        </div>
-
-        {/* Step 3 */}
-        <div
-          className={`p-5 rounded-[2px] border transition-colors flex flex-col justify-between gap-2.5 ${
-            currentStep === 3
-              ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-md shadow-[#CC6600]/5"
-              : "bg-white/[0.02] border-white/[0.08] text-white/40"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider">
-              03. Review & Submit
-            </span>
-            {currentStep === 3 && (
-              <span className="text-[#CC6600] font-mono text-xs font-semibold">Active</span>
-            )}
-          </div>
-          <p className="text-xs text-white/60 font-sans leading-relaxed">
-            Institutional verification and final submission
-          </p>
-        </div>
-      </div>
+      {/* ── Stepper Navigation ── */}
+      <Stepper
+        currentStep={currentStep}
+        onStepClick={(step) => {
+          if (step === 1 || step === 2 || step === 3) {
+            setCurrentStep(step);
+          }
+        }}
+        steps={[
+          {
+            id: "scope",
+            title: "01. Scope & Details",
+            subtitle: "Study title, research questions, objectives, and target deadline",
+          },
+          {
+            id: "uploads",
+            title: "02. Document Uploads",
+            subtitle: "Draft chapters, raw datasets, and survey questionnaires",
+          },
+          {
+            id: "review",
+            title: "03. Review & Submit",
+            subtitle: "Institutional verification and final submission",
+          },
+        ]}
+      />
 
       {formError && <Alert variant="danger">{formError}</Alert>}
       {fileError && <Alert variant="danger">{fileError}</Alert>}
@@ -563,44 +517,60 @@ export default function NewProjectIntakePage() {
       {/* ── STEP 2: Document Attachments ── */}
       {currentStep === 2 && (
         <Card className="p-8 md:p-10 flex flex-col gap-8">
-          <div className="border-b border-white/[0.08] pb-5">
-            <h2 className="text-base font-bold text-white font-sans">
-              Attach Research Documents & Datasets
-            </h2>
-            <p className="text-xs text-white/50 mt-1 font-sans leading-relaxed">
-              Securely upload draft chapters, questionnaires, or raw datasets (DOCX, PDF, XLSX, CSV).
-            </p>
+          <div className="border-b border-white/[0.08] pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-white font-sans">
+                Attach Research Documents & Datasets
+              </h2>
+              <p className="text-xs text-white/50 mt-1 font-sans leading-relaxed">
+                Provide draft chapters, survey instruments, or raw dataset files for statistical evaluation.
+              </p>
+            </div>
+
+            {/* Confidentiality Pill */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-white/[0.03] border border-white/[0.08] text-white/60 text-xs self-start sm:self-auto flex-shrink-0">
+              <IconLock size={14} className="text-[#CC6600]" stroke={2} />
+              <span className="font-mono text-[0.688rem] uppercase tracking-wider">NDA Encrypted</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {/* Box 1: Chapters 1-3 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* ── Slot 1: Chapters 1-3 ── */}
             <div
               onDragEnter={(e) => handleDragEnter(e, "RESEARCH_DOCUMENT")}
               onDragOver={(e) => handleDragOver(e, "RESEARCH_DOCUMENT")}
               onDragLeave={(e) => handleDragLeave(e, "RESEARCH_DOCUMENT")}
               onDrop={(e) => handleDrop(e, "RESEARCH_DOCUMENT")}
-              className={`p-6 md:p-7 rounded-[3px] border bg-[#01162E] flex flex-col justify-between gap-6 min-h-[300px] transition-all ${
+              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all ${
                 dragActiveCategory === "RESEARCH_DOCUMENT"
-                  ? "border-[#CC6600] bg-[#CC6600]/10 ring-2 ring-[#CC6600]/40"
-                  : "border-white/[0.1]"
+                  ? "border-[#CC6600] bg-[#CC6600]/5 ring-1 ring-[#CC6600]/40"
+                  : "border-white/[0.09]"
               }`}
             >
-              <div className="flex flex-col gap-2.5">
+              {/* Header */}
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    Draft Chapters (1-3)
-                  </span>
-                  <span className="text-[0.65rem] font-mono text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-[2px]">
-                    PDF / DOCX
+                  <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-sky-400">
+                    <IconFileText size={18} stroke={1.75} />
+                  </div>
+                  <span className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20">
+                    Required
                   </span>
                 </div>
-                <p className="text-xs text-white/55 leading-relaxed font-sans">
-                  Introduction, Literature Review, and Methodology framework (Max 50MB).
-                </p>
+
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                    Draft Chapters (1-3)
+                  </h3>
+                  <p className="text-xs text-white/50 leading-relaxed font-sans">
+                    Introduction, Literature Review, and Methodology framework.
+                  </p>
+                </div>
               </div>
 
+              {/* Upload Zone / State */}
               {uploadingState.RESEARCH_DOCUMENT ? (
-                <div className="p-4 bg-[#011C38] border border-[#CC6600]/50 rounded-[2px] flex flex-col gap-3 shadow-lg shadow-[#CC6600]/10">
+                <div className="p-4 bg-[#011B38] border border-[#CC6600]/50 rounded-[2px] flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
                       {uploadingState.RESEARCH_DOCUMENT.fileName}
@@ -609,54 +579,59 @@ export default function NewProjectIntakePage() {
                       {uploadingState.RESEARCH_DOCUMENT.progress}%
                     </span>
                   </div>
-
                   <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#CC6600] to-amber-400 transition-all duration-150 ease-out"
+                      className="h-full bg-[#CC6600] transition-all duration-150 ease-out"
                       style={{ width: `${uploadingState.RESEARCH_DOCUMENT.progress}%` }}
                     />
                   </div>
-
                   <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#CC6600] animate-ping" />
-                      {uploadingState.RESEARCH_DOCUMENT.progress === 100
-                        ? "Verifying file integrity..."
-                        : "Uploading draft chapters..."}
-                    </span>
+                    <span>Uploading...</span>
                     <span>{uploadingState.RESEARCH_DOCUMENT.formattedSize}</span>
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "RESEARCH_DOCUMENT") ? (
-                <div className="p-4 bg-[#011C38] border border-white/[0.12] rounded-[2px] flex flex-col gap-3">
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-mono text-emerald-300 font-semibold break-all leading-snug">
-                      {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.name}
-                    </span>
-                    <span className="text-[0.688rem] text-white/40 font-mono mt-1">
-                      {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.formattedSize}
-                    </span>
+                <div className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                      <IconCheck size={15} stroke={2.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-xs font-mono text-emerald-200 font-semibold truncate">
+                        {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.name}
+                      </span>
+                      <span className="text-[0.688rem] text-white/40 font-mono mt-0.5">
+                        {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.formattedSize} · Verified
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-0.5">
-                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium flex items-center gap-1">
-                      <IconCheck size={11} stroke={2.5} />
-                      Ready
-                    </span>
+
+                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1">
+                    <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
+                      Replace
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.docx,.doc"
+                        onChange={(e) => handleFileInputChange(e, "RESEARCH_DOCUMENT")}
+                      />
+                    </label>
                     <button
                       type="button"
                       onClick={() => removeFile("RESEARCH_DOCUMENT")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-[2px] transition-colors font-medium"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
                     >
+                      <IconTrash size={13} stroke={2} />
                       Remove
                     </button>
                   </div>
                 </div>
               ) : (
                 <label
-                  className={`cursor-pointer border-2 border-dashed rounded-[3px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2 flex-1 min-h-[140px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
                     dragActiveCategory === "RESEARCH_DOCUMENT"
-                      ? "border-[#CC6600] bg-[#CC6600]/20 scale-[1.01]"
-                      : "border-white/20 hover:border-[#CC6600] bg-white/[0.01] hover:bg-white/[0.03]"
+                      ? "border-[#CC6600] bg-[#CC6600]/10"
+                      : "border-white/15 hover:border-[#CC6600]/60 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
                 >
                   <input
@@ -665,46 +640,57 @@ export default function NewProjectIntakePage() {
                     accept=".pdf,.docx,.doc"
                     onChange={(e) => handleFileInputChange(e, "RESEARCH_DOCUMENT")}
                   />
-                  <span className="text-xs font-mono text-[#CC6600] font-bold tracking-wider">
-                    {dragActiveCategory === "RESEARCH_DOCUMENT"
-                      ? "Drop file to attach"
-                      : "+ Drag & Drop or Browse"}
-                  </span>
-                  <span className="text-[0.688rem] text-white/40 font-sans">
-                    Drop PDF / DOCX or click to browse
-                  </span>
+                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#CC6600] group-hover:border-[#CC6600]/40 transition-colors">
+                    <IconCloudUpload size={18} stroke={1.75} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
+                      Click to browse or drop file
+                    </span>
+                    <span className="text-[0.688rem] text-white/40 font-mono">
+                      PDF, DOCX (Max 50MB)
+                    </span>
+                  </div>
                 </label>
               )}
             </div>
 
-            {/* Box 2: Dataset */}
+            {/* ── Slot 2: Raw Dataset ── */}
             <div
               onDragEnter={(e) => handleDragEnter(e, "DATASET")}
               onDragOver={(e) => handleDragOver(e, "DATASET")}
               onDragLeave={(e) => handleDragLeave(e, "DATASET")}
               onDrop={(e) => handleDrop(e, "DATASET")}
-              className={`p-6 md:p-7 rounded-[3px] border bg-[#01162E] flex flex-col justify-between gap-6 min-h-[300px] transition-all ${
+              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all ${
                 dragActiveCategory === "DATASET"
-                  ? "border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/40"
-                  : "border-white/[0.1]"
+                  ? "border-[#CC6600] bg-[#CC6600]/5 ring-1 ring-[#CC6600]/40"
+                  : "border-white/[0.09]"
               }`}
             >
-              <div className="flex flex-col gap-2.5">
+              {/* Header */}
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    Raw Dataset File
-                  </span>
-                  <span className="text-[0.65rem] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px]">
-                    CSV / XLSX
+                  <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-emerald-400">
+                    <IconDatabase size={18} stroke={1.75} />
+                  </div>
+                  <span className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                    Recommended
                   </span>
                 </div>
-                <p className="text-xs text-white/55 leading-relaxed font-sans">
-                  Tabulated respondent survey data, experiment records, or matrix sheets (Max 100MB).
-                </p>
+
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                    Raw Dataset File
+                  </h3>
+                  <p className="text-xs text-white/50 leading-relaxed font-sans">
+                    Tabulated respondent survey data or experiment records.
+                  </p>
+                </div>
               </div>
 
+              {/* Upload Zone / State */}
               {uploadingState.DATASET ? (
-                <div className="p-4 bg-[#011C38] border border-emerald-500/50 rounded-[2px] flex flex-col gap-3 shadow-lg shadow-emerald-500/10">
+                <div className="p-4 bg-[#011B38] border border-emerald-500/50 rounded-[2px] flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
                       {uploadingState.DATASET.fileName}
@@ -713,54 +699,59 @@ export default function NewProjectIntakePage() {
                       {uploadingState.DATASET.progress}%
                     </span>
                   </div>
-
                   <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-150 ease-out"
+                      className="h-full bg-emerald-500 transition-all duration-150 ease-out"
                       style={{ width: `${uploadingState.DATASET.progress}%` }}
                     />
                   </div>
-
                   <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                      {uploadingState.DATASET.progress === 100
-                        ? "Validating data schema..."
-                        : "Uploading raw dataset..."}
-                    </span>
+                    <span>Validating schema...</span>
                     <span>{uploadingState.DATASET.formattedSize}</span>
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "DATASET") ? (
-                <div className="p-4 bg-[#011C38] border border-white/[0.12] rounded-[2px] flex flex-col gap-3">
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-mono text-emerald-300 font-semibold break-all leading-snug">
-                      {filesList.find((f) => f.category === "DATASET")?.name}
-                    </span>
-                    <span className="text-[0.688rem] text-white/40 font-mono mt-1">
-                      {filesList.find((f) => f.category === "DATASET")?.formattedSize}
-                    </span>
+                <div className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                      <IconCheck size={15} stroke={2.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-xs font-mono text-emerald-200 font-semibold truncate">
+                        {filesList.find((f) => f.category === "DATASET")?.name}
+                      </span>
+                      <span className="text-[0.688rem] text-white/40 font-mono mt-0.5">
+                        {filesList.find((f) => f.category === "DATASET")?.formattedSize} · Verified
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-0.5">
-                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium flex items-center gap-1">
-                      <IconCheck size={11} stroke={2.5} />
-                      Ready
-                    </span>
+
+                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1">
+                    <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
+                      Replace
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".csv,.xlsx,.xls"
+                        onChange={(e) => handleFileInputChange(e, "DATASET")}
+                      />
+                    </label>
                     <button
                       type="button"
                       onClick={() => removeFile("DATASET")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-[2px] transition-colors font-medium"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
                     >
+                      <IconTrash size={13} stroke={2} />
                       Remove
                     </button>
                   </div>
                 </div>
               ) : (
                 <label
-                  className={`cursor-pointer border-2 border-dashed rounded-[3px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2 flex-1 min-h-[140px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
                     dragActiveCategory === "DATASET"
-                      ? "border-emerald-500 bg-emerald-500/20 scale-[1.01]"
-                      : "border-white/20 hover:border-emerald-500 bg-white/[0.01] hover:bg-white/[0.03]"
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-white/15 hover:border-emerald-500/60 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
                 >
                   <input
@@ -769,46 +760,57 @@ export default function NewProjectIntakePage() {
                     accept=".csv,.xlsx,.xls"
                     onChange={(e) => handleFileInputChange(e, "DATASET")}
                   />
-                  <span className="text-xs font-mono text-emerald-400 font-bold tracking-wider">
-                    {dragActiveCategory === "DATASET"
-                      ? "Drop dataset to attach"
-                      : "+ Drag & Drop or Browse"}
-                  </span>
-                  <span className="text-[0.688rem] text-white/40 font-sans">
-                    Drop CSV / XLSX or click to browse
-                  </span>
+                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors">
+                    <IconCloudUpload size={18} stroke={1.75} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
+                      Click to browse or drop file
+                    </span>
+                    <span className="text-[0.688rem] text-white/40 font-mono">
+                      CSV, XLSX, XLS (Max 100MB)
+                    </span>
+                  </div>
                 </label>
               )}
             </div>
 
-            {/* Box 3: Survey Questionnaire */}
+            {/* ── Slot 3: Survey Questionnaire ── */}
             <div
               onDragEnter={(e) => handleDragEnter(e, "QUESTIONNAIRE")}
               onDragOver={(e) => handleDragOver(e, "QUESTIONNAIRE")}
               onDragLeave={(e) => handleDragLeave(e, "QUESTIONNAIRE")}
               onDrop={(e) => handleDrop(e, "QUESTIONNAIRE")}
-              className={`p-6 md:p-7 rounded-[3px] border bg-[#01162E] flex flex-col justify-between gap-6 min-h-[300px] transition-all ${
+              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all ${
                 dragActiveCategory === "QUESTIONNAIRE"
-                  ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/40"
-                  : "border-white/[0.1]"
+                  ? "border-[#CC6600] bg-[#CC6600]/5 ring-1 ring-[#CC6600]/40"
+                  : "border-white/[0.09]"
               }`}
             >
-              <div className="flex flex-col gap-2.5">
+              {/* Header */}
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    Survey Instrument
-                  </span>
-                  <span className="text-[0.65rem] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-[2px]">
-                    PDF / DOCX
+                  <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-amber-400">
+                    <IconListCheck size={18} stroke={1.75} />
+                  </div>
+                  <span className="text-[0.625rem] font-mono uppercase px-2 py-0.5 rounded-[2px] bg-white/[0.04] text-white/40 border border-white/[0.08]">
+                    Optional
                   </span>
                 </div>
-                <p className="text-xs text-white/55 leading-relaxed font-sans">
-                  Likert-scale questionnaire, interview guide, or rating matrix (Max 50MB).
-                </p>
+
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                    Survey Instrument
+                  </h3>
+                  <p className="text-xs text-white/50 leading-relaxed font-sans">
+                    Likert-scale questionnaire, interview guide, or rating matrix.
+                  </p>
+                </div>
               </div>
 
+              {/* Upload Zone / State */}
               {uploadingState.QUESTIONNAIRE ? (
-                <div className="p-4 bg-[#011C38] border border-amber-400/50 rounded-[2px] flex flex-col gap-3 shadow-lg shadow-amber-400/10">
+                <div className="p-4 bg-[#011B38] border border-amber-400/50 rounded-[2px] flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
                       {uploadingState.QUESTIONNAIRE.fileName}
@@ -817,54 +819,59 @@ export default function NewProjectIntakePage() {
                       {uploadingState.QUESTIONNAIRE.progress}%
                     </span>
                   </div>
-
                   <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-amber-400 to-yellow-200 transition-all duration-150 ease-out"
+                      className="h-full bg-amber-400 transition-all duration-150 ease-out"
                       style={{ width: `${uploadingState.QUESTIONNAIRE.progress}%` }}
                     />
                   </div>
-
                   <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-                      {uploadingState.QUESTIONNAIRE.progress === 100
-                        ? "Verifying questionnaire..."
-                        : "Uploading survey instrument..."}
-                    </span>
+                    <span>Uploading...</span>
                     <span>{uploadingState.QUESTIONNAIRE.formattedSize}</span>
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "QUESTIONNAIRE") ? (
-                <div className="p-4 bg-[#011C38] border border-white/[0.12] rounded-[2px] flex flex-col gap-3">
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-mono text-emerald-300 font-semibold break-all leading-snug">
-                      {filesList.find((f) => f.category === "QUESTIONNAIRE")?.name}
-                    </span>
-                    <span className="text-[0.688rem] text-white/40 font-mono mt-1">
-                      {filesList.find((f) => f.category === "QUESTIONNAIRE")?.formattedSize}
-                    </span>
+                <div className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                      <IconCheck size={15} stroke={2.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-xs font-mono text-emerald-200 font-semibold truncate">
+                        {filesList.find((f) => f.category === "QUESTIONNAIRE")?.name}
+                      </span>
+                      <span className="text-[0.688rem] text-white/40 font-mono mt-0.5">
+                        {filesList.find((f) => f.category === "QUESTIONNAIRE")?.formattedSize} · Verified
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-0.5">
-                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium flex items-center gap-1">
-                      <IconCheck size={11} stroke={2.5} />
-                      Ready
-                    </span>
+
+                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1">
+                    <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
+                      Replace
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.docx,.doc"
+                        onChange={(e) => handleFileInputChange(e, "QUESTIONNAIRE")}
+                      />
+                    </label>
                     <button
                       type="button"
                       onClick={() => removeFile("QUESTIONNAIRE")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-[2px] transition-colors font-medium"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
                     >
+                      <IconTrash size={13} stroke={2} />
                       Remove
                     </button>
                   </div>
                 </div>
               ) : (
                 <label
-                  className={`cursor-pointer border-2 border-dashed rounded-[3px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2 flex-1 min-h-[140px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
                     dragActiveCategory === "QUESTIONNAIRE"
-                      ? "border-amber-400 bg-amber-400/20 scale-[1.01]"
-                      : "border-white/20 hover:border-amber-400 bg-white/[0.01] hover:bg-white/[0.03]"
+                      ? "border-amber-400 bg-amber-400/10"
+                      : "border-white/15 hover:border-amber-400/60 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
                 >
                   <input
@@ -873,14 +880,17 @@ export default function NewProjectIntakePage() {
                     accept=".pdf,.docx,.doc"
                     onChange={(e) => handleFileInputChange(e, "QUESTIONNAIRE")}
                   />
-                  <span className="text-xs font-mono text-amber-400 font-bold tracking-wider">
-                    {dragActiveCategory === "QUESTIONNAIRE"
-                      ? "Drop questionnaire to attach"
-                      : "+ Drag & Drop or Browse"}
-                  </span>
-                  <span className="text-[0.688rem] text-white/40 font-sans">
-                    Drop PDF / DOCX or click to browse
-                  </span>
+                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-amber-400 group-hover:border-amber-400/40 transition-colors">
+                    <IconCloudUpload size={18} stroke={1.75} />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
+                      Click to browse or drop file
+                    </span>
+                    <span className="text-[0.688rem] text-white/40 font-mono">
+                      PDF, DOCX (Max 50MB)
+                    </span>
+                  </div>
                 </label>
               )}
             </div>

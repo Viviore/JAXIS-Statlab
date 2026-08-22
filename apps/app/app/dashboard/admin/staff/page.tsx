@@ -430,7 +430,7 @@ export default function StaffRosterPage() {
       )}
 
       {/* ── KPI Grid (Consistent with Admin Dashboard Standard) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
         <KpiCard
           label="Total Staff Directory"
           value={kpis.total}
