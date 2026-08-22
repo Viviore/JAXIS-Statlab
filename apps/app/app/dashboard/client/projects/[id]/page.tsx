@@ -463,26 +463,33 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
         {/* Middle Section: Research Title & Target Deadline */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="flex flex-col gap-2 min-w-0 max-w-3xl">
-            <span className="text-xs text-white/40 font-mono">
-              Submitted on {new Date(project.createdAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight leading-snug">
+            <div className="flex items-center gap-2 text-[0.688rem] font-mono text-white/50 uppercase">
+              <span className="text-[#CC6600] font-bold">RESEARCH STUDY</span>
+              <span>•</span>
+              <span>
+                SUBMITTED ON{" "}
+                {new Date(project.createdAt).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight leading-snug break-words">
               {project.researchTitle}
             </h1>
           </div>
 
           {/* Target Milestone Counter Box */}
-          <div className="flex items-center gap-3 bg-[#010D1F] border border-white/[0.08] px-4 py-2.5 rounded-[2px] flex-shrink-0 self-start md:self-auto shadow-sm">
-            <IconCalendarEvent size={20} stroke={1.5} className="text-amber-400" />
+          <div className="flex items-center gap-3.5 bg-[#010D1F] border border-white/[0.08] hover:border-white/[0.15] px-4 py-3 rounded-[2px] flex-shrink-0 self-start md:self-auto shadow-sm transition-colors">
+            <div className="h-9 w-9 rounded-[2px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <IconCalendarEvent size={18} stroke={1.75} />
+            </div>
             <div className="flex flex-col">
-              <span className="text-[0.625rem] font-mono uppercase text-white/40 font-semibold">
+              <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
                 Target Defense Deadline
               </span>
-              <span className="text-xs font-mono font-bold text-amber-400">
+              <span className="text-sm font-mono font-bold text-amber-300">
                 {new Date(project.deadlineRequested).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -494,16 +501,20 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
         </div>
 
         {/* Bottom Section: Connected Linear Pipeline Stepper */}
-        <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-2.5">
-          <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/40 uppercase">
-            <span className="text-white/70 font-semibold flex items-center gap-1.5">
-              <IconSparkles size={13} stroke={1.5} className="text-[#CC6600]" />
-              <span>Statistical Lifecycle Progress</span>
-            </span>
-            <span>Stage {activeStageIdx + 1} of {STAGES.length} · {STAGES[activeStageIdx]?.label}</span>
+        <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-3">
+          <div className="flex items-center justify-between text-xs font-mono uppercase flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <IconSparkles size={14} stroke={1.5} className="text-[#CC6600]" />
+              <span className="text-white/90 font-bold tracking-wider">Statistical Lifecycle Progress</span>
+            </div>
+            <div className="text-[0.625rem] font-mono uppercase text-white/50 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 rounded-[2px] flex items-center gap-1.5">
+              <span>Stage {activeStageIdx + 1} of {STAGES.length}</span>
+              <span>•</span>
+              <span className="text-amber-400 font-bold">{STAGES[activeStageIdx]?.label}</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
             {STAGES.map((stage, idx) => {
               const isPast = idx < activeStageIdx;
               const isCurrent = idx === activeStageIdx;
@@ -511,12 +522,12 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               return (
                 <div
                   key={stage.id}
-                  className={`p-2.5 rounded-[2px] border transition-all flex flex-col gap-1 ${
+                  className={`p-3 rounded-[2px] border transition-all flex flex-col gap-1.5 ${
                     isCurrent
-                      ? "bg-[#CC6600]/25 border-[#CC6600] text-white shadow-sm shadow-[#CC6600]/30"
+                      ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-sm ring-1 ring-[#CC6600]/40"
                       : isPast
-                      ? "bg-white/[0.04] border-white/[0.12] text-white/80"
-                      : "bg-[#010D1F]/50 border-white/[0.06] text-white/30"
+                      ? "bg-white/[0.03] border-white/[0.10] text-white/85"
+                      : "bg-[#010D1F]/50 border-white/[0.05] text-white/35"
                   }`}
                 >
                   <div className="flex items-center justify-between text-[0.625rem] font-mono">
@@ -661,43 +672,64 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
         {/* Right (1 col): Stage Intelligence (Level with Left Card) */}
         <div className="lg:col-span-1 flex flex-col">
           <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5 shadow-lg">
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
-              <span className="text-xs font-mono font-bold text-white/90 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <IconSparkles size={16} stroke={1.5} className="text-[#CC6600]" />
-                <span>Stage Intelligence</span>
-              </span>
-              <span className="text-[0.625rem] font-mono text-white/50 bg-white/[0.04] border border-white/[0.10] px-1.5 py-0.5 rounded-[2px] uppercase">
-                LIVE
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  Stage Intelligence
+                </h3>
+              </div>
+              <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1.5 tracking-wider">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                LIVE TELEMETRY
               </span>
             </div>
 
-            {/* Top Snug Content Group */}
-            <div className="flex flex-col gap-3.5 flex-1">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-bold text-white font-sans">
+            {/* Current Focus Block */}
+            <div className="flex flex-col gap-4 flex-1">
+              <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.625rem] font-mono uppercase text-[#FFA040] font-bold tracking-wider">
+                    CURRENT FOCUS
+                  </span>
+                  <span className="text-[0.625rem] font-mono text-white/40 uppercase">
+                    STAGE 0{activeStageIdx + 1}
+                  </span>
+                </div>
+                <h4 className="text-sm font-bold text-white font-sans tracking-tight leading-snug">
                   {stageIntel.title}
-                </span>
-                <p className="text-xs text-white/70 leading-relaxed font-sans">
+                </h4>
+                <p className="text-xs text-white/65 leading-relaxed font-sans mt-0.5">
                   {stageIntel.desc}
                 </p>
               </div>
 
-              {/* Next Action Box */}
+              {/* Next Client Action Directive */}
               <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-1.5">
-                <span className="text-[0.625rem] font-mono uppercase text-white/60 font-bold flex items-center gap-1.5">
-                  <IconChecklist size={13} stroke={1.5} className="text-[#CC6600]" />
-                  <span>Next Client Action</span>
-                </span>
-                <span className="text-xs text-white/80 font-sans leading-relaxed">
+                <div className="flex items-center gap-1.5 text-[0.625rem] font-mono uppercase text-white/60 font-bold tracking-wider">
+                  <IconChecklist size={13} stroke={1.75} className="text-[#CC6600]" />
+                  <span>Next Action Directive</span>
+                </div>
+                <p className="text-xs font-semibold text-white/90 font-sans leading-relaxed">
                   {stageIntel.nextAction}
-                </span>
+                </p>
               </div>
             </div>
 
-            {/* Bottom SLA Timer Pinned to Baseline */}
-            <div className="pt-3 border-t border-white/[0.08] flex items-center gap-2 text-xs font-mono text-amber-400 bg-[#010D1F] p-3 rounded-[2px] border border-white/[0.04] mt-auto">
-              <IconClock size={15} stroke={1.5} className="text-amber-400 flex-shrink-0" />
-              <span className="leading-tight">{stageIntel.sla}</span>
+            {/* Estimated SLA & Turnaround Footer (Full Width, No Truncation) */}
+            <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex items-start gap-3 mt-auto">
+              <div className="h-8 w-8 rounded-[2px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0 mt-0.5">
+                <IconClock size={15} stroke={1.75} />
+              </div>
+              <div className="flex flex-col min-w-0 flex-1 gap-0.5">
+                <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                  Target Turnaround Window
+                </span>
+                <span className="text-xs font-mono font-semibold text-amber-300 leading-relaxed break-words">
+                  {stageIntel.sla}
+                </span>
+              </div>
             </div>
           </Card>
         </div>
@@ -845,54 +877,83 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
         {/* Right (1 col): Institutional Dossier & Governance (Level with Left Card) */}
         <div className="lg:col-span-1 flex flex-col">
-          <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5">
+          <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5 shadow-lg">
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
-              <h3 className="text-xs font-mono uppercase tracking-wider text-white/90 font-bold flex items-center gap-1.5">
-                <IconSchool size={16} stroke={1.5} className="text-white/50" />
-                <span>Institutional Dossier</span>
-              </h3>
-              <span className="text-[0.625rem] font-mono text-white/50 bg-white/[0.04] border border-white/[0.10] px-1.5 py-0.5 rounded-[2px] uppercase">
+              <div className="flex items-center gap-2">
+                <IconSchool size={16} stroke={1.5} className="text-white/60" />
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  Institutional Dossier
+                </h3>
+              </div>
+              <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1.5 tracking-wider">
+                <IconShieldCheck size={12} stroke={2} />
                 VERIFIED
               </span>
             </div>
 
-            <div className="flex flex-col gap-3.5 text-xs flex-1">
-              <div className="flex items-start gap-2.5">
-                <IconUser size={16} stroke={1.5} className="text-white/40 mt-0.5 flex-shrink-0" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-white/40 text-[0.688rem] font-mono">Lead Researcher</span>
-                  <span className="text-white font-semibold font-sans">{project.client.fullName}</span>
-                  <span className="text-white/40 text-[0.688rem] font-mono truncate">{project.client.email}</span>
+            {/* Dossier Structured Data Rows */}
+            <div className="flex flex-col gap-2.5 text-xs flex-1">
+              {/* Row 1: Lead Researcher */}
+              <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
+                <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
+                  <IconUser size={14} stroke={1.5} />
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                    Lead Researcher
+                  </span>
+                  <span className="text-xs font-bold text-white font-sans mt-0.5 truncate">
+                    {project.client.fullName}
+                  </span>
+                  <span className="text-[0.688rem] text-white/40 font-mono truncate">
+                    {project.client.email}
+                  </span>
                 </div>
               </div>
 
               {project.client.clientProfile && (
                 <>
-                  <div className="flex items-start gap-2.5">
-                    <IconSchool size={16} stroke={1.5} className="text-white/40 mt-0.5 flex-shrink-0" />
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-white/40 text-[0.688rem] font-mono">Institution / University</span>
-                      <span className="text-white font-semibold font-sans">
+                  {/* Row 2: Institution / University */}
+                  <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
+                    <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
+                      <IconSchool size={14} stroke={1.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Institution / University
+                      </span>
+                      <span className="text-xs font-bold text-white font-sans mt-0.5 leading-snug">
                         {project.client.clientProfile.institutionSchool}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2.5">
-                    <IconBook size={16} stroke={1.5} className="text-white/40 mt-0.5 flex-shrink-0" />
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-white/40 text-[0.688rem] font-mono">Academic Program</span>
-                      <span className="text-white font-semibold font-sans">
+                  {/* Row 3: Academic Program */}
+                  <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
+                    <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
+                      <IconBook size={14} stroke={1.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Academic Program
+                      </span>
+                      <span className="text-xs font-bold text-white font-sans mt-0.5 leading-snug">
                         {project.client.clientProfile.academicProgram}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2.5">
-                    <IconMapPin size={16} stroke={1.5} className="text-white/40 mt-0.5 flex-shrink-0" />
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-white/40 text-[0.688rem] font-mono">Institutional Region</span>
-                      <span className="text-white font-semibold font-sans">
+                  {/* Row 4: Institutional Region */}
+                  <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
+                    <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
+                      <IconMapPin size={14} stroke={1.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Institutional Region
+                      </span>
+                      <span className="text-xs font-bold text-white font-sans mt-0.5 leading-snug">
                         {formatRegion(project.client.clientProfile.region)}
                       </span>
                     </div>
@@ -902,12 +963,12 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
             </div>
 
             {/* Quality & Governance Seal (Aligned to Bottom) */}
-            <div className="pt-3 border-t border-white/[0.08] flex flex-col gap-2 bg-[#010D1F] p-3.5 rounded-[2px] border border-white/[0.04] mt-auto">
-              <div className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-white/80 font-bold">
-                <IconShieldCheck size={15} stroke={1.5} className="text-emerald-400" />
+            <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-1 mt-auto">
+              <div className="flex items-center gap-1.5 text-[0.625rem] font-mono uppercase text-emerald-400 font-bold tracking-wider">
+                <IconShieldCheck size={14} stroke={1.75} />
                 <span>JAXIS Peer Review Standard</span>
               </div>
-              <p className="text-[0.688rem] text-white/60 leading-relaxed font-sans">
+              <p className="text-xs text-white/70 leading-relaxed font-sans mt-0.5">
                 Every output is independently calculated and verified by a Senior QA Lead for APA 7th compliance.
               </p>
             </div>

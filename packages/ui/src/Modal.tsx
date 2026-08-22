@@ -164,21 +164,24 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Modal Dialog Card */}
       <div
-        className={`relative w-full ${sizeClasses[size]} border border-white/[0.12] rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 ${
+        className={`relative w-full ${sizeClasses[size]} max-h-[min(90vh,calc(100dvh-2rem))] border border-white/[0.12] rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 ${
           isVisible ? "animate-modal-dialog-in" : "animate-modal-dialog-out"
         } ${className}`}
         style={{
           backgroundColor: "#01162E",
-          backgroundImage: "linear-gradient(180deg, rgba(1, 27, 56, 0.95) 0%, rgba(1, 18, 38, 0.98) 100%)",
+          backgroundImage: "linear-gradient(180deg, rgba(1, 27, 56, 0.98) 0%, rgba(1, 18, 38, 0.99) 100%)",
           borderColor: "rgba(255, 255, 255, 0.12)",
           borderRadius: "2px",
           boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08)",
           boxSizing: "border-box",
+          maxHeight: "min(90vh, calc(100dvh - 2rem))",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {/* Decorative Top Accent Line */}
         <div
-          className="absolute top-0 left-0 right-0 h-[1px]"
+          className="absolute top-0 left-0 right-0 h-[1px] z-30"
           style={{
             position: "absolute",
             top: 0,
@@ -191,21 +194,26 @@ export const Modal: React.FC<ModalProps> = ({
           aria-hidden="true"
         />
 
-        {/* Header */}
+        {/* Sticky Header */}
         <div
-          className="flex items-start justify-between gap-4 border-b border-white/[0.08] bg-white/[0.01]"
+          className="sticky top-0 z-20 flex-shrink-0 flex items-start justify-between gap-4 border-b border-white/[0.08] bg-[#011B38]/98 backdrop-blur-md"
           style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            flexShrink: 0,
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "1rem",
-            padding: "0.875rem 1rem",
+            padding: "1rem 1.25rem",
             borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            backgroundColor: "rgba(1, 27, 56, 0.98)",
             boxSizing: "border-box",
           }}
         >
           <div className="min-w-0 pr-2">
-            {currentTitle && <div className="text-base font-bold text-white tracking-tight">{currentTitle}</div>}
+            {currentTitle && <div className="text-base font-bold text-white tracking-tight font-sans">{currentTitle}</div>}
             {currentDesc && (
               <p
                 className="text-xs text-white/60 mt-1 font-sans leading-relaxed"
@@ -218,7 +226,7 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors p-1.5 rounded-[2px] hover:bg-white/10 select-none focus:outline-none flex-shrink-0"
+            className="text-white/40 hover:text-white transition-colors p-1.5 rounded-[2px] hover:bg-white/10 select-none focus:outline-none flex-shrink-0 cursor-pointer"
             style={{
               padding: "0.375rem",
               borderRadius: "2px",
@@ -233,12 +241,13 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        {/* Content Body */}
+        {/* Scrollable Content Body */}
         <div
-          className={`text-sm text-white/90 overflow-y-auto ${bodyClassName}`}
+          className={`flex-1 min-h-0 overflow-y-auto text-sm text-white/90 ${bodyClassName}`}
           style={{
-            padding: "1rem",
-            maxHeight: "82vh",
+            flex: "1 1 0%",
+            minHeight: 0,
+            padding: "1.25rem 1.25rem",
             overflowY: "auto",
             boxSizing: "border-box",
             fontSize: "0.875rem",
@@ -260,18 +269,22 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Sticky Footer */}
         {currentFooter && (
           <div
-            className="border-t border-white/[0.08] bg-black/30 flex justify-end items-center gap-3"
+            className="sticky bottom-0 z-20 flex-shrink-0 border-t border-white/[0.08] bg-[#011226]/98 backdrop-blur-md flex justify-end items-center gap-3"
             style={{
+              position: "sticky",
+              bottom: 0,
+              zIndex: 20,
+              flexShrink: 0,
               display: "flex",
               justifyContent: "flex-end",
               alignItems: "center",
               gap: "0.75rem",
-              padding: "0.875rem 1rem",
+              padding: "0.875rem 1.25rem",
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-              backgroundColor: "rgba(0, 0, 0, 0.35)",
+              backgroundColor: "rgba(1, 18, 38, 0.98)",
               boxSizing: "border-box",
             }}
           >

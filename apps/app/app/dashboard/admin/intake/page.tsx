@@ -342,7 +342,7 @@ export default function AdminIntakeTriagePage() {
                         {/* Research Study & Intake */}
                         <td>
                           <div className="flex flex-col gap-1 min-w-0 pr-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
                                 {p.intakeId}
                               </span>
@@ -351,6 +351,17 @@ export default function AdminIntakeTriagePage() {
                                   {p.files.length} doc{p.files.length === 1 ? "" : "s"}
                                 </span>
                               )}
+                              <span className="text-[0.6875rem] font-mono text-white/40 whitespace-nowrap">
+                                Submitted {new Date(p.createdAt).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })} · {new Date(p.createdAt).toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })}
+                              </span>
                             </div>
                             <Link
                               href={`/dashboard/admin/projects/${p.id}`}
@@ -511,9 +522,17 @@ export default function AdminIntakeTriagePage() {
           description={selectedStudyForInspect.researchTitle}
           size="xl"
           footer={
-            <div className="flex items-center justify-between w-full">
-              <span className="text-xs font-mono text-white/40">
-                Created: {new Date(selectedStudyForInspect.createdAt).toLocaleDateString()}
+            <div className="flex items-center justify-between w-full flex-wrap gap-2">
+              <span className="text-xs font-mono text-white/50">
+                Submitted on {new Date(selectedStudyForInspect.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })} at {new Date(selectedStudyForInspect.createdAt).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
               </span>
               <div className="flex items-center gap-3">
                 <Button

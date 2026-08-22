@@ -41,17 +41,18 @@
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Client Profile Creation & Editing:** Client can enter and update their institutional details (school/institution, academic program, degree, contact number, region).
-- [ ] **Profile Completion Gate:** Server-side gate verifies `isProfileComplete` status; incomplete profiles are blocked from creating projects.
-- [ ] **Profile Completion Banner:** Persistent visual banner on the client dashboard nudging users with incomplete profiles to finish setup.
-- [ ] **Client Dashboard Home Shell:** Client lands on customized workbench with profile overview, project summary, and primary call-to-actions.
-- [ ] **Admin Read-Only Inspection:** Admin can view client academic profile data on project detail views.
+- [x] **Client Profile Creation & Editing:** Client can enter and update their institutional details (school/institution, academic program, contact number, region) at `/dashboard/client/profile`.
+- [x] **Profile Completion Gate:** Server-side gate verifies `isProfileComplete` status; incomplete profiles are blocked from creating new research projects.
+- [x] **Profile Completion Banner:** Persistent visual banner on the client dashboard nudging users with incomplete profiles to finish setup.
+- [x] **Client Dashboard Home Shell:** Client lands on customized workbench with profile overview, project summary, and primary call-to-actions.
+- [x] **Admin Read-Only Inspection:** Admin can view client academic profile data on project detail views and intake evaluations.
 
-1. **See the Warning Banner**: If you log in as a new Client (or `client@jaxis.dev` with an empty profile), you should see a persistent orange warning banner in the dashboard sidebar telling you to complete your profile.
-2. **Access the Profile Form**: You should be able to navigate to `/dashboard/client/profile` and see a form for Institutional Details and Contact Information.
-3. **Save and Remove Banner**: Filling out the form and clicking Save should update your profile, redirect you to the main dashboard, and the warning banner should disappear.
-4. **See Profile Status KPI**: On the main `/dashboard/client` page, you should see a card showing your Profile Status as "100% Complete".
-5. **Route Protection**: If you try to bypass the profile form (e.g. by trying to submit a new project in the future), the system is wired to redirect you back to the profile page.
+#### QA Verification Guide:
+1. **See the Warning Banner**: If you log in as a new Client (or `client@jaxis.dev` with an empty profile), you should see a persistent warning banner in the dashboard sidebar telling you to complete your profile.
+2. **Access the Profile Form**: Navigate to `/dashboard/client/profile` and enter institutional affiliation details (School, Program, Phone, Region).
+3. **Save and Remove Banner**: Filling out the form and clicking **"SAVE PROFILE SETTINGS"** updates your profile, displays a success toast, and removes the incomplete profile warning banner.
+4. **See Profile Status KPI**: On the main `/dashboard/client` page, you should see a card showing your Profile Status as verified and complete.
+5. **Route Protection Gate**: Attempting to create a new project at `/dashboard/client/projects/new` with an incomplete profile redirects back to the profile setup page.
 
 
 

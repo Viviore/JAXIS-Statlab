@@ -303,12 +303,23 @@ export default function ClientProjectsListPage() {
                         {/* 1. Research Study & Intake */}
                         <td>
                           <div className="flex flex-col gap-1.5 py-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-mono text-xs font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
                                 {p.intakeId}
                               </span>
                               <span className="font-mono text-[0.65rem] text-sky-300 bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
                                 {p.files.length} {p.files.length === 1 ? "doc" : "docs"}
+                              </span>
+                              <span className="text-[0.6875rem] font-mono text-white/40 whitespace-nowrap">
+                                Submitted {new Date(p.createdAt).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })} · {new Date(p.createdAt).toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })}
                               </span>
                             </div>
 

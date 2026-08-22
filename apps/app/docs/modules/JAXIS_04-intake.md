@@ -231,12 +231,12 @@ const seedProjects = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Multi-Step Project Intake Submission:** Client can submit a project with research title, objectives, hypotheses, target deadline, and methodology notes.
-- [ ] **Secure File & Dataset Upload:** Client can attach datasets, questionnaires, or draft chapters (DOCX, PDF, XLSX, CSV) via pre-signed storage URLs.
-- [ ] **Automated Human-Readable Code:** System generates formatted project codes: `JAXIS-YYYYMM-XXXX`.
-- [ ] **Admin Triage Queue:** Admin can review all incoming submissions in `NEW_REQUEST` status.
-- [ ] **Request Missing Information:** Admin can transition status to `AWAITING_INFORMATION` with feedback; Client can provide updates and replace files.
-- [ ] **Evaluation Approval:** Admin can advance complete submissions to `UNDER_EVALUATION` to initiate quotation modeling.
+- [x] **Multi-Step Project Intake Submission:** Client can submit a project with research title, objectives, hypotheses, target deadline, and methodology notes at `/dashboard/client/projects/new`.
+- [x] **Secure File & Dataset Upload:** Client can attach datasets, questionnaires, or draft chapters (DOCX, PDF, XLSX, CSV, SAV) with 15MB limit validation and category detection.
+- [x] **Automated Human-Readable Code:** System generates formatted project codes: `JAXIS-YYYYMM-XXXX`.
+- [x] **Admin Triage Queue:** Admin can review all incoming submissions in `NEW_REQUEST` status at `/dashboard/admin/intake`.
+- [x] **Request Missing Information:** Admin can transition status to `AWAITING_INFORMATION` with feedback; Client can provide updates and replace files with 1-click resubmission.
+- [x] **Evaluation Approval:** Admin can advance complete submissions to `UNDER_EVALUATION` to initiate quotation modeling.
 
 #### 1. Client Project Intake & Document Upload Flow
 1. Log in as a Client (`client@jaxis.dev` / `JaxisClient2026!`).

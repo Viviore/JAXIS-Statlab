@@ -187,7 +187,9 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
         title={project.researchTitle}
         description={`Study ID: ${project.intakeId} · Primary Client: ${project.client.fullName} · Submitted ${new Date(
           project.createdAt
-        ).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`}
+        ).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} at ${new Date(
+          project.createdAt
+        ).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}`}
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Admin Command", href: "/dashboard/admin" },

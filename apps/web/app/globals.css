@@ -108,36 +108,48 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar — Corporate Midnight Aesthetic */
 * {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
   scrollbar-width: thin;
-  scrollbar-color: #012E57 #010114;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
+/* Precision Tactical Scrollbar — Ultra-thin (5px), Square, Zero Arrows, Transparent Track */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 ::-webkit-scrollbar-track {
-  background: #010114;
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent !important;
+  border: none !important;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent !important;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #012E57;
-  border-radius: 4px;
-  border: 2px solid #010114; /* Inset padding effect */
-  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.18);
+  border-radius: 0px !important;
+  border: none !important;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #CC6600;
-  box-shadow: 0 0 8px rgba(204, 102, 0, 0.45);
+  background-color: rgba(204, 102, 0, 0.7);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background-color: #E67300;
+  background-color: #CC6600;
 }
 
 /* Glassmorphism Panels */

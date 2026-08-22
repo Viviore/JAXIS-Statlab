@@ -195,18 +195,25 @@ const seedStaffProfiles = [
 ];
 ```
 
----
-
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Admin Staff Provisioning:** Admin can provision internal staff accounts (`STATISTICIAN`, `SENIOR_QA_LEAD`, `FINANCE_OFFICER`, `CEO`) with name, email, role, and temporary password.
-- [ ] **Staff Roster Workbench:** Admin can view the staff roster directory with role badges, status indicators, specializations, and active project counters.
-- [ ] **Specialization Taxonomy:** Staff profiles support standardized specialization tags (Regression, ANOVA, SEM, Factor Analysis, Time Series, Instrument Validation, Mixed Methods).
-- [ ] **Staff Profile Management:** Statisticians and QA Leads can view and edit their own bio and specialization areas.
-- [ ] **Staff Suspension & Audit:** Admin can temporarily suspend staff with mandatory reason logging in `SuspensionLog`.
-- [ ] **CEO Account Termination:** CEO can permanently terminate staff accounts, auto-flagging active projects for `REASSIGNMENT_NEEDED`.
-- [ ] **Suspension Reversal:** Admin can lift suspensions, restoring active status and recording `liftedAt` timestamp.
+- [x] **Admin Staff Provisioning:** Admin can provision internal staff accounts (`STATISTICIAN`, `SENIOR_QA_LEAD`, `FINANCE_OFFICER`, `CEO`) with name, email, role, and temporary password at `/dashboard/admin/staff`.
+- [x] **Staff Roster Workbench:** Admin can view the staff roster directory with role badges, status indicators, specializations, and active project counters.
+- [x] **Specialization Taxonomy:** Staff profiles support standardized specialization tags (Regression, ANOVA, SEM, Factor Analysis, Time Series, Instrument Validation, Mixed Methods).
+- [x] **Staff Profile Management:** Statisticians and QA Leads can view and edit their own bio and specialization areas.
+- [x] **Staff Suspension & Audit:** Admin can temporarily suspend staff with mandatory reason logging in `SuspensionLog`.
+- [x] **CEO Account Termination:** CEO can permanently terminate staff accounts, auto-flagging active projects for `REASSIGNMENT_NEEDED`.
+- [x] **Suspension Reversal:** Admin can lift suspensions, restoring active status and recording `liftedAt` timestamp.
 
+#### QA Verification Guide:
+1. **Access Staff Roster**: Log in as Admin (`admin@jaxis.dev` / `JaxisAdmin2026!`) and navigate to `/dashboard/admin/staff`.
+2. **Provision New Staff**: Click **"+ PROVISION STAFF"**, select role (e.g. `STATISTICIAN`), enter full name, email, and select specializations. Submit and verify credentials modal displays generated login password.
+3. **Inspect Roster & Filters**: Filter roster by role (Statistician, Senior QA Lead, etc.) and verify status indicators.
+4. **Test Suspension**: Click **"SUSPEND"** on a staff member, input mandatory suspension reason, and confirm. Attempt to log in with suspended account to verify access block.
+5. **Lift Suspension**: Click **"LIFT SUSPENSION"** as Admin to restore account back to `ACTIVE`.
+6. **CEO Termination Authority**: Log in as CEO (`ceo@jaxis.dev` / `JaxisCeo2026!`) to verify permanent termination authority and violation logging.
+
+---
 
 ## 8. Acceptance Criteria (Done Checklist)
 
