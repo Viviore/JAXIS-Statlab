@@ -40,12 +40,7 @@
 | Client-to-Expert direct booking without Admin | Admin manages scheduling for all sessions |
 | Multi-session group bookings | Each session is individual per project |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **DefenseLab Session Booking:** Client with verified DefenseLab add-on payment can schedule a 1-on-1 mock oral defense rehearsal.
-- [ ] **12-Hour Rescheduling Gate:** System enforces strict 12-hour minimum cancellation notice; late client reschedules are marked `NO_SHOW_CLIENT` without refund.
-- [ ] **Session Completion Lifecycle:** Admin coordinates meeting platform details, moderates attendance, and marks session `COMPLETED`.
-- [ ] **Recording & Rubric Access:** Admin uploads defense session recording and panel questions review; Client accesses recording post-session.
 
 ---
 
@@ -194,7 +189,10 @@ const seedDefenseLabSession = {
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **DefenseLab Session Booking:** Client with verified DefenseLab add-on payment can schedule a 1-on-1 mock oral defense rehearsal.
+- [ ] **12-Hour Rescheduling Gate:** System enforces strict 12-hour minimum cancellation notice; late client reschedules are marked `NO_SHOW_CLIENT` without refund.
+- [ ] **Session Completion Lifecycle:** Admin coordinates meeting platform details, moderates attendance, and marks session `COMPLETED`.
+- [ ] **Recording & Rubric Access:** Admin uploads defense session recording and panel questions review; Client accesses recording post-session.
 
 
 ## 8. Acceptance Criteria (Done Checklist)

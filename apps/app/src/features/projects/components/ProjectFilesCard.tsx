@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, Button } from "@repo/ui";
+import { Card, Button, Toast } from "@repo/ui";
 import {
   IconFileTypeDocx,
   IconFileTypePdf,
@@ -61,10 +61,20 @@ export function ProjectFilesCard({
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadSuccessId, setDownloadSuccessId] = useState<string | null>(null);
   const [isBatchDownloading, setIsBatchDownloading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "danger";
+  } | null>(null);
 
   // Single file download
   const handleDownload = async (file: ProjectFileItem) => {
     setDownloadingId(file.id);
+    setToastMessage({
+      message: "Download Initiated",
+      description: `Transferring "${file.fileName}" to your local device.`,
+      variant: "info",
+    });
     try {
       await triggerFileDownload(file.filePath, file.fileName);
       setDownloadingId(null);
@@ -79,6 +89,11 @@ export function ProjectFilesCard({
   const handleBatchDownloadAll = async () => {
     if (files.length === 0 || isBatchDownloading) return;
     setIsBatchDownloading(true);
+    setToastMessage({
+      message: "Batch Download Initiated",
+      description: `Transferring ${files.length} study artifact files to your local device.`,
+      variant: "info",
+    });
     for (let i = 0; i < files.length; i++) {
       const file = files[i]!;
       await triggerFileDownload(file.filePath, file.fileName);
@@ -238,6 +253,15 @@ export function ProjectFilesCard({
             );
           })}
         </div>
+      )}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
       )}
     </Card>
   );

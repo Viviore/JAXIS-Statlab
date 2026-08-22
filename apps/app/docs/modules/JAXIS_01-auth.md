@@ -37,17 +37,7 @@
 | `AUTH-F13` | **Account Status Gate** | `SUSPENDED` or `TERMINATED` accounts cannot log in. Returns descriptive error. |
 | `AUTH-F14` | **Token Refresh / Session Extension** | JWT auto-rotated on each request within the active session window. |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [x] **Client Registration:** Able to self-register a new institutional/client account at `/register` with full validation (password min. 8 chars, unique email).
-- [x] **Multi-Role Authentication:** Able to log in with valid credentials at `/login` for all 6 stakeholder roles (`CLIENT`, `STATISTICIAN`, `SENIOR_QA_LEAD`, `ADMIN`, `FINANCE_OFFICER`, `CEO`).
-- [x] **1-Click Dev Presets:** Able to use the preset selector on `/login` to auto-fill credentials for fast cross-role testing.
-- [x] **Route Protection:** Unauthenticated access to `/dashboard/*` immediately redirects to `/login` with callback preservation.
-- [x] **Role-Scoped Dashboard Shells:** Authenticated users are routed to their designated desk (`/dashboard/client`, `/dashboard/statistician`, `/dashboard/qa`, `/dashboard/admin`, `/dashboard/finance`, `/dashboard/ceo`).
-- [x] **RBAC Boundary Enforcement:** Unauthorized cross-role visits (e.g. Client attempting `/dashboard/admin`) redirect to `/unauthorized`.
-- [x] **Account Status Gate:** `SUSPENDED` and `TERMINATED` users are blocked at login with descriptive alert notifications.
-- [x] **Authentication Audit Logging:** Registration, login success, login failure, and logout events recorded in `AuthAuditLog`.
-- [x] **Secure Session Termination:** Able to log out and destroy active JWT sessions completely.
 
 ---
 
@@ -336,7 +326,15 @@ All auth errors follow the standard JAXIS error contract:
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [x] **Client Registration:** Able to self-register a new institutional/client account at `/register` with full validation (password min. 8 chars, unique email).
+- [x] **Multi-Role Authentication:** Able to log in with valid credentials at `/login` for all 6 stakeholder roles (`CLIENT`, `STATISTICIAN`, `SENIOR_QA_LEAD`, `ADMIN`, `FINANCE_OFFICER`, `CEO`).
+- [x] **1-Click Dev Presets:** Able to use the preset selector on `/login` to auto-fill credentials for fast cross-role testing.
+- [x] **Route Protection:** Unauthenticated access to `/dashboard/*` immediately redirects to `/login` with callback preservation.
+- [x] **Role-Scoped Dashboard Shells:** Authenticated users are routed to their designated desk (`/dashboard/client`, `/dashboard/statistician`, `/dashboard/qa`, `/dashboard/admin`, `/dashboard/finance`, `/dashboard/ceo`).
+- [x] **RBAC Boundary Enforcement:** Unauthorized cross-role visits (e.g. Client attempting `/dashboard/admin`) redirect to `/unauthorized`.
+- [x] **Account Status Gate:** `SUSPENDED` and `TERMINATED` users are blocked at login with descriptive alert notifications.
+- [x] **Authentication Audit Logging:** Registration, login success, login failure, and logout events recorded in `AuthAuditLog`.
+- [x] **Secure Session Termination:** Able to log out and destroy active JWT sessions completely.
 
 
 ## 10. Acceptance Criteria (Done Checklist)

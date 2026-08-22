@@ -39,13 +39,7 @@
 | Auto-generation without Admin trigger | Admin must explicitly generate; no auto-fire on quote acceptance |
 | Payment processing | Module 07 |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **SOW Contract Compilation:** Admin can generate a formal Scope of Work contract containing an immutable JSON content snapshot.
-- [ ] **Client Digital Signing:** Client reviews legal terms, scope boundaries, and signs by typing their full legal name.
-- [ ] **Permanent Scope Lock:** Signed SOW is locked (`isLocked = true`); all subsequent mutation attempts return 403 `SOW_LOCKED`.
-- [ ] **Automated PDF Export:** Client and Admin can view and download the official signed SOW document as a branded PDF.
-- [ ] **Transition to Payment Phase:** Signing transitions project to `SOW_SIGNED` / `AWAITING_PAYMENT`.
 
 ---
 
@@ -196,7 +190,11 @@ const seedSOW = {
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **SOW Contract Compilation:** Admin can generate a formal Scope of Work contract containing an immutable JSON content snapshot.
+- [ ] **Client Digital Signing:** Client reviews legal terms, scope boundaries, and signs by typing their full legal name.
+- [ ] **Permanent Scope Lock:** Signed SOW is locked (`isLocked = true`); all subsequent mutation attempts return 403 `SOW_LOCKED`.
+- [ ] **Automated PDF Export:** Client and Admin can view and download the official signed SOW document as a branded PDF.
+- [ ] **Transition to Payment Phase:** Signing transitions project to `SOW_SIGNED` / `AWAITING_PAYMENT`.
 
 
 ## 7. Acceptance Criteria (Done Checklist)

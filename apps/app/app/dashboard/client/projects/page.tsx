@@ -10,6 +10,7 @@ import {
   KpiCard,
   FilterToolbar,
   Modal,
+  Toast,
 } from "@repo/ui";
 import { IconDownload } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
@@ -27,6 +28,11 @@ export default function ClientProjectsListPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedStudyForInspect, setSelectedStudyForInspect] = useState<ProjectDetailItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "danger";
+  } | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -507,7 +513,7 @@ export default function ClientProjectsListPage() {
                   No files or dataset packages attached to this intake record.
                 </div>
               ) : (
-                <div className="space-y-2.5 max-h-64 overflow-y-auto">
+                <div className="flex flex-col gap-3 max-h-64 overflow-y-auto pr-1">
                   {selectedStudyForInspect.files.map((file) => {
                     const meta = getFileMeta(file.fileName, file.fileType);
                     const category = formatFileCategory(file.fileCategory);
@@ -543,7 +549,14 @@ export default function ClientProjectsListPage() {
 
                         <button
                           type="button"
-                          onClick={() => triggerFileDownload(file.filePath, file.fileName)}
+                          onClick={() => {
+                            triggerFileDownload(file.filePath, file.fileName);
+                            setToastMessage({
+                              message: "Download Initiated",
+                              description: `Transferring "${file.fileName}" to your local device.`,
+                              variant: "info",
+                            });
+                          }}
                           className="px-5 py-2 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer"
                         >
                           <IconDownload size={14} stroke={1.5} className="text-[#FFA040]" />
@@ -557,6 +570,15 @@ export default function ClientProjectsListPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
       )}
     </div>
   );

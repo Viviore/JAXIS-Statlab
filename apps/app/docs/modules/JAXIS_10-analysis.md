@@ -41,13 +41,7 @@
 | Inline code editor or SPSS integration | Out of MVP |
 | AI/ML assisted analysis | Out of MVP |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **Statistician Analysis Workspace:** Assigned Statistician can access client datasets, research objectives, and locked SOW scope terms.
-- [ ] **Versioned Output File Uploads:** Statistician can upload statistical script files (SPSS `.sav`/`.spv`, R scripts, Python notebooks, Excel tables, draft reports) with auto-incrementing versions.
-- [ ] **Permanent Version History:** Prior versions are preserved (`isCurrent = false`), timestamped, and auditable.
-- [ ] **Scope Creep Flagging (RULE_QUO_03):** Statistician can flag out-of-scope requests, immediately halting work (`SCOPE_CREEP_HALTED`) and prompting Admin for a supplemental quote.
-- [ ] **One-Way Submit for QA:** Statistician can submit complete analysis package, advancing status to `FOR_QA` and locking workbench uploads during QA evaluation.
 
 ---
 
@@ -204,7 +198,11 @@ const seedAnalysisFiles = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **Statistician Analysis Workspace:** Assigned Statistician can access client datasets, research objectives, and locked SOW scope terms.
+- [ ] **Versioned Output File Uploads:** Statistician can upload statistical script files (SPSS `.sav`/`.spv`, R scripts, Python notebooks, Excel tables, draft reports) with auto-incrementing versions.
+- [ ] **Permanent Version History:** Prior versions are preserved (`isCurrent = false`), timestamped, and auditable.
+- [ ] **Scope Creep Flagging (RULE_QUO_03):** Statistician can flag out-of-scope requests, immediately halting work (`SCOPE_CREEP_HALTED`) and prompting Admin for a supplemental quote.
+- [ ] **One-Way Submit for QA:** Statistician can submit complete analysis package, advancing status to `FOR_QA` and locking workbench uploads during QA evaluation.
 
 
 ## 7. Acceptance Criteria (Done Checklist)

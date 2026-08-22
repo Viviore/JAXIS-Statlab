@@ -43,14 +43,7 @@
 | Group video/voice chat | Out of MVP |
 | Unblocking a blocked message | No pathway — block is final by design |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **Project-Scoped Messaging Thread:** Client, assigned Statistician, and Admin can view and post in the dedicated project communication thread.
-- [ ] **Communication Firewall Enforcement:** Server-side regex engine detects prohibited contact information (personal emails, PH phone numbers, GCash/Maya/PayPal, Telegram/Viber/FB/social handles, external URLs).
-- [ ] **Zero-Leak Message Blocking:** Prohibited messages are blocked entirely (`isBlocked = true`); sender receives an immediate policy violation notice; recipient receives nothing.
-- [ ] **Admin Firewall Review Queue:** Admin can audit all blocked communication attempts with sender, timestamp, detected pattern, and content in a dedicated review queue.
-- [ ] **Realtime Delivery & Polling Fallback:** Instant messaging synchronization via Supabase Realtime WebSockets (`project:{projectId}`) with 5-second polling fallback in development.
-- [ ] **Read Receipts & Participant Badges:** Messages clearly display sender role badges (`CLIENT`, `STATISTICIAN`, `ADMIN`) and track recipient `readAt` timestamps.
 
 ---
 
@@ -236,7 +229,12 @@ const seedMessages = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **Project-Scoped Messaging Thread:** Client, assigned Statistician, and Admin can view and post in the dedicated project communication thread.
+- [ ] **Communication Firewall Enforcement:** Server-side regex engine detects prohibited contact information (personal emails, PH phone numbers, GCash/Maya/PayPal, Telegram/Viber/FB/social handles, external URLs).
+- [ ] **Zero-Leak Message Blocking:** Prohibited messages are blocked entirely (`isBlocked = true`); sender receives an immediate policy violation notice; recipient receives nothing.
+- [ ] **Admin Firewall Review Queue:** Admin can audit all blocked communication attempts with sender, timestamp, detected pattern, and content in a dedicated review queue.
+- [ ] **Realtime Delivery & Polling Fallback:** Instant messaging synchronization via Supabase Realtime WebSockets (`project:{projectId}`) with 5-second polling fallback in development.
+- [ ] **Read Receipts & Participant Badges:** Messages clearly display sender role badges (`CLIENT`, `STATISTICIAN`, `ADMIN`) and track recipient `readAt` timestamps.
 
 
 ## 8. Acceptance Criteria (Done Checklist)

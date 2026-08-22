@@ -43,13 +43,7 @@
 | RULE_QUO_03 (scope creep requote) | Handled in Module 10 (Analysis Workbench) when Statistician flags scope creep |
 | Premium / Validate packages | Future/out-of-MVP per `JAXIS_scope.md` §5 |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **Admin Quotation Builder:** Admin can build itemized commercial quotes with statistical service packages (`JX-01`, `JX-02`, `JX-03`, `JX-04`) and add-ons (`DEFENSELAB`, `RUSH`).
-- [ ] **Pricing Guardrails:** Server enforces package minimum price floors and calculates required downpayment (100% upfront for `JX-01`/`JX-02`).
-- [ ] **Quote Issuance:** Admin issues quote transitioning project to `QUOTE_SENT` with 3-day validity window.
-- [ ] **Client Proposal Review:** Client views transparent price breakdown, terms, deliverables, and payment schedule.
-- [ ] **Quote Acceptance / Decline:** Client can accept (advances to `SOW_PENDING`) or decline with feedback for re-estimation.
 
 ---
 
@@ -230,7 +224,11 @@ const packageConfigs = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **Admin Quotation Builder:** Admin can build itemized commercial quotes with statistical service packages (`JX-01`, `JX-02`, `JX-03`, `JX-04`) and add-ons (`DEFENSELAB`, `RUSH`).
+- [ ] **Pricing Guardrails:** Server enforces package minimum price floors and calculates required downpayment (100% upfront for `JX-01`/`JX-02`).
+- [ ] **Quote Issuance:** Admin issues quote transitioning project to `QUOTE_SENT` with 3-day validity window.
+- [ ] **Client Proposal Review:** Client views transparent price breakdown, terms, deliverables, and payment schedule.
+- [ ] **Quote Acceptance / Decline:** Client can accept (advances to `SOW_PENDING`) or decline with feedback for re-estimation.
 
 
 ## 8. Acceptance Criteria (Done Checklist)

@@ -51,8 +51,8 @@ const ALLOWED_MIMES = [
   "application/msword",
 ];
 
-const MAX_DOC_SIZE = 50 * 1024 * 1024; // 50MB
-const MAX_DATASET_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_DOC_SIZE = 15 * 1024 * 1024; // 15MB Storage Defense Limit
+const MAX_DATASET_SIZE = 15 * 1024 * 1024; // 15MB Storage Defense Limit
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
@@ -730,7 +730,7 @@ export default function NewProjectIntakePage() {
                       Click to browse or drop file
                     </span>
                     <span className="text-[0.688rem] text-white/40 font-mono">
-                      PDF, DOCX (Max 50MB)
+                      PDF, DOCX (Max 15MB)
                     </span>
                   </div>
                 </label>
@@ -895,7 +895,7 @@ export default function NewProjectIntakePage() {
                       Click to browse or drop file
                     </span>
                     <span className="text-[0.688rem] text-white/40 font-mono">
-                      CSV, XLSX, XLS (Max 100MB)
+                      CSV, XLSX, XLS, SPSS (Max 15MB)
                     </span>
                   </div>
                 </label>
@@ -1060,7 +1060,7 @@ export default function NewProjectIntakePage() {
                       Click to browse or drop file
                     </span>
                     <span className="text-[0.688rem] text-white/40 font-mono">
-                      PDF, DOCX (Max 50MB)
+                      PDF, DOCX (Max 15MB)
                     </span>
                   </div>
                 </label>

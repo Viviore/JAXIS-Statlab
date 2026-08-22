@@ -42,13 +42,7 @@
 | Subjective academic disputes ("I don't like the methodology") | Not valid grounds — enforced via enum validation |
 | Automatic refund processing via payment gateway | Manual process; Finance records the action |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **7-Day Formal Dispute Filing:** Client can lodge a formal dispute within 7 days of delivery with valid grounds (`METHODOLOGY_DEVIATION` or `MATHEMATICAL_ERROR`) and evidence attachments.
-- [ ] **Admin Investigation Queue:** Admin reviews dispute claims, inspects SOW scope vs outputs, and transitions status to `UNDER_REVIEW`.
-- [ ] **CEO Refund Authority (RULE_ROL_01):** Exclusive ruling desk for CEO to issue `RESOLVED_REFUND` (full refund only) or `RESOLVED_NO_REFUND` with documented rationale.
-- [ ] **Chargeback & Payout Freeze:** Chargebacks immediately freeze project state (`HALTED`) and lock related expert payouts pending arbitration.
-- [ ] **SLA Failure Add-On Refund:** Automated handling of turnaround breach claims refunding rush fee add-ons without canceling core package deliverables.
 
 ---
 
@@ -225,7 +219,11 @@ const seedDisputeResolved = {
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **7-Day Formal Dispute Filing:** Client can lodge a formal dispute within 7 days of delivery with valid grounds (`METHODOLOGY_DEVIATION` or `MATHEMATICAL_ERROR`) and evidence attachments.
+- [ ] **Admin Investigation Queue:** Admin reviews dispute claims, inspects SOW scope vs outputs, and transitions status to `UNDER_REVIEW`.
+- [ ] **CEO Refund Authority (RULE_ROL_01):** Exclusive ruling desk for CEO to issue `RESOLVED_REFUND` (full refund only) or `RESOLVED_NO_REFUND` with documented rationale.
+- [ ] **Chargeback & Payout Freeze:** Chargebacks immediately freeze project state (`HALTED`) and lock related expert payouts pending arbitration.
+- [ ] **SLA Failure Add-On Refund:** Automated handling of turnaround breach claims refunding rush fee add-ons without canceling core package deliverables.
 
 
 ## 9. Acceptance Criteria (Done Checklist)

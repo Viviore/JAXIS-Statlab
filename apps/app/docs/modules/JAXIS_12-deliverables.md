@@ -45,14 +45,7 @@
 | Client uploading to their own deliverable | Admin-controlled upload only |
 | Payout disbursement | Module 14 |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **Final Deliverable Bundling:** Admin can upload finalized statistical reports, APA tables, and datasets to the deliverable package.
-- [ ] **Dual Release Enforcement:** Release trigger enforces `paymentStatus === FULLY_PAID` (RULE_REL_01) and QA approval for Tier 2 packages (RULE_REL_02).
-- [ ] **Secure Client Download:** Client can download final deliverables via pre-signed storage URLs once released.
-- [ ] **3-Day Revision Clock:** Client dashboard displays a 3-business-day countdown window for submitting the 1 included revision request.
-- [ ] **Revision Triage & Routing:** Admin classifies client revision requests: `INCLUDED` (routes back to Statistician), `METHODOLOGY_CHANGE` (supplemental SOW), or `NEW_PAID_WORK`.
-- [ ] **Project Completion & Closure:** Project automatically transitions to `CLOSED` upon revision window expiry, unlocking expert payout calculation in Module 14.
 
 ---
 
@@ -202,7 +195,12 @@ const seedDeliverables = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **Final Deliverable Bundling:** Admin can upload finalized statistical reports, APA tables, and datasets to the deliverable package.
+- [ ] **Dual Release Enforcement:** Release trigger enforces `paymentStatus === FULLY_PAID` (RULE_REL_01) and QA approval for Tier 2 packages (RULE_REL_02).
+- [ ] **Secure Client Download:** Client can download final deliverables via pre-signed storage URLs once released.
+- [ ] **3-Day Revision Clock:** Client dashboard displays a 3-business-day countdown window for submitting the 1 included revision request.
+- [ ] **Revision Triage & Routing:** Admin classifies client revision requests: `INCLUDED` (routes back to Statistician), `METHODOLOGY_CHANGE` (supplemental SOW), or `NEW_PAID_WORK`.
+- [ ] **Project Completion & Closure:** Project automatically transitions to `CLOSED` upon revision window expiry, unlocking expert payout calculation in Module 14.
 
 
 ## 8. Acceptance Criteria (Done Checklist)

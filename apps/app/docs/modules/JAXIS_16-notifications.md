@@ -39,13 +39,7 @@
 | In-app message notification | Messaging module handles read receipts; this module handles email digest only |
 | QA internal states emailed to client | Strictly prohibited — internal only |
 
-### 🎯 Expected Outputs (QA Verification Checklist)
 
-- [ ] **Transactional Email Dispatch:** Automated dispatch of 11 core client-facing transactional email templates via Resend (SOW ready, payment confirmed, expert assigned, delivery ready, etc.).
-- [ ] **React Email Component Templates:** Responsive HTML email layouts with JAXIS branding, dark palette accenting, and clear call-to-action links.
-- [ ] **In-App Notification Center:** Real-time topbar notification badge and drawer displaying internal action items, status transitions, and unread alerts.
-- [ ] **Email Delivery Audit & Retries:** All outbound notifications tracked in `NotificationLog` with status, timestamp, and automatic 3-attempt exponential retry on failure.
-- [ ] **Internal Event Masking:** Sensitive internal operational events (QA rejections, ethical breaches, firewall triggers) are strictly confined to in-app alerts and never sent to clients.
 
 ---
 
@@ -230,7 +224,11 @@ const seedAlerts = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-*(Manual testing steps will be defined here during implementation)*
+- [ ] **Transactional Email Dispatch:** Automated dispatch of 11 core client-facing transactional email templates via Resend (SOW ready, payment confirmed, expert assigned, delivery ready, etc.).
+- [ ] **React Email Component Templates:** Responsive HTML email layouts with JAXIS branding, dark palette accenting, and clear call-to-action links.
+- [ ] **In-App Notification Center:** Real-time topbar notification badge and drawer displaying internal action items, status transitions, and unread alerts.
+- [ ] **Email Delivery Audit & Retries:** All outbound notifications tracked in `NotificationLog` with status, timestamp, and automatic 3-attempt exponential retry on failure.
+- [ ] **Internal Event Masking:** Sensitive internal operational events (QA rejections, ethical breaches, firewall triggers) are strictly confined to in-app alerts and never sent to clients.
 
 
 ## 10. Acceptance Criteria (Done Checklist)
