@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { IconX } from "@tabler/icons-react";
 
 export type ToastVariant = "info" | "success" | "warning" | "danger";
 
@@ -65,9 +66,7 @@ export const Toast: React.FC<ToastProps> = ({
           className="text-white/40 hover:text-white transition-colors p-1 rounded-[2px] hover:bg-white/10"
           aria-label="Dismiss notification"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <IconX size={16} stroke={1.5} />
         </button>
       )}
     </div>

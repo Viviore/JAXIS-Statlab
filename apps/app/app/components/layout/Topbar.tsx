@@ -4,6 +4,13 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import {
+  IconSearch,
+  IconChevronDown,
+  IconSettings,
+  IconLogout,
+  IconMenu2,
+} from "@tabler/icons-react";
 
 export interface TopbarProps {
   userFullName?: string;
@@ -116,9 +123,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             boxSizing: "border-box",
           }}
         >
-          <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: "0.875rem", height: "0.875rem" }}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <IconSearch size={14} stroke={1.5} className="flex-shrink-0 text-white/40" />
           <span className="flex-1 truncate text-xs text-white/45">Search studies, datasets...</span>
           <kbd className="font-mono text-[0.625rem] bg-white/[0.08] px-1.5 py-0.5 rounded text-white/60" style={{ padding: "0.125rem 0.375rem", borderRadius: "2px" }}>⌘K</kbd>
         </div>
@@ -165,17 +170,13 @@ export const Topbar: React.FC<TopbarProps> = ({
           </span>
 
           {/* Down Chevron (Hidden on Mobile) */}
-          <svg
-            className={`hidden sm:block w-3.5 h-3.5 text-white/60 transition-transform duration-200 ${
+          <IconChevronDown
+            size={14}
+            stroke={2}
+            className={`hidden sm:block text-white/60 transition-transform duration-200 ${
               isOpen ? "rotate-180 text-white" : ""
             }`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            style={{ width: "0.875rem", height: "0.875rem" }}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+          />
         </button>
 
         {/* Dropdown Menu Modal */}
@@ -228,15 +229,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                   fontSize: "0.813rem",
                 }}
               >
-                <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <IconSettings size={16} stroke={1.5} className="text-white/50" />
                 <span>Settings</span>
               </Link>
             </div>
@@ -262,14 +255,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                 {isLoggingOut ? (
                   <span className="h-4 w-4 border-2 border-white/20 border-t-red-400 rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
+                  <IconLogout size={16} stroke={1.5} className="text-red-400 flex-shrink-0" />
                 )}
                 <span>Logout</span>
               </button>
@@ -285,9 +271,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         className="lg:hidden p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
         aria-label="Toggle navigation menu"
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        <IconMenu2 size={20} stroke={1.5} />
       </button>
     </div>
   </header>

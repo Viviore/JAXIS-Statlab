@@ -8,7 +8,8 @@ import { registerClient } from "@/features/auth/actions";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,7 +31,8 @@ export default function RegisterPage() {
 
     startTransition(async () => {
       const res = await registerClient({
-        fullName,
+        firstName,
+        lastName,
         email,
         password,
         confirmPassword,
@@ -76,20 +78,38 @@ export default function RegisterPage() {
         className="flex flex-col"
         style={{ gap: "1.375rem" }}
       >
-        <FormInput
-          label="Full Name / Primary Investigator"
-          name="fullName"
-          type="text"
-          required
-          monoLabel
-          variant="auth"
-          placeholder="Dr. Eleanor Vance"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          error={fieldErrors.fullName?.[0]}
-          disabled={isPending}
-          autoComplete="name"
-        />
+        {/* Name Fields: First & Last Name */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormInput
+            label="First Name"
+            name="firstName"
+            type="text"
+            required
+            monoLabel
+            variant="auth"
+            placeholder="e.g. Eleanor"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            error={fieldErrors.firstName?.[0]}
+            disabled={isPending}
+            autoComplete="given-name"
+          />
+
+          <FormInput
+            label="Last Name"
+            name="lastName"
+            type="text"
+            required
+            monoLabel
+            variant="auth"
+            placeholder="e.g. Vance"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            error={fieldErrors.lastName?.[0]}
+            disabled={isPending}
+            autoComplete="family-name"
+          />
+        </div>
 
         <FormInput
           label="Institutional Email"
@@ -98,7 +118,7 @@ export default function RegisterPage() {
           required
           monoLabel
           variant="auth"
-          placeholder="e.vance@university.edu"
+          placeholder="e.g. e.vance@university.edu"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={fieldErrors.email?.[0]}
@@ -113,7 +133,7 @@ export default function RegisterPage() {
           required
           monoLabel
           variant="auth"
-          placeholder="••••••••••••"
+          placeholder="Enter a secure password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={fieldErrors.password?.[0]}
@@ -144,7 +164,7 @@ export default function RegisterPage() {
           required
           monoLabel
           variant="auth"
-          placeholder="••••••••••••"
+          placeholder="Re-enter your password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           error={fieldErrors.confirmPassword?.[0]}

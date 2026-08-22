@@ -10,6 +10,7 @@ import {
   Alert,
   FormFooter,
 } from "@repo/ui";
+import { IconX } from "@tabler/icons-react";
 import { getOwnProfile, updateOwnProfile } from "@/features/staff/actions";
 
 const POPULAR_QA_SPECIALIZATIONS = [
@@ -236,9 +237,7 @@ export default function QAProfilePage() {
                         className="text-amber-400 hover:text-white transition-colors cursor-pointer"
                         title={`Remove ${tag}`}
                       >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <IconX size={12} stroke={2} />
                       </button>
                     </span>
                   ))

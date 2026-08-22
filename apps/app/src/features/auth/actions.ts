@@ -23,7 +23,8 @@ export async function registerClient(
     };
   }
 
-  const { fullName, email, password } = parsed.data;
+  const { firstName, lastName, email, password } = parsed.data;
+  const fullName = `${firstName.trim()} ${lastName.trim()}`;
   const normalizedEmail = email.toLowerCase().trim();
 
   try {

@@ -10,10 +10,14 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 
 export const RegisterClientSchema = z
   .object({
-    fullName: z
+    firstName: z
       .string()
-      .min(2, "Full name must be at least 2 characters")
-      .max(100, "Full name must not exceed 100 characters"),
+      .min(1, "First name is required")
+      .max(50, "First name must not exceed 50 characters"),
+    lastName: z
+      .string()
+      .min(1, "Last name is required")
+      .max(50, "Last name must not exceed 50 characters"),
     email: z.string().email("Invalid institutional email address format"),
     password: z
       .string()

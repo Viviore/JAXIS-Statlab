@@ -23,6 +23,15 @@ import {
   DropdownMenu,
 } from "@repo/ui";
 import {
+  IconEye,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconUserX,
+  IconKey,
+  IconCheck,
+  IconCopy,
+} from "@tabler/icons-react";
+import {
   getStaffRoster,
   getStaffDetail,
   provisionStaff,
@@ -626,27 +635,7 @@ export default function StaffRosterPage() {
                             {
                               label: "View Profile & Logs",
                               subtitle: "Inspect activity records",
-                              icon: (
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="1.8"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="1.8"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                  />
-                                </svg>
-                              ),
+                              icon: <IconEye size={16} stroke={1.5} />,
                               onClick: () => handleOpenDetail(staff),
                             },
                             ...(staff.status === "ACTIVE"
@@ -656,21 +645,7 @@ export default function StaffRosterPage() {
                                     label: "Suspend Account",
                                     subtitle: "Temporarily halt access",
                                     variant: "warning" as const,
-                                    icon: (
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="1.8"
-                                          d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                      </svg>
-                                    ),
+                                    icon: <IconPlayerPause size={16} stroke={1.5} />,
                                     onClick: () => {
                                       setSelectedStaff(staff);
                                       setIsSuspendOpen(true);
@@ -685,27 +660,7 @@ export default function StaffRosterPage() {
                                     label: "Lift Suspension",
                                     subtitle: "Restore active access",
                                     variant: "success" as const,
-                                    icon: (
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="1.8"
-                                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                        />
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="1.8"
-                                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                      </svg>
-                                    ),
+                                    icon: <IconPlayerPlay size={16} stroke={1.5} />,
                                     onClick: () => handleLiftSuspension(staff),
                                   },
                                 ]
@@ -718,21 +673,7 @@ export default function StaffRosterPage() {
                                     subtitle: "Revoke role & credentials",
                                     badge: "CEO",
                                     variant: "danger" as const,
-                                    icon: (
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="1.8"
-                                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                        />
-                                      </svg>
-                                    ),
+                                    icon: <IconUserX size={16} stroke={1.5} />,
                                     onClick: () => {
                                       setSelectedStaff(staff);
                                       setIsTerminateOpen(true);
@@ -917,17 +858,7 @@ export default function StaffRosterPage() {
               {/* Automated Credentials Notice Badge */}
               <div className="p-3.5 rounded-[2px] bg-[#011B38]/80 border border-sky-500/25 text-xs text-slate-300 flex items-start gap-3 mt-0.5">
                 <div className="p-1.5 rounded-[2px] bg-sky-500/10 border border-sky-500/20 text-sky-400 mt-0.5 flex-shrink-0">
-                  <svg
-                    className="w-3.5 h-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 2l-2 2m-1.5 6.1L19 8l-4-4-1.9 1.5A7 7 0 1 0 5 19a7 7 0 0 0 9.9-9.9z" />
-                  </svg>
+                  <IconKey size={14} stroke={1.5} />
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-mono uppercase font-bold text-sky-400 text-[0.688rem] tracking-wider">
@@ -986,17 +917,7 @@ export default function StaffRosterPage() {
                         }`}
                       >
                         {isSelected ? (
-                          <svg
-                            className="w-3 h-3 text-[#CC6600] flex-shrink-0"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                          <IconCheck size={12} stroke={2.5} className="text-[#CC6600] flex-shrink-0" />
                         ) : (
                           <span className="text-white/30 font-bold text-xs leading-none">+</span>
                         )}
@@ -1136,19 +1057,7 @@ export default function StaffRosterPage() {
                 onClick={copyCredentials}
                 className="font-mono text-xs flex items-center gap-2"
               >
-                <svg
-                  className="w-3.5 h-3.5 text-white/60"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                  />
-                </svg>
+                <IconCopy size={14} stroke={1.5} className="text-white/60" />
                 {copied ? "COPIED TO CLIPBOARD!" : "COPY CREDENTIALS"}
               </Button>
 

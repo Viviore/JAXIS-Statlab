@@ -15,6 +15,15 @@ import {
   DropdownMenu,
 } from "@repo/ui";
 import {
+  IconDownload,
+  IconEye,
+  IconExternalLink,
+  IconHelpCircle,
+  IconCheck,
+  IconCopy,
+  IconShieldCheck,
+} from "@tabler/icons-react";
+import {
   getProjects,
   markIntakeComplete,
   requestMissingInfo,
@@ -287,7 +296,7 @@ export default function AdminIntakeTriagePage() {
               <thead>
                 <tr>
                   <th>Research Study &amp; Intake</th>
-                  <th className="w-[200px] whitespace-nowrap">Principal Investigator</th>
+                  <th className="w-[200px] whitespace-nowrap">Lead Researcher</th>
                   <th className="w-[140px] whitespace-nowrap">Target Deadline</th>
                   <th className="w-[130px] whitespace-nowrap">Status</th>
                   <th className="w-[120px] text-right whitespace-nowrap">Actions</th>
@@ -352,7 +361,7 @@ export default function AdminIntakeTriagePage() {
                           </div>
                         </td>
 
-                        {/* Principal Investigator */}
+                        {/* Lead Researcher */}
                         <td>
                           <div className="flex items-center gap-3 min-w-0">
                             <div className="w-8 h-8 rounded-[2px] bg-[#011B38] border border-white/[0.10] flex items-center justify-center font-mono font-bold text-[0.6875rem] text-[#CC6600] flex-shrink-0">
@@ -431,47 +440,13 @@ export default function AdminIntakeTriagePage() {
                                 {
                                   label: "Quick Overview",
                                   subtitle: "Inspect study scope & files",
-                                  icon: (
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="1.8"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                      />
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="1.8"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                      />
-                                    </svg>
-                                  ),
+                                  icon: <IconEye size={16} stroke={1.5} />,
                                   onClick: () => setSelectedStudyForInspect(p),
                                 },
                                 {
                                   label: "Full Desk Inspector",
                                   subtitle: "Navigate to dedicated project desk",
-                                  icon: (
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="1.8"
-                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                      />
-                                    </svg>
-                                  ),
+                                  icon: <IconExternalLink size={16} stroke={1.5} />,
                                   onClick: () => {
                                     window.location.href = `/dashboard/admin/projects/${p.id}`;
                                   },
@@ -480,21 +455,7 @@ export default function AdminIntakeTriagePage() {
                                   label: "Request Missing Info",
                                   subtitle: "Solicit artifacts or clarifications",
                                   variant: "warning",
-                                  icon: (
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="1.8"
-                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                      />
-                                    </svg>
-                                  ),
+                                  icon: <IconHelpCircle size={16} stroke={1.5} />,
                                   onClick: () => {
                                     setSelectedForMissingInfo(p);
                                     setMissingInfoReasonText(
@@ -508,21 +469,7 @@ export default function AdminIntakeTriagePage() {
                                         label: "Approve & Mark Complete",
                                         subtitle: "Transition to UNDER_EVALUATION",
                                         variant: "success" as const,
-                                        icon: (
-                                          <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth="1.8"
-                                              d="M5 13l4 4L19 7"
-                                            />
-                                          </svg>
-                                        ),
+                                        icon: <IconCheck size={16} stroke={2} />,
                                         onClick: () =>
                                           handleMarkComplete(p.id, p.intakeId),
                                       },
@@ -532,21 +479,7 @@ export default function AdminIntakeTriagePage() {
                                   label: "Copy Intake ID",
                                   subtitle: p.intakeId,
                                   dividerBefore: true,
-                                  icon: (
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="1.8"
-                                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                      />
-                                    </svg>
-                                  ),
+                                  icon: <IconCopy size={16} stroke={1.5} />,
                                   onClick: () => handleCopyId(p.intakeId),
                                 },
                               ]}
@@ -595,11 +528,11 @@ export default function AdminIntakeTriagePage() {
           }
         >
           <div className="flex flex-col gap-6 font-sans">
-            {/* Investigator & Institution Card */}
+            {/* Researcher & Institution Card */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 sm:px-7 rounded-[3px] bg-[#011B38] border border-white/10">
               <div className="flex flex-col gap-1">
                 <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
-                  Principal Investigator
+                  Lead Researcher
                 </span>
                 <p className="text-sm font-semibold text-white">
                   {selectedStudyForInspect.client.fullName}
@@ -655,8 +588,9 @@ export default function AdminIntakeTriagePage() {
                 <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
                   Submitted Artifacts ({selectedStudyForInspect.files.length})
                 </span>
-                <span className="font-mono text-[0.625rem] text-emerald-400/80 uppercase">
-                  ✓ Cloud Encrypted
+                <span className="font-mono text-[0.625rem] text-emerald-400/80 uppercase flex items-center gap-1">
+                  <IconShieldCheck size={12} stroke={2} />
+                  Cloud Encrypted
                 </span>
               </div>
               {selectedStudyForInspect.files.length === 0 ? (
@@ -706,9 +640,7 @@ export default function AdminIntakeTriagePage() {
                           onClick={() => triggerFileDownload(file.filePath, file.fileName)}
                           className="px-3.5 py-1.5 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
                         >
-                          <svg className="w-3 h-3 text-[#FFA040]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
+                          <IconDownload size={14} stroke={1.5} className="text-[#FFA040]" />
                           <span>DOWNLOAD</span>
                         </button>
                       </div>

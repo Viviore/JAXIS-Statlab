@@ -22,9 +22,14 @@ JAXIS StatLab follows a high-precision, industrial-scientific design system tail
 | **Escrow / Attention** | `#F59E0B` (Amber) | Escrow locked indicators, pending recalculation stages, urgent QA queue. |
 | **Border Division** | `rgba(255, 255, 255, 0.08)` | Hairline dividers, table row borders, card perimeter lines. |
 
-### 1.2. Iconography & Strict Visual Standard (NO EMOJIS)
-- **Strict Prohibition on Emojis**: Emojis (e.g. 🔍, ⏸, ⛔, 📋, 🚀, 💡) are **strictly forbidden** across the entire UI codebase, dropdown menus, action items, notifications, toasts, table columns, and form labels.
-- **Enterprise Precision SVGs**: All iconography must use crisp, vector inline SVGs (e.g. Lucide/Heroicon paths) or pure typographic uppercase badges.
+### 1.2. Iconography & Strict Visual Standard (TABLER ICONS ONLY — NO EMOJIS)
+- **Mandatory Icon Library — Tabler Icons (`@tabler/icons-react`)**: All icons across the entire project (in `@repo/ui` and `apps/app`) **must exclusively use Tabler Icons** from `@tabler/icons-react` (e.g., `IconDownload`, `IconEye`, `IconEyeOff`, `IconFileDescription`, `IconSearch`, `IconCheck`, `IconUser`, `IconTrash`, `IconFolder`, etc.).
+- **Strict Prohibition on Emojis**: Emojis (e.g. 🔍, ⏸, ⛔, 📋, 🚀, 💡, 📁, 📄, 🔒) are **strictly forbidden** across the entire UI codebase, dropdown menus, action items, buttons, notifications, toasts, table columns, and form labels.
+- **No Ad-Hoc Inline SVGs or Other Icon Libraries**: Do not introduce miscellaneous icon packages or sprawling raw inline SVGs when a Tabler icon is available. Always import standard icons from `@tabler/icons-react`.
+- **Icon Styling Standards**:
+  - Use `stroke={1.5}` or `stroke={2}` for consistent optical weight.
+  - Scale with `size={16}` (micro/badges), `size={18}` / `size={20}` (standard buttons/inputs), or `size={24}` (featured cards).
+  - Use Tailwind color classes (e.g., `className="text-[#CC6600]"`, `className="text-sky-400"`, `className="text-white/60"`).
 - **Zero Glow Policy**: Blurry box-shadow glows (`shadow-[0_0_...px]`) are prohibited. Use high-contrast flat borders (`border-white/10` to `border-white/20`) and calibrated opacity tints (`bg-white/[0.04]` or `bg-sky-500/10`).
 
 ---

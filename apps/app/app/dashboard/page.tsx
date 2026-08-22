@@ -2,6 +2,16 @@
 
 import React, { useState } from "react";
 import { PageHeader, Card, StatusBadge, Button, Modal, KpiCardSkeleton, TableRowSkeleton, AnimateHeight } from "@repo/ui";
+import {
+  IconRefresh,
+  IconUpload,
+  IconLock,
+  IconCheck,
+  IconShieldCheck,
+  IconChartBar,
+  IconFileTypeCsv,
+  IconFileCode,
+} from "@tabler/icons-react";
 import { Project } from "@/types/project";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 
@@ -51,15 +61,11 @@ export default function DashboardOverviewPage() {
               onClick={simulateSync}
               title="Click to test live backend sync with skeleton loader"
             >
-              <svg className={`w-4 h-4 text-sky-400 ${isLoading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+              <IconRefresh size={16} stroke={1.5} className={`text-sky-400 ${isLoading ? "animate-spin" : ""}`} />
               <span>{isLoading ? "Syncing..." : "Simulate Sync"}</span>
             </Button>
             <Button variant="secondary" size="md">
-              <svg className="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
+              <IconUpload size={16} stroke={1.5} className="text-white/70" />
               <span>Upload Survey Data</span>
             </Button>
             <Button variant="primary" size="md">
@@ -199,9 +205,7 @@ export default function DashboardOverviewPage() {
               </div>
               <div className="mt-4 pt-3 border-t border-white/[0.06]" style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
                 <div className="flex items-center gap-1.5 text-xs text-emerald-400/80 font-mono" style={{ fontSize: "0.75rem" }}>
-                  <svg className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+                  <IconLock size={14} stroke={1.5} className="text-emerald-400 flex-shrink-0" />
                   <span>RULE_REL_01 Release Gate Active</span>
                 </div>
               </div>
@@ -238,9 +242,7 @@ export default function DashboardOverviewPage() {
               </div>
               <div className="mt-4 pt-3 border-t border-white/[0.06]" style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
                 <div className="flex items-center gap-1.5 text-xs text-white/60 font-mono" style={{ fontSize: "0.75rem" }}>
-                  <svg className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                  </svg>
+                  <IconCheck size={14} stroke={2.5} className="text-emerald-400 flex-shrink-0" />
                   <span>APA 7th Verified Deliverables</span>
                 </div>
               </div>
@@ -428,9 +430,7 @@ export default function DashboardOverviewPage() {
               className="p-4 rounded-[2px] bg-white/[0.03] border border-white/[0.08] flex items-start gap-3.5"
               style={{ borderRadius: "2px", padding: "1rem", border: "1px solid rgba(255, 255, 255, 0.08)" }}
             >
-              <svg className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+              <IconLock size={16} stroke={1.5} className="text-emerald-400 flex-shrink-0 mt-0.5" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-white text-xs" style={{ padding: "0.15rem 0.4rem", borderRadius: "2px", backgroundColor: "rgba(255, 255, 255, 0.1)", fontSize: "0.75rem" }}>RULE_REL_01</span>
@@ -446,9 +446,7 @@ export default function DashboardOverviewPage() {
               className="p-4 rounded-[2px] bg-[#CC6600]/[0.08] border border-[#CC6600]/25 flex items-start gap-3.5"
               style={{ borderRadius: "2px", padding: "1rem", border: "1px solid rgba(204, 102, 0, 0.25)" }}
             >
-              <svg className="w-4 h-4 text-[#CC6600] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <IconShieldCheck size={16} stroke={1.5} className="text-[#CC6600] flex-shrink-0 mt-0.5" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-white text-xs" style={{ padding: "0.15rem 0.4rem", borderRadius: "2px", backgroundColor: "rgba(255, 255, 255, 0.1)", fontSize: "0.75rem" }}>RULE_QUO_01</span>
@@ -589,9 +587,7 @@ export default function DashboardOverviewPage() {
                     className="p-4 rounded-[2px] bg-[#011C38]/70 border border-white/[0.08] flex items-start gap-3"
                     style={{ padding: "1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.08)" }}
                   >
-                    <svg className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                    <IconChartBar size={16} stroke={1.5} className="text-sky-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-white/85 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.6 }}>
                       {selectedStudy.method}
                     </p>
@@ -642,9 +638,7 @@ export default function DashboardOverviewPage() {
                       style={{ padding: "0.75rem 1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.07)" }}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <svg className="w-4 h-4 text-sky-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                        <IconFileTypeCsv size={16} stroke={1.5} className="text-sky-400 flex-shrink-0" />
                         <span className="text-xs font-mono text-white/90 truncate" style={{ fontSize: "0.75rem" }}>
                           {selectedStudy.datasetName || "dataset.csv"}
                         </span>
@@ -659,9 +653,7 @@ export default function DashboardOverviewPage() {
                       style={{ padding: "0.75rem 1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.07)" }}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
+                        <IconFileCode size={16} stroke={1.5} className="text-emerald-400 flex-shrink-0" />
                         <span className="text-xs font-mono text-white/90 truncate" style={{ fontSize: "0.75rem" }}>
                           {selectedStudy.syntaxName || "analysis_script.sps"}
                         </span>

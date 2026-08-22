@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

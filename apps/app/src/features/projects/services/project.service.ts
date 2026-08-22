@@ -87,7 +87,7 @@ export class ProjectService {
     const newProject: Project = {
       id: input.id || `JAX-2026-0${nextNumber}`,
       title: input.title || "Untitled Research Study",
-      client: input.client || "Principal Investigator",
+      client: input.client || "Lead Researcher",
       university: input.university || "Academic Institution",
       field: input.field || "General Science",
       statisticians: input.statisticians || "Unassigned",

@@ -11,6 +11,7 @@ import {
   FilterToolbar,
   Modal,
 } from "@repo/ui";
+import { IconDownload } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import {
@@ -545,9 +546,7 @@ export default function ClientProjectsListPage() {
                           onClick={() => triggerFileDownload(file.filePath, file.fileName)}
                           className="px-3.5 py-1.5 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
                         >
-                          <svg className="w-3 h-3 text-[#FFA040]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
+                          <IconDownload size={14} stroke={1.5} className="text-[#FFA040]" />
                           <span>DOWNLOAD</span>
                         </button>
                       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { IconDotsVertical } from "@tabler/icons-react";
 
 export interface DropdownMenuItem {
   key?: string;
@@ -189,11 +190,7 @@ export function DropdownMenu({
           aria-haspopup="true"
           aria-expanded={open}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="5" r="1.5" />
-            <circle cx="12" cy="12" r="1.5" />
-            <circle cx="12" cy="19" r="1.5" />
-          </svg>
+          <IconDotsVertical size={16} stroke={1.5} />
         </button>
       )}
 

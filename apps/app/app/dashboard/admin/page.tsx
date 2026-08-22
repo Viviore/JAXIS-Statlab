@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
           <div className="flex flex-col gap-5 text-xs font-sans text-white/80">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 sm:px-7 rounded-[3px] bg-white/[0.03] border border-white/[0.08]">
               <div>
-                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Primary Investigator:</span>
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Lead Researcher:</span>
                 <p className="text-sm font-semibold text-white mt-1">{selectedStudy.client}</p>
                 <p className="text-white/50 text-xs mt-0.5">{selectedStudy.university}</p>
               </div>

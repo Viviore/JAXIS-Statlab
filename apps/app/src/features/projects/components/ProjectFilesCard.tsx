@@ -3,6 +3,18 @@
 import React, { useState } from "react";
 import { Card, Button } from "@repo/ui";
 import {
+  IconFileTypeDocx,
+  IconFileTypePdf,
+  IconFileTypeCsv,
+  IconFileTypeXls,
+  IconFileZip,
+  IconFileCode,
+  IconPhoto,
+  IconFileText,
+  IconDownload,
+  IconCheck,
+} from "@tabler/icons-react";
+import {
   getFileMeta,
   formatFileCategory,
   triggerFileDownload,
@@ -18,93 +30,25 @@ export interface ProjectFilesCardProps {
   onDeleteFile?: (file: ProjectFileItem) => void;
 }
 
-// ── SVG File Icons ──
+// ── Tabler File Icons ──
 function FileTypeIcon({ type, className = "w-5 h-5" }: { type: FileMetadata["iconType"]; className?: string }) {
   switch (type) {
     case "pdf":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 13h2a1 1 0 011 1v0a1 1 0 01-1 1H9m0-2v4m5-4h1.5a1.5 1.5 0 011.5 1.5v1a1.5 1.5 0 01-1.5 1.5H14v-4z"
-          />
-        </svg>
-      );
+      return <IconFileTypePdf size={20} stroke={1.5} className={className} />;
     case "doc":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      );
+      return <IconFileTypeDocx size={20} stroke={1.5} className={className} />;
     case "sheet":
+      return <IconFileTypeXls size={20} stroke={1.5} className={className} />;
     case "data":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M3 10h18M3 14h18m-9-4v8m-7 3h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      );
+      return <IconFileTypeCsv size={20} stroke={1.5} className={className} />;
     case "code":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-          />
-        </svg>
-      );
+      return <IconFileCode size={20} stroke={1.5} className={className} />;
     case "archive":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-          />
-        </svg>
-      );
+      return <IconFileZip size={20} stroke={1.5} className={className} />;
     case "image":
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      );
+      return <IconPhoto size={20} stroke={1.5} className={className} />;
     default:
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.75}
-            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-          />
-        </svg>
-      );
+      return <IconFileText size={20} stroke={1.5} className={className} />;
   }
 }
 
@@ -165,14 +109,7 @@ export function ProjectFilesCard({
               loading={isBatchDownloading}
               className="text-xs font-mono font-semibold tracking-wider whitespace-nowrap bg-white/[0.04] hover:bg-white/[0.08] px-3.5 py-1.5"
             >
-              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
+              <IconDownload size={14} stroke={1.5} className="text-amber-400" />
               <span>DOWNLOAD ALL</span>
             </Button>
           )}
@@ -274,26 +211,12 @@ export function ProjectFilesCard({
                       </>
                     ) : isSuccess ? (
                       <>
-                        <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>SAVED ✓</span>
+                        <IconCheck size={16} stroke={2.5} className="text-emerald-400" />
+                        <span>SAVED</span>
                       </>
                     ) : (
                       <>
-                        <svg
-                          className="w-3.5 h-3.5 text-[#FFA040]"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          />
-                        </svg>
+                        <IconDownload size={16} stroke={1.5} className="text-[#FFA040]" />
                         <span>DOWNLOAD</span>
                       </>
                     )}

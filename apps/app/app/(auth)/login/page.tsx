@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Alert, Button, Skeleton, FormInput, EyeIcon, EyeOffIcon } from "@repo/ui";
+import { IconChevronDown } from "@tabler/icons-react";
 
 const DEV_PRESETS = [
   { label: "Admin", email: "admin@jaxis.dev", pass: "JaxisAdmin2026!", role: "ADMIN" },
@@ -129,15 +130,7 @@ function LoginForm() {
             ))}
           </select>
           <div className="absolute right-3.5 pointer-events-none text-slate-400 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+            <IconChevronDown size={16} stroke={1.5} className="text-slate-400" />
           </div>
         </div>
       </div>
@@ -165,7 +158,7 @@ function LoginForm() {
           required
           monoLabel
           variant="auth"
-          placeholder="admin@jaxis.dev"
+          placeholder="name@institution.edu"
           value={email}
           isInvalid={Boolean(errorMessage)}
           onChange={(e) => {
@@ -184,7 +177,7 @@ function LoginForm() {
           required
           monoLabel
           variant="auth"
-          placeholder="••••••••••••"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);

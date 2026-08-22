@@ -13,6 +13,7 @@ import {
   Alert,
   FormFooter,
 } from "@repo/ui";
+import { IconCheck } from "@tabler/icons-react";
 import { createProject } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import type { FileCategory } from "@prisma/client";
@@ -404,7 +405,10 @@ export default function NewProjectIntakePage() {
               01. Scope & Details
             </span>
             {currentStep > 1 ? (
-              <span className="text-emerald-400 font-mono text-xs font-semibold">✓ Done</span>
+              <span className="text-emerald-400 font-mono text-xs font-semibold flex items-center gap-1">
+                <IconCheck size={12} stroke={2.5} />
+                Done
+              </span>
             ) : currentStep === 1 ? (
               <span className="text-[#CC6600] font-mono text-xs font-semibold">Active</span>
             ) : null}
@@ -430,7 +434,10 @@ export default function NewProjectIntakePage() {
               02. Document Uploads
             </span>
             {currentStep > 2 ? (
-              <span className="text-emerald-400 font-mono text-xs font-semibold">✓ Done</span>
+              <span className="text-emerald-400 font-mono text-xs font-semibold flex items-center gap-1">
+                <IconCheck size={12} stroke={2.5} />
+                Done
+              </span>
             ) : currentStep === 2 ? (
               <span className="text-[#CC6600] font-mono text-xs font-semibold">Active</span>
             ) : null}
@@ -475,7 +482,7 @@ export default function NewProjectIntakePage() {
                 Research Project Specifications
               </h2>
               <p className="text-xs text-white/50 mt-1 font-sans leading-relaxed">
-                Provide foundational details about your thesis or investigation for statistical evaluation.
+                Provide foundational details about your thesis or research study for statistical evaluation.
               </p>
             </div>
 
@@ -631,7 +638,10 @@ export default function NewProjectIntakePage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-0.5">
-                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium">✓ Ready</span>
+                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium flex items-center gap-1">
+                      <IconCheck size={11} stroke={2.5} />
+                      Ready
+                    </span>
                     <button
                       type="button"
                       onClick={() => removeFile("RESEARCH_DOCUMENT")}
@@ -732,7 +742,10 @@ export default function NewProjectIntakePage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-0.5">
-                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium">✓ Ready</span>
+                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium flex items-center gap-1">
+                      <IconCheck size={11} stroke={2.5} />
+                      Ready
+                    </span>
                     <button
                       type="button"
                       onClick={() => removeFile("DATASET")}
@@ -833,7 +846,10 @@ export default function NewProjectIntakePage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-0.5">
-                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium">✓ Ready</span>
+                    <span className="text-[0.65rem] font-mono text-emerald-400 font-medium flex items-center gap-1">
+                      <IconCheck size={11} stroke={2.5} />
+                      Ready
+                    </span>
                     <button
                       type="button"
                       onClick={() => removeFile("QUESTIONNAIRE")}

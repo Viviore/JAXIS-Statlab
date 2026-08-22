@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { IconChevronDown } from "@tabler/icons-react";
 
 export interface SelectOption {
   value: string;
@@ -94,9 +97,7 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
 
           {/* Sleek custom chevron */}
           <div className="absolute right-3.5 pointer-events-none flex items-center justify-center text-white/40">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
+            <IconChevronDown size={16} stroke={1.5} />
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo } from "react";
+import { IconSearch, IconX, IconChevronDown, IconRefresh } from "@tabler/icons-react";
 
 /* ─── Types ─── */
 
@@ -101,62 +102,23 @@ const CHEVRON_STYLE: React.CSSProperties = {
 /* ─── Sub-components ─── */
 
 const SearchIcon = () => (
-  <svg
-    className="w-3.5 h-3.5 flex-shrink-0 text-white/30"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
+  <IconSearch className="w-3.5 h-3.5 flex-shrink-0 text-white/30" size={14} stroke={1.5} />
 );
 
 const ClearIcon = () => (
-  <svg
-    className="w-3 h-3 flex-shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
+  <IconX className="w-3 h-3 flex-shrink-0" size={12} stroke={2} />
 );
 
 const ChevronIcon = () => (
-  <svg
-    className="w-3 h-3 text-white/25"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
+  <IconChevronDown className="w-3 h-3 text-white/25" size={12} stroke={2} />
 );
 
 const ResetIcon = () => (
-  <svg
+  <IconRefresh
     className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 group-hover:-rotate-90"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-    <path d="M3 3v5h5" />
-  </svg>
+    size={14}
+    stroke={1.5}
+  />
 );
 
 /* ─── Main Component ─── */

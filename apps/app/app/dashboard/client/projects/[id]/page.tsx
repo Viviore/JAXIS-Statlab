@@ -10,6 +10,7 @@ import {
   Alert,
   Modal,
 } from "@repo/ui";
+import { IconDownload, IconCheck, IconUpload } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import {
@@ -300,8 +301,17 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                   <span className="font-mono text-[0.688rem] uppercase font-bold tracking-wider">
                     {stage.label}
                   </span>
-                  <span className="text-[0.625rem] font-mono">
-                    {isPast ? "✓ COMPLETED" : isCurrent ? "● ACTIVE STAGE" : "UPCOMING"}
+                  <span className="text-[0.625rem] font-mono flex items-center gap-1">
+                    {isPast ? (
+                      <>
+                        <IconCheck size={11} stroke={2.5} className="text-emerald-400" />
+                        <span>COMPLETED</span>
+                      </>
+                    ) : isCurrent ? (
+                      "● ACTIVE STAGE"
+                    ) : (
+                      "UPCOMING"
+                    )}
                   </span>
                 </div>
               );
@@ -333,7 +343,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               loading={isResolving}
               className="py-1.5 px-4 font-mono text-xs font-bold tracking-wider whitespace-nowrap"
             >
-              ✓ CONFIRM &amp; RESUBMIT STUDY FOR EVALUATION →
+              CONFIRM &amp; RESUBMIT STUDY FOR EVALUATION →
             </Button>
           </div>
         </Card>
@@ -476,9 +486,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                           onClick={() => triggerFileDownload(file.filePath, file.fileName)}
                           className="px-4 py-2 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
                         >
-                          <svg className="w-3.5 h-3.5 text-[#FFA040]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
+                          <IconDownload size={14} stroke={1.5} className="text-[#FFA040]" />
                           <span>DOWNLOAD</span>
                         </button>
 
@@ -511,7 +519,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
             </h3>
             <div className="flex flex-col gap-3 text-xs">
               <div>
-                <span className="text-white/40 block">Principal Investigator</span>
+                <span className="text-white/40 block">Lead Researcher / Client</span>
                 <span className="text-white font-semibold font-sans">{project.client.fullName}</span>
               </div>
               {project.client.clientProfile && (
@@ -672,8 +680,8 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                     }
                   }}
                 />
-                <div className="h-9 w-9 rounded-full bg-white/[0.06] flex items-center justify-center text-amber-400 font-mono text-sm">
-                  📁
+                <div className="h-9 w-9 rounded-full bg-white/[0.06] flex items-center justify-center text-amber-400">
+                  <IconUpload size={20} stroke={1.5} />
                 </div>
                 {selectedUploadFile ? (
                   <div className="flex flex-col items-center gap-0.5">

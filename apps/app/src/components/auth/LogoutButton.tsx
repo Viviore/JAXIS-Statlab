@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { signOut } from "next-auth/react";
+import { IconLogout } from "@tabler/icons-react";
 
 interface LogoutButtonProps {
   className?: string;
@@ -35,14 +36,7 @@ export function LogoutButton({ className = "", showText = false }: LogoutButtonP
       {isLoggingOut ? (
         <span className="h-4 w-4 border-2 border-white/20 border-t-red-400 rounded-full animate-spin" />
       ) : (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
-        </svg>
+        <IconLogout size={16} stroke={1.5} />
       )}
       {showText && <span className="text-xs font-mono">LOGOUT</span>}
     </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { IconX } from "@tabler/icons-react";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl";
 
@@ -204,15 +205,7 @@ export const Modal: React.FC<ModalProps> = ({
             }}
             aria-label="Close modal"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              style={{ width: "1.25rem", height: "1.25rem" }}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <IconX size={20} stroke={1.5} />
           </button>
         </div>
 

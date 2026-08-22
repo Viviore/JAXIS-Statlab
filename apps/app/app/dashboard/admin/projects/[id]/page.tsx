@@ -12,6 +12,7 @@ import {
   Modal,
   Alert,
 } from "@repo/ui";
+import { IconCheck, IconSettings } from "@tabler/icons-react";
 import {
   getProjectById,
   updateProjectStatus,
@@ -241,9 +242,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 size="sm"
                 onClick={handleMarkComplete}
                 disabled={isPending}
-                className="text-xs font-mono font-bold tracking-wider whitespace-nowrap"
+                className="text-xs font-mono font-bold tracking-wider whitespace-nowrap flex items-center gap-1"
               >
-                ✓ MARK INTAKE COMPLETE
+                <IconCheck size={14} stroke={2.5} />
+                MARK INTAKE COMPLETE
               </Button>
             )}
 
@@ -267,9 +269,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                   setSelectedTargetStatus(allowedTransitions[0]!);
                   setIsStatusModalOpen(true);
                 }}
-                className="text-xs font-mono tracking-wider whitespace-nowrap"
+                className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
               >
-                TRANSITION STATUS ⚙
+                <IconSettings size={14} stroke={1.5} />
+                TRANSITION STATUS
               </Button>
             )}
           </div>

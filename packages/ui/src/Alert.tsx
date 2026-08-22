@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { IconX } from "@tabler/icons-react";
 
 export type AlertVariant = "info" | "success" | "warning" | "danger";
 
@@ -55,12 +58,10 @@ export const Alert: React.FC<AlertProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="text-white/40 hover:text-white transition-colors p-1 rounded-[2px] hover:bg-white/10"
+          className="text-white/40 hover:text-white transition-colors p-1 rounded-[2px] hover:bg-white/10 cursor-pointer"
           aria-label="Close alert"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <IconX size={16} stroke={1.5} />
         </button>
       )}
     </div>
