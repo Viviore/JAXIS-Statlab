@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { IconX } from "@tabler/icons-react";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl";
@@ -41,10 +42,26 @@ export const Modal: React.FC<ModalProps> = ({
   size = "lg",
 }) => {
   const actualOpen = open ?? isOpen ?? false;
+  const [mounted, setMounted] = useState(false);
   // Global Enter / Exit Animation Lifecycle
   const [isRendered, setIsRendered] = useState(actualOpen);
   const [isVisible, setIsVisible] = useState(actualOpen);
   const exitTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Body scroll locking when modal is open
+  useEffect(() => {
+    if (actualOpen && typeof document !== "undefined") {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [actualOpen]);
 
   // Content preservation cache to prevent empty body during exit transitions
   const [cachedContent, setCachedContent] = useState({
@@ -101,25 +118,25 @@ export const Modal: React.FC<ModalProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [actualOpen, onClose]);
 
-  if (!isRendered) return null;
+  if (!isRendered || !mounted || typeof document === "undefined") return null;
 
   const currentTitle = actualOpen ? title : cachedContent.title;
   const currentDesc = actualOpen ? description : cachedContent.description;
   const currentChildren = actualOpen ? children : cachedContent.children;
   const currentFooter = actualOpen ? footer : cachedContent.footer;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
       style={{
         position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 50,
+        zIndex: 9999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -262,6 +279,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

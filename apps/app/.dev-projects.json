@@ -10,7 +10,7 @@
     "deadlineRequested": "2026-09-05T00:00:00.000Z",
     "chapters13": "Profile.pdf",
     "questionnaire": "Profile.pdf",
-    "masterStatus": "NEW_REQUEST",
+    "masterStatus": "UNDER_EVALUATION",
     "packageName": null,
     "missingInfoReason": null,
     "deliveredAt": null,
@@ -19,7 +19,7 @@
     "hasActiveDispute": false,
     "hasPendingRefund": false,
     "createdAt": "2026-08-22T08:20:36.343Z",
-    "updatedAt": "2026-08-22T08:20:36.343Z",
+    "updatedAt": "2026-08-22T08:40:18.667Z",
     "client": {
       "id": "usr_dev_client_001",
       "fullName": "Client Ana Cruz",

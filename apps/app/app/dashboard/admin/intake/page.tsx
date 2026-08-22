@@ -638,7 +638,7 @@ export default function AdminIntakeTriagePage() {
                         <button
                           type="button"
                           onClick={() => triggerFileDownload(file.filePath, file.fileName)}
-                          className="px-3.5 py-1.5 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                          className="px-5 py-2 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer"
                         >
                           <IconDownload size={14} stroke={1.5} className="text-[#FFA040]" />
                           <span>DOWNLOAD</span>

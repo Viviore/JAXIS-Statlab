@@ -65,20 +65,20 @@ const variantStyles: Record<
 
 const sizeStyles: Record<ButtonSize, { className: string; padding: string; fontSize: string; minHeight: string }> = {
   sm: {
-    className: "text-[0.688rem] px-3.5 py-1.5 min-h-[30px] tracking-[0.10em] uppercase",
-    padding: "0.35rem 0.875rem",
+    className: "text-[0.688rem] px-4.5 py-1.5 min-h-[30px] tracking-[0.10em] uppercase",
+    padding: "0.35rem 1.125rem",
     fontSize: "0.688rem",
     minHeight: "30px",
   },
   md: {
-    className: "text-xs px-5 py-2 min-h-[38px] tracking-[0.10em] uppercase",
-    padding: "0.55rem 1.25rem",
+    className: "text-xs px-6 py-2 min-h-[38px] tracking-[0.10em] uppercase",
+    padding: "0.55rem 1.5rem",
     fontSize: "0.75rem",
     minHeight: "38px",
   },
   lg: {
-    className: "text-sm px-7 py-3 min-h-[46px] tracking-[0.12em] uppercase",
-    padding: "0.75rem 1.75rem",
+    className: "text-sm px-8 py-3 min-h-[46px] tracking-[0.12em] uppercase",
+    padding: "0.75rem 2rem",
     fontSize: "0.875rem",
     minHeight: "46px",
   },

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { IconX } from "@tabler/icons-react";
 
 export interface DrawerProps {
@@ -22,7 +23,24 @@ export const Drawer: React.FC<DrawerProps> = ({
   footer,
   className = "",
 }) => {
-  // RULE_MEM_01: Effect cleanup for keyboard escape listener
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Body scroll locking when drawer is open
+  useEffect(() => {
+    if (isOpen && typeof document !== "undefined") {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  // Keyboard escape listener
   useEffect(() => {
     if (!isOpen) return;
 
@@ -38,19 +56,41 @@ export const Drawer: React.FC<DrawerProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted || typeof document === "undefined") return null;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+      }}
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity duration-200"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.78)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+        }}
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Drawer Panel */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10" style={{ position: "fixed", top: 0, bottom: 0, right: 0, zIndex: 10 }}>
         <div
           className={`w-screen max-w-xl bg-gradient-to-b from-[#011C38] via-[#01162E] to-[#010D1F] border-l border-white/[0.12] shadow-2xl shadow-black/80 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200 ${className}`}
         >
@@ -65,7 +105,7 @@ export const Drawer: React.FC<DrawerProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-1.5 text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors flex-shrink-0"
+              className="rounded-md p-1.5 text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors flex-shrink-0 cursor-pointer"
               aria-label="Close panel"
             >
               <IconX size={20} stroke={1.5} />
@@ -85,6 +125,7 @@ export const Drawer: React.FC<DrawerProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
