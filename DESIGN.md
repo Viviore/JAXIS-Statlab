@@ -182,3 +182,73 @@ The public-facing marketing and landing pages (like the Hero section) employ a s
 - **Hover Reveals:** Use "invisible" layouts where grids, tabs, and layout sections rely on `transparent` borders/backgrounds that only reveal themselves on hover (e.g., `border: 1px solid var(--border-glass-hover)`). This creates a responsive, highly interactive terminal-like feel without visual clutter.
 - **Flush Grids:** Continuous vertical or horizontal elements (like feature grids) should snap flush (`gap: 0` on specific axes) to form tight, continuous data bands rather than floating distinct islands.
 - **Console Text:** Use Disket Mono for technical data badges and status stamps with wide tracking to reinforce a highly readable, uniform scientific lab feel. Always orchestrate typewriter effects carefully to prevent layout shifts (e.g. lock container `max-width` and `overflow: hidden`).
+
+---
+
+## 9. Global Toast Notification Architecture & Usage Rules
+
+JAXIS StatLab incorporates a mission-critical, portaled toast alert system (`@repo/ui/Toast` rendered to `document.body` at `z-[9999]`) with ambient gradients, colored Tabler icons, hardware-accelerated countdown timers, and pause-on-hover mechanics.
+
+### A. The 4 Semantic Toast Variants
+
+| Variant | Accent Color | Border & Gradient Surface | Icon (`@tabler/icons-react`) | Primary Use Cases |
+| :--- | :--- | :--- | :--- | :--- |
+| `info` | Analytical Sky (`#38BDF8`) | `bg-gradient-to-r from-sky-950/90 to-[#010D1F] border-sky-500/35` | `<IconInfoCircle size={18} stroke={2} />` | Clipboard copies, download starts, non-destructive notifications, session events. |
+| `success` | Verification Emerald (`#10B981`) | `bg-gradient-to-r from-emerald-950/90 to-[#010D1F] border-emerald-500/35` | `<IconCircleCheck size={18} stroke={2} />` | Form saves, project creation, profile updates, file attachments, QA approvals, status advancements. |
+| `warning` | Enterprise Amber (`#CC6600` / `#FBBF24`) | `bg-gradient-to-r from-amber-950/90 to-[#010D1F] border-amber-500/35` | `<IconAlertTriangle size={18} stroke={2} />` | Missing information requests sent, staff suspensions, revision requests returned to statistician. |
+| `danger` | Crimson Alert (`#EF4444` / `#F87171`) | `bg-gradient-to-r from-rose-950/90 to-[#010D1F] border-rose-500/35` | `<IconAlertCircle size={18} stroke={2} />` | Action failures, network errors, file size >15MB limit exceeded, invalid file formats, account termination. |
+
+### B. Mandatory Rules for When & Where to Trigger Toasts
+
+When building new features, expanding desks, or adding buttons, apply these mandatory rules:
+
+1. **Rule 1: Asynchronous Mutation Rule (Save / Submit / Delete)**
+   - Every user-initiated Server Action (`create*`, `update*`, `delete*`, `resolve*`, `transition*`) MUST trigger a Toast upon completion.
+   - On `res.success === true` → Fire `success` or `warning` (if request/hold) Toast.
+   - On `res.success === false` → Fire `danger` Toast with `res.error.message`.
+
+2. **Rule 2: 1-Click Clipboard Copy Rule**
+   - Every copy button across tables, headers, and modals (e.g. Study ID, Credentials, Tokens) MUST trigger an `info` Toast (`"Copied to Clipboard"`).
+
+3. **Rule 3: File System & Deliverables Rule**
+   - **Upload Finished:** Fire `success` Toast (`"File Uploaded Successfully"`).
+   - **Upload Rejected (Size / Format):** Fire `danger` Toast (`"File Limit Exceeded"` or `"Unsupported File Format"`).
+   - **File Removed:** Fire `info` Toast (`"File Removed"`).
+   - **Download Initiated:** Fire `info` Toast (`"Download Started"`).
+
+4. **Rule 4: Zero Emojis Policy**
+   - Never use emojis in `message` or `description`. Icons are handled automatically by the `Toast` component using `@tabler/icons-react`.
+
+5. **Rule 5: Concise & Meaningful Copy**
+   - `message`: 2 to 4 words, Title Case (e.g. `Profile Saved Successfully`, `Information Request Sent`).
+   - `description`: 1 concise sentence explaining what changed and what happens next.
+
+### C. Standard Component Implementation Example
+
+```tsx
+import { Toast } from "@repo/ui";
+
+const [toastMessage, setToastMessage] = useState<{
+  message: string;
+  description?: string;
+  variant: "info" | "success" | "warning" | "danger";
+} | null>(null);
+
+// Triggering Toast:
+setToastMessage({
+  message: "Study Submitted for Review",
+  description: `Assigned Study ID: ${assignedId}. Your project is now queued for feasibility triage.`,
+  variant: "success",
+});
+
+// Rendering in JSX:
+{toastMessage && (
+  <Toast
+    message={toastMessage.message}
+    description={toastMessage.description}
+    variant={toastMessage.variant}
+    onClose={() => setToastMessage(null)}
+  />
+)}
+```
+

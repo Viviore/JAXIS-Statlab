@@ -7,8 +7,8 @@ import {
   Card,
   Button,
   FormTextarea,
-  Alert,
   FormFooter,
+  Toast,
 } from "@repo/ui";
 import { IconX } from "@tabler/icons-react";
 import { getOwnProfile, updateOwnProfile } from "@/features/staff/actions";
@@ -42,13 +42,17 @@ export default function StatisticianProfilePage() {
     updatedAt: Date | string;
   } | null>(null);
 
-  const [bio, setBio] = useState<string>("");
+  const [bio, setBio] = useState("");
   const [specializations, setSpecializations] = useState<string[]>([]);
-  const [customTag, setCustomTag] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [customTag, setCustomTag] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
+
   const [isPending, startTransition] = useTransition();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -59,12 +63,9 @@ export default function StatisticianProfilePage() {
           setProfile(res.data);
           setBio(res.data.bio || "");
           setSpecializations(res.data.specializations || []);
-        } else {
-          setErrorMessage("Failed to load staff profile.");
         }
       } catch (err) {
         console.error(err);
-        setErrorMessage("Network error loading profile.");
       } finally {
         setIsLoading(false);
       }
@@ -80,36 +81,54 @@ export default function StatisticianProfilePage() {
     setCustomTag("");
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setSpecializations((prev) => prev.filter((t) => t !== tagToRemove));
+  const handleRemoveTag = (tag: string) => {
+    setSpecializations(specializations.filter((s) => s !== tag));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMessage(null);
-    setErrorMessage(null);
 
     startTransition(async () => {
       try {
         const res = await updateOwnProfile({
-          bio: bio.trim(),
+          bio: bio.trim() || undefined,
           specializations,
         });
 
         if (res.success) {
-          setSuccessMessage("Statistician profile and specializations updated successfully.");
+          setToastMessage({
+            message: "Profile Updated Successfully",
+            description: "Your quantitative specializations and bio have been saved.",
+            variant: "success",
+          });
         } else {
-          setErrorMessage(res.error.message || "Failed to update profile.");
+          setToastMessage({
+            message: "Profile Update Failed",
+            description: res.error.message || "Failed to update profile.",
+            variant: "danger",
+          });
         }
       } catch (err) {
         console.error(err);
-        setErrorMessage("An unexpected error occurred while saving.");
+        setToastMessage({
+          message: "Profile Update Failed",
+          description: "An unexpected error occurred while saving.",
+          variant: "danger",
+        });
       }
     });
   };
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-16 w-full">
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       <PageHeader
         title="Statistician Profile & Specializations"
         description="Configure your quantitative research specialties, computational methodology domains, and institutional background."
@@ -126,18 +145,6 @@ export default function StatisticianProfilePage() {
           </Link>
         }
       />
-
-      {successMessage && (
-        <Alert variant="success" onClose={() => setSuccessMessage(null)}>
-          {successMessage}
-        </Alert>
-      )}
-
-      {errorMessage && (
-        <Alert variant="danger" onClose={() => setErrorMessage(null)}>
-          {errorMessage}
-        </Alert>
-      )}
 
       {isLoading ? (
         <Card className="p-12 text-center text-white/40 font-mono text-xs">

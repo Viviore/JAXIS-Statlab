@@ -235,6 +235,53 @@ async function main() {
     });
     console.log(`✅ Seeded 1 sample project record for Module 04.`);
   }
+
+  // 7. Upsert PackagePriceConfig for Module 05
+  const packageConfigs = [
+    {
+      packageName: "JX_01_DATACHECK" as const,
+      minPrice: 1000.0,
+      maxPrice: 1000.0,
+      isUpfront: true,
+    },
+    {
+      packageName: "JX_02_START" as const,
+      minPrice: 1500.0,
+      maxPrice: 1800.0,
+      isUpfront: true,
+    },
+    {
+      packageName: "JX_03_CORE" as const,
+      minPrice: 1800.0,
+      maxPrice: 3000.0,
+      isUpfront: false,
+    },
+    {
+      packageName: "JX_04_ADVANCED" as const,
+      minPrice: 3500.0,
+      maxPrice: null,
+      isUpfront: false,
+    },
+  ];
+
+  for (const config of packageConfigs) {
+    await prisma.packagePriceConfig.upsert({
+      where: { packageName: config.packageName },
+      update: {
+        minPrice: config.minPrice,
+        maxPrice: config.maxPrice,
+        isUpfront: config.isUpfront,
+      },
+      create: {
+        packageName: config.packageName,
+        minPrice: config.minPrice,
+        maxPrice: config.maxPrice,
+        isUpfront: config.isUpfront,
+      },
+    });
+  }
+
+  console.log(`✅ Seeded ${packageConfigs.length} package price configuration guardrails.`);
 }
 
 main()

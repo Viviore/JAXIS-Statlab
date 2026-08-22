@@ -8,8 +8,8 @@ export const VALID_TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
   NEW_REQUEST: ["AWAITING_INFORMATION", "UNDER_EVALUATION", "CANCELLED"],
   AWAITING_INFORMATION: ["UNDER_EVALUATION", "CANCELLED"],
   UNDER_EVALUATION: ["QUOTE_SENT", "CANCELLED"],
-  QUOTE_SENT: ["CLIENT_APPROVED", "CANCELLED"],
-  CLIENT_APPROVED: ["SOW_PENDING"],
+  QUOTE_SENT: ["CLIENT_APPROVED", "UNDER_EVALUATION", "CANCELLED"],
+  CLIENT_APPROVED: ["SOW_PENDING", "UNDER_EVALUATION"],
   SOW_PENDING: ["SOW_SIGNED"],
   SOW_SIGNED: ["AWAITING_PAYMENT"],
   AWAITING_PAYMENT: ["ACTIVE", "EXPIRED", "HALTED"],
@@ -105,3 +105,58 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   EXPIRED: "Expired",
   REASSIGNMENT_NEEDED: "Reassignment Needed",
 };
+
+/**
+ * Standard pre-configured templates for administrator "Request Missing Artifacts" action.
+ */
+export interface MissingInfoTemplate {
+  id: string;
+  label: string;
+  category: string;
+  text: string;
+}
+
+export const MISSING_INFO_TEMPLATES: MissingInfoTemplate[] = [
+  {
+    id: "raw-dataset",
+    label: "Raw Data File Missing (Excel / CSV / SPSS)",
+    category: "Dataset",
+    text: "We need your original data file (Excel .xlsx, .csv, or SPSS .sav). Please upload your data file with column headers for each survey question or variable so our statistical team can evaluate your study.",
+  },
+  {
+    id: "cleaned-dataset",
+    label: "Cleaned & Coded Excel File Needed (Numbered Answers)",
+    category: "Dataset",
+    text: "The uploaded file looks like an unformatted Google Forms export. To proceed, please upload a cleaned spreadsheet where survey answers are converted into numbers (e.g. Likert Scale: 1 = Strongly Disagree to 5 = Strongly Agree) and each column has a short name rather than the full question sentence.",
+  },
+  {
+    id: "survey-tool",
+    label: "Survey Questionnaire / Form Used Missing",
+    category: "Instrument",
+    text: "Please upload a copy of the survey questionnaire or tool you used (including the scoring guide or rating scale key, such as 1 to 5). This helps our statisticians verify your questions and tests.",
+  },
+  {
+    id: "variables-hypotheses",
+    label: "Research Questions / Chapter 1–3 Needed",
+    category: "Scope",
+    text: "We need more details on your specific research questions, statement of the problem, or hypotheses. Please upload your Chapter 1–3 manuscript draft or list your exact research questions so we can match the right statistical tests.",
+  },
+  {
+    id: "data-dictionary",
+    label: "Explanation of Numbers & Codes Needed (Codebook)",
+    category: "Codebook",
+    text: "Please provide a short guide explaining what the numbers and codes in your data file mean (for example: 1 = Male, 2 = Female, or what abbreviations stand for) so we understand your data correctly.",
+  },
+  {
+    id: "sample-size",
+    label: "Number of Respondents / Participants Needed",
+    category: "Methodology",
+    text: "Please tell us the total number of respondents or participants in your study (Sample Size / N) and who was included or excluded so we can run accurate sample size and statistical power calculations.",
+  },
+  {
+    id: "corrupted-file",
+    label: "File Cannot Be Opened (Please Re-upload)",
+    category: "File Issue",
+    text: "One of your uploaded files cannot be opened or appears damaged. Please re-upload your data file and proposal in standard Excel (.xlsx, .csv), Word (.docx), or PDF format.",
+  },
+];

@@ -18,3 +18,9 @@ All AI coding assistants and developers working in this workspace must strictly 
 - Shared UI components belong in `packages/ui` and must be exported from `packages/ui/src/index.ts`.
 - `apps/app` uses Next.js 16 (Turbopack, Tailwind CSS v4, React 19).
 - Run `npm run check-types --workspace=app` and `npm run lint --workspace=app` to verify all changes.
+
+## 4. Toast Notification Protocol (DESIGN.md Section 9)
+- Always trigger a Toast on: (1) Server Action mutations, (2) 1-Click Clipboard Copies, (3) File Uploads / Limits / Downloads.
+- Strictly use the 4 standard variants: `info` (Sky Blue), `success` (Emerald), `warning` (Amber), `danger` (Crimson).
+- Zero emojis in toast messages or descriptions.
+- Render portaled via `<Toast message="..." description="..." variant="..." onClose={...} />`.

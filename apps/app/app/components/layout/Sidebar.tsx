@@ -105,9 +105,8 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Quotations & SOW",
           href: "/dashboard/client/quotations",
           icon: Icons.Receipt,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          badge: "PROPOSALS",
+          badgeColor: "orange",
         },
         {
           label: "Deliverables Vault",
@@ -349,6 +348,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.Activity,
         },
         {
+          label: "Quotation & Pricing Desk",
+          href: "/dashboard/admin/quotations",
+          icon: Icons.Receipt,
+          badge: "PRICING",
+          badgeColor: "orange",
+        },
+        {
           label: "Department SLAs",
           href: "/dashboard/ceo/slas",
           icon: Icons.Clock,
@@ -416,12 +422,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Quotation & SOW Desk",
+          label: "Quotation & Pricing Desk",
           href: "/dashboard/admin/quotations",
           icon: Icons.Receipt,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          badge: "PRICING",
+          badgeColor: "orange",
         },
         {
           label: "Expert Assignment Desk",

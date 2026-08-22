@@ -7,8 +7,8 @@ import {
   Card,
   Button,
   FormTextarea,
-  Alert,
   FormFooter,
+  Toast,
 } from "@repo/ui";
 import { IconX } from "@tabler/icons-react";
 import { getOwnProfile, updateOwnProfile } from "@/features/staff/actions";
@@ -43,9 +43,12 @@ export default function QAProfilePage() {
   const [specializations, setSpecializations] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -56,12 +59,9 @@ export default function QAProfilePage() {
           setProfile(res.data);
           setBio(res.data.bio || "");
           setSpecializations(res.data.specializations || []);
-        } else {
-          setErrorMessage("Failed to load staff profile.");
         }
       } catch (err) {
         console.error(err);
-        setErrorMessage("Network error loading profile.");
       } finally {
         setIsLoading(false);
       }
@@ -83,30 +83,48 @@ export default function QAProfilePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMessage(null);
-    setErrorMessage(null);
 
     startTransition(async () => {
       try {
         const res = await updateOwnProfile({
-          bio: bio.trim(),
+          bio: bio.trim() || undefined,
           specializations,
         });
 
         if (res.success) {
-          setSuccessMessage("QA Review Lead profile and audit domains updated successfully.");
+          setToastMessage({
+            message: "Profile Updated Successfully",
+            description: "QA Review Lead profile and audit domains updated successfully.",
+            variant: "success",
+          });
         } else {
-          setErrorMessage(res.error.message || "Failed to update profile.");
+          setToastMessage({
+            message: "Profile Update Failed",
+            description: res.error.message || "Failed to update profile.",
+            variant: "danger",
+          });
         }
       } catch (err) {
         console.error(err);
-        setErrorMessage("An unexpected error occurred while saving.");
+        setToastMessage({
+          message: "Profile Update Failed",
+          description: "An unexpected error occurred while saving.",
+          variant: "danger",
+        });
       }
     });
   };
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-16 w-full">
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       <PageHeader
         title="Senior QA Review Lead Profile"
         description="Configure your methodology audit domains, peer review credentials, and dual-blind verification standards."
@@ -123,18 +141,6 @@ export default function QAProfilePage() {
           </Link>
         }
       />
-
-      {successMessage && (
-        <Alert variant="success" onClose={() => setSuccessMessage(null)}>
-          {successMessage}
-        </Alert>
-      )}
-
-      {errorMessage && (
-        <Alert variant="danger" onClose={() => setErrorMessage(null)}>
-          {errorMessage}
-        </Alert>
-      )}
 
       {isLoading ? (
         <Card className="p-12 text-center text-white/40 font-mono text-xs">

@@ -33,6 +33,7 @@ import {
   IconClock,
   IconChecklist,
   IconCopy,
+  IconReceipt,
 } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
@@ -127,60 +128,60 @@ function getStageIntelligence(status: string): { title: string; desc: string; sl
     case "NEW_REQUEST":
     case "UNDER_EVALUATION":
       return {
-        title: "Feasibility & Methodology Audit",
-        desc: "Our Senior Statistical Lead and QA Reviewer are inspecting your research scope, dataset matrix hygiene, and analytical model feasibility.",
-        sla: "Quotation & SOW expected within 24–48 hours",
-        nextAction: "Review binding SOW & quotation once released by admin desk",
+        title: "Initial Review & Feasibility Check",
+        desc: "Our statistical team is reviewing your research questions, data files, and study goals to prepare an accurate pricing quote and timeline.",
+        sla: "Quote & proposal expected in 24–48 hours",
+        nextAction: "Sit tight — we'll notify you as soon as your quote is ready for review.",
       };
     case "AWAITING_INFORMATION":
       return {
-        title: "Action Required: Missing Details",
-        desc: "The administration review desk requires additional research artifacts or clarification. Review the administrator note above and attach requested files.",
-        sla: "Evaluation paused pending client upload",
-        nextAction: "Upload requested research artifacts and click Confirm & Resubmit",
+        title: "Action Required: Additional Files Needed",
+        desc: "Our statistical team needs some missing files or clarification before we can proceed. Please read the note above and upload what's needed.",
+        sla: "Review paused waiting for your upload",
+        nextAction: "Upload the requested file(s) below and click 'Submit Files & Continue Review'",
       };
     case "QUOTE_SENT":
     case "CLIENT_APPROVED":
     case "SOW_PENDING":
     case "SOW_SIGNED":
       return {
-        title: "Quotation & Scope of Work (SOW)",
-        desc: "Your research quotation and analytical methodology roadmap are ready. Authorize the SOW to lock in your dedicated statistical specialist.",
-        sla: "Awaiting client confirmation & milestone downpayment",
-        nextAction: "Authorize SOW terms and deposit initial escrow milestone",
+        title: "Quote & Agreement Ready",
+        desc: "Your project quote and statistical roadmap are ready. Review the terms and complete the initial milestone to begin statistical work.",
+        sla: "Waiting for your review & approval",
+        nextAction: "Review and accept your quote to assign your dedicated statistician",
       };
     case "AWAITING_PAYMENT":
     case "ACTIVE":
     case "EXPERT_ASSIGNED":
     case "IN_PROGRESS":
       return {
-        title: "Active Computational Run",
-        desc: "Your assigned lead statistician is executing code pipelines (R / Python / SPSS) and formatting empirical results into publication-ready APA 7th tables.",
-        sla: "Computational models running on schedule",
-        nextAction: "Monitor live computation progress in your study timeline",
+        title: "Statistical Analysis In Progress",
+        desc: "Your assigned lead statistician is actively running calculations, testing hypotheses, and formatting tables into clear APA 7th format.",
+        sla: "Analysis is actively running on schedule",
+        nextAction: "No action needed. We will notify you once calculations are complete.",
       };
     case "FOR_QA":
     case "QA_REVISION":
       return {
-        title: "Dual-Blind Peer Verification",
-        desc: "A Senior QA Lead is independently recalculating statistical tests and inspecting effect sizes to ensure 100% defense accuracy.",
-        sla: "Peer verification gate in progress",
-        nextAction: "QA verification underway prior to deliverable release",
+        title: "Quality Review & Accuracy Check",
+        desc: "A Senior Quality Lead is independently re-checking all numbers, formulas, and interpretations to ensure 100% accuracy for your defense.",
+        sla: "Quality check in progress",
+        nextAction: "Almost done — our team is verifying results before final release.",
       };
     case "DELIVERED":
     case "CLOSED":
       return {
-        title: "Deliverables Released & Sealed",
-        desc: "All Chapter 4 findings, annotated syntax notebooks, and verified statistical tables are validated and ready in your deliverable vault.",
-        sla: "Deliverables available for permanent download",
-        nextAction: "Download verified APA 7th tables and syntax scripts below",
+        title: "Completed & Ready for Download",
+        desc: "All completed Chapter 4 findings, formatted tables, and statistical scripts are approved and ready in your file vault below.",
+        sla: "Available for download anytime",
+        nextAction: "Download your completed tables and write-up from the files section below.",
       };
     default:
       return {
-        title: "Telemetry Monitored",
-        desc: "Your research project is continuously monitored under JAXIS StatLab statistical integrity governance.",
-        sla: "Monitored in real time",
-        nextAction: "Track live study progress and milestone updates",
+        title: "Study In Progress",
+        desc: "Your research project is actively tracked and managed under JAXIS StatLab quality standards.",
+        sla: "Tracked in real time",
+        nextAction: "Track your study timeline and milestone updates here.",
       };
   }
 }
@@ -267,6 +268,11 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
     if (!project) return;
     navigator.clipboard.writeText(project.intakeId);
     setCopiedId(true);
+    setToastMessage({
+      message: "Copied to Clipboard",
+      description: `Study ID "${project.intakeId}" has been copied to your clipboard.`,
+      variant: "info",
+    });
     setTimeout(() => setCopiedId(false), 2000);
   };
 
@@ -362,12 +368,17 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
       if (res.success) {
         setProject(res.data);
         setToastMessage({
-          message: "Information Request Resolved",
-          description: "Study resubmitted for administration evaluation.",
+          message: "Files Submitted Successfully",
+          description: "Your study has been resubmitted to the statistical team for review.",
           variant: "success",
         });
       } else {
         setError(res.error.message);
+        setToastMessage({
+          message: "Submission Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
       }
     });
   };
@@ -562,19 +573,19 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
       {/* ── Missing Information Banner (if AWAITING_INFORMATION) ── */}
       {project.masterStatus === "AWAITING_INFORMATION" && (
-        <Card className="p-6 border-l-4 border-l-amber-500 bg-amber-500/[0.04] flex flex-col gap-4">
-          <div className="flex items-center gap-2">
+        <Card className="p-6 md:p-7 border border-amber-500/25 bg-amber-500/[0.04] flex flex-col gap-5 mt-2">
+          <div className="flex items-center gap-2.5">
             <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
             <h3 className="text-sm font-mono font-bold text-amber-400 uppercase tracking-wider">
-              Missing Information Requested by Administration Desk
+              Action Required: Additional Information or Files Needed
             </h3>
           </div>
-          <p className="text-xs text-white/90 leading-relaxed font-sans bg-black/40 p-4 rounded-[2px] border border-white/[0.08]">
+          <p className="text-xs text-white/90 leading-relaxed font-sans bg-black/40 p-4 rounded-[2px] border border-white/[0.08] mt-1">
             &ldquo;{project.missingInfoReason || "Please review and attach the required dataset or questionnaire."}&rdquo;
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-amber-500/20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-3 pt-4 border-t border-amber-500/20">
             <p className="text-[0.688rem] text-white/50 font-mono">
-              Review your research scope and attached files below, then confirm resubmission.
+              Please upload the requested file(s) in the files section below, then click submit.
             </p>
             <Button
               variant="primary"
@@ -583,9 +594,64 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               loading={isResolving}
               className="py-1.5 px-4 font-mono text-xs font-bold tracking-wider whitespace-nowrap"
             >
-              CONFIRM &amp; RESUBMIT STUDY FOR EVALUATION →
+              SUBMIT FILES &amp; CONTINUE REVIEW →
             </Button>
           </div>
+        </Card>
+      )}
+
+      {/* ── Commercial Proposal Banner for Client Review ── */}
+      {project.masterStatus === "QUOTE_SENT" && (
+        <Card className="p-5 border border-amber-500/40 bg-amber-500/[0.08] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="h-10 w-10 rounded-[2px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <IconReceipt size={20} stroke={1.75} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
+                  ACTION REQUIRED: Commercial Quotation &amp; Proposal Ready
+                </span>
+              </div>
+              <p className="text-xs text-white/80 font-sans mt-0.5">
+                Our statistical team has prepared your customized scope and deliverables schedule. Review and accept your quote to lock your dedicated statistician.
+              </p>
+            </div>
+          </div>
+
+          <Link href={`/dashboard/client/projects/${project.id}/quote`} className="flex-shrink-0">
+            <Button
+              variant="primary"
+              size="md"
+              className="gap-2 whitespace-nowrap bg-[#CC6600] text-white hover:bg-[#E67300]"
+            >
+              <span>Review Proposal &amp; SOW →</span>
+            </Button>
+          </Link>
+        </Card>
+      )}
+
+      {project.masterStatus === "CLIENT_APPROVED" && (
+        <Card className="p-4 border border-emerald-500/30 bg-emerald-500/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+              <IconCheck size={16} stroke={2} />
+            </div>
+            <div>
+              <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">
+                Proposal Approved · SOW Agreement In Preparation
+              </span>
+              <p className="text-[0.688rem] text-white/60 font-sans mt-0.5">
+                Your commercial terms have been confirmed. You will be notified when your formal SOW contract is ready for digital signature.
+              </p>
+            </div>
+          </div>
+
+          <Link href={`/dashboard/client/projects/${project.id}/quote`} className="flex-shrink-0">
+            <Button variant="secondary" size="sm" className="whitespace-nowrap">
+              View Quote Details
+            </Button>
+          </Link>
         </Card>
       )}
 
@@ -598,11 +664,11 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-2.5">
                 <IconNotes size={18} stroke={1.5} className="text-white/60" />
                 <h2 className="text-base font-bold text-white font-sans">
-                  Research Problem &amp; Objectives
+                  Research Scope &amp; Objectives
                 </h2>
               </div>
               <span className="text-[0.625rem] font-mono uppercase font-bold text-white/60 bg-white/[0.04] border border-white/[0.10] px-2 py-0.5 rounded-[2px] tracking-wider">
-                METHODOLOGY BLUEPRINT
+                STUDY OVERVIEW
               </span>
             </div>
 
@@ -610,49 +676,40 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 flex-1">
               {/* Column 1: Core Research Questions */}
               <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex flex-col gap-2.5 h-full">
-                <div className="flex items-center justify-between gap-1 pb-1.5 border-b border-white/[0.06]">
-                  <span className="text-[0.688rem] font-mono uppercase text-white/80 font-bold tracking-wider flex items-center gap-1.5">
-                    <IconHelpCircle size={14} stroke={1.5} className="text-white/50" />
-                    <span>01 · Inquiries</span>
-                  </span>
-                  <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-semibold">
-                    QUESTIONS
+                <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
+                  <IconHelpCircle size={14} stroke={1.5} className="text-[#CC6600] flex-shrink-0" />
+                  <span className="text-[0.688rem] font-mono uppercase text-white/90 font-bold tracking-wider truncate">
+                    01 · Research Questions
                   </span>
                 </div>
                 <div className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans flex-1">
                   {project.researchQuestions || (
-                    <span className="italic text-white/40">No specific research questions provided.</span>
+                    <span className="italic text-white/40">No specific research questions provided yet.</span>
                   )}
                 </div>
               </div>
 
               {/* Column 2: Research Objectives */}
               <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex flex-col gap-2.5 h-full">
-                <div className="flex items-center justify-between gap-1 pb-1.5 border-b border-white/[0.06]">
-                  <span className="text-[0.688rem] font-mono uppercase text-white/80 font-bold tracking-wider flex items-center gap-1.5">
-                    <IconNotes size={14} stroke={1.5} className="text-white/50" />
-                    <span>02 · Objectives</span>
-                  </span>
-                  <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-semibold">
-                    TARGETS
+                <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
+                  <IconNotes size={14} stroke={1.5} className="text-sky-400 flex-shrink-0" />
+                  <span className="text-[0.688rem] font-mono uppercase text-white/90 font-bold tracking-wider truncate">
+                    02 · Objectives &amp; Goals
                   </span>
                 </div>
                 <div className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans flex-1">
                   {project.researchObjectives || (
-                    <span className="italic text-white/40">No specific research objectives provided.</span>
+                    <span className="italic text-white/40">No specific research objectives provided yet.</span>
                   )}
                 </div>
               </div>
 
               {/* Column 3: Theoretical Hypotheses */}
               <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex flex-col gap-2.5 h-full">
-                <div className="flex items-center justify-between gap-1 pb-1.5 border-b border-white/[0.06]">
-                  <span className="text-[0.688rem] font-mono uppercase text-white/80 font-bold tracking-wider flex items-center gap-1.5">
-                    <IconAtom size={14} stroke={1.5} className="text-white/50" />
-                    <span>03 · Hypotheses</span>
-                  </span>
-                  <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-semibold">
-                    FRAMEWORK
+                <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
+                  <IconAtom size={14} stroke={1.5} className="text-emerald-400 flex-shrink-0" />
+                  <span className="text-[0.688rem] font-mono uppercase text-white/90 font-bold tracking-wider truncate">
+                    03 · Hypotheses
                   </span>
                 </div>
                 <div className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans flex-1">
@@ -660,7 +717,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                     project.hypotheses
                   ) : (
                     <span className="italic text-white/40">
-                      No theoretical hypotheses specified during initial intake submission.
+                      No hypotheses specified during initial submission.
                     </span>
                   )}
                 </div>
@@ -669,7 +726,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
           </Card>
         </div>
 
-        {/* Right (1 col): Stage Intelligence (Level with Left Card) */}
+        {/* Right (1 col): Progress & Next Steps (Level with Left Card) */}
         <div className="lg:col-span-1 flex flex-col">
           <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5 shadow-lg">
             {/* Header */}
@@ -677,12 +734,12 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-2">
                 <IconSparkles size={16} stroke={1.5} className="text-[#CC6600]" />
                 <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  Stage Intelligence
+                  Progress &amp; Next Steps
                 </h3>
               </div>
               <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1.5 tracking-wider">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                LIVE TELEMETRY
+                ACTIVE STATUS
               </span>
             </div>
 
@@ -691,10 +748,10 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[0.625rem] font-mono uppercase text-[#FFA040] font-bold tracking-wider">
-                    CURRENT FOCUS
+                    CURRENT PHASE
                   </span>
                   <span className="text-[0.625rem] font-mono text-white/40 uppercase">
-                    STAGE 0{activeStageIdx + 1}
+                    STAGE 0{activeStageIdx + 1} OF 06
                   </span>
                 </div>
                 <h4 className="text-sm font-bold text-white font-sans tracking-tight leading-snug">
@@ -709,7 +766,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-1.5">
                 <div className="flex items-center gap-1.5 text-[0.625rem] font-mono uppercase text-white/60 font-bold tracking-wider">
                   <IconChecklist size={13} stroke={1.75} className="text-[#CC6600]" />
-                  <span>Next Action Directive</span>
+                  <span>What You Need To Do</span>
                 </div>
                 <p className="text-xs font-semibold text-white/90 font-sans leading-relaxed">
                   {stageIntel.nextAction}
@@ -717,16 +774,16 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Estimated SLA & Turnaround Footer (Full Width, No Truncation) */}
-            <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex items-start gap-3 mt-auto">
-              <div className="h-8 w-8 rounded-[2px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0 mt-0.5">
-                <IconClock size={15} stroke={1.75} />
+            {/* Estimated SLA & Turnaround Footer */}
+            <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex items-center gap-3.5 mt-auto">
+              <div className="h-9 w-9 rounded-[2px] bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 flex-shrink-0">
+                <IconClock size={16} stroke={1.75} />
               </div>
               <div className="flex flex-col min-w-0 flex-1 gap-0.5">
-                <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                  Target Turnaround Window
+                <span className="text-[0.625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                  Estimated Timeline
                 </span>
-                <span className="text-xs font-mono font-semibold text-amber-300 leading-relaxed break-words">
+                <span className="text-xs font-mono font-semibold text-amber-300 leading-snug break-words">
                   {stageIntel.sla}
                 </span>
               </div>
@@ -745,17 +802,17 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <div>
                 <h2 className="text-base font-bold text-white font-sans flex items-center gap-2.5">
                   <IconDatabase size={18} stroke={1.5} className="text-white/60" />
-                  <span>Attached Research Documents &amp; Datasets</span>
+                  <span>Your Uploaded Files &amp; Datasets</span>
                 </h2>
                 <p className="text-xs text-white/50 mt-1 font-mono">
-                  {project.files.length} verified artifact(s) registered for statistical computation
+                  {project.files.length} file(s) attached to this study
                 </p>
               </div>
 
               <div className="flex items-center gap-2.5">
                 {isPreSow && (
                   <span className="text-[0.688rem] font-mono text-white/60 bg-white/[0.04] border border-white/[0.10] px-2.5 py-1 rounded-[2px] whitespace-nowrap">
-                    PRE-SOW EDITABLE
+                    EDITABLE
                   </span>
                 )}
               </div>
@@ -775,22 +832,24 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                   <IconUpload size={20} stroke={1.5} />
                 </div>
                 <span className="text-xs font-bold text-white group-hover:text-amber-300 font-sans">
-                  No files attached yet. Click to upload research files or datasets.
+                  No files uploaded yet. Click here to upload your research files or data.
                 </span>
                 <span className="text-[0.688rem] text-white/40 font-mono">
-                  Accepts PDF, DOCX, XLSX, CSV, SPSS (.sav) up to 15MB
+                  Accepts PDF, Word (.docx), Excel (.xlsx, .csv), and SPSS (.sav) up to 15MB
                 </span>
               </div>
             ) : (
               <div className="flex flex-col gap-4 flex-1">
                 {/* Table Header Bar */}
-                <div className="hidden sm:grid sm:grid-cols-12 gap-4 px-6 sm:px-8 py-2 text-[0.625rem] font-mono uppercase text-white/40 font-bold border-b border-white/[0.06] mb-1">
-                  <div className="col-span-6">Artifact Document</div>
-                  <div className="col-span-3">Classification</div>
-                  <div className="col-span-3 text-right">Actions</div>
+                <div className="hidden sm:flex items-center justify-between px-5 sm:px-6 py-2 text-[0.625rem] font-mono uppercase text-white/40 font-bold border-b border-white/[0.06] mb-1">
+                  <div className="flex-1">File Name &amp; Type</div>
+                  <div className="flex items-center gap-8 pr-2">
+                    <span>Category</span>
+                    <span>Actions</span>
+                  </div>
                 </div>
 
-                {/* File Rows with Expanded Left and Right Padding */}
+                {/* File Rows with Responsive Flex Layout */}
                 <div className="flex flex-col gap-3">
                   {project.files.map((file) => {
                     const ext = getFileExtension(file.fileName);
@@ -800,15 +859,15 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                     return (
                       <div
                         key={file.id}
-                        className="py-4 px-6 sm:px-8 rounded-[2px] bg-[#010D1F] border border-white/[0.08] hover:border-white/[0.18] transition-all grid grid-cols-1 sm:grid-cols-12 gap-4 items-center group"
+                        className="py-3.5 px-5 sm:px-6 rounded-[2px] bg-[#010D1F] border border-white/[0.08] hover:border-white/[0.18] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                       >
-                        {/* Column 1: Extension Badge + Name */}
-                        <div className="col-span-1 sm:col-span-6 flex items-center gap-3.5 min-w-0">
+                        {/* Left: Extension Badge + Name + Subtitle */}
+                        <div className="flex items-center gap-3.5 min-w-0 flex-1">
                           <div className="h-8 px-2.5 rounded-[2px] bg-white/[0.05] border border-white/[0.10] flex items-center justify-center font-mono text-[0.688rem] font-bold text-white/80 flex-shrink-0 tracking-wider">
                             {ext}
                           </div>
 
-                          <div className="flex flex-col gap-0.5 min-w-0">
+                          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                             <span
                               className="text-xs font-bold text-white truncate font-sans group-hover:text-[#CC6600] transition-colors"
                               title={file.fileName}
@@ -821,42 +880,47 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                           </div>
                         </div>
 
-                        {/* Column 2: Classification Tag */}
-                        <div className="col-span-1 sm:col-span-3 flex items-center">
-                          <span className="text-[0.625rem] font-mono font-bold tracking-wider uppercase px-2.5 py-1 rounded-[2px] bg-white/[0.04] text-white/70 border border-white/[0.08] whitespace-nowrap inline-flex items-center gap-1.5">
+                        {/* Right: Category Tag + Action Buttons */}
+                        <div className="flex items-center justify-between sm:justify-end gap-3.5 flex-shrink-0">
+                          {/* Category Tag */}
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-white/[0.04] border border-white/[0.08] text-[0.688rem] font-mono text-white/70 whitespace-nowrap">
                             {categoryInfo.icon}
                             <span>{categoryInfo.tagLabel}</span>
                           </span>
-                        </div>
 
-                        {/* Column 3: Actions Cluster */}
-                        <div className="col-span-1 sm:col-span-3 flex items-center justify-start sm:justify-end gap-2.5">
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadFile(file.filePath, file.fileName)}
-                            className="px-4 py-1.5 rounded-[2px] bg-white/[0.06] hover:bg-[#CC6600]/20 text-white/90 hover:text-white border border-white/[0.12] hover:border-[#CC6600]/50 text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer shadow-sm"
-                          >
-                            <IconDownload size={13} stroke={1.5} className="text-white/70 group-hover:text-amber-400" />
-                            <span>DOWNLOAD</span>
-                          </button>
-
-                          {isPreSow && (
-                            <button
-                              type="button"
-                              onClick={() => setFileToDelete(file)}
-                              title={`Remove ${file.fileName}`}
-                              className="p-2 rounded-[2px] text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer border border-white/10 hover:border-red-500/30"
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() =>
+                                handleDownloadFile(file.filePath, file.fileName)
+                              }
+                              className="py-1 px-3 h-auto text-xs font-mono font-bold flex items-center gap-1 whitespace-nowrap"
                             >
-                              <IconTrash size={14} stroke={1.5} />
-                            </button>
-                          )}
+                              <IconDownload size={13} stroke={1.5} />
+                              <span>DOWNLOAD</span>
+                            </Button>
+
+                            {isPreSow && (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => setFileToDelete(file)}
+                                className="py-1 px-2.5 h-auto text-xs font-mono"
+                                title="Delete file"
+                              >
+                                <IconTrash size={13} stroke={1.5} />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Bottom Quick-Dropzone Strip */}
+                {/* Upload More Box */}
                 {isPreSow && (
                   <div
                     onClick={() => {
@@ -867,7 +931,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                     className="border border-dashed border-white/15 hover:border-[#CC6600]/60 bg-white/[0.01] hover:bg-white/[0.03] py-3.5 px-6 sm:px-8 rounded-[2px] flex items-center justify-center gap-2.5 text-xs font-mono text-white/50 hover:text-white transition-all cursor-pointer mt-4 group/drop"
                   >
                     <IconUpload size={14} stroke={1.5} className="text-white/40 group-hover/drop:text-[#CC6600] transition-colors" />
-                    <span>Drop additional research files or click to attach (PDF, DOCX, XLSX, CSV, SPSS up to 15MB)</span>
+                    <span>Click or drag files here to upload additional research documents or datasets (PDF, Word, Excel, SPSS up to 15MB)</span>
                   </div>
                 )}
               </div>
@@ -875,7 +939,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
           </Card>
         </div>
 
-        {/* Right (1 col): Institutional Dossier & Governance (Level with Left Card) */}
+        {/* Right (1 col): Researcher Profile & Institution (Level with Left Card) */}
         <div className="lg:col-span-1 flex flex-col">
           <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5 shadow-lg">
             {/* Header */}
@@ -883,7 +947,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-2">
                 <IconSchool size={16} stroke={1.5} className="text-white/60" />
                 <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  Institutional Dossier
+                  Researcher Profile &amp; Institution
                 </h3>
               </div>
               <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1.5 tracking-wider">
@@ -966,10 +1030,10 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
             <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-1 mt-auto">
               <div className="flex items-center gap-1.5 text-[0.625rem] font-mono uppercase text-emerald-400 font-bold tracking-wider">
                 <IconShieldCheck size={14} stroke={1.75} />
-                <span>JAXIS Peer Review Standard</span>
+                <span>100% Quality &amp; Accuracy Assurance</span>
               </div>
               <p className="text-xs text-white/70 leading-relaxed font-sans mt-0.5">
-                Every output is independently calculated and verified by a Senior QA Lead for APA 7th compliance.
+                Every calculation and table is independently checked by a Senior QA Lead to ensure accurate results for your defense.
               </p>
             </div>
           </Card>

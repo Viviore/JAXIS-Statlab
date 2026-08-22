@@ -224,35 +224,35 @@ const packageConfigs = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Admin Quotation Builder:** Admin can build itemized commercial quotes with statistical service packages (`JX-01`, `JX-02`, `JX-03`, `JX-04`) and add-ons (`DEFENSELAB`, `RUSH`).
-- [ ] **Pricing Guardrails:** Server enforces package minimum price floors and calculates required downpayment (100% upfront for `JX-01`/`JX-02`).
-- [ ] **Quote Issuance:** Admin issues quote transitioning project to `QUOTE_SENT` with 3-day validity window.
-- [ ] **Client Proposal Review:** Client views transparent price breakdown, terms, deliverables, and payment schedule.
-- [ ] **Quote Acceptance / Decline:** Client can accept (advances to `SOW_PENDING`) or decline with feedback for re-estimation.
+- [x] **Admin Quotation Builder:** Admin can build itemized commercial quotes with statistical service packages (`JX-01`, `JX-02`, `JX-03`, `JX-04`) and add-ons (`DEFENSELAB`, `RUSH`).
+- [x] **Pricing Guardrails:** Server enforces package minimum price floors and calculates required downpayment (100% upfront for `JX-01`/`JX-02`).
+- [x] **Quote Issuance:** Admin issues quote transitioning project to `QUOTE_SENT` with 3-day validity window.
+- [x] **Client Proposal Review:** Client views transparent price breakdown, terms, deliverables, and payment schedule.
+- [x] **Quote Acceptance / Decline:** Client can accept (advances to `SOW_PENDING`) or decline with feedback for re-estimation.
 
 
 ## 8. Acceptance Criteria (Done Checklist)
 
 ### Quote Creation
-- [ ] Admin can create a draft quote for a project in `UNDER_EVALUATION`
-- [ ] Statistician attempting to create quote → 403 (RULE_QUO_01)
-- [ ] Price below package minimum → 422 validation error
-- [ ] JX-01 and JX-02 → `downpaymentRequired` auto-set to `totalAmount` regardless of Admin input (RULE_QUO_02)
-- [ ] Add-ons cannot be added to a project that is already `ACTIVE` or later
+- [x] Admin can create a draft quote for a project in `UNDER_EVALUATION`
+- [x] Statistician attempting to create quote → 403 (RULE_QUO_01)
+- [x] Price below package minimum → 422 validation error
+- [x] JX-01 and JX-02 → `downpaymentRequired` auto-set to `totalAmount` regardless of Admin input (RULE_QUO_02)
+- [x] Add-ons cannot be added to a project that is already `ACTIVE` or later
 
 ### Quote Lifecycle
-- [ ] Admin can issue quote → status `QUOTE_SENT`, project status → `QUOTE_SENT`
-- [ ] Admin cannot modify a quote after it has been sent (returns 403)
-- [ ] Client can accept → `CLIENT_APPROVED`, project → `SOW_PENDING`
-- [ ] Client can decline → `QUOTE_DECLINED`
-- [ ] Quote older than `expiresAt` auto-transitions to `QUOTE_EXPIRED` on read
+- [x] Admin can issue quote → status `QUOTE_SENT`, project status → `QUOTE_SENT`
+- [x] Admin cannot modify a quote after it has been sent (returns 403)
+- [x] Client can accept → `CLIENT_APPROVED`, project → `SOW_PENDING`
+- [x] Client can decline → `QUOTE_DECLINED`
+- [x] Quote older than `expiresAt` auto-transitions to `QUOTE_EXPIRED` on read
 
 ### UI
-- [ ] Quote builder renders package selector with price range hints
-- [ ] Quote review page shows all line items, total, downpayment, expiry date
-- [ ] Accept/Decline buttons only visible when quote status is `QUOTE_SENT`
+- [x] Quote builder renders package selector with price range hints
+- [x] Quote review page shows all line items, total, downpayment, expiry date
+- [x] Accept/Decline buttons only visible when quote status is `QUOTE_SENT`
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

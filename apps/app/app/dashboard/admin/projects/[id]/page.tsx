@@ -11,20 +11,33 @@ import {
   FormTextarea,
   Modal,
   Alert,
+  Toast,
 } from "@repo/ui";
-import { IconCheck, IconSettings } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconSettings,
+  IconCopy,
+  IconCalculator,
+  IconReceipt2,
+  IconFileText,
+  IconEdit,
+} from "@tabler/icons-react";
 import {
   getProjectById,
   updateProjectStatus,
   requestMissingInfo,
   markIntakeComplete,
 } from "@/features/projects/actions";
+import { getQuotationByProject } from "@/features/quotations/actions";
+import { QuotationBuilderModal } from "@/features/quotations/components/QuotationBuilderModal";
 import {
   VALID_TRANSITIONS,
   PROJECT_STATUS_LABELS,
+  MISSING_INFO_TEMPLATES,
 } from "@/lib/project-rules";
 import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
+import type { QuotationDetailItem } from "@/features/quotations/schemas";
 import type { ProjectStatus } from "@prisma/client";
 
 interface PageProps {
@@ -36,12 +49,13 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
   const projectId = resolvedParams.id;
 
   const [project, setProject] = useState<ProjectDetailItem | null>(null);
+  const [quotation, setQuotation] = useState<QuotationDetailItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   // Modal States
   const [isMissingInfoModalOpen, setIsMissingInfoModalOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [missingInfoReason, setMissingInfoReason] = useState("");
   const [missingInfoError, setMissingInfoError] = useState<string | null>(null);
 
@@ -49,22 +63,48 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
   const [selectedTargetStatus, setSelectedTargetStatus] = useState<string>("");
   const [statusModalError, setStatusModalError] = useState<string | null>(null);
 
+  const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
+
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
+
   const [isPending, startTransition] = useTransition();
+
+  const handleCopyId = () => {
+    if (!project) return;
+    navigator.clipboard.writeText(project.intakeId);
+    setToastMessage({
+      message: "Copied to Clipboard",
+      description: `Study ID "${project.intakeId}" has been copied to your clipboard.`,
+      variant: "info",
+    });
+  };
 
   const loadProject = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const res = await getProjectById(projectId);
-    if (res.success) {
-      setProject(res.data);
-      const validTargets = VALID_TRANSITIONS[res.data.masterStatus] || [];
-      if (validTargets.length > 0) {
-        setSelectedTargetStatus(validTargets[0]!);
+    try {
+      const [projectRes, quoteRes] = await Promise.all([
+        getProjectById(projectId),
+        getQuotationByProject(projectId),
+      ]);
+
+      if (projectRes.success) {
+        setProject(projectRes.data);
+      } else {
+        setError(projectRes.error.message);
       }
-    } else {
-      setError(res.error.message);
+
+      setQuotation(quoteRes);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load project details.");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, [projectId]);
 
   useEffect(() => {
@@ -73,16 +113,23 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
 
   const handleMarkComplete = () => {
     if (!project) return;
-    setFeedbackMessage(null);
     startTransition(async () => {
       const res = await markIntakeComplete(project.id);
       if (res.success) {
-        setFeedbackMessage("Intake verified and transitioned to UNDER_EVALUATION.");
         loadProject();
       } else {
         setError(res.error.message);
       }
     });
+  };
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    const found = MISSING_INFO_TEMPLATES.find((t) => t.id === templateId);
+    if (found) {
+      setMissingInfoReason(found.text);
+      setMissingInfoError(null);
+    }
   };
 
   const handleRequestMissingInfo = () => {
@@ -100,12 +147,22 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
       });
 
       if (res.success) {
-        setFeedbackMessage(`Information request dispatched to ${project.client.fullName}.`);
+        setToastMessage({
+          message: "Information Request Sent",
+          description: `Missing artifacts request dispatched to ${project.client.fullName}. Study transitioned to AWAITING_INFORMATION.`,
+          variant: "warning",
+        });
         setIsMissingInfoModalOpen(false);
         setMissingInfoReason("");
+        setSelectedTemplateId("");
         loadProject();
       } else {
         setMissingInfoError(res.error.message);
+        setToastMessage({
+          message: "Request Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
       }
     });
   };
@@ -121,13 +178,20 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
       });
 
       if (res.success) {
-        setFeedbackMessage(
-          `Project transitioned to ${PROJECT_STATUS_LABELS[selectedTargetStatus as ProjectStatus] || selectedTargetStatus}.`
-        );
+        setToastMessage({
+          message: "Status Transition Applied",
+          description: `Study transitioned to ${PROJECT_STATUS_LABELS[selectedTargetStatus as ProjectStatus] || selectedTargetStatus}.`,
+          variant: "success",
+        });
         setIsStatusModalOpen(false);
         loadProject();
       } else {
         setStatusModalError(res.error.message);
+        setToastMessage({
+          message: "Transition Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
       }
     });
   };
@@ -207,7 +271,6 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
         }
       />
 
-      {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Governance Status Action Bar ── */}
@@ -223,6 +286,15 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
                 pulse={project.masterStatus === "NEW_REQUEST" || project.masterStatus === "AWAITING_INFORMATION"}
               />
+              <button
+                type="button"
+                onClick={handleCopyId}
+                title="Click to copy Study ID"
+                className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2 py-0.5 rounded-[2px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1 group/btn ml-1"
+              >
+                <span>{project.intakeId}</span>
+                <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+              </button>
             </div>
             <div className="flex items-center gap-1.5 text-xs font-mono text-white/40">
               <span>Target Deadline:</span>
@@ -237,6 +309,30 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            {project.masterStatus === "UNDER_EVALUATION" && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsQuotationModalOpen(true)}
+                className="text-xs font-mono font-bold tracking-wider whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300]"
+              >
+                <IconCalculator size={14} stroke={1.5} />
+                <span>{quotation ? "EDIT QUOTATION DRAFT" : "BUILD COMMERCIAL QUOTE →"}</span>
+              </Button>
+            )}
+
+            {(project.masterStatus === "QUOTE_SENT" || project.masterStatus === "CLIENT_APPROVED") && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsQuotationModalOpen(true)}
+                className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
+              >
+                <IconFileText size={14} stroke={1.5} />
+                <span>COMMERCIAL QUOTE DETAILS</span>
+              </Button>
+            )}
+
             {(project.masterStatus === "NEW_REQUEST" ||
               project.masterStatus === "AWAITING_INFORMATION") && (
               <Button
@@ -300,6 +396,117 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Research Content & Datasets */}
         <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Commercial Proposal & Quotation Card (Module 05) */}
+          {(project.masterStatus === "UNDER_EVALUATION" ||
+            project.masterStatus === "QUOTE_SENT" ||
+            project.masterStatus === "CLIENT_APPROVED" ||
+            quotation !== null) && (
+            <Card className="p-6 bg-[#01142B] border border-white/[0.08] flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3 gap-2">
+                <div className="flex items-center gap-2">
+                  <IconReceipt2 size={18} stroke={1.5} className="text-[#CC6600]" />
+                  <h3 className="text-sm font-bold text-white font-sans">
+                    Commercial Proposal &amp; Quotation
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {quotation ? (
+                    <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-[2px] bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 font-bold uppercase">
+                      STATUS: {quotation.status}
+                    </span>
+                  ) : (
+                    <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
+                      READY FOR PROPOSAL MODELING
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {quotation ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06]">
+                    <div>
+                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Package Tier
+                      </div>
+                      <div className="text-xs font-bold text-white font-mono mt-0.5">
+                        {quotation.packageName.replace(/_/g, " ")}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Contract Sum
+                      </div>
+                      <div className="text-xs font-bold text-[#38BDF8] font-mono mt-0.5">
+                        ₱{quotation.totalAmount.toLocaleString()}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Downpayment Due
+                      </div>
+                      <div className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
+                        ₱{quotation.downpaymentRequired.toLocaleString()}
+                        <span className="text-[0.625rem] font-normal text-white/40 ml-1">
+                          ({quotation.downpaymentPercentage}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                        Proposal Validity
+                      </div>
+                      <div className="text-xs font-bold text-amber-300 font-mono mt-0.5">
+                        {quotation.isExpired ? (
+                          <span className="text-rose-400">Expired</span>
+                        ) : (
+                          new Date(quotation.expiresAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-white/60 font-mono">
+                      {quotation.lineItems.length} line item(s) included in this proposal
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setIsQuotationModalOpen(true)}
+                      className="gap-1.5"
+                    >
+                      <IconEdit size={13} stroke={1.5} />
+                      <span>{quotation.status === "DRAFT" ? "Edit Quote Draft" : "View Quote Details"}</span>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <p className="text-xs text-white/60 font-sans leading-relaxed">
+                    Intake evaluation is complete. Select an analytical package tier and priority add-ons to build the commercial proposal.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsQuotationModalOpen(true)}
+                    className="whitespace-nowrap gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300]"
+                  >
+                    <IconCalculator size={14} stroke={1.5} />
+                    <span>Launch Quote Builder →</span>
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
+
           <Card className="p-6 md:p-8 flex flex-col gap-6">
             <div className="border-b border-white/[0.08] pb-3">
               <h3 className="text-base font-bold text-white font-sans">
@@ -440,13 +647,33 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               Describe what research documents or dataset information the client must attach. This transitions status to <code className="text-amber-400 font-mono">AWAITING_INFORMATION</code>.
             </p>
 
+            {/* Template Selector Dropdown */}
+            <div className="flex flex-col gap-1.5">
+              <FormSelect
+                label="Pre-Configured Request Template (Optional)"
+                monoLabel
+                value={selectedTemplateId}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                options={[
+                  { value: "", label: "-- Select a Standard Request Template (Auto-fills note) --" },
+                  ...MISSING_INFO_TEMPLATES.map((t) => ({
+                    value: t.id,
+                    label: `[${t.category.toUpperCase()}] ${t.label}`,
+                  })),
+                ]}
+              />
+            </div>
+
             <FormTextarea
               label="Information Required Note"
               required
               rows={4}
               placeholder="e.g. Please upload the questionnaire tool and specify sample size N."
               value={missingInfoReason}
-              onChange={(e) => setMissingInfoReason(e.target.value)}
+              onChange={(e) => {
+                setMissingInfoReason(e.target.value);
+                if (selectedTemplateId) setSelectedTemplateId("");
+              }}
               error={missingInfoError || undefined}
               monoLabel
             />
@@ -520,6 +747,29 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Commercial Quotation Builder Modal */}
+      {project && (
+        <QuotationBuilderModal
+          isOpen={isQuotationModalOpen}
+          onClose={() => setIsQuotationModalOpen(false)}
+          projectId={project.id}
+          projectIntakeId={project.intakeId}
+          projectTitle={project.researchTitle}
+          clientName={project.client.fullName}
+          existingQuotation={quotation}
+          onSuccess={loadProject}
+        />
+      )}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
       )}
     </div>
   );

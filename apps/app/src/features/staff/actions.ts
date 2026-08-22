@@ -43,7 +43,8 @@ export async function provisionStaff(
     };
   }
 
-  const { fullName, email, role, specializations, bio } = parsed.data;
+  const { firstName, lastName, fullName, email, role, specializations, bio } = parsed.data;
+  const computedFullName = fullName?.trim() || `${firstName?.trim() || ""} ${lastName?.trim() || ""}`.trim();
   const normalizedEmail = email.toLowerCase().trim();
 
   // Generate secure temporary password: e.g. JAXIS-A1B2C3D4
@@ -72,7 +73,7 @@ export async function provisionStaff(
     const user = await db.user.create({
       data: {
         email: normalizedEmail,
-        fullName: fullName.trim(),
+        fullName: computedFullName,
         passwordHash,
         status: "ACTIVE",
         userRoles: targetRole
@@ -140,7 +141,7 @@ export async function provisionStaff(
     const devUser: MockUser = {
       id: devId,
       email: normalizedEmail,
-      fullName: fullName.trim(),
+      fullName: computedFullName,
       role,
       password: temporaryPassword,
       status: "ACTIVE",
@@ -158,7 +159,7 @@ export async function provisionStaff(
       data: {
         id: devId,
         email: normalizedEmail,
-        fullName: fullName.trim(),
+        fullName: computedFullName,
         role,
         temporaryPassword,
       },

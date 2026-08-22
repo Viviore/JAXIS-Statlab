@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { IconX } from "@tabler/icons-react";
 
-export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl";
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
 
 export interface ModalProps {
   open?: boolean;
@@ -26,6 +26,9 @@ const sizeClasses: Record<ModalSize, string> = {
   lg: "max-w-2xl",
   xl: "max-w-3xl",
   "2xl": "max-w-4xl",
+  "3xl": "max-w-5xl",
+  "4xl": "max-w-6xl",
+  "5xl": "max-w-7xl",
 };
 
 export const Modal: React.FC<ModalProps> = ({
@@ -174,6 +177,22 @@ export const Modal: React.FC<ModalProps> = ({
           borderRadius: "2px",
           boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08)",
           boxSizing: "border-box",
+          maxWidth:
+            size === "5xl"
+              ? "1400px"
+              : size === "4xl"
+              ? "1200px"
+              : size === "3xl"
+              ? "1060px"
+              : size === "2xl"
+              ? "896px"
+              : size === "xl"
+              ? "768px"
+              : size === "lg"
+              ? "672px"
+              : size === "md"
+              ? "512px"
+              : "448px",
           maxHeight: "min(90vh, calc(100dvh - 2rem))",
           display: "flex",
           flexDirection: "column",

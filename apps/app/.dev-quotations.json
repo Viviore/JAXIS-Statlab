@@ -1,0 +1,127 @@
+[
+  {
+    "id": "quote_1787397958554",
+    "projectId": "proj_1787386836343",
+    "packageName": "JX_03_CORE",
+    "basePrice": 2500,
+    "totalAmount": 2750,
+    "downpaymentRequired": 1375,
+    "releaseBalance": 1375,
+    "downpaymentPercentage": 50,
+    "isUpfrontEnforced": false,
+    "expiresAt": "2026-08-25T11:32:45.444Z",
+    "isExpired": false,
+    "status": "CLIENT_APPROVED",
+    "notes": "",
+    "createdBy": "usr_dev_admin_001",
+    "createdByName": "System Admin",
+    "respondedAt": "2026-08-22T11:35:39.551Z",
+    "declineReason": null,
+    "createdAt": "2026-08-22T11:25:58.554Z",
+    "updatedAt": "2026-08-22T11:35:39.551Z",
+    "lineItems": [
+      {
+        "id": "li_pkg_1787398364683",
+        "quotationId": "quote_1787397958554",
+        "itemType": "PACKAGE",
+        "itemName": "JX_03_CORE",
+        "description": "JX-03 Core (Inferential) base scope",
+        "amount": 2500
+      },
+      {
+        "id": "li_add_1787398364683_0",
+        "quotationId": "quote_1787397958554",
+        "itemType": "ADDON",
+        "itemName": "DEFENSELAB",
+        "description": "DefenseLab 1-on-1 Defense Prep",
+        "amount": 250
+      }
+    ]
+  },
+  {
+    "id": "quote_1787400735150",
+    "projectId": "proj_1787386836343",
+    "packageName": "JX_03_CORE",
+    "basePrice": 2500,
+    "totalAmount": 2750,
+    "downpaymentRequired": 1375,
+    "releaseBalance": 1375,
+    "downpaymentPercentage": 50,
+    "isUpfrontEnforced": false,
+    "expiresAt": "2026-08-25T12:12:15.063Z",
+    "isExpired": false,
+    "status": "SUPERSEDED",
+    "notes": null,
+    "createdBy": "usr_dev_admin_001",
+    "createdByName": "System Admin",
+    "respondedAt": null,
+    "declineReason": null,
+    "createdAt": "2026-08-22T12:12:15.151Z",
+    "updatedAt": "2026-08-22T12:12:15.151Z",
+    "lineItems": [
+      {
+        "id": "li_pkg_1787400735151",
+        "quotationId": "quote_1787400735151",
+        "itemType": "PACKAGE",
+        "itemName": "JX_03_CORE",
+        "description": "Parametric & non-parametric hypothesis testing (t-Tests, ANOVA, Pearson r, Multiple Linear Regression).",
+        "amount": 2500
+      },
+      {
+        "id": "li_addon_1787400735151_0",
+        "quotationId": "quote_1787400735151",
+        "itemType": "ADDON",
+        "itemName": "DEFENSELAB",
+        "description": "1-hour simulated oral defense coaching with a PhD/Master's statistician.",
+        "amount": 250
+      }
+    ]
+  },
+  {
+    "id": "quote_1787401053750",
+    "projectId": "proj_1787386836343",
+    "packageName": "JX_03_CORE",
+    "basePrice": 2500,
+    "totalAmount": 3350,
+    "downpaymentRequired": 1675,
+    "releaseBalance": 1675,
+    "downpaymentPercentage": 50,
+    "isUpfrontEnforced": false,
+    "status": "QUOTE_SENT",
+    "expiresAt": "2026-08-25T12:17:33.968Z",
+    "isExpired": false,
+    "notes": "",
+    "createdBy": "usr_dev_admin_001",
+    "createdByName": "System Admin",
+    "respondedAt": null,
+    "declineReason": null,
+    "createdAt": "2026-08-22T12:17:33.750Z",
+    "updatedAt": "2026-08-22T12:17:34.021Z",
+    "lineItems": [
+      {
+        "id": "li_pkg_1787401053750",
+        "quotationId": "quote_1787401053750",
+        "itemType": "PACKAGE",
+        "itemName": "JX_03_CORE",
+        "description": "Parametric & non-parametric hypothesis testing (t-Tests, ANOVA, Pearson r, Multiple Linear Regression).",
+        "amount": 2500
+      },
+      {
+        "id": "li_addon_1787401053750_0",
+        "quotationId": "quote_1787401053750",
+        "itemType": "ADDON",
+        "itemName": "DEFENSELAB",
+        "description": "1-hour simulated oral defense coaching with a PhD/Master's statistician.",
+        "amount": 250
+      },
+      {
+        "id": "li_addon_1787401053750_1",
+        "quotationId": "quote_1787401053750",
+        "itemType": "ADDON",
+        "itemName": "EXPRESS",
+        "description": "Guarantees dedicated sprint turnaround within 48 hours.",
+        "amount": 600
+      }
+    ]
+  }
+]

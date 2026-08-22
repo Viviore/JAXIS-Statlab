@@ -10,8 +10,8 @@ import {
   StatusBadge,
   Button,
   FormTextarea,
+  FormSelect,
   Modal,
-  Alert,
   DropdownMenu,
   Toast,
 } from "@repo/ui";
@@ -23,21 +23,26 @@ import {
   IconCheck,
   IconCopy,
   IconShieldCheck,
+  IconCalculator,
 } from "@tabler/icons-react";
 import {
   getProjects,
   markIntakeComplete,
   requestMissingInfo,
 } from "@/features/projects/actions";
-import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import { PROJECT_STATUS_LABELS, MISSING_INFO_TEMPLATES } from "@/lib/project-rules";
 import {
   getFileMeta,
   formatFileCategory,
   triggerFileDownload,
 } from "@/lib/file-utils";
+import { QuotationBuilderModal } from "@/features/quotations/components/QuotationBuilderModal";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 export default function AdminIntakeTriagePage() {
+  const [selectedStudyForQuote, setSelectedStudyForQuote] =
+    useState<ProjectDetailItem | null>(null);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [projects, setProjects] = useState<ProjectDetailItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -48,16 +53,15 @@ export default function AdminIntakeTriagePage() {
     useState<ProjectDetailItem | null>(null);
   const [selectedForMissingInfo, setSelectedForMissingInfo] =
     useState<ProjectDetailItem | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [missingInfoReasonText, setMissingInfoReasonText] = useState<string>("");
   const [missingInfoError, setMissingInfoError] = useState<string | null>(null);
 
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{
     message: string;
     description?: string;
-    variant: "info" | "success" | "danger";
+    variant: "info" | "success" | "warning" | "danger";
   } | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const loadData = async () => {
@@ -89,29 +93,31 @@ export default function AdminIntakeTriagePage() {
         ) {
           return false;
         }
-      } else if (selectedStatus === "NEW_REQUEST") {
-        if (p.masterStatus !== "NEW_REQUEST") return false;
-      } else if (selectedStatus === "AWAITING_INFORMATION") {
-        if (p.masterStatus !== "AWAITING_INFORMATION") return false;
-      } else if (selectedStatus === "UNDER_EVALUATION") {
-        if (p.masterStatus !== "UNDER_EVALUATION") return false;
-      } else if (selectedStatus === "ALL") {
-        // View all intakes
-      } else if (p.masterStatus !== selectedStatus) {
-        return false;
+      } else if (selectedStatus !== "ALL") {
+        if (p.masterStatus !== selectedStatus) {
+          return false;
+        }
       }
 
       // 2. Search Filter
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matches =
-          p.intakeId.toLowerCase().includes(q) ||
-          p.researchTitle.toLowerCase().includes(q) ||
-          p.client.fullName.toLowerCase().includes(q) ||
-          (p.client.clientProfile?.institutionSchool || "")
-            .toLowerCase()
-            .includes(q);
-        if (!matches) return false;
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = p.researchTitle.toLowerCase().includes(q);
+        const matchesId = p.intakeId.toLowerCase().includes(q);
+        const matchesClient = p.client.fullName.toLowerCase().includes(q);
+        const matchesEmail = p.client.email.toLowerCase().includes(q);
+        const matchesSchool =
+          (p.client.clientProfile?.institutionSchool || "").toLowerCase().includes(q);
+
+        if (
+          !matchesTitle &&
+          !matchesId &&
+          !matchesClient &&
+          !matchesEmail &&
+          !matchesSchool
+        ) {
+          return false;
+        }
       }
 
       return true;
@@ -141,18 +147,32 @@ export default function AdminIntakeTriagePage() {
   }, [projects]);
 
   const handleMarkComplete = (projectId: string, intakeId: string) => {
-    setFeedbackMessage(null);
     startTransition(async () => {
       const res = await markIntakeComplete(projectId);
       if (res.success) {
-        setFeedbackMessage(
-          `Project ${intakeId} marked complete and transitioned to UNDER_EVALUATION.`
-        );
+        setToastMessage({
+          message: "Intake Evaluation Complete",
+          description: `Study ${intakeId} has been transitioned to UNDER_EVALUATION.`,
+          variant: "success",
+        });
         loadData();
       } else {
-        setFeedbackMessage(`Error: ${res.error.message}`);
+        setToastMessage({
+          message: "Evaluation Update Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
       }
     });
+  };
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    const found = MISSING_INFO_TEMPLATES.find((t) => t.id === templateId);
+    if (found) {
+      setMissingInfoReasonText(found.text);
+      setMissingInfoError(null);
+    }
   };
 
   const handleRequestMissingInfoSubmit = () => {
@@ -175,22 +195,33 @@ export default function AdminIntakeTriagePage() {
       });
 
       if (res.success) {
-        setFeedbackMessage(
-          `Information request sent to ${selectedForMissingInfo.client.fullName} for study ${selectedForMissingInfo.intakeId}.`
-        );
+        setToastMessage({
+          message: "Information Request Sent",
+          description: `Requested missing artifacts from ${selectedForMissingInfo.client.fullName} (${selectedForMissingInfo.intakeId}).`,
+          variant: "warning",
+        });
         setSelectedForMissingInfo(null);
         setMissingInfoReasonText("");
+        setSelectedTemplateId("");
         loadData();
       } else {
         setMissingInfoError(res.error.message);
+        setToastMessage({
+          message: "Request Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
       }
     });
   };
 
   const handleCopyId = (intakeId: string) => {
     navigator.clipboard.writeText(intakeId);
-    setCopiedId(intakeId);
-    setTimeout(() => setCopiedId(null), 2000);
+    setToastMessage({
+      message: "Copied to Clipboard",
+      description: `Intake ID "${intakeId}" has been copied to your clipboard.`,
+      variant: "info",
+    });
   };
 
   return (
@@ -205,22 +236,6 @@ export default function AdminIntakeTriagePage() {
           { label: "Intake Triage" },
         ]}
       />
-
-      {feedbackMessage && (
-        <Alert
-          variant="success"
-          onClose={() => setFeedbackMessage(null)}
-          className="animate-content-fade"
-        >
-          {feedbackMessage}
-        </Alert>
-      )}
-
-      {copiedId && (
-        <Alert variant="info" className="animate-content-fade">
-          Intake ID <strong className="font-mono">{copiedId}</strong> copied to clipboard.
-        </Alert>
-      )}
 
       {/* ── KPI Metrics Ribbon ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
@@ -340,12 +355,18 @@ export default function AdminIntakeTriagePage() {
                     return (
                       <tr key={p.id} className="group">
                         {/* Research Study & Intake */}
-                        <td>
+                        <td className="max-w-[440px] min-w-0">
                           <div className="flex flex-col gap-1 min-w-0 pr-2">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
-                                {p.intakeId}
-                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyId(p.intakeId)}
+                                title="Click to copy Intake ID"
+                                className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2 py-0.5 rounded-[2px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1 group/btn"
+                              >
+                                <span>{p.intakeId}</span>
+                                <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                              </button>
                               {p.files.length > 0 && (
                                 <span className="text-[0.6875rem] font-mono text-sky-300 bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 rounded-[2px] whitespace-nowrap">
                                   {p.files.length} doc{p.files.length === 1 ? "" : "s"}
@@ -371,7 +392,10 @@ export default function AdminIntakeTriagePage() {
                               {p.researchTitle}
                             </Link>
                             {p.missingInfoReason && p.masterStatus === "AWAITING_INFORMATION" && (
-                              <span className="text-[0.6875rem] text-amber-300/80 font-mono line-clamp-1 italic">
+                              <span
+                                className="text-[0.6875rem] text-amber-300/80 font-mono truncate italic block min-w-0"
+                                title={`Pending info: ${p.missingInfoReason}`}
+                              >
                                 Pending info: {p.missingInfoReason}
                               </span>
                             )}
@@ -441,6 +465,18 @@ export default function AdminIntakeTriagePage() {
                               >
                                 APPROVE →
                               </Button>
+                            ) : p.masterStatus === "UNDER_EVALUATION" ? (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedStudyForQuote(p);
+                                  setIsQuoteModalOpen(true);
+                                }}
+                                className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300]"
+                              >
+                                BUILD QUOTE →
+                              </Button>
                             ) : (
                               <Button
                                 variant="outline"
@@ -459,6 +495,16 @@ export default function AdminIntakeTriagePage() {
                                   subtitle: "Inspect study scope & files",
                                   icon: <IconEye size={16} stroke={1.5} />,
                                   onClick: () => setSelectedStudyForInspect(p),
+                                },
+                                {
+                                  label: "Commercial Proposal Builder",
+                                  subtitle: "Configure package & issue quote",
+                                  variant: "warning" as const,
+                                  icon: <IconCalculator size={16} stroke={1.5} />,
+                                  onClick: () => {
+                                    setSelectedStudyForQuote(p);
+                                    setIsQuoteModalOpen(true);
+                                  },
                                 },
                                 {
                                   label: "Full Desk Inspector",
@@ -707,13 +753,33 @@ export default function AdminIntakeTriagePage() {
               and notify the client.
             </div>
 
+            {/* Template Selector Dropdown */}
+            <div className="flex flex-col gap-1.5">
+              <FormSelect
+                label="Pre-Configured Request Template (Optional)"
+                monoLabel
+                value={selectedTemplateId}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                options={[
+                  { value: "", label: "-- Select a Standard Request Template (Auto-fills note) --" },
+                  ...MISSING_INFO_TEMPLATES.map((t) => ({
+                    value: t.id,
+                    label: `[${t.category.toUpperCase()}] ${t.label}`,
+                  })),
+                ]}
+              />
+            </div>
+
             <FormTextarea
               label="Mandatory Information Request / Missing Items Note"
               required
               rows={4}
               placeholder="e.g. Please attach the raw SPSS / Excel survey responses with column codebook and confirm whether demographic covariates are required in Chapter 4."
               value={missingInfoReasonText}
-              onChange={(e) => setMissingInfoReasonText(e.target.value)}
+              onChange={(e) => {
+                setMissingInfoReasonText(e.target.value);
+                if (selectedTemplateId) setSelectedTemplateId("");
+              }}
               error={missingInfoError || undefined}
               monoLabel
             />
@@ -739,6 +805,24 @@ export default function AdminIntakeTriagePage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Commercial Quotation Builder Modal */}
+      {selectedStudyForQuote && (
+        <QuotationBuilderModal
+          isOpen={isQuoteModalOpen}
+          onClose={() => {
+            setIsQuoteModalOpen(false);
+            setSelectedStudyForQuote(null);
+          }}
+          projectId={selectedStudyForQuote.id}
+          projectIntakeId={selectedStudyForQuote.intakeId}
+          projectTitle={selectedStudyForQuote.researchTitle}
+          clientName={selectedStudyForQuote.client.fullName}
+          onSuccess={() => {
+            loadData();
+          }}
+        />
       )}
 
       {toastMessage && (

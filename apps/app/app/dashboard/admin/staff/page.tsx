@@ -21,6 +21,7 @@ import {
   FormFooter,
   TagsOverflow,
   DropdownMenu,
+  Toast,
 } from "@repo/ui";
 import {
   IconEye,
@@ -92,7 +93,8 @@ export default function StaffRosterPage() {
 
   // Provision modal states
   const [isProvisionOpen, setIsProvisionOpen] = useState<boolean>(false);
-  const [provFullName, setProvFullName] = useState<string>("");
+  const [provFirstName, setProvFirstName] = useState<string>("");
+  const [provLastName, setProvLastName] = useState<string>("");
   const [provEmail, setProvEmail] = useState<string>("");
   const [provRole, setProvRole] = useState<StaffRole>("STATISTICIAN");
   const [provSpecs, setProvSpecs] = useState<string[]>(["Regression", "ANOVA"]);
@@ -113,6 +115,11 @@ export default function StaffRosterPage() {
   } | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
 
   // Action form states inside modals
   const [suspendReason, setSuspendReason] = useState<string>("");
@@ -122,7 +129,6 @@ export default function StaffRosterPage() {
     useState<string>("POLICY_VIOLATION");
   const [forfeitPayouts, setForfeitPayouts] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   // Load roster
   const loadRoster = useCallback(async () => {
@@ -173,7 +179,7 @@ export default function StaffRosterPage() {
         setDetailData(res.data);
       }
     } catch (e) {
-      console.error("Failed to load staff detail", e);
+      console.error("Failed to fetch staff detail", e);
     }
   };
 
@@ -202,7 +208,8 @@ export default function StaffRosterPage() {
 
     startTransition(async () => {
       const res = await provisionStaff({
-        fullName: provFullName,
+        firstName: provFirstName,
+        lastName: provLastName,
         email: provEmail,
         role: provRole,
         specializations: provSpecs,
@@ -214,17 +221,28 @@ export default function StaffRosterPage() {
         if (res.error.fieldErrors) {
           setProvFieldErrors(res.error.fieldErrors);
         }
+        setToastMessage({
+          message: "Provisioning Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
         return;
       }
 
       setIsProvisionOpen(false);
-      setProvFullName("");
+      setProvFirstName("");
+      setProvLastName("");
       setProvEmail("");
       setProvRole("STATISTICIAN");
       setProvSpecs(["Regression", "ANOVA"]);
       setProvBio("");
       setProvisionedData(res.data);
       setIsSuccessModalOpen(true);
+      setToastMessage({
+        message: "Staff Member Provisioned",
+        description: `Account created for ${res.data.fullName}. Temporary credentials are ready to copy.`,
+        variant: "success",
+      });
       loadRoster();
     });
   };
@@ -234,6 +252,11 @@ export default function StaffRosterPage() {
     const text = `JAXIS StatLab Internal Account Credentials\nName: ${provisionedData.fullName}\nRole: ${provisionedData.role}\nEmail: ${provisionedData.email}\nTemporary Password: ${provisionedData.temporaryPassword}\nLogin URL: http://localhost:3001/login`;
     navigator.clipboard.writeText(text);
     setCopied(true);
+    setToastMessage({
+      message: "Credentials Copied",
+      description: `Account credentials for ${provisionedData.fullName} copied to clipboard.`,
+      variant: "info",
+    });
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -253,15 +276,22 @@ export default function StaffRosterPage() {
 
       if (!res.success) {
         setActionError(res.error.message);
+        setToastMessage({
+          message: "Suspension Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
         return;
       }
 
       setIsSuspendOpen(false);
       setSuspendReason("");
       setSuspendViolation("");
-      setActionSuccess(
-        `Staff member ${selectedStaff.fullName} has been suspended.`,
-      );
+      setToastMessage({
+        message: "Staff Account Suspended",
+        description: `Account for ${selectedStaff.fullName} has been placed in suspended status.`,
+        variant: "warning",
+      });
       loadRoster();
     });
   };
@@ -280,9 +310,18 @@ export default function StaffRosterPage() {
       const res = await liftSuspension(staff.id);
       if (!res.success) {
         alert(res.error.message);
+        setToastMessage({
+          message: "Failed to Lift Suspension",
+          description: res.error.message,
+          variant: "danger",
+        });
         return;
       }
-      setActionSuccess(`Suspension lifted for ${staff.fullName}.`);
+      setToastMessage({
+        message: "Suspension Lifted",
+        description: `Active system access restored for ${staff.fullName}.`,
+        variant: "success",
+      });
       loadRoster();
     });
   };
@@ -302,15 +341,22 @@ export default function StaffRosterPage() {
 
       if (!res.success) {
         setActionError(res.error.message);
+        setToastMessage({
+          message: "Termination Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
         return;
       }
 
       setIsTerminateOpen(false);
       setTerminateReason("");
       setForfeitPayouts(false);
-      setActionSuccess(
-        `Account for ${selectedStaff.fullName} permanently terminated.`,
-      );
+      setToastMessage({
+        message: "Account Terminated",
+        description: `Account for ${selectedStaff.fullName} has been permanently terminated.`,
+        variant: "danger",
+      });
       loadRoster();
     });
   };
@@ -421,13 +467,6 @@ export default function StaffRosterPage() {
           </div>
         }
       />
-
-      {/* ── Alert Notices ── */}
-      {actionSuccess && (
-        <Alert variant="success" onClose={() => setActionSuccess(null)}>
-          {actionSuccess}
-        </Alert>
-      )}
 
       {/* ── KPI Grid (Consistent with Admin Dashboard Standard) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
@@ -825,15 +864,26 @@ export default function StaffRosterPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {/* ── Left Column: Identity, Role & Security (50%) ── */}
             <div className="flex flex-col gap-4">
-              <FormInput
-                label="Full Legal Name"
-                required
-                placeholder="Dr. Eleanor Vance"
-                value={provFullName}
-                onChange={(e) => setProvFullName(e.target.value)}
-                error={provFieldErrors.fullName?.[0]}
-                disabled={isPending}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormInput
+                  label="First Name"
+                  required
+                  placeholder="Eleanor"
+                  value={provFirstName}
+                  onChange={(e) => setProvFirstName(e.target.value)}
+                  error={provFieldErrors.firstName?.[0] || provFieldErrors.fullName?.[0]}
+                  disabled={isPending}
+                />
+                <FormInput
+                  label="Last Name"
+                  required
+                  placeholder="Vance"
+                  value={provLastName}
+                  onChange={(e) => setProvLastName(e.target.value)}
+                  error={provFieldErrors.lastName?.[0]}
+                  disabled={isPending}
+                />
+              </div>
 
               <FormInput
                 label="Institutional Email Address"
@@ -1211,6 +1261,15 @@ export default function StaffRosterPage() {
             </FormFooter>
           </form>
         </Modal>
+      )}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
       )}
     </div>
   );

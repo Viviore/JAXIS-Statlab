@@ -12,7 +12,7 @@ import {
   Modal,
   Toast,
 } from "@repo/ui";
-import { IconDownload } from "@tabler/icons-react";
+import { IconDownload, IconCopy } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import {
@@ -103,6 +103,17 @@ export default function ClientProjectsListPage() {
     return projects.filter((p) => p.masterStatus === "AWAITING_INFORMATION");
   }, [projects]);
 
+  const handleCopyId = (e: React.MouseEvent, intakeId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(intakeId);
+    setToastMessage({
+      message: "Copied to Clipboard",
+      description: `Study ID "${intakeId}" has been copied to your clipboard.`,
+      variant: "info",
+    });
+  };
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
       <PageHeader
@@ -167,13 +178,13 @@ export default function ClientProjectsListPage() {
           {awaitingInfoList.map((p) => (
             <Card
               key={p.id}
-              className="p-5 border-l-4 border-l-amber-500 bg-amber-500/[0.06] border-white/10 shadow-xl flex flex-col gap-3"
+              className="p-5 border border-amber-500/30 bg-amber-500/[0.06] shadow-xl flex flex-col gap-3"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
                   <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
-                    ACTION REQUIRED: Missing Information Requested
+                    ACTION REQUIRED: Additional Files or Information Needed
                   </span>
                   <span className="text-xs font-mono font-bold text-white bg-amber-500/20 px-2 py-0.5 rounded-[2px]">
                     {p.intakeId}
@@ -185,7 +196,7 @@ export default function ClientProjectsListPage() {
                     size="sm"
                     className="py-1.5 px-3.5 h-auto font-mono text-xs font-bold tracking-wider"
                   >
-                    RESOLVE &amp; ATTACH FILES →
+                    VIEW &amp; UPLOAD FILES →
                   </Button>
                 </Link>
               </div>
@@ -199,7 +210,7 @@ export default function ClientProjectsListPage() {
                   style={{ padding: "0.875rem 1rem" }}
                 >
                   <strong className="text-amber-300 font-mono text-[0.6875rem] uppercase block mb-1">
-                    Admin Request Note:
+                    Note from Statistical Team:
                   </strong>
                   &ldquo;{p.missingInfoReason || "Please attach the requested dataset or questionnaire clarification."}&rdquo;
                 </div>
@@ -301,12 +312,18 @@ export default function ClientProjectsListPage() {
                         }`}
                       >
                         {/* 1. Research Study & Intake */}
-                        <td>
-                          <div className="flex flex-col gap-1.5 py-1">
+                        <td className="max-w-[440px] min-w-0">
+                          <div className="flex flex-col gap-1.5 py-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-mono text-xs font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
-                                {p.intakeId}
-                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleCopyId(e, p.intakeId)}
+                                title="Click to copy Study ID"
+                                className="font-mono text-xs font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2 py-0.5 rounded-[2px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1 group/btn"
+                              >
+                                <span>{p.intakeId}</span>
+                                <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                              </button>
                               <span className="font-mono text-[0.65rem] text-sky-300 bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
                                 {p.files.length} {p.files.length === 1 ? "doc" : "docs"}
                               </span>
@@ -333,9 +350,12 @@ export default function ClientProjectsListPage() {
 
                             {/* Missing Info Request Highlight */}
                             {isAwaiting && p.missingInfoReason && (
-                              <div className="flex items-center gap-1.5 text-[0.6875rem] font-mono text-amber-300 mt-0.5">
-                                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping shrink-0" />
-                                <span className="truncate italic">
+                              <div
+                                className="flex items-center gap-1.5 text-[0.6875rem] font-mono text-amber-300 mt-0.5 min-w-0 max-w-full"
+                                title={`Action Required: ${p.missingInfoReason}`}
+                              >
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                                <span className="truncate italic block min-w-0">
                                   Action Required: {p.missingInfoReason}
                                 </span>
                               </div>

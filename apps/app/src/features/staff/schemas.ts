@@ -24,18 +24,38 @@ export const STANDARD_SPECIALIZATIONS = [
   "Machine Learning",
 ] as const;
 
-export const ProvisionStaffSchema = z.object({
-  fullName: z
-    .string()
-    .min(2, "Full name must be at least 2 characters")
-    .max(100, "Full name must not exceed 100 characters"),
-  email: z.string().email("Invalid institutional email address format"),
-  role: z.enum(STAFF_ROLES, {
-    errorMap: () => ({ message: "Select a valid internal staff role" }),
-  }),
-  specializations: z.array(z.string()).default([]),
-  bio: z.string().max(1000, "Bio cannot exceed 1000 characters").optional(),
-});
+export const ProvisionStaffSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(1, "First name is required")
+      .max(50, "First name must not exceed 50 characters")
+      .optional(),
+    lastName: z
+      .string()
+      .min(1, "Last name is required")
+      .max(50, "Last name must not exceed 50 characters")
+      .optional(),
+    fullName: z
+      .string()
+      .min(2, "Full name must be at least 2 characters")
+      .max(100, "Full name must not exceed 100 characters")
+      .optional(),
+    email: z.string().email("Invalid institutional email address format"),
+    role: z.enum(STAFF_ROLES, {
+      errorMap: () => ({ message: "Select a valid internal staff role" }),
+    }),
+    specializations: z.array(z.string()).default([]),
+    bio: z.string().max(1000, "Bio cannot exceed 1000 characters").optional(),
+  })
+  .refine(
+    (data) =>
+      Boolean((data.firstName && data.lastName) || data.fullName),
+    {
+      message: "First name and last name are required",
+      path: ["firstName"],
+    }
+  );
 
 export type ProvisionStaffInput = z.infer<typeof ProvisionStaffSchema>;
 

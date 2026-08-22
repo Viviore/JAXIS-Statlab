@@ -201,27 +201,72 @@ Use this matrix to select the correct UI component pattern for each interaction 
 
 | Component | Scope & Lifetime | Screen Placement | Trigger Context | Example Usage |
 | :--- | :--- | :--- | :--- | :--- |
-| **`Toast`** | **Transient / Auto-Dismiss**<br>• `7000ms` for `success` & `info`<br>• `Persistent` for `danger` & `warning` | Viewport Bottom-Right (`z-[9999]`) via React Portal (`document.body`) | Post-action confirmations spanning redirects, asynchronous job status changes, global success receipts. | • *"Study Intake Submitted — Assigned ID: JAXIS-202608-1877"*<br>• *"Quotation Proposal Approved"*<br>• *"Syntax Verification Package Ready for Download"* |
+| **`Toast`** | **Transient / Auto-Dismiss**<br>• `5000ms–7000ms` countdown bar<br>• Pause on hover | Viewport Bottom-Right (`z-[9999]`) via React Portal (`document.body`) | Post-action confirmations, 1-click clipboard copies, file upload/delete/download events, async server mutations. | • *"Study Submitted — Assigned ID: JAXIS-202608-1877"*<br>• *"Copied to Clipboard"*<br>• *"Information Request Sent"* |
 | **`Alert`** | **Persistent In-Page Banner**<br>Remains until condition resolves or user dismisses. | In-flow directly above tables, forms, or headers. | Blocking prerequisite warnings, critical workflow notices, form validation summaries. | • *"Profile Verification Required before submitting study intake"*<br>• *"Escrow Payment Locked pending QA verification seal"*<br>• Form submission payload errors. |
 | **Field Error** | **Instant Micro-Validation**<br>Appears below invalid control. | Under specific `FormInput` / `FormTextarea` / `FormSelect`. | Field-level Zod schema validation errors. | • *"Research Title must be at least 3 characters"*<br>• *"Target deadline must be in the future"* |
+
+#### The 4 Semantic Toast Variants
+
+| Variant | Accent Color | Border & Gradient Surface | Icon (`@tabler/icons-react`) | Primary Use Cases |
+| :--- | :--- | :--- | :--- | :--- |
+| `info` | Analytical Sky (`#38BDF8`) | `bg-gradient-to-r from-sky-950/90 to-[#010D1F] border-sky-500/35` | `<IconInfoCircle size={18} stroke={2} />` | Clipboard copies, download starts, non-destructive notifications, session events. |
+| `success` | Verification Emerald (`#10B981`) | `bg-gradient-to-r from-emerald-950/90 to-[#010D1F] border-emerald-500/35` | `<IconCircleCheck size={18} stroke={2} />` | Form saves, project creation, profile updates, file attachments, QA approvals, status advancements. |
+| `warning` | Enterprise Amber (`#CC6600` / `#FBBF24`) | `bg-gradient-to-r from-amber-950/90 to-[#010D1F] border-amber-500/35` | `<IconAlertTriangle size={18} stroke={2} />` | Missing information requests sent, staff suspensions, revision requests returned to statistician. |
+| `danger` | Crimson Alert (`#EF4444` / `#F87171`) | `bg-gradient-to-r from-rose-950/90 to-[#010D1F] border-rose-500/35` | `<IconAlertCircle size={18} stroke={2} />` | Action failures, network errors, file size >15MB limit exceeded, invalid file formats, account termination. |
+
+#### The 5 Golden Rules of Toasts (Mandatory for All Future Desks)
+
+1. **Rule 1: Asynchronous Mutation Rule (Save / Submit / Delete)**
+   - Every user-initiated Server Action (`create*`, `update*`, `delete*`, `resolve*`, `transition*`) MUST trigger a Toast upon completion.
+   - On `res.success === true` → Fire `success` or `warning` (if request/hold) Toast.
+   - On `res.success === false` → Fire `danger` Toast with `res.error.message`.
+
+2. **Rule 2: 1-Click Clipboard Copy Rule**
+   - Every copy button across tables, headers, and modals (e.g. Study ID, Credentials, Tokens) MUST trigger an `info` Toast (`"Copied to Clipboard"`).
+
+3. **Rule 3: File System & Deliverables Rule**
+   - **Upload Finished:** Fire `success` Toast (`"File Uploaded Successfully"`).
+   - **Upload Rejected (Size / Format):** Fire `danger` Toast (`"File Limit Exceeded"` or `"Unsupported File Format"`).
+   - **File Removed:** Fire `info` Toast (`"File Removed"`).
+   - **Download Initiated:** Fire `info` Toast (`"Download Started"`).
+
+4. **Rule 4: Zero Emojis Policy**
+   - Never use emojis in `message` or `description`. Icons are handled automatically by the `Toast` component using `@tabler/icons-react`.
+
+5. **Rule 5: Concise & Meaningful Copy**
+   - `message`: 2 to 4 words, Title Case (e.g. `Profile Saved Successfully`, `Information Request Sent`).
+   - `description`: 1 concise sentence explaining what changed and what happens next.
 
 #### `Toast` Usage Pattern & Features:
 ```tsx
 import { Toast } from "@repo/ui";
 
-// Inside page or dashboard component:
-{toast && (
+const [toastMessage, setToastMessage] = useState<{
+  message: string;
+  description?: string;
+  variant: "info" | "success" | "warning" | "danger";
+} | null>(null);
+
+// Triggering Toast:
+setToastMessage({
+  message: "Study Submitted for Review",
+  description: `Assigned Study ID: ${assignedId}. Your project is now queued for feasibility triage.`,
+  variant: "success",
+});
+
+// Rendering in JSX:
+{toastMessage && (
   <Toast
-    variant={toast.variant} // "success" | "danger" | "warning" | "info"
-    message={toast.message}
-    description={toast.description}
-    onClose={() => setToast(null)}
+    message={toastMessage.message}
+    description={toastMessage.description}
+    variant={toastMessage.variant}
+    onClose={() => setToastMessage(null)}
   />
 )}
 ```
-- **Sticky React Portal**: Renders directly to `document.body` — stays pinned to viewport during scrolling, unaffected by parent CSS animation wrappers.
-- **7-Second Auto-Dismiss**: Runs a 60fps hardware-accelerated bottom countdown line. When the countdown completes, it triggers a smooth exit transition before unmounting.
-- **Hover to Pause**: Pauses the timer whenever the user hovers over the toast (e.g. to read or copy an ID).
+- **Sticky React Portal**: Renders directly to `document.body` at `z-[9999]` — stays pinned to viewport during scrolling, unaffected by parent CSS animation wrappers.
+- **Hardware-Accelerated Countdown**: 60fps bottom countdown line with smooth exit transition.
+- **Hover to Pause**: Automatically pauses the timer whenever the user hovers over the toast.
 - **Responsive Inset**: `fixed bottom-4 left-4 right-4` on mobile devices; `sm:bottom-6 sm:right-6 sm:left-auto` on tablet/desktop.
 
 ---

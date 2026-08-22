@@ -9,7 +9,6 @@ import {
   FormInput,
   FormTextarea,
   Button,
-  Alert,
   FormFooter,
   Stepper,
   Toast,
@@ -88,15 +87,12 @@ export default function NewProjectIntakePage() {
   // Step 2: Uploaded Files & Uploading Progress
   const [filesList, setFilesList] = useState<UploadedFileItem[]>([]);
   const [uploadingState, setUploadingState] = useState<Partial<Record<FileCategory, UploadProgressState | null>>>({});
-  const [fileError, setFileError] = useState<string | null>(null);
 
   // Step 3: Integrity declaration
   const [integrityAgreed, setIntegrityAgreed] = useState(false);
 
   // General errors & submission feedback
-  const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     variant: "success" | "danger" | "warning" | "info";
     message: string;
@@ -129,8 +125,6 @@ export default function NewProjectIntakePage() {
 
   // Core File Processing Logic with animated progress bar
   const processFile = (file: File, category: FileCategory) => {
-    setFileError(null);
-
     // Check MIME type or extension
     const isValidMime =
       ALLOWED_MIMES.includes(file.type) ||
@@ -139,12 +133,16 @@ export default function NewProjectIntakePage() {
       file.name.endsWith(".docx") ||
       file.name.endsWith(".pdf") ||
       file.name.endsWith(".doc") ||
+      file.name.endsWith(".sav") ||
       file.name.endsWith(".xls");
 
     if (!isValidMime) {
-      setFileError(
-        `Invalid file type "${file.name}". Allowed formats: PDF, DOCX, XLSX, CSV.`
-      );
+      const msg = `Invalid file format "${file.name}". Allowed formats: PDF, DOCX, XLSX, CSV, SPSS (.sav).`;
+      setToast({
+        variant: "danger",
+        message: "Unsupported File Format",
+        description: msg,
+      });
       return;
     }
 
@@ -152,9 +150,12 @@ export default function NewProjectIntakePage() {
     const maxSize =
       category === "DATASET" ? MAX_DATASET_SIZE : MAX_DOC_SIZE;
     if (file.size > maxSize) {
-      setFileError(
-        `File "${file.name}" exceeds maximum allowed size of ${formatBytes(maxSize)}.`
-      );
+      const msg = `File "${file.name}" exceeds maximum allowed size of ${formatBytes(maxSize)}.`;
+      setToast({
+        variant: "danger",
+        message: "File Limit Exceeded",
+        description: msg,
+      });
       return;
     }
 
@@ -204,6 +205,12 @@ export default function NewProjectIntakePage() {
             ...prev,
             [category]: null,
           }));
+
+          setToast({
+            variant: "success",
+            message: "File Uploaded Successfully",
+            description: `"${file.name}" is attached to your submission.`,
+          });
         }, 320);
       } else {
         setUploadingState((prev) => ({
@@ -266,13 +273,20 @@ export default function NewProjectIntakePage() {
   };
 
   const removeFile = (category: FileCategory) => {
+    const fileToRemove = filesList.find((f) => f.category === category);
     setFilesList((prev) => prev.filter((f) => f.category !== category));
+    if (fileToRemove) {
+      setToast({
+        variant: "info",
+        message: "File Removed",
+        description: `"${fileToRemove.name}" was detached.`,
+      });
+    }
   };
 
   // Step 1 Validation
   const handleProceedToStep2 = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
     setFieldErrors({});
 
     const errors: Record<string, string[]> = {};
@@ -298,6 +312,11 @@ export default function NewProjectIntakePage() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      setToast({
+        variant: "danger",
+        message: "Form Validation Incomplete",
+        description: "Please fill out all required research fields before proceeding.",
+      });
       return;
     }
 
@@ -306,18 +325,23 @@ export default function NewProjectIntakePage() {
 
   // Step 2 Proceed
   const handleProceedToStep3 = () => {
-    setFormError(null);
-    setFileError(null);
-
     const hasResearchDoc = filesList.some((f) => f.category === "RESEARCH_DOCUMENT");
     const hasDataset = filesList.some((f) => f.category === "DATASET");
 
     if (!hasResearchDoc) {
-      setFileError("Please attach your Draft Chapters (1-3) to proceed.");
+      setToast({
+        variant: "warning",
+        message: "Missing Manuscript Draft",
+        description: "Please attach your Draft Manuscript (Chapters 1–3) to proceed.",
+      });
       return;
     }
     if (!hasDataset) {
-      setFileError("Please attach your Raw Dataset file to proceed.");
+      setToast({
+        variant: "warning",
+        message: "Missing Dataset File",
+        description: "Please attach your Data File (Excel / CSV / SPSS) to proceed.",
+      });
       return;
     }
 
@@ -326,12 +350,8 @@ export default function NewProjectIntakePage() {
 
   // Step 3 Final Submission
   const handleFinalSubmit = () => {
-    setFormError(null);
-    setSuccessMessage(null);
-
     if (!integrityAgreed) {
       const covenantMsg = "You must agree to the academic authorship & confidentiality statement before submitting.";
-      setFormError(covenantMsg);
       setToast({
         variant: "warning",
         message: "Academic Covenant Required",
@@ -361,7 +381,6 @@ export default function NewProjectIntakePage() {
 
       if (!res.success) {
         const errorMsg = res.error.message || "Failed to submit project intake. Please review form entries.";
-        setFormError(errorMsg);
         if (res.error.fieldErrors) {
           setFieldErrors(res.error.fieldErrors);
         }
@@ -452,10 +471,6 @@ export default function NewProjectIntakePage() {
           },
         ]}
       />
-
-      {formError && <Alert variant="danger">{formError}</Alert>}
-      {fileError && <Alert variant="danger">{fileError}</Alert>}
-      {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
       {/* ── STEP 1: Research Information ── */}
       {currentStep === 1 && (
@@ -613,10 +628,10 @@ export default function NewProjectIntakePage() {
 
                 <div className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    Draft Chapters (1-3)
+                    Draft Manuscript (Chapters 1–3)
                   </h3>
                   <p className="text-xs text-white/50 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.5 }}>
-                    Introduction, Literature Review, and Methodology framework.
+                    Your thesis proposal, introduction, or research methodology paper.
                   </p>
                 </div>
               </div>
@@ -778,10 +793,10 @@ export default function NewProjectIntakePage() {
 
                 <div className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    Raw Dataset File
+                    Data File (Excel / CSV / SPSS)
                   </h3>
                   <p className="text-xs text-white/50 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.5 }}>
-                    Tabulated respondent survey data or experiment records.
+                    Your survey answers spreadsheet, data table, or experiment records.
                   </p>
                 </div>
               </div>
@@ -943,10 +958,10 @@ export default function NewProjectIntakePage() {
 
                 <div className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    Survey Instrument
+                    Survey Questionnaire / Tool (Optional)
                   </h3>
                   <p className="text-xs text-white/50 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.5 }}>
-                    Likert-scale questionnaire, interview guide, or rating matrix.
+                    Copy of your survey questionnaire, interview guide, or rating scale.
                   </p>
                 </div>
               </div>

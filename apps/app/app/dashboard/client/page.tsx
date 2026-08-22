@@ -70,6 +70,11 @@ function ClientDashboardContent() {
     return projects.filter((p) => p.masterStatus === "AWAITING_INFORMATION");
   }, [projects]);
 
+  // Filter projects with active quotation awaiting client response
+  const pendingQuoteProjects = useMemo(() => {
+    return projects.filter((p) => p.masterStatus === "QUOTE_SENT");
+  }, [projects]);
+
   // KPI Calculations
   const kpis = useMemo(() => {
     const total = projects.length;
@@ -93,8 +98,8 @@ function ClientDashboardContent() {
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full animate-content-fade">
       <PageHeader
-        title="Client Research Portal & Active Studies"
-        description="Submit project intake questionnaires, track analysis progress, inspect QA verification seals, and download deliverable packages."
+        title="My Research Studies"
+        description="Submit new research requests, track real-time statistical analysis progress, and download completed defense-ready tables and write-ups."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Client Portal" },
@@ -102,11 +107,53 @@ function ClientDashboardContent() {
         actions={
           <Link href="/dashboard/client/projects/new">
             <Button variant="primary" size="sm" className="font-bold tracking-wider">
-              + NEW PROJECT INTAKE
+              + SUBMIT NEW STUDY REQUEST
             </Button>
           </Link>
         }
       />
+
+      {/* ── High-Priority Pending Quotation Alert Banner ── */}
+      {pendingQuoteProjects.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {pendingQuoteProjects.map((p) => (
+            <Card
+              key={p.id}
+              className="p-5 border border-amber-500/40 bg-amber-500/[0.08] shadow-xl flex flex-col gap-3"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
+                    ACTION REQUIRED: Commercial Quotation Ready for Review
+                  </span>
+                  <span className="text-xs font-mono font-bold text-white bg-amber-500/20 px-2 py-0.5 rounded-[2px]">
+                    {p.intakeId}
+                  </span>
+                </div>
+                <Link href={`/dashboard/client/projects/${p.id}/quote`}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="py-1.5 px-3.5 h-auto font-mono text-xs font-bold tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300]"
+                  >
+                    REVIEW PROPOSAL &amp; SOW →
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-semibold text-white font-sans">
+                  {p.researchTitle}
+                </p>
+                <div className="text-xs text-white/70 font-sans mt-0.5">
+                  Your customized statistical scope and deliverables breakdown are ready. Accept your quote to lock your assigned statistician.
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* ── High-Priority Missing Information Alert Banner ── */}
       {awaitingInfoProjects.length > 0 && (
@@ -114,13 +161,13 @@ function ClientDashboardContent() {
           {awaitingInfoProjects.map((p) => (
             <Card
               key={p.id}
-              className="p-5 border-l-4 border-l-amber-500 bg-amber-500/[0.06] border-white/10 shadow-xl flex flex-col gap-3"
+              className="p-5 border border-amber-500/30 bg-amber-500/[0.06] shadow-xl flex flex-col gap-3"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
                   <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
-                    ACTION REQUIRED: Missing Information Requested
+                    ACTION REQUIRED: Additional Files or Information Needed
                   </span>
                   <span className="text-xs font-mono font-bold text-white bg-amber-500/20 px-2 py-0.5 rounded-[2px]">
                     {p.intakeId}
@@ -132,7 +179,7 @@ function ClientDashboardContent() {
                     size="sm"
                     className="py-1.5 px-3.5 h-auto font-mono text-xs font-bold tracking-wider"
                   >
-                    RESOLVE &amp; ATTACH FILES →
+                    VIEW &amp; UPLOAD FILES →
                   </Button>
                 </Link>
               </div>
@@ -146,7 +193,7 @@ function ClientDashboardContent() {
                   style={{ padding: "0.875rem 1rem" }}
                 >
                   <strong className="text-amber-300 font-mono text-[0.6875rem] uppercase block mb-1">
-                    Admin Request Note:
+                    Note from Statistical Team:
                   </strong>
                   &ldquo;{p.missingInfoReason || "Please attach the requested dataset or questionnaire clarification."}&rdquo;
                 </div>
@@ -271,8 +318,8 @@ function ClientDashboardContent() {
                           {study.intakeId}
                         </span>
                       </td>
-                      <td>
-                        <div className="flex flex-col gap-1 pr-2">
+                      <td className="max-w-[440px] min-w-0">
+                        <div className="flex flex-col gap-1 pr-2 min-w-0">
                           <Link
                             href={`/dashboard/client/projects/${study.id}`}
                             className="text-xs font-semibold text-white group-hover:text-sky-300 transition-colors line-clamp-2 leading-snug"
@@ -282,7 +329,10 @@ function ClientDashboardContent() {
                           </Link>
                           {study.missingInfoReason &&
                             study.masterStatus === "AWAITING_INFORMATION" && (
-                              <span className="text-[0.6875rem] text-amber-300/90 font-mono line-clamp-1 italic">
+                              <span
+                                className="text-[0.6875rem] text-amber-300/90 font-mono truncate italic block min-w-0"
+                                title={`Action Required: ${study.missingInfoReason}`}
+                              >
                                 Action Required: {study.missingInfoReason}
                               </span>
                             )}

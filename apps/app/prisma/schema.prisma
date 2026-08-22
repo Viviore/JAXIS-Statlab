@@ -227,8 +227,9 @@ model Project {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  client User          @relation("ClientProjects", fields: [clientId], references: [id])
-  files  ProjectFile[]
+  client     User          @relation("ClientProjects", fields: [clientId], references: [id])
+  files      ProjectFile[]
+  quotations Quotation[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -250,5 +251,81 @@ model ProjectFile {
 
   @@index([projectId])
   @@map("project_files")
+}
+
+enum PackageName {
+  JX_01_DATACHECK
+  JX_02_START
+  JX_03_CORE
+  JX_04_ADVANCED
+}
+
+enum AddOnName {
+  DEFENSELAB
+  RUSH
+  EXPRESS
+  EMERGENCY
+}
+
+enum QuotationStatus {
+  DRAFT
+  QUOTE_SENT
+  CLIENT_APPROVED
+  QUOTE_DECLINED
+  QUOTE_EXPIRED
+  SUPERSEDED
+}
+
+enum LineItemType {
+  PACKAGE
+  ADDON
+}
+
+model Quotation {
+  id                  String          @id @default(cuid())
+  projectId           String
+  packageName         PackageName
+  basePrice           Decimal         @db.Decimal(10, 2)
+  totalAmount         Decimal         @db.Decimal(10, 2)
+  downpaymentRequired Decimal         @db.Decimal(10, 2)
+  expiresAt           DateTime
+  status              QuotationStatus @default(DRAFT)
+  notes               String?
+  createdBy           String          // Admin userId
+  respondedAt         DateTime?
+  declineReason       String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  project   Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  lineItems QuotationLineItem[]
+
+  @@index([projectId])
+  @@index([status])
+  @@map("quotations")
+}
+
+model QuotationLineItem {
+  id          String       @id @default(cuid())
+  quotationId String
+  itemType    LineItemType
+  itemName    String       // PackageName or AddOnName as string
+  description String?
+  amount      Decimal      @db.Decimal(10, 2)
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+  @@map("quotation_line_items")
+}
+
+model PackagePriceConfig {
+  id          Int         @id @default(autoincrement())
+  packageName PackageName @unique
+  minPrice    Decimal     @db.Decimal(10, 2)
+  maxPrice    Decimal?    @db.Decimal(10, 2) // null = no upper limit
+  isUpfront   Boolean     @default(false)    // true for JX-01, JX-02
+
+  @@map("package_price_configs")
 }
 

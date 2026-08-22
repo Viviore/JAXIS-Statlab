@@ -618,64 +618,64 @@
 
 ### Task 1 — Database Schema & Prisma Models
 **Objective:** Add `Quotation`, `QuotationLineItem`, `PackagePriceConfig`, and associated enums to `prisma/schema.prisma`.
-- [ ] Add `PackageName` enum (`JX_01_DATACHECK`, `JX_02_START`, `JX_03_CORE`, `JX_04_ADVANCED`)
-- [ ] Add `AddOnName` enum (`DEFENSELAB`, `RUSH`, `EXPRESS`, `EMERGENCY`)
-- [ ] Add `QuotationStatus` enum (`DRAFT`, `QUOTE_SENT`, `CLIENT_APPROVED`, `QUOTE_DECLINED`, `QUOTE_EXPIRED`, `SUPERSEDED`)
-- [ ] Add `LineItemType` enum (`PACKAGE`, `ADDON`)
-- [ ] Add `Quotation` model with relation to `Project` and `QuotationLineItem`
-- [ ] Add `QuotationLineItem` model with cascade delete
-- [ ] Add `PackagePriceConfig` model for package price floor rules
-- [ ] Add seed data in `prisma/seed.ts` (pricing configurations and initial test quote)
-- [ ] Run `npx prisma db push` and `npx prisma generate`
+- [x] Add `PackageName` enum (`JX_01_DATACHECK`, `JX_02_START`, `JX_03_CORE`, `JX_04_ADVANCED`)
+- [x] Add `AddOnName` enum (`DEFENSELAB`, `RUSH`, `EXPRESS`, `EMERGENCY`)
+- [x] Add `QuotationStatus` enum (`DRAFT`, `QUOTE_SENT`, `CLIENT_APPROVED`, `QUOTE_DECLINED`, `QUOTE_EXPIRED`, `SUPERSEDED`)
+- [x] Add `LineItemType` enum (`PACKAGE`, `ADDON`)
+- [x] Add `Quotation` model with relation to `Project` and `QuotationLineItem`
+- [x] Add `QuotationLineItem` model with cascade delete
+- [x] Add `PackagePriceConfig` model for package price floor rules
+- [x] Add seed data in `prisma/seed.ts` (pricing configurations and initial test quote)
+- [x] Run `npx prisma db push` and `npx prisma generate`
 
 ### Task 2 — Pricing Guardrails & Core Business Rules
 **Objective:** Implement pricing calculations and security constraints in `src/lib/pricing-rules.ts`.
-- [ ] Enforce `RULE_QUO_01` — only ADMIN and CEO roles may create or modify quotations (Statisticians → 403)
-- [ ] Enforce `RULE_QUO_02` — 100% upfront downpayment required for `JX_01_DATACHECK` and `JX_02_START` (`downpaymentRequired = totalAmount`)
-- [ ] Implement package minimum price floor validation (reject bids below package minimums)
-- [ ] Implement add-on restriction check (add-ons cannot be added if project `status >= ACTIVE`)
-- [ ] Implement 3-day quotation expiry computation (`expiresAt = now + 3 days`)
+- [x] Enforce `RULE_QUO_01` — only ADMIN and CEO roles may create or modify quotations (Statisticians → 403)
+- [x] Enforce `RULE_QUO_02` — 100% upfront downpayment required for `JX_01_DATACHECK` and `JX_02_START` (`downpaymentRequired = totalAmount`)
+- [x] Implement package minimum price floor validation (reject bids below package minimums)
+- [x] Implement add-on restriction check (add-ons cannot be added if project `status >= ACTIVE`)
+- [x] Implement 3-day quotation expiry computation (`expiresAt = now + 3 days`)
 
 ### Task 3 — Validation Schemas & Server Actions
 **Objective:** Create Zod schemas and server actions with `RULE_PERF` compliance.
-- [ ] Create `CreateQuotationSchema`, `UpdateQuotationSchema`, `IssueQuotationSchema`, and `RespondQuotationSchema` in `src/features/quotations/schemas.ts`
-- [ ] Create `createQuotation` action (Admin creates draft proposal in `UNDER_EVALUATION`)
-- [ ] Create `updateQuotation` action (Modify draft quote prior to sending)
-- [ ] Create `issueQuotation` action (Transitions quotation to `QUOTE_SENT`, updates project to `QUOTE_SENT`)
-- [ ] Create `respondQuotation` action (Client accepts → `CLIENT_APPROVED` / project `SOW_PENDING`; or declines → `QUOTE_DECLINED`)
-- [ ] Create `getQuotationByProject` action with role-based selective projections (`RULE_PERF_01`)
-- [ ] Ensure all multi-model operations use atomic `prisma.$transaction` (`RULE_PERF_03`)
+- [x] Create `CreateQuotationSchema`, `UpdateQuotationSchema`, `IssueQuotationSchema`, and `RespondQuotationSchema` in `src/features/quotations/schemas.ts`
+- [x] Create `createQuotation` action (Admin creates draft proposal in `UNDER_EVALUATION`)
+- [x] Create `updateQuotation` action (Modify draft quote prior to sending)
+- [x] Create `issueQuotation` action (Transitions quotation to `QUOTE_SENT`, updates project to `QUOTE_SENT`)
+- [x] Create `respondQuotation` action (Client accepts → `CLIENT_APPROVED` / project `SOW_PENDING`; or declines → `QUOTE_DECLINED`)
+- [x] Create `getQuotationByProject` action with role-based selective projections (`RULE_PERF_01`)
+- [x] Ensure all multi-model operations use atomic `prisma.$transaction` (`RULE_PERF_03`)
 
 ### Task 4 — Admin Commercial Quotation Builder UI
 **Objective:** Build intuitive commercial proposal builder for Admin and CEO.
-- [ ] Build `/dashboard/admin/quotations` and integration drawer on `/dashboard/admin/projects/[id]`
-- [ ] Package selector with dynamic price range guidance and description cards
-- [ ] Add-on checkboxes with real-time total and downpayment recalculation
-- [ ] Notes and custom terms textarea
-- [ ] "Save Draft" and "Issue Commercial Quote to Client" action controls with confirmation modal
+- [x] Build `/dashboard/admin/quotations` and integration drawer on `/dashboard/admin/projects/[id]`
+- [x] Package selector with dynamic price range guidance and description cards
+- [x] Add-on checkboxes with real-time total and downpayment recalculation
+- [x] Notes and custom terms textarea
+- [x] "Save Draft" and "Issue Commercial Quote to Client" action controls with confirmation modal
 
 ### Task 5 — Client Commercial Proposal Review UI
 **Objective:** Build client quote inspection and decision interface.
-- [ ] Build `/dashboard/client/projects/[id]/quote` review view
-- [ ] Itemized pricing breakdown table with base package and optional add-ons
-- [ ] Milestone payment schedule card (downpayment amount vs deliverable release balance)
-- [ ] 3-day quotation validity countdown timer and expiry notice
-- [ ] "Accept Proposal & Proceed to SOW" and "Decline Proposal" decision buttons with feedback prompt
+- [x] Build `/dashboard/client/projects/[id]/quote` review view
+- [x] Itemized pricing breakdown table with base package and optional add-ons
+- [x] Milestone payment schedule card (downpayment amount vs deliverable release balance)
+- [x] 3-day quotation validity countdown timer and expiry notice
+- [x] "Accept Proposal & Proceed to SOW" and "Decline Proposal" decision buttons with feedback prompt
 
 ### Task 6 — Integration, Navigation & State Machine Wiring
 **Objective:** Connect quotation flow seamlessly into project lifecycles.
-- [ ] Update Admin intake and project views with direct link to Quote Builder when in `UNDER_EVALUATION`
-- [ ] Update Client project timeline and dashboard to highlight pending quote responses
-- [ ] Update Sidebar active/disabled badge indicators if appropriate
-- [ ] Wire email notification trigger stubs for Quote Issued, Quote Accepted, and Quote Declined
+- [x] Update Admin intake and project views with direct link to Quote Builder when in `UNDER_EVALUATION`
+- [x] Update Client project timeline and dashboard to highlight pending quote responses
+- [x] Update Sidebar active/disabled badge indicators if appropriate
+- [x] Wire email notification trigger stubs for Quote Issued, Quote Accepted, and Quote Declined
 
 ### Task 7 — Quality Gate & Verification
 **Objective:** Run monorepo validation scripts and generate verification report.
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings
-- [ ] `npm run build` → clean production build
-- [ ] Generate `docs/modules/JAXIS_05-verification_report.md`
-- [ ] Mark Module 05 completed
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] `npm run build` → clean production build
+- [x] Generate `docs/modules/JAXIS_05-verification_report.md`
+- [x] Mark Module 05 completed
 
 ---
 
@@ -688,8 +688,8 @@
 | `02` | `02-staff` — Expert Provisioning & Staff Management   | ✅ Completed                     |
 | `03` | `03-client-profile` — Client Profile & Account        | ✅ Completed                     |
 | `04` | `04-intake` — Project Intake & Submission             | ✅ Completed                     |
-| `05` | `05-quotation` — Quotation & Pricing                  | 🔄 Active / In Progress          |
-| `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Blocked — awaiting `05`       |
+| `05` | `05-quotation` — Quotation & Pricing                  | ✅ Completed                     |
+| `06` | `06-sow` — SOW Generation & Signing                   | ⏳ Ready to Start                |
 | `07` | `07-payments` — Payment & Installments                | ⏳ Blocked — awaiting `06`       |
 | `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Blocked — awaiting `07`, `02` |
 | `09` | `09-messaging` — Messaging & Communication Firewall   | ⏳ Blocked — awaiting `04`, `08` |

@@ -2,7 +2,8 @@
 
 import React, { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PageHeader, Card, FormInput, Button, FormSelect, Alert, FormFooter } from "@repo/ui";
+import Link from "next/link";
+import { PageHeader, Card, FormInput, Button, FormSelect, FormFooter, Toast } from "@repo/ui";
 import { upsertClientProfile, getClientProfile } from "@/features/client-profile/actions";
 import { ClientProfileFormData } from "@/features/client-profile/schemas";
 
@@ -67,9 +68,12 @@ function formatPhilippinePhoneNumber(value: string): string {
 export default function ClientProfilePage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
 
   const [formData, setFormData] = useState<ClientProfileFormData>({
     institutionSchool: "",
@@ -95,21 +99,29 @@ export default function ClientProfilePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
     setFieldErrors({});
-    setSuccessMsg(null);
 
     startTransition(async () => {
       const res = await upsertClientProfile(formData);
       if (!res.success) {
-        setFormError(res.error.message);
+        const errorText = res.error.message || "Failed to update profile.";
         if (res.error.fieldErrors) {
           setFieldErrors(res.error.fieldErrors);
         }
+        setToastMessage({
+          message: "Profile Update Failed",
+          description: errorText,
+          variant: "danger",
+        });
         return;
       }
 
-      setSuccessMsg("Profile saved successfully.");
+      setToastMessage({
+        message: "Profile Saved Successfully",
+        description: "Your institutional affiliation and contact details have been updated.",
+        variant: "success",
+      });
+
       // Redirect to main client dashboard after a short delay
       setTimeout(() => {
         router.push("/dashboard/client");
@@ -128,9 +140,6 @@ export default function ClientProfilePage() {
           { label: "Profile" },
         ]}
       />
-
-      {formError && <Alert variant="danger">{formError}</Alert>}
-      {successMsg && <Alert variant="success">{successMsg}</Alert>}
 
       <Card className="p-6 md:p-8">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -188,19 +197,33 @@ export default function ClientProfilePage() {
             />
           </div>
 
-          <FormFooter className="mt-6 pt-6">
+          <FormFooter className="mt-8 pt-6">
+            <Link href="/dashboard/client">
+              <Button type="button" variant="ghost" size="sm" disabled={isPending}>
+                Cancel
+              </Button>
+            </Link>
             <Button
               type="submit"
               variant="primary"
-              size="lg"
+              size="sm"
               loading={isPending}
-              className="px-8 font-bold tracking-wider"
+              className="w-full sm:w-auto font-bold tracking-wider"
             >
               SAVE PROFILE →
             </Button>
           </FormFooter>
         </form>
       </Card>
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </div>
   );
 }
