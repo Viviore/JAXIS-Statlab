@@ -20,6 +20,11 @@ import {
   requestMissingInfo,
 } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import {
+  getFileMeta,
+  formatFileCategory,
+  triggerFileDownload,
+} from "@/lib/file-utils";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 export default function AdminIntakeTriagePage() {
@@ -646,9 +651,14 @@ export default function AdminIntakeTriagePage() {
 
             {/* Uploaded Artifacts & Files */}
             <div className="flex flex-col gap-2">
-              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
-                Submitted Artifacts ({selectedStudyForInspect.files.length})
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                  Submitted Artifacts ({selectedStudyForInspect.files.length})
+                </span>
+                <span className="font-mono text-[0.625rem] text-emerald-400/80 uppercase">
+                  ✓ Cloud Encrypted
+                </span>
+              </div>
               {selectedStudyForInspect.files.length === 0 ? (
                 <div
                   className="text-xs text-white/40 italic p-4 bg-white/[0.02] border border-white/10 rounded-[3px]"
@@ -657,26 +667,53 @@ export default function AdminIntakeTriagePage() {
                   No files or dataset packages attached to this intake record.
                 </div>
               ) : (
-                <div className="space-y-2 max-h-52 overflow-y-auto">
-                  {selectedStudyForInspect.files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="rounded-[2px] bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-4"
-                      style={{ padding: "0.75rem 1rem" }}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="font-mono text-[0.6875rem] uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20 whitespace-nowrap">
-                          {file.fileCategory.replace(/_/g, " ")}
-                        </span>
-                        <span className="text-xs text-white truncate font-medium">
-                          {file.fileName}
-                        </span>
+                <div className="space-y-2.5 max-h-64 overflow-y-auto">
+                  {selectedStudyForInspect.files.map((file) => {
+                    const meta = getFileMeta(file.fileName, file.fileType);
+                    const category = formatFileCategory(file.fileCategory);
+                    return (
+                      <div
+                        key={file.id}
+                        className="rounded-[2px] bg-[#011C38] border border-white/[0.08] hover:border-white/20 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-4 transition-colors"
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div
+                            className={`h-9 w-9 rounded-[2px] ${meta.theme.bg} ${meta.theme.border} border flex flex-col items-center justify-center flex-shrink-0`}
+                          >
+                            <span className={`text-[0.625rem] font-mono font-bold uppercase ${meta.theme.text}`}>
+                              {meta.ext}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-white truncate max-w-[200px] sm:max-w-xs md:max-w-sm">
+                                {file.fileName}
+                              </span>
+                              <span
+                                className={`text-[0.5625rem] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded-[2px] border ${category.badgeClass}`}
+                              >
+                                {category.label}
+                              </span>
+                            </div>
+                            <span className="text-[0.688rem] text-white/40 font-mono">
+                              {meta.friendlyType} · {new Date(file.uploadedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => triggerFileDownload(file.filePath, file.fileName)}
+                          className="px-3.5 py-1.5 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                        >
+                          <svg className="w-3 h-3 text-[#FFA040]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          <span>DOWNLOAD</span>
+                        </button>
                       </div>
-                      <span className="font-mono text-[0.65rem] text-white/40 whitespace-nowrap">
-                        {new Date(file.uploadedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

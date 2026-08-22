@@ -2,7 +2,7 @@
   {
     "id": "proj_sample_001",
     "intakeId": "JAXIS-202608-0001",
-    "clientId": "usr_dev_admin_001",
+    "clientId": "usr_dev_client_001",
     "researchTitle": "Impact of Study Habits on Academic Performance Among State University Students",
     "researchQuestions": "Does study frequency significantly affect GPA? Is there a gender difference?",
     "researchObjectives": "Determine relationship between study habits and GPA; identify moderating variables.",
@@ -10,20 +10,20 @@
     "chapters13": "https://r2.jaxis.dev/sample-chapters.docx",
     "questionnaire": "https://r2.jaxis.dev/sample-survey.pdf",
     "deadlineRequested": "2026-09-04T12:42:18.021Z",
-    "masterStatus": "AWAITING_INFORMATION",
+    "masterStatus": "UNDER_EVALUATION",
     "packageName": "ADVANCED_STATISTICS",
-    "missingInfoReason": "Request Test",
+    "missingInfoReason": null,
     "deliveredAt": null,
     "filesPurgeAt": null,
     "filesPurged": false,
     "hasActiveDispute": false,
     "hasPendingRefund": false,
     "createdAt": "2026-08-21T12:42:18.021Z",
-    "updatedAt": "2026-08-21T14:23:30.714Z",
+    "updatedAt": "2026-08-21T14:46:55.502Z",
     "client": {
-      "id": "usr_dev_admin_001",
+      "id": "usr_dev_client_001",
       "fullName": "Client User",
-      "email": "admin@jaxis.dev",
+      "email": "client@jaxis.dev",
       "clientProfile": {
         "institutionSchool": "University of the Philippines Diliman",
         "academicProgram": "MS in Data Science",
@@ -33,22 +33,22 @@
     },
     "files": [
       {
-        "id": "file_001",
+        "id": "file_1787323592368",
         "projectId": "proj_sample_001",
-        "fileName": "research_proposal_draft.docx",
-        "filePath": "uploads/research_proposal_draft.docx",
+        "fileName": "Standard Operating Procedure (SOP)_ Production-Grade AI Engineering.docx",
+        "filePath": "uploads/Standard Operating Procedure (SOP)_ Production-Grade AI Engineering.docx",
         "fileType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "fileCategory": "RESEARCH_DOCUMENT",
-        "uploadedAt": "2026-08-21T12:42:18.021Z"
+        "fileCategory": "OTHER_ATTACHMENT",
+        "uploadedAt": "2026-08-21T14:46:32.368Z"
       },
       {
-        "id": "file_002",
+        "id": "file_1787323670199",
         "projectId": "proj_sample_001",
-        "fileName": "raw_survey_responses.xlsx",
-        "filePath": "uploads/raw_survey_responses.xlsx",
-        "fileType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "fileCategory": "DATASET",
-        "uploadedAt": "2026-08-21T12:42:18.021Z"
+        "fileName": "Standard Operating Procedure (SOP)_ Production-Grade AI Engineering.docx",
+        "filePath": "uploads/Standard Operating Procedure (SOP)_ Production-Grade AI Engineering.docx",
+        "fileType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-21T14:47:50.199Z"
       }
     ]
   }

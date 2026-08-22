@@ -10,9 +10,15 @@ import {
   Alert,
   Modal,
 } from "@repo/ui";
-import { getProjectById, deleteProjectFile, resolveMissingInfo } from "@/features/projects/actions";
+import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import {
+  getFileMeta,
+  formatFileCategory,
+  triggerFileDownload,
+} from "@/lib/file-utils";
 import type { ProjectDetailItem, ProjectFileItem } from "@/features/projects/schemas";
+import type { FileCategory } from "@prisma/client";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -25,6 +31,29 @@ const STAGES = [
   { id: 4, label: "04. Active Computation", statuses: ["AWAITING_PAYMENT", "ACTIVE", "EXPERT_ASSIGNED", "IN_PROGRESS", "SLA_PAUSED", "SCOPE_CREEP_HALTED"] },
   { id: 5, label: "05. QA Peer Review", statuses: ["FOR_QA", "QA_REVISION"] },
   { id: 6, label: "06. Deliverables Released", statuses: ["DELIVERED", "REVISION_REQUESTED", "CLOSED"] },
+];
+
+const CATEGORY_OPTIONS: { label: string; value: FileCategory; desc: string }[] = [
+  {
+    label: "Raw Dataset / Spreadsheet",
+    value: "DATASET",
+    desc: "Excel (.xlsx), CSV, or SPSS data matrix",
+  },
+  {
+    label: "Research Proposal / Draft",
+    value: "RESEARCH_DOCUMENT",
+    desc: "Chapters 1-3 proposal or manuscript (.pdf, .docx)",
+  },
+  {
+    label: "Survey Tool / Questionnaire",
+    value: "QUESTIONNAIRE",
+    desc: "Survey instruments or interview guides",
+  },
+  {
+    label: "Supplementary Document",
+    value: "RESEARCH_DOCUMENT",
+    desc: "Institutional approval or supplementary data",
+  },
 ];
 
 export default function ClientProjectDetailPage({ params }: PageProps) {
@@ -40,6 +69,13 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
   const [fileToDelete, setFileToDelete] = useState<ProjectFileItem | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isResolving, startResolveTransition] = useTransition();
+
+  // File Upload State
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedUploadFile, setSelectedUploadFile] = useState<File | null>(null);
+  const [uploadCategory, setUploadCategory] = useState<FileCategory>("DATASET");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, startUploadTransition] = useTransition();
 
   useEffect(() => {
     async function loadProject() {
@@ -87,6 +123,53 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
       } else {
         setError(res.error.message);
         setFileToDelete(null);
+      }
+    });
+  };
+
+  const handleUploadFile = () => {
+    if (!selectedUploadFile || !project) {
+      setUploadError("Please select a file to upload.");
+      return;
+    }
+
+    setUploadError(null);
+    startUploadTransition(async () => {
+      const res = await addProjectFile(project.id, {
+        fileName: selectedUploadFile.name,
+        filePath: `uploads/${selectedUploadFile.name}`,
+        fileType: selectedUploadFile.type || "application/octet-stream",
+        fileCategory: uploadCategory,
+      });
+
+      if (res.success) {
+        setProject((prev) =>
+          prev
+            ? {
+                ...prev,
+                files: [...prev.files, res.data],
+              }
+            : null
+        );
+        setSuccessMessage(`Document "${selectedUploadFile.name}" attached successfully.`);
+        setSelectedUploadFile(null);
+        setIsUploadModalOpen(false);
+      } else {
+        setUploadError(res.error.message);
+      }
+    });
+  };
+
+  const handleResolveMissingInfo = () => {
+    if (!project) return;
+    setError(null);
+    startResolveTransition(async () => {
+      const res = await resolveMissingInfo(project.id);
+      if (res.success) {
+        setProject(res.data);
+        setSuccessMessage("Information request resolved. Study resubmitted for administration evaluation.");
+      } else {
+        setError(res.error.message);
       }
     });
   };
@@ -229,7 +312,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
       {/* ── Missing Information Banner (if AWAITING_INFORMATION) ── */}
       {project.masterStatus === "AWAITING_INFORMATION" && (
-        <Card className="p-6 border-l-4 border-l-amber-500 bg-amber-500/[0.04] flex flex-col gap-3">
+        <Card className="p-6 border-l-4 border-l-amber-500 bg-amber-500/[0.04] flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
             <h3 className="text-sm font-mono font-bold text-amber-400 uppercase tracking-wider">
@@ -239,9 +322,20 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
           <p className="text-xs text-white/90 leading-relaxed font-sans bg-black/30 p-4 rounded-[2px] border border-white/[0.08]">
             &ldquo;{project.missingInfoReason || "Please review and attach the required dataset or questionnaire."}&rdquo;
           </p>
-          <p className="text-[0.688rem] text-white/50 font-mono">
-            You can remove outdated files below or attach new files. The admin triage desk will re-evaluate once updated.
-          </p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-amber-500/20">
+            <p className="text-[0.688rem] text-white/50 font-mono">
+              Review your research scope and attached files below, then confirm resubmission.
+            </p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleResolveMissingInfo}
+              loading={isResolving}
+              className="py-1.5 px-4 font-mono text-xs font-bold tracking-wider whitespace-nowrap"
+            >
+              ✓ CONFIRM &amp; RESUBMIT STUDY FOR EVALUATION →
+            </Button>
+          </div>
         </Card>
       )}
 
@@ -288,60 +382,121 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
           {/* Attached Files & Datasets */}
           <Card className="p-6 md:p-8 flex flex-col gap-5">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3 gap-3">
               <div>
                 <h3 className="text-base font-bold text-white font-sans">
-                  Attached Research Documents & Datasets
+                  Attached Research Documents &amp; Datasets
                 </h3>
                 <p className="text-xs text-white/50 mt-0.5">
                   {project.files.length} document(s) registered for statistical analysis
                 </p>
               </div>
-              {isPreSow && (
-                <span className="text-[0.688rem] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px]">
-                  PRE-SOW EDITABLE
-                </span>
-              )}
+              <div className="flex items-center gap-2.5">
+                {isPreSow && (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedUploadFile(null);
+                      setUploadError(null);
+                      setIsUploadModalOpen(true);
+                    }}
+                    className="py-1 px-3 h-auto text-xs font-mono font-bold tracking-wider"
+                  >
+                    + UPLOAD FILE
+                  </Button>
+                )}
+                {isPreSow && (
+                  <span className="text-[0.688rem] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
+                    PRE-SOW EDITABLE
+                  </span>
+                )}
+              </div>
             </div>
 
             {project.files.length === 0 ? (
-              <p className="text-xs text-white/40 font-mono py-4 text-center">
-                No files attached to this intake record.
-              </p>
+              <div
+                onClick={() => {
+                  setSelectedUploadFile(null);
+                  setUploadError(null);
+                  setIsUploadModalOpen(true);
+                }}
+                className="border-2 border-dashed border-white/15 hover:border-[#CC6600]/60 bg-white/[0.02] hover:bg-white/[0.04] transition-all p-8 rounded-[3px] flex flex-col items-center justify-center gap-2.5 cursor-pointer text-center group"
+              >
+                <div className="h-10 w-10 rounded-full bg-white/[0.05] group-hover:bg-[#CC6600]/15 flex items-center justify-center text-white/50 group-hover:text-amber-400 transition-colors text-lg font-mono">
+                  ⇪
+                </div>
+                <span className="text-xs font-bold text-white group-hover:text-amber-300 font-sans">
+                  No files attached yet. Click to upload research files or datasets.
+                </span>
+                <span className="text-[0.688rem] text-white/40 font-mono">
+                  Accepts PDF, DOCX, XLSX, CSV, SPSS (.sav) up to 100MB
+                </span>
+              </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {project.files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-                  >
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-white truncate">
-                          {file.fileName}
-                        </span>
-                        <span className="text-[0.65rem] font-mono uppercase bg-white/[0.06] text-white/70 px-2 py-0.5 rounded-[2px]">
-                          {file.fileCategory.replace(/_/g, " ")}
-                        </span>
-                      </div>
-                      <span className="text-[0.688rem] text-white/40 font-mono">
-                        Uploaded on {new Date(file.uploadedAt).toLocaleDateString()}
-                      </span>
-                    </div>
+                {project.files.map((file) => {
+                  const meta = getFileMeta(file.fileName, file.fileType);
+                  const category = formatFileCategory(file.fileCategory);
+                  return (
+                    <div
+                      key={file.id}
+                      className="p-5 sm:px-7 sm:py-5 rounded-[2px] bg-[#011C38] border border-white/[0.08] hover:border-white/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 transition-colors"
+                    >
+                      <div className="flex items-center gap-4 sm:gap-5 min-w-0 flex-1">
+                        <div
+                          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-[2px] ${meta.theme.bg} ${meta.theme.border} border flex flex-col items-center justify-center flex-shrink-0`}
+                        >
+                          <span className={`text-[0.5625rem] font-mono font-bold uppercase tracking-wider ${meta.theme.text}`}>
+                            {meta.ext}
+                          </span>
+                        </div>
 
-                    {isPreSow && (
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setFileToDelete(file)}
-                        className="text-xs font-mono"
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                        <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                            <span className="text-sm font-semibold font-sans text-white truncate max-w-sm sm:max-w-md lg:max-w-xl" title={file.fileName}>
+                              {file.fileName}
+                            </span>
+                            <span
+                              className={`text-[0.625rem] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded-[2px] border whitespace-nowrap flex-shrink-0 ${category.badgeClass}`}
+                            >
+                              {category.label}
+                            </span>
+                          </div>
+                          <span className="text-xs text-white/40 font-mono">
+                            <span className="text-sky-300/80">{meta.friendlyType}</span> · Uploaded: {new Date(file.uploadedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 self-end sm:self-center flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => triggerFileDownload(file.filePath, file.fileName)}
+                          className="px-4 py-2 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
+                        >
+                          <svg className="w-3.5 h-3.5 text-[#FFA040]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          <span>DOWNLOAD</span>
+                        </button>
+
+                        {isPreSow && (
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => setFileToDelete(file)}
+                            className="text-xs font-mono"
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>
@@ -399,7 +554,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
       {/* Delete Confirmation Modal */}
       {fileToDelete && (
         <Modal
-          isOpen={Boolean(fileToDelete)}
+          open={Boolean(fileToDelete)}
           onClose={() => setFileToDelete(null)}
           title="Remove Attached Document"
         >
@@ -425,6 +580,121 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               >
                 Confirm Delete
               </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* File Upload Modal */}
+      {isUploadModalOpen && (
+        <Modal
+          open={isUploadModalOpen}
+          onClose={() => {
+            if (!isUploading) {
+              setIsUploadModalOpen(false);
+              setSelectedUploadFile(null);
+              setUploadError(null);
+            }
+          }}
+          title="Upload Research Document or Dataset"
+          description="Attach updated proposal manuscripts, questionnaires, or raw dataset matrices."
+          size="md"
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsUploadModalOpen(false)}
+                disabled={isUploading}
+              >
+                CANCEL
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleUploadFile}
+                loading={isUploading}
+                disabled={!selectedUploadFile || isUploading}
+                className="font-mono text-xs font-bold tracking-wider"
+              >
+                CONFIRM &amp; ATTACH FILE →
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4 text-xs font-sans">
+            {uploadError && <Alert variant="danger">{uploadError}</Alert>}
+
+            {/* Category Selector */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-mono font-bold text-white/60 uppercase">
+                Document / Dataset Category:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {CATEGORY_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setUploadCategory(opt.value)}
+                    className={`p-3 rounded-[2px] border text-left transition-all flex flex-col gap-1 ${
+                      uploadCategory === opt.value
+                        ? "bg-[#CC6600]/20 border-[#CC6600] text-white"
+                        : "bg-white/[0.02] border-white/[0.08] text-white/60 hover:bg-white/[0.05] hover:text-white"
+                    }`}
+                  >
+                    <span className="font-mono text-xs font-bold">
+                      {uploadCategory === opt.value ? "● " : "○ "}
+                      {opt.label}
+                    </span>
+                    <span className="text-[0.688rem] text-white/40 font-sans">
+                      {opt.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* File Picker */}
+            <div className="flex flex-col gap-1.5 mt-2">
+              <label className="text-xs font-mono font-bold text-white/60 uppercase">
+                Select File from Device:
+              </label>
+              <label className="border-2 border-dashed border-white/20 hover:border-[#CC6600] bg-black/30 hover:bg-black/50 transition-all p-6 rounded-[2px] flex flex-col items-center justify-center gap-2 cursor-pointer text-center">
+                <input
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.sav"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSelectedUploadFile(file);
+                      setUploadError(null);
+                    }
+                  }}
+                />
+                <div className="h-9 w-9 rounded-full bg-white/[0.06] flex items-center justify-center text-amber-400 font-mono text-sm">
+                  📁
+                </div>
+                {selectedUploadFile ? (
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="font-mono text-xs font-bold text-amber-400">
+                      {selectedUploadFile.name}
+                    </span>
+                    <span className="font-mono text-[0.688rem] text-white/50">
+                      {(selectedUploadFile.size / (1024 * 1024)).toFixed(2)} MB · Ready for upload
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-xs font-semibold text-white">
+                      Click to choose file or drag and drop
+                    </span>
+                    <span className="text-[0.688rem] text-white/40 font-mono">
+                      PDF, Word (.docx), Excel (.xlsx), CSV, SPSS (.sav)
+                    </span>
+                  </div>
+                )}
+              </label>
             </div>
           </div>
         </Modal>

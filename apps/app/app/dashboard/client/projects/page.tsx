@@ -1,16 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   PageHeader,
   Card,
   StatusBadge,
   Button,
-  FormInput,
+  KpiCard,
+  FilterToolbar,
+  Modal,
 } from "@repo/ui";
 import { getProjects } from "@/features/projects/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import {
+  getFileMeta,
+  formatFileCategory,
+  triggerFileDownload,
+} from "@/lib/file-utils";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 export default function ClientProjectsListPage() {
@@ -18,36 +25,82 @@ export default function ClientProjectsListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedStudyForInspect, setSelectedStudyForInspect] = useState<ProjectDetailItem | null>(null);
 
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
-      const res = await getProjects({
-        status: statusFilter,
-        search: searchQuery,
-      });
-      if (res.success) {
-        setProjects(res.data);
+      try {
+        const res = await getProjects({
+          status: statusFilter,
+          search: searchQuery,
+        });
+        if (res.success) {
+          setProjects(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load client projects", err);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     loadData();
   }, [statusFilter, searchQuery]);
 
-  const STATUS_TABS = [
-    { label: "All Active", value: "ALL" },
-    { label: "New Requests", value: "NEW_REQUEST" },
-    { label: "Awaiting Info", value: "AWAITING_INFORMATION" },
-    { label: "Under Evaluation", value: "UNDER_EVALUATION" },
-    { label: "Active Studies", value: "ACTIVE" },
-    { label: "Delivered", value: "DELIVERED" },
-  ];
+  // Compute live KPIs
+  const kpis = useMemo(() => {
+    const total = projects.length;
+    const awaitingInfo = projects.filter((p) => p.masterStatus === "AWAITING_INFORMATION").length;
+    const underEvaluation = projects.filter(
+      (p) => p.masterStatus === "UNDER_EVALUATION" || p.masterStatus === "NEW_REQUEST"
+    ).length;
+    const active = projects.filter(
+      (p) =>
+        p.masterStatus === "ACTIVE" ||
+        p.masterStatus === "IN_PROGRESS" ||
+        p.masterStatus === "EXPERT_ASSIGNED" ||
+        p.masterStatus === "FOR_QA" ||
+        p.masterStatus === "QA_REVISION"
+    ).length;
+    const delivered = projects.filter(
+      (p) => p.masterStatus === "DELIVERED" || p.masterStatus === "CLOSED"
+    ).length;
+
+    return { total, awaitingInfo, underEvaluation, active, delivered };
+  }, [projects]);
+
+  // Filter projects in client memory if needed
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      if (statusFilter === "ALL") return true;
+      if (statusFilter === "AWAITING_INFORMATION") return p.masterStatus === "AWAITING_INFORMATION";
+      if (statusFilter === "UNDER_EVALUATION") {
+        return p.masterStatus === "UNDER_EVALUATION" || p.masterStatus === "NEW_REQUEST";
+      }
+      if (statusFilter === "ACTIVE") {
+        return (
+          p.masterStatus === "ACTIVE" ||
+          p.masterStatus === "IN_PROGRESS" ||
+          p.masterStatus === "EXPERT_ASSIGNED" ||
+          p.masterStatus === "FOR_QA"
+        );
+      }
+      if (statusFilter === "DELIVERED") {
+        return p.masterStatus === "DELIVERED" || p.masterStatus === "CLOSED";
+      }
+      return p.masterStatus === statusFilter;
+    });
+  }, [projects, statusFilter]);
+
+  const awaitingInfoList = useMemo(() => {
+    return projects.filter((p) => p.masterStatus === "AWAITING_INFORMATION");
+  }, [projects]);
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
       <PageHeader
         title="My Research Projects & Active Studies"
-        description="Monitor statistical consultation workflows, track peer review gates, and review proposal milestones."
+        description="Monitor statistical consultation workflows, track peer review gates, and inspect analytical deliverables."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Client Portal", href: "/dashboard/client" },
@@ -62,141 +115,449 @@ export default function ClientProjectsListPage() {
         }
       />
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        {/* Status Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => setStatusFilter(tab.value)}
-              className={`px-3.5 py-1.5 text-xs font-mono font-medium rounded-[2px] transition-colors whitespace-nowrap ${
-                statusFilter === tab.value
-                  ? "bg-[#CC6600] text-white font-bold"
-                  : "bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.08]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* ── Top KPI Metrics Grid ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          label="Total Studies"
+          value={kpis.total}
+          variant="default"
+          badge="COMMISSIONED"
+          description="All client submitted research scopes"
+        />
 
-        {/* Search Input */}
-        <div className="w-full md:w-72">
-          <FormInput
-            placeholder="Search study title or JAXIS ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <KpiCard
+          label="Action Required"
+          value={kpis.awaitingInfo}
+          variant={kpis.awaitingInfo > 0 ? "orange" : "default"}
+          badge={kpis.awaitingInfo > 0 ? "CLIENT ACTION" : "CLEAR"}
+          description={
+            kpis.awaitingInfo > 0
+              ? "Clarification or dataset needed"
+              : "No pending information requests"
+          }
+        />
+
+        <KpiCard
+          label="Under Evaluation"
+          value={kpis.underEvaluation}
+          variant="sky"
+          badge="FEASIBILITY"
+          description="Methodology & pricing assessment"
+        />
+
+        <KpiCard
+          label="Active & QA"
+          value={kpis.active + kpis.delivered}
+          variant="emerald"
+          badge="IN PRODUCTION"
+          description={`${kpis.active} running · ${kpis.delivered} delivered`}
+        />
       </div>
 
-      {/* Projects List View */}
-      {isLoading ? (
-        <div className="flex flex-col gap-4">
-          {[1, 2, 3].map((n) => (
-            <Card key={n} className="p-6 animate-pulse flex flex-col gap-3">
-              <div className="h-4 bg-white/10 w-1/4 rounded-[2px]" />
-              <div className="h-6 bg-white/10 w-3/4 rounded-[2px]" />
-              <div className="h-4 bg-white/10 w-1/2 rounded-[2px]" />
+      {/* ── High-Priority Missing Information Alert Banner ── */}
+      {awaitingInfoList.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {awaitingInfoList.map((p) => (
+            <Card
+              key={p.id}
+              className="p-5 border-l-4 border-l-amber-500 bg-amber-500/[0.06] border-white/10 shadow-xl flex flex-col gap-3"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
+                    ACTION REQUIRED: Missing Information Requested
+                  </span>
+                  <span className="text-xs font-mono font-bold text-white bg-amber-500/20 px-2 py-0.5 rounded-[2px]">
+                    {p.intakeId}
+                  </span>
+                </div>
+                <Link href={`/dashboard/client/projects/${p.id}`}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="py-1.5 px-3.5 h-auto font-mono text-xs font-bold tracking-wider"
+                  >
+                    RESOLVE &amp; ATTACH FILES →
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-semibold text-white font-sans">
+                  {p.researchTitle}
+                </p>
+                <div
+                  className="p-3.5 rounded-[2px] bg-black/40 border border-amber-500/30 text-xs text-amber-100 font-sans leading-relaxed mt-1"
+                  style={{ padding: "0.875rem 1rem" }}
+                >
+                  <strong className="text-amber-300 font-mono text-[0.6875rem] uppercase block mb-1">
+                    Admin Request Note:
+                  </strong>
+                  &ldquo;{p.missingInfoReason || "Please attach the requested dataset or questionnaire clarification."}&rdquo;
+                </div>
+              </div>
             </Card>
           ))}
         </div>
-      ) : projects.length === 0 ? (
-        <Card className="p-12 text-center flex flex-col items-center justify-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-white/[0.04] flex items-center justify-center text-white/30 text-xl font-mono">
-            ∅
+      )}
+
+      {/* ── Main Projects List & Filter Table ── */}
+      <Card
+        className="p-0 border-white/[0.08] overflow-hidden bg-gradient-to-b from-[#01142B]/90 via-[#010E20]/95 to-[#010A17] shadow-2xl"
+        style={{ padding: 0 }}
+      >
+        {/* Filter Toolbar */}
+        <FilterToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search study title, JAXIS ID, or objectives..."
+          filters={[
+            {
+              key: "status",
+              label: "STATUS",
+              value: statusFilter,
+              defaultValue: "ALL",
+              options: [
+                { value: "ALL", label: `All Studies (${kpis.total})` },
+                { value: "AWAITING_INFORMATION", label: `Awaiting Info (${kpis.awaitingInfo})` },
+                { value: "UNDER_EVALUATION", label: `Under Evaluation (${kpis.underEvaluation})` },
+                { value: "ACTIVE", label: `Active & In Progress (${kpis.active})` },
+                { value: "DELIVERED", label: `Delivered (${kpis.delivered})` },
+              ],
+            },
+          ]}
+          onFilterChange={(key, value) => {
+            if (key === "status") setStatusFilter(value);
+          }}
+          onClear={() => {
+            setStatusFilter("ALL");
+            setSearchQuery("");
+          }}
+        />
+
+        {/* ── Table Container ── */}
+        <div style={{ padding: "1.25rem 1.75rem 1.75rem 1.75rem" }}>
+          <div className="w-full overflow-x-auto rounded-[3px] border border-white/[0.08]">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Research Study &amp; Intake</th>
+                  <th className="w-[140px] whitespace-nowrap">Target Deadline</th>
+                  <th className="w-[140px] whitespace-nowrap">Status</th>
+                  <th className="w-[140px] text-right whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="py-20 text-center text-white/30 font-mono text-xs"
+                    >
+                      Loading research studies...
+                    </td>
+                  </tr>
+                ) : filteredProjects.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="py-20 text-center text-white/30 font-mono text-xs"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <span className="text-2xl font-mono text-white/20">∅</span>
+                        <span className="text-sm font-semibold text-white/70">
+                          No Research Studies Found
+                        </span>
+                        <span className="text-xs text-white/40">
+                          {searchQuery || statusFilter !== "ALL"
+                            ? "No studies match your current filter criteria."
+                            : "You have not submitted any research project intake requests yet."}
+                        </span>
+                        <Link href="/dashboard/client/projects/new" className="mt-2">
+                          <Button variant="primary" size="sm">
+                            + SUBMIT YOUR FIRST INTAKE →
+                          </Button>
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProjects.map((p) => {
+                    const isAwaiting = p.masterStatus === "AWAITING_INFORMATION";
+
+                    return (
+                      <tr
+                        key={p.id}
+                        className={`group transition-colors ${
+                          isAwaiting ? "bg-amber-500/[0.03] hover:bg-amber-500/[0.06]" : ""
+                        }`}
+                      >
+                        {/* 1. Research Study & Intake */}
+                        <td>
+                          <div className="flex flex-col gap-1.5 py-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
+                                {p.intakeId}
+                              </span>
+                              <span className="font-mono text-[0.65rem] text-sky-300 bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded-[2px] whitespace-nowrap">
+                                {p.files.length} {p.files.length === 1 ? "doc" : "docs"}
+                              </span>
+                            </div>
+
+                            <Link
+                              href={`/dashboard/client/projects/${p.id}`}
+                              className="text-xs font-semibold text-white group-hover:text-[#FF9433] transition-colors leading-snug line-clamp-2"
+                              title={p.researchTitle}
+                            >
+                              {p.researchTitle}
+                            </Link>
+
+                            {/* Missing Info Request Highlight */}
+                            {isAwaiting && p.missingInfoReason && (
+                              <div className="flex items-center gap-1.5 text-[0.6875rem] font-mono text-amber-300 mt-0.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+                                <span className="truncate italic">
+                                  Action Required: {p.missingInfoReason}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 2. Target Deadline */}
+                        <td className="whitespace-nowrap">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono text-xs font-bold text-amber-400">
+                              {new Date(p.deadlineRequested).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                            <span className="font-mono text-[0.65rem] text-white/40">
+                              Requested SLA
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* 3. Status */}
+                        <td className="whitespace-nowrap">
+                          <StatusBadge
+                            status={p.masterStatus}
+                            label={PROJECT_STATUS_LABELS[p.masterStatus] || p.masterStatus}
+                            pulse={
+                              p.masterStatus === "AWAITING_INFORMATION" ||
+                              p.masterStatus === "IN_PROGRESS" ||
+                              p.masterStatus === "FOR_QA"
+                            }
+                          />
+                        </td>
+
+                        {/* 4. Actions */}
+                        <td className="text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedStudyForInspect(p)}
+                              className="py-1 px-2.5 h-auto font-mono text-[0.6875rem] tracking-wider"
+                            >
+                              DETAILS
+                            </Button>
+                            <Link href={`/dashboard/client/projects/${p.id}`}>
+                              <Button
+                                variant={isAwaiting ? "primary" : "secondary"}
+                                size="sm"
+                                className="py-1 px-3 h-auto font-mono text-[0.6875rem] tracking-wider"
+                              >
+                                {isAwaiting ? "RESOLVE →" : "DESK →"}
+                              </Button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-          <div className="flex flex-col gap-1">
-            <h3 className="text-base font-bold text-white font-sans">
-              No Research Studies Found
-            </h3>
-            <p className="text-xs text-white/50 max-w-sm">
-              {searchQuery || statusFilter !== "ALL"
-                ? "No projects match your current filters. Try changing search terms or selected status."
-                : "You have not submitted any research project intake requests yet."}
-            </p>
-          </div>
-          <Link href="/dashboard/client/projects/new">
-            <Button variant="primary" size="md" className="mt-2">
-              SUBMIT YOUR FIRST INTAKE →
-            </Button>
-          </Link>
-        </Card>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {projects.map((proj) => (
-            <Card
-              key={proj.id}
-              className={`p-6 transition-all border-l-4 hover:border-l-[#CC6600] group ${
-                proj.masterStatus === "AWAITING_INFORMATION"
-                  ? "border-l-amber-500 bg-amber-500/[0.02]"
-                  : "border-l-transparent"
-              }`}
+        </div>
+      </Card>
+
+      {/* ── Quick View Modal ── */}
+      {selectedStudyForInspect && (
+        <Modal
+          open={!!selectedStudyForInspect}
+          onClose={() => setSelectedStudyForInspect(null)}
+          title={`Study Telemetry: ${selectedStudyForInspect.intakeId}`}
+          description={selectedStudyForInspect.researchTitle}
+          size="lg"
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setSelectedStudyForInspect(null)}
+              >
+                CLOSE
+              </Button>
+              <Link href={`/dashboard/client/projects/${selectedStudyForInspect.id}`}>
+                <Button variant="primary" size="sm">
+                  OPEN FULL PROJECT DESK →
+                </Button>
+              </Link>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-5 text-xs font-sans text-white/90">
+            {/* Status & Deadline Header Banner */}
+            <div
+              className="rounded-[2px] bg-[#011C38] border border-white/[0.08] flex items-center justify-between flex-wrap gap-4"
+              style={{ padding: "1rem" }}
             >
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex flex-col gap-2 flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-mono font-bold text-[#CC6600] bg-[#CC6600]/10 px-2 py-0.5 rounded-[2px]">
-                      {proj.intakeId}
-                    </span>
-                    <StatusBadge
-                      status={proj.masterStatus}
-                      label={PROJECT_STATUS_LABELS[proj.masterStatus] || proj.masterStatus}
-                    />
-                    <span className="text-xs font-mono text-white/40">
-                      Target:{" "}
-                      <strong className="text-white/80 font-medium">
-                        {new Date(proj.deadlineRequested).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </strong>
-                    </span>
-                    <span className="text-xs font-mono text-white/40">
-                      {proj.files.length} {proj.files.length === 1 ? "file" : "files"} attached
-                    </span>
-                  </div>
-
-                  <Link
-                    href={`/dashboard/client/projects/${proj.id}`}
-                    className="text-base font-bold text-white group-hover:text-[#CC6600] transition-colors leading-snug"
-                  >
-                    {proj.researchTitle}
-                  </Link>
-
-                  <p className="text-xs text-white/60 line-clamp-2 leading-relaxed font-sans">
-                    {proj.researchObjectives}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-                  <Link href={`/dashboard/client/projects/${proj.id}`}>
-                    <Button variant="secondary" size="sm" className="whitespace-nowrap font-mono text-xs">
-                      VIEW STUDY DETAILS →
-                    </Button>
-                  </Link>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-white/50 uppercase">Current Gate:</span>
+                <StatusBadge
+                  status={selectedStudyForInspect.masterStatus}
+                  label={
+                    PROJECT_STATUS_LABELS[selectedStudyForInspect.masterStatus] ||
+                    selectedStudyForInspect.masterStatus
+                  }
+                  pulse={selectedStudyForInspect.masterStatus === "AWAITING_INFORMATION"}
+                />
               </div>
+              <div className="font-mono text-xs text-white/60">
+                Target Deadline:{" "}
+                <strong className="text-amber-400">
+                  {new Date(selectedStudyForInspect.deadlineRequested).toLocaleDateString()}
+                </strong>
+              </div>
+            </div>
 
-              {/* Missing Information Alert Banner if applicable */}
-              {proj.masterStatus === "AWAITING_INFORMATION" && proj.missingInfoReason && (
-                <div className="mt-4 p-3.5 rounded-[2px] bg-amber-500/10 border border-amber-500/30 flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400 font-mono text-xs font-bold uppercase">
-                      Action Required: Admin Requested Information
-                    </span>
-                  </div>
-                  <p className="text-xs text-amber-200/90 font-sans">
-                    &ldquo;{proj.missingInfoReason}&rdquo;
+            {/* Missing Information Note if applicable */}
+            {selectedStudyForInspect.masterStatus === "AWAITING_INFORMATION" &&
+              selectedStudyForInspect.missingInfoReason && (
+                <div
+                  className="rounded-[2px] bg-amber-500/10 border border-amber-500/30 flex flex-col gap-1 text-amber-200"
+                  style={{ padding: "1rem" }}
+                >
+                  <strong className="font-mono text-amber-400 text-[0.6875rem] uppercase">
+                    Admin Missing Information Request:
+                  </strong>
+                  <p className="text-xs leading-relaxed">
+                    &ldquo;{selectedStudyForInspect.missingInfoReason}&rdquo;
                   </p>
                 </div>
               )}
-            </Card>
-          ))}
-        </div>
+
+            {/* Research Problem & Objectives */}
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                Core Research Objectives
+              </span>
+              <p
+                className="text-xs text-slate-300 bg-white/[0.02] rounded-[3px] border border-white/10 leading-relaxed whitespace-pre-wrap"
+                style={{ padding: "1rem" }}
+              >
+                {selectedStudyForInspect.researchObjectives}
+              </p>
+            </div>
+
+            {/* Research Questions */}
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                Key Research Questions
+              </span>
+              <p
+                className="text-xs text-slate-300 bg-white/[0.02] rounded-[3px] border border-white/10 leading-relaxed whitespace-pre-wrap"
+                style={{ padding: "1rem" }}
+              >
+                {selectedStudyForInspect.researchQuestions}
+              </p>
+            </div>
+
+            {/* Theoretical Hypotheses */}
+            {selectedStudyForInspect.hypotheses && (
+              <div className="flex flex-col gap-2">
+                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                  Theoretical Hypotheses
+                </span>
+                <p
+                  className="text-xs text-slate-300 bg-white/[0.02] rounded-[3px] border border-white/10 leading-relaxed whitespace-pre-wrap"
+                  style={{ padding: "1rem" }}
+                >
+                  {selectedStudyForInspect.hypotheses}
+                </p>
+              </div>
+            )}
+
+            {/* Uploaded Artifacts */}
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">
+                Submitted Artifacts ({selectedStudyForInspect.files.length})
+              </span>
+              {selectedStudyForInspect.files.length === 0 ? (
+                <div
+                  className="text-xs text-white/40 italic bg-white/[0.02] border border-white/10 rounded-[3px]"
+                  style={{ padding: "1rem" }}
+                >
+                  No files or dataset packages attached to this intake record.
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-64 overflow-y-auto">
+                  {selectedStudyForInspect.files.map((file) => {
+                    const meta = getFileMeta(file.fileName, file.fileType);
+                    const category = formatFileCategory(file.fileCategory);
+                    return (
+                      <div
+                        key={file.id}
+                        className="rounded-[2px] bg-[#011C38] border border-white/[0.08] hover:border-white/20 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-4 transition-colors"
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div
+                            className={`h-9 w-9 rounded-[2px] ${meta.theme.bg} ${meta.theme.border} border flex flex-col items-center justify-center flex-shrink-0`}
+                          >
+                            <span className={`text-[0.625rem] font-mono font-bold uppercase ${meta.theme.text}`}>
+                              {meta.ext}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-white truncate max-w-[200px] sm:max-w-xs md:max-w-sm">
+                                {file.fileName}
+                              </span>
+                              <span
+                                className={`text-[0.5625rem] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded-[2px] border ${category.badgeClass}`}
+                              >
+                                {category.label}
+                              </span>
+                            </div>
+                            <span className="text-[0.688rem] text-white/40 font-mono">
+                              {meta.friendlyType} · {new Date(file.uploadedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => triggerFileDownload(file.filePath, file.fileName)}
+                          className="px-3.5 py-1.5 rounded-[2px] bg-[#CC6600]/20 hover:bg-[#CC6600]/35 text-white border border-[#CC6600]/80 hover:border-[#CC6600] text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                        >
+                          <svg className="w-3 h-3 text-[#FFA040]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          <span>DOWNLOAD</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

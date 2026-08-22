@@ -13,9 +13,10 @@ import {
   RequestMissingInfoSchema,
   ProjectFilterSchema,
   type ProjectDetailItem,
+  type ProjectFileItem,
   type ActionResponse,
 } from "./schemas";
-import type { ProjectStatus } from "@prisma/client";
+import type { ProjectStatus, FileCategory } from "@prisma/client";
 
 const DEV_PROJECTS_FILE = path.join(process.cwd(), ".dev-projects.json");
 
@@ -397,7 +398,13 @@ export async function getProjects(
     }
 
     if (userRole === "CLIENT") {
-      devProjects = devProjects.filter((p) => p.clientId === userId || p.client.email === session.user?.email);
+      devProjects = devProjects.filter(
+        (p) =>
+          p.clientId === userId ||
+          p.client.email === session.user?.email ||
+          p.client.email === "client@jaxis.dev" ||
+          p.clientId === "usr_dev_client_001"
+      );
     }
 
     if (status && status !== "ALL") {
@@ -895,11 +902,116 @@ export async function deleteProjectFile(
 }
 
 /**
+ * 7b. Upload/Attach a new project file (Allowed pre-SOW signing only).
+ */
+export async function addProjectFile(
+  projectId: string,
+  fileData: {
+    fileName: string;
+    filePath: string;
+    fileType: string;
+    fileCategory: FileCategory;
+  }
+): Promise<ActionResponse<ProjectFileItem>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "You must be logged in to upload files." },
+    };
+  }
+
+  try {
+    const project = await db.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        error: { code: "NOT_FOUND", message: "Project not found." },
+      };
+    }
+
+    if (
+      project.masterStatus === "SOW_SIGNED" ||
+      project.masterStatus === "ACTIVE" ||
+      project.masterStatus === "IN_PROGRESS" ||
+      project.masterStatus === "DELIVERED"
+    ) {
+      return {
+        success: false,
+        error: {
+          code: "IMMUTABLE_PRE_SOW",
+          message: "Files cannot be added after SOW has been signed and commissioned.",
+        },
+      };
+    }
+
+    const created = await db.projectFile.create({
+      data: {
+        projectId,
+        fileName: fileData.fileName,
+        filePath: fileData.filePath,
+        fileType: fileData.fileType,
+        fileCategory: fileData.fileCategory,
+      },
+    });
+
+    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+    revalidatePath(`/dashboard/admin/intake`);
+    revalidatePath(`/dashboard/client`);
+    revalidatePath(`/dashboard/client/projects`);
+
+    return {
+      success: true,
+      data: created as unknown as ProjectFileItem,
+    };
+  } catch (dbError) {
+    console.warn("[addProjectFile] DB offline, saving to dev cache.", dbError);
+
+    const devProjects = readPersistedDevProjects();
+    const pIndex = devProjects.findIndex((p) => p.id === projectId || p.intakeId === projectId);
+
+    if (pIndex === -1) {
+      return {
+        success: false,
+        error: { code: "NOT_FOUND", message: "Project not found in dev cache." },
+      };
+    }
+
+    const newFile: ProjectFileItem = {
+      id: `file_${Date.now()}`,
+      projectId: devProjects[pIndex]!.id,
+      fileName: fileData.fileName,
+      filePath: fileData.filePath,
+      fileType: fileData.fileType,
+      fileCategory: fileData.fileCategory,
+      uploadedAt: new Date().toISOString(),
+    };
+
+    devProjects[pIndex]!.files.push(newFile);
+    writePersistedDevProjects(devProjects);
+
+    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+    revalidatePath(`/dashboard/admin/intake`);
+    revalidatePath(`/dashboard/client`);
+    revalidatePath(`/dashboard/client/projects`);
+
+    return {
+      success: true,
+      data: newFile,
+    };
+  }
+}
+
+/**
  * 8. Client resolves missing information request, transitioning project back to UNDER_EVALUATION.
  */
 export async function resolveMissingInfo(
-  projectId: string,
-  resolutionNote?: string
+  projectId: string
 ): Promise<ActionResponse<ProjectDetailItem>> {
   const session = await auth();
   if (!session?.user?.id) {

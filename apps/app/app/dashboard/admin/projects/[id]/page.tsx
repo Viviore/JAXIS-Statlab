@@ -22,6 +22,7 @@ import {
   VALID_TRANSITIONS,
   PROJECT_STATUS_LABELS,
 } from "@/lib/project-rules";
+import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 import type { ProjectStatus } from "@prisma/client";
 
@@ -207,30 +208,32 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Governance Status Action Bar ── */}
-      <Card className="p-6 border-l-4 border-l-[#CC6600]">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs font-mono text-white/50 uppercase font-bold">
-              Current Master Status:
-            </span>
-            <StatusBadge
-              status={project.masterStatus}
-              label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
-              pulse={project.masterStatus === "NEW_REQUEST" || project.masterStatus === "AWAITING_INFORMATION"}
-            />
-            <span className="text-xs font-mono text-white/40">
-              Target Deadline:{" "}
-              <strong className="text-amber-400">
+      <Card className="p-4 sm:p-5 border-l-4 border-l-[#CC6600]">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-mono text-white/50 uppercase font-bold tracking-wider">
+                Current Master Status:
+              </span>
+              <StatusBadge
+                status={project.masterStatus}
+                label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
+                pulse={project.masterStatus === "NEW_REQUEST" || project.masterStatus === "AWAITING_INFORMATION"}
+              />
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-white/40">
+              <span>Target Deadline:</span>
+              <strong className="text-amber-400 font-medium">
                 {new Date(project.deadlineRequested).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
                 })}
               </strong>
-            </span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
             {(project.masterStatus === "NEW_REQUEST" ||
               project.masterStatus === "AWAITING_INFORMATION") && (
               <Button
@@ -238,7 +241,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 size="sm"
                 onClick={handleMarkComplete}
                 disabled={isPending}
-                className="text-xs font-mono font-bold tracking-wider"
+                className="text-xs font-mono font-bold tracking-wider whitespace-nowrap"
               >
                 ✓ MARK INTAKE COMPLETE
               </Button>
@@ -251,9 +254,9 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 setMissingInfoReason(project.missingInfoReason || "");
                 setIsMissingInfoModalOpen(true);
               }}
-              className="text-xs font-mono"
+              className="text-xs font-mono tracking-wider whitespace-nowrap"
             >
-              Request Missing Info
+              REQUEST MISSING INFO
             </Button>
 
             {allowedTransitions.length > 0 && (
@@ -264,9 +267,9 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                   setSelectedTargetStatus(allowedTransitions[0]!);
                   setIsStatusModalOpen(true);
                 }}
-                className="text-xs font-mono"
+                className="text-xs font-mono tracking-wider whitespace-nowrap"
               >
-                Transition Status ⚙
+                TRANSITION STATUS ⚙
               </Button>
             )}
           </div>
@@ -339,54 +342,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
           </Card>
 
           {/* Attached Files Card */}
-          <Card className="p-6 md:p-8 flex flex-col gap-5">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
-              <h3 className="text-base font-bold text-white font-sans">
-                Attached Research Documents &amp; Datasets ({project.files.length})
-              </h3>
-              <span className="text-xs font-mono text-white/40">
-                Cloud Storage
-              </span>
-            </div>
-
-            {project.files.length === 0 ? (
-              <p className="text-xs text-white/40 font-mono py-4 text-center">
-                No files uploaded with this submission.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {project.files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] flex items-center justify-between gap-4"
-                    style={{ padding: "1rem" }}
-                  >
-                    <div className="flex flex-col gap-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-white truncate">
-                          {file.fileName}
-                        </span>
-                        <span className="text-[0.65rem] font-mono uppercase bg-white/[0.06] text-sky-300 px-2 py-0.5 rounded-[2px]">
-                          {file.fileCategory.replace(/_/g, " ")}
-                        </span>
-                      </div>
-                      <span className="text-[0.688rem] text-white/40 font-mono">
-                        MIME: {file.fileType} · Uploaded: {new Date(file.uploadedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    <a
-                      href={`/${file.filePath}`}
-                      download={file.fileName}
-                      className="px-3.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] text-white text-xs font-mono rounded-[2px] transition-colors whitespace-nowrap"
-                    >
-                      Download ⬇
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <ProjectFilesCard files={project.files} studyId={project.intakeId} />
         </div>
 
         {/* Right Col: Client Institutional Identity */}
