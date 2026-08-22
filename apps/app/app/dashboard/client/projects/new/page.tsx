@@ -8,11 +8,11 @@ import {
   Card,
   FormInput,
   FormTextarea,
-  FormCheckbox,
   Button,
   Alert,
   FormFooter,
   Stepper,
+  Toast,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -22,6 +22,7 @@ import {
   IconListCheck,
   IconCloudUpload,
   IconTrash,
+  IconShieldCheck,
 } from "@tabler/icons-react";
 import { createProject } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
@@ -96,6 +97,11 @@ export default function NewProjectIntakePage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    variant: "success" | "danger" | "warning" | "info";
+    message: string;
+    description?: string;
+  } | null>(null);
 
   // Load client profile on mount
   useEffect(() => {
@@ -301,6 +307,20 @@ export default function NewProjectIntakePage() {
   // Step 2 Proceed
   const handleProceedToStep3 = () => {
     setFormError(null);
+    setFileError(null);
+
+    const hasResearchDoc = filesList.some((f) => f.category === "RESEARCH_DOCUMENT");
+    const hasDataset = filesList.some((f) => f.category === "DATASET");
+
+    if (!hasResearchDoc) {
+      setFileError("Please attach your Draft Chapters (1-3) to proceed.");
+      return;
+    }
+    if (!hasDataset) {
+      setFileError("Please attach your Raw Dataset file to proceed.");
+      return;
+    }
+
     setCurrentStep(3);
   };
 
@@ -310,7 +330,13 @@ export default function NewProjectIntakePage() {
     setSuccessMessage(null);
 
     if (!integrityAgreed) {
-      setFormError("You must agree to the academic authorship & confidentiality statement before submitting.");
+      const covenantMsg = "You must agree to the academic authorship & confidentiality statement before submitting.";
+      setFormError(covenantMsg);
+      setToast({
+        variant: "warning",
+        message: "Academic Covenant Required",
+        description: covenantMsg,
+      });
       return;
     }
 
@@ -334,17 +360,21 @@ export default function NewProjectIntakePage() {
       const res = await createProject(payload);
 
       if (!res.success) {
-        setFormError(res.error.message);
+        const errorMsg = res.error.message || "Failed to submit project intake. Please review form entries.";
+        setFormError(errorMsg);
         if (res.error.fieldErrors) {
           setFieldErrors(res.error.fieldErrors);
         }
+        setToast({
+          variant: "danger",
+          message: "Intake Submission Failed",
+          description: errorMsg,
+        });
         return;
       }
 
-      setSuccessMessage(`Study intake successfully submitted! Assigned ID: ${res.data.intakeId}`);
-      setTimeout(() => {
-        router.push("/dashboard/client");
-      }, 1600);
+      const assignedId = res.data.intakeId;
+      router.push(`/dashboard/client?created=true&intakeId=${encodeURIComponent(assignedId)}`);
     });
   };
 
@@ -429,7 +459,7 @@ export default function NewProjectIntakePage() {
 
       {/* ── STEP 1: Research Information ── */}
       {currentStep === 1 && (
-        <Card className="p-8 md:p-10">
+        <Card className="p-8 md:p-10" style={{ padding: "2rem", display: "flex", flexDirection: "column" }}>
           <form onSubmit={handleProceedToStep2} className="flex flex-col gap-8">
             <div className="border-b border-white/[0.08] pb-5">
               <h2 className="text-base font-bold text-white font-sans">
@@ -504,10 +534,10 @@ export default function NewProjectIntakePage() {
               <Button
                 type="submit"
                 variant="primary"
-                size="md"
-                className="px-8 py-3 font-bold tracking-wider"
+                size="sm"
+                className="w-full sm:w-auto font-bold tracking-wider"
               >
-                PROCEED TO DOCUMENT ATTACHMENTS →
+                PROCEED TO ATTACHMENTS →
               </Button>
             </FormFooter>
           </form>
@@ -516,7 +546,7 @@ export default function NewProjectIntakePage() {
 
       {/* ── STEP 2: Document Attachments ── */}
       {currentStep === 2 && (
-        <Card className="p-8 md:p-10 flex flex-col gap-8">
+        <Card className="p-8 md:p-10 flex flex-col gap-8" style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
           <div className="border-b border-white/[0.08] pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-white font-sans">
@@ -534,35 +564,58 @@ export default function NewProjectIntakePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6"
+            style={{
+              marginTop: "1.5rem",
+              display: "grid",
+              gap: "1.5rem",
+            }}
+          >
             {/* ── Slot 1: Chapters 1-3 ── */}
             <div
               onDragEnter={(e) => handleDragEnter(e, "RESEARCH_DOCUMENT")}
               onDragOver={(e) => handleDragOver(e, "RESEARCH_DOCUMENT")}
               onDragLeave={(e) => handleDragLeave(e, "RESEARCH_DOCUMENT")}
               onDrop={(e) => handleDrop(e, "RESEARCH_DOCUMENT")}
-              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all ${
+              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all min-h-[300px] ${
                 dragActiveCategory === "RESEARCH_DOCUMENT"
                   ? "border-[#CC6600] bg-[#CC6600]/5 ring-1 ring-[#CC6600]/40"
                   : "border-white/[0.09]"
               }`}
+              style={{
+                padding: "1.5rem",
+                borderRadius: "2px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                gap: "1.25rem",
+                minHeight: "300px",
+                boxSizing: "border-box",
+              }}
             >
               {/* Header */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-sky-400">
+              <div className="flex flex-col gap-3 min-h-[72px]" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", minHeight: "72px" }}>
+                <div className="flex items-center justify-between" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div
+                    className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-sky-400"
+                    style={{ width: "2rem", height: "2rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
+                  >
                     <IconFileText size={18} stroke={1.75} />
                   </div>
-                  <span className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20">
+                  <span
+                    className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20"
+                    style={{ padding: "0.125rem 0.5rem", borderRadius: "2px" }}
+                  >
                     Required
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                     Draft Chapters (1-3)
                   </h3>
-                  <p className="text-xs text-white/50 leading-relaxed font-sans">
+                  <p className="text-xs text-white/50 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.5 }}>
                     Introduction, Literature Review, and Methodology framework.
                   </p>
                 </div>
@@ -570,7 +623,10 @@ export default function NewProjectIntakePage() {
 
               {/* Upload Zone / State */}
               {uploadingState.RESEARCH_DOCUMENT ? (
-                <div className="p-4 bg-[#011B38] border border-[#CC6600]/50 rounded-[2px] flex flex-col gap-3">
+                <div
+                  className="p-4 bg-[#011B38] border border-[#CC6600]/50 rounded-[2px] flex flex-col justify-center gap-3 min-h-[150px]"
+                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.75rem", boxSizing: "border-box" }}
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
                       {uploadingState.RESEARCH_DOCUMENT.fileName}
@@ -579,10 +635,13 @@ export default function NewProjectIntakePage() {
                       {uploadingState.RESEARCH_DOCUMENT.progress}%
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="w-full bg-white/10 overflow-hidden"
+                    style={{ height: "4px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "0px" }}
+                  >
                     <div
-                      className="h-full bg-[#CC6600] transition-all duration-150 ease-out"
-                      style={{ width: `${uploadingState.RESEARCH_DOCUMENT.progress}%` }}
+                      className="h-full transition-all duration-150 ease-out"
+                      style={{ width: `${uploadingState.RESEARCH_DOCUMENT.progress}%`, backgroundColor: "#CC6600", borderRadius: "0px" }}
                     />
                   </div>
                   <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
@@ -591,9 +650,15 @@ export default function NewProjectIntakePage() {
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "RESEARCH_DOCUMENT") ? (
-                <div className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col gap-3">
+                <div
+                  className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col justify-between min-h-[150px]"
+                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}
+                >
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                    <div
+                      className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5"
+                      style={{ width: "1.75rem", height: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
+                    >
                       <IconCheck size={15} stroke={2.5} />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
@@ -606,7 +671,10 @@ export default function NewProjectIntakePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1">
+                  <div
+                    className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "0.625rem", marginTop: "0.25rem" }}
+                  >
                     <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
                       Replace
                       <input
@@ -619,7 +687,7 @@ export default function NewProjectIntakePage() {
                     <button
                       type="button"
                       onClick={() => removeFile("RESEARCH_DOCUMENT")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
                     >
                       <IconTrash size={13} stroke={2} />
                       Remove
@@ -628,11 +696,22 @@ export default function NewProjectIntakePage() {
                 </div>
               ) : (
                 <label
-                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[150px] ${
                     dragActiveCategory === "RESEARCH_DOCUMENT"
                       ? "border-[#CC6600] bg-[#CC6600]/10"
                       : "border-white/15 hover:border-[#CC6600]/60 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
+                  style={{
+                    padding: "1.75rem 1.25rem",
+                    minHeight: "150px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.75rem",
+                    borderRadius: "2px",
+                    boxSizing: "border-box",
+                  }}
                 >
                   <input
                     type="file"
@@ -640,10 +719,13 @@ export default function NewProjectIntakePage() {
                     accept=".pdf,.docx,.doc"
                     onChange={(e) => handleFileInputChange(e, "RESEARCH_DOCUMENT")}
                   />
-                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#CC6600] group-hover:border-[#CC6600]/40 transition-colors">
+                  <div
+                    className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#CC6600] group-hover:border-[#CC6600]/40 transition-colors"
+                    style={{ width: "2rem", height: "2rem", borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
                     <IconCloudUpload size={18} stroke={1.75} />
                   </div>
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem", textAlign: "center" }}>
                     <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
                       Click to browse or drop file
                     </span>
@@ -661,28 +743,44 @@ export default function NewProjectIntakePage() {
               onDragOver={(e) => handleDragOver(e, "DATASET")}
               onDragLeave={(e) => handleDragLeave(e, "DATASET")}
               onDrop={(e) => handleDrop(e, "DATASET")}
-              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all ${
+              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all min-h-[300px] ${
                 dragActiveCategory === "DATASET"
                   ? "border-[#CC6600] bg-[#CC6600]/5 ring-1 ring-[#CC6600]/40"
                   : "border-white/[0.09]"
               }`}
+              style={{
+                padding: "1.5rem",
+                borderRadius: "2px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                gap: "1.25rem",
+                minHeight: "300px",
+                boxSizing: "border-box",
+              }}
             >
               {/* Header */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-emerald-400">
+              <div className="flex flex-col gap-3 min-h-[72px]" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", minHeight: "72px" }}>
+                <div className="flex items-center justify-between" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div
+                    className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-emerald-400"
+                    style={{ width: "2rem", height: "2rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
+                  >
                     <IconDatabase size={18} stroke={1.75} />
                   </div>
-                  <span className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                    Recommended
+                  <span
+                    className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20"
+                    style={{ padding: "0.125rem 0.5rem", borderRadius: "2px" }}
+                  >
+                    Required
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                     Raw Dataset File
                   </h3>
-                  <p className="text-xs text-white/50 leading-relaxed font-sans">
+                  <p className="text-xs text-white/50 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.5 }}>
                     Tabulated respondent survey data or experiment records.
                   </p>
                 </div>
@@ -690,7 +788,10 @@ export default function NewProjectIntakePage() {
 
               {/* Upload Zone / State */}
               {uploadingState.DATASET ? (
-                <div className="p-4 bg-[#011B38] border border-emerald-500/50 rounded-[2px] flex flex-col gap-3">
+                <div
+                  className="p-4 bg-[#011B38] border border-emerald-500/50 rounded-[2px] flex flex-col justify-center gap-3 min-h-[150px]"
+                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.75rem", boxSizing: "border-box" }}
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
                       {uploadingState.DATASET.fileName}
@@ -699,10 +800,13 @@ export default function NewProjectIntakePage() {
                       {uploadingState.DATASET.progress}%
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="w-full bg-white/10 overflow-hidden"
+                    style={{ height: "4px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "0px" }}
+                  >
                     <div
-                      className="h-full bg-emerald-500 transition-all duration-150 ease-out"
-                      style={{ width: `${uploadingState.DATASET.progress}%` }}
+                      className="h-full transition-all duration-150 ease-out"
+                      style={{ width: `${uploadingState.DATASET.progress}%`, backgroundColor: "#10B981", borderRadius: "0px" }}
                     />
                   </div>
                   <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
@@ -711,9 +815,15 @@ export default function NewProjectIntakePage() {
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "DATASET") ? (
-                <div className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col gap-3">
+                <div
+                  className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col justify-between min-h-[150px]"
+                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}
+                >
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                    <div
+                      className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5"
+                      style={{ width: "1.75rem", height: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
+                    >
                       <IconCheck size={15} stroke={2.5} />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
@@ -726,7 +836,10 @@ export default function NewProjectIntakePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1">
+                  <div
+                    className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "0.625rem", marginTop: "0.25rem" }}
+                  >
                     <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
                       Replace
                       <input
@@ -739,7 +852,7 @@ export default function NewProjectIntakePage() {
                     <button
                       type="button"
                       onClick={() => removeFile("DATASET")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
                     >
                       <IconTrash size={13} stroke={2} />
                       Remove
@@ -748,11 +861,22 @@ export default function NewProjectIntakePage() {
                 </div>
               ) : (
                 <label
-                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[150px] ${
                     dragActiveCategory === "DATASET"
                       ? "border-emerald-500 bg-emerald-500/10"
                       : "border-white/15 hover:border-emerald-500/60 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
+                  style={{
+                    padding: "1.75rem 1.25rem",
+                    minHeight: "150px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.75rem",
+                    borderRadius: "2px",
+                    boxSizing: "border-box",
+                  }}
                 >
                   <input
                     type="file"
@@ -760,10 +884,13 @@ export default function NewProjectIntakePage() {
                     accept=".csv,.xlsx,.xls"
                     onChange={(e) => handleFileInputChange(e, "DATASET")}
                   />
-                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors">
+                  <div
+                    className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors"
+                    style={{ width: "2rem", height: "2rem", borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
                     <IconCloudUpload size={18} stroke={1.75} />
                   </div>
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem", textAlign: "center" }}>
                     <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
                       Click to browse or drop file
                     </span>
@@ -781,28 +908,44 @@ export default function NewProjectIntakePage() {
               onDragOver={(e) => handleDragOver(e, "QUESTIONNAIRE")}
               onDragLeave={(e) => handleDragLeave(e, "QUESTIONNAIRE")}
               onDrop={(e) => handleDrop(e, "QUESTIONNAIRE")}
-              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all ${
+              className={`p-6 rounded-[2px] border bg-[#01142B]/85 flex flex-col justify-between gap-5 transition-all min-h-[300px] ${
                 dragActiveCategory === "QUESTIONNAIRE"
                   ? "border-[#CC6600] bg-[#CC6600]/5 ring-1 ring-[#CC6600]/40"
                   : "border-white/[0.09]"
               }`}
+              style={{
+                padding: "1.5rem",
+                borderRadius: "2px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                gap: "1.25rem",
+                minHeight: "300px",
+                boxSizing: "border-box",
+              }}
             >
               {/* Header */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-amber-400">
+              <div className="flex flex-col gap-3 min-h-[72px]" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", minHeight: "72px" }}>
+                <div className="flex items-center justify-between" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div
+                    className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-amber-400"
+                    style={{ width: "2rem", height: "2rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
+                  >
                     <IconListCheck size={18} stroke={1.75} />
                   </div>
-                  <span className="text-[0.625rem] font-mono uppercase px-2 py-0.5 rounded-[2px] bg-white/[0.04] text-white/40 border border-white/[0.08]">
+                  <span
+                    className="text-[0.625rem] font-mono uppercase px-2 py-0.5 rounded-[2px] bg-white/[0.04] text-white/40 border border-white/[0.08]"
+                    style={{ padding: "0.125rem 0.5rem", borderRadius: "2px" }}
+                  >
                     Optional
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                     Survey Instrument
                   </h3>
-                  <p className="text-xs text-white/50 leading-relaxed font-sans">
+                  <p className="text-xs text-white/50 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.5 }}>
                     Likert-scale questionnaire, interview guide, or rating matrix.
                   </p>
                 </div>
@@ -810,7 +953,10 @@ export default function NewProjectIntakePage() {
 
               {/* Upload Zone / State */}
               {uploadingState.QUESTIONNAIRE ? (
-                <div className="p-4 bg-[#011B38] border border-amber-400/50 rounded-[2px] flex flex-col gap-3">
+                <div
+                  className="p-4 bg-[#011B38] border border-amber-400/50 rounded-[2px] flex flex-col justify-center gap-3 min-h-[150px]"
+                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.75rem", boxSizing: "border-box" }}
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
                       {uploadingState.QUESTIONNAIRE.fileName}
@@ -819,10 +965,13 @@ export default function NewProjectIntakePage() {
                       {uploadingState.QUESTIONNAIRE.progress}%
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="w-full bg-white/10 overflow-hidden"
+                    style={{ height: "4px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "0px" }}
+                  >
                     <div
-                      className="h-full bg-amber-400 transition-all duration-150 ease-out"
-                      style={{ width: `${uploadingState.QUESTIONNAIRE.progress}%` }}
+                      className="h-full transition-all duration-150 ease-out"
+                      style={{ width: `${uploadingState.QUESTIONNAIRE.progress}%`, backgroundColor: "#F59E0B", borderRadius: "0px" }}
                     />
                   </div>
                   <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
@@ -831,9 +980,15 @@ export default function NewProjectIntakePage() {
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "QUESTIONNAIRE") ? (
-                <div className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col gap-3">
+                <div
+                  className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col justify-between min-h-[150px]"
+                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}
+                >
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
+                    <div
+                      className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5"
+                      style={{ width: "1.75rem", height: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
+                    >
                       <IconCheck size={15} stroke={2.5} />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
@@ -846,7 +1001,10 @@ export default function NewProjectIntakePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1">
+                  <div
+                    className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "0.625rem", marginTop: "0.25rem" }}
+                  >
                     <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
                       Replace
                       <input
@@ -859,7 +1017,7 @@ export default function NewProjectIntakePage() {
                     <button
                       type="button"
                       onClick={() => removeFile("QUESTIONNAIRE")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors"
+                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
                     >
                       <IconTrash size={13} stroke={2} />
                       Remove
@@ -868,11 +1026,22 @@ export default function NewProjectIntakePage() {
                 </div>
               ) : (
                 <label
-                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[150px] ${
                     dragActiveCategory === "QUESTIONNAIRE"
                       ? "border-amber-400 bg-amber-400/10"
                       : "border-white/15 hover:border-amber-400/60 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
+                  style={{
+                    padding: "1.75rem 1.25rem",
+                    minHeight: "150px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.75rem",
+                    borderRadius: "2px",
+                    boxSizing: "border-box",
+                  }}
                 >
                   <input
                     type="file"
@@ -880,10 +1049,13 @@ export default function NewProjectIntakePage() {
                     accept=".pdf,.docx,.doc"
                     onChange={(e) => handleFileInputChange(e, "QUESTIONNAIRE")}
                   />
-                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-amber-400 group-hover:border-amber-400/40 transition-colors">
+                  <div
+                    className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-amber-400 group-hover:border-amber-400/40 transition-colors"
+                    style={{ width: "2rem", height: "2rem", borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
                     <IconCloudUpload size={18} stroke={1.75} />
                   </div>
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem", textAlign: "center" }}>
                     <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
                       Click to browse or drop file
                     </span>
@@ -900,20 +1072,20 @@ export default function NewProjectIntakePage() {
             <Button
               type="button"
               variant="secondary"
-              size="md"
+              size="sm"
               onClick={() => setCurrentStep(1)}
-              className="px-6"
+              className="w-full sm:w-auto font-bold tracking-wider"
             >
-              ← Back to Scope
+              ← BACK TO SCOPE
             </Button>
             <Button
               type="button"
               variant="primary"
-              size="md"
+              size="sm"
               onClick={handleProceedToStep3}
-              className="px-8 py-3 font-bold tracking-wider"
+              className="w-full sm:w-auto font-bold tracking-wider"
             >
-              Proceed to Review & Submit →
+              PROCEED TO REVIEW →
             </Button>
           </FormFooter>
         </Card>
@@ -921,8 +1093,8 @@ export default function NewProjectIntakePage() {
 
       {/* ── STEP 3: Review & Submit ── */}
       {currentStep === 3 && (
-        <Card className="p-8 md:p-10 flex flex-col gap-8">
-          <div className="border-b border-white/[0.08] pb-5">
+        <Card className="p-8 md:p-10 flex flex-col gap-8" style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
+          <div className="border-b border-white/[0.08] pb-5" style={{ paddingBottom: "1.25rem", borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
             <h2 className="text-base font-bold text-white font-sans">
               Summary Review & Submission
             </h2>
@@ -933,7 +1105,10 @@ export default function NewProjectIntakePage() {
 
           {/* Institutional Affiliation Verification */}
           {profile && (
-            <div className="p-5 md:p-6 rounded-[3px] bg-[#011C38] border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div
+              className="p-5 md:p-6 rounded-[3px] bg-[#011C38] border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5"
+              style={{ marginTop: "1.5rem", padding: "1.25rem 1.5rem", borderRadius: "2px", boxSizing: "border-box" }}
+            >
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs font-mono uppercase text-sky-400 font-bold tracking-wider">
                   Verified Institutional Affiliation
@@ -955,7 +1130,18 @@ export default function NewProjectIntakePage() {
           )}
 
           {/* Research Summary Card */}
-          <div className="flex flex-col gap-6 border border-white/[0.08] rounded-[3px] p-6 md:p-8 bg-white/[0.015]">
+          <div
+            className="flex flex-col gap-6 border border-white/[0.08] rounded-[2px] p-6 md:p-8 bg-white/[0.015]"
+            style={{
+              marginTop: "1.5rem",
+              padding: "1.75rem",
+              borderRadius: "2px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.5rem",
+              boxSizing: "border-box",
+            }}
+          >
             <div className="flex flex-col gap-1.5">
               <span className="text-xs font-mono text-white/40 uppercase tracking-wider font-bold">Research Title</span>
               <span className="text-base font-bold text-white leading-snug">{researchTitle}</span>
@@ -1005,44 +1191,120 @@ export default function NewProjectIntakePage() {
             )}
           </div>
 
-          {/* Academic Integrity Checkbox */}
-          <div className="p-5 md:p-6 rounded-[3px] bg-[#CC6600]/10 border border-[#CC6600]/30">
-            <FormCheckbox
-              label={
-                <span className="font-bold text-white">
-                  Statement of Academic Authorship & Confidentiality
+          {/* Academic Integrity Covenant Card */}
+          <div
+            onClick={() => setIntegrityAgreed(!integrityAgreed)}
+            className={`rounded-[2px] transition-all cursor-pointer select-none border ${
+              integrityAgreed
+                ? "bg-[#CC6600]/10 border-[#CC6600]/50 ring-1 ring-[#CC6600]/30"
+                : "bg-[#01142B]/85 border-white/[0.12] hover:border-white/25"
+            }`}
+            style={{
+              marginTop: "1.5rem",
+              padding: "1.5rem 1.75rem",
+              borderRadius: "2px",
+              border: integrityAgreed ? "1px solid rgba(204, 102, 0, 0.5)" : "1px solid rgba(255, 255, 255, 0.12)",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "1.25rem",
+              boxSizing: "border-box",
+            }}
+          >
+            {/* Custom Styled Checkmark Box */}
+            <div
+              className={`w-5 h-5 rounded-[2px] border flex items-center justify-center transition-all mt-0.5 flex-shrink-0 ${
+                integrityAgreed
+                  ? "bg-[#CC6600] border-[#CC6600] text-white"
+                  : "bg-[#011C38] border-white/30 text-transparent hover:border-[#CC6600]/70"
+              }`}
+              style={{
+                width: "1.375rem",
+                height: "1.375rem",
+                borderRadius: "2px",
+                backgroundColor: integrityAgreed ? "#CC6600" : "#011C38",
+                borderColor: integrityAgreed ? "#CC6600" : "rgba(255, 255, 255, 0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {integrityAgreed && <IconCheck size={15} stroke={3} style={{ color: "#FFFFFF" }} />}
+            </div>
+
+            <div
+              className="flex flex-col gap-1.5 flex-1 min-w-0"
+              style={{ display: "flex", flexDirection: "column", gap: "0.375rem", flex: 1, minWidth: 0 }}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[0.625rem] font-mono font-bold uppercase px-2 py-0.5 rounded-[2px] bg-[#CC6600]/20 text-[#CC6600] border border-[#CC6600]/30 tracking-wider"
+                  style={{ padding: "0.125rem 0.5rem", borderRadius: "2px" }}
+                >
+                  Academic Integrity Covenant
                 </span>
-              }
-              description="I confirm that the submitted questionnaire and dataset belong to my academic thesis or institutional project. I understand JAXIS StatLab operates under strict peer review and non-disclosure standards."
-              checked={integrityAgreed}
-              onChange={(e) => setIntegrityAgreed(e.target.checked)}
-            />
+              </div>
+              <h4 className="font-sans text-sm font-bold text-white tracking-wide">
+                Statement of Academic Authorship & Confidentiality
+              </h4>
+              <p
+                className="text-xs text-white/75 font-sans leading-relaxed"
+                style={{ fontSize: "0.8125rem", lineHeight: 1.55, color: "rgba(255, 255, 255, 0.75)" }}
+              >
+                I confirm that the submitted questionnaire and dataset belong to my academic thesis or institutional project. I understand JAXIS StatLab operates under strict peer review and non-disclosure standards.
+              </p>
+              <div
+                className="flex items-center gap-1.5 text-[0.688rem] font-mono text-emerald-400/90 pt-1"
+                style={{ display: "flex", alignItems: "center", gap: "0.375rem", paddingTop: "0.25rem", color: "#34D399" }}
+              >
+                <IconShieldCheck size={14} stroke={2} />
+                <span>NDA & Non-Disclosure Protected · Peer Review Standard</span>
+              </div>
+            </div>
           </div>
 
-          <FormFooter align="between" className="mt-8 pt-6">
+          <FormFooter
+            align="between"
+            className="mt-8 pt-6"
+            style={{
+              marginTop: "2rem",
+              paddingTop: "1.5rem",
+              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+            }}
+          >
             <Button
               type="button"
               variant="secondary"
-              size="md"
+              size="sm"
               onClick={() => setCurrentStep(2)}
               disabled={isPending}
-              className="px-6"
+              className="w-full sm:w-auto font-bold tracking-wider"
             >
-              ← Back to Attachments
+              ← BACK TO ATTACHMENTS
             </Button>
             <Button
               type="button"
               variant="primary"
-              size="lg"
+              size="sm"
               onClick={handleFinalSubmit}
               loading={isPending}
               disabled={!integrityAgreed}
-              className="px-10 py-3.5 font-bold tracking-wider"
+              className="w-full sm:w-auto font-bold tracking-wider"
             >
-              SUBMIT INTAKE FOR EVALUATION →
+              SUBMIT INTAKE →
             </Button>
           </FormFooter>
         </Card>
+      )}
+
+      {/* ── Floating Responsive Toast Notification ── */}
+      {toast && (
+        <Toast
+          variant={toast.variant}
+          message={toast.message}
+          description={toast.description}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

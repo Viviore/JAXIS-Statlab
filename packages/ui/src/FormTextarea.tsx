@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { IconAlertTriangle } from "@tabler/icons-react";
 
 export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -63,9 +64,19 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
           {...props}
         />
         {error ? (
-          <span className="text-xs text-[#EF4444] font-mono leading-relaxed mt-1 px-0.5">{error}</span>
+          <div
+            className="flex items-center gap-1.5 px-0.5"
+            style={{ marginTop: "0.25rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
+          >
+            <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" style={{ color: "#EF4444", flexShrink: 0 }} />
+            <span className="text-xs text-[#EF4444] font-mono leading-relaxed" style={{ fontSize: "0.75rem", color: "#EF4444" }}>
+              {error}
+            </span>
+          </div>
         ) : helper ? (
-          <span className="text-xs text-white/45 font-sans leading-relaxed mt-1 px-0.5">{helper}</span>
+          <span className="text-xs text-white/45 font-sans leading-relaxed mt-1 px-0.5" style={{ fontSize: "0.75rem" }}>
+            {helper}
+          </span>
         ) : null}
       </div>
     );

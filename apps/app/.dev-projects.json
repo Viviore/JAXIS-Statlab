@@ -1,5 +1,335 @@
 [
   {
+    "id": "proj_1787386836343",
+    "intakeId": "JAXIS-202608-1533",
+    "clientId": "usr_dev_client_001",
+    "researchTitle": "ddddddddddddddd",
+    "researchQuestions": "ddddddddddddddd",
+    "researchObjectives": "ddddddddddddddd",
+    "hypotheses": "ddddddddddddddd",
+    "deadlineRequested": "2026-09-05T00:00:00.000Z",
+    "chapters13": "Profile.pdf",
+    "questionnaire": "Profile.pdf",
+    "masterStatus": "NEW_REQUEST",
+    "packageName": null,
+    "missingInfoReason": null,
+    "deliveredAt": null,
+    "filesPurgeAt": null,
+    "filesPurged": false,
+    "hasActiveDispute": false,
+    "hasPendingRefund": false,
+    "createdAt": "2026-08-22T08:20:36.343Z",
+    "updatedAt": "2026-08-22T08:20:36.343Z",
+    "client": {
+      "id": "usr_dev_client_001",
+      "fullName": "Client Ana Cruz",
+      "email": "client@jaxis.dev",
+      "clientProfile": {
+        "id": "profile_usr_dev_client_001",
+        "userId": "usr_dev_client_001",
+        "institutionSchool": "Central Mindanao Univeristy",
+        "academicProgram": "College of Information Sciences and Computing",
+        "contactNumber": "0976 215 5070",
+        "region": "REGION_10",
+        "createdAt": "2026-08-21T12:01:58.716Z",
+        "updatedAt": "2026-08-21T12:01:58.716Z"
+      }
+    },
+    "files": [
+      {
+        "id": "file_1787386836343_0",
+        "projectId": "proj_1787386836343",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-22T08:20:36.343Z"
+      },
+      {
+        "id": "file_1787386836343_1",
+        "projectId": "proj_1787386836343",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "DATASET",
+        "uploadedAt": "2026-08-22T08:20:36.343Z"
+      },
+      {
+        "id": "file_1787386836343_2",
+        "projectId": "proj_1787386836343",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "QUESTIONNAIRE",
+        "uploadedAt": "2026-08-22T08:20:36.343Z"
+      }
+    ]
+  },
+  {
+    "id": "proj_1787386445330",
+    "intakeId": "JAXIS-202608-1877",
+    "clientId": "usr_dev_client_001",
+    "researchTitle": "adadada",
+    "researchQuestions": "adadada",
+    "researchObjectives": "adadada",
+    "hypotheses": "adadada",
+    "deadlineRequested": "2026-08-29T00:00:00.000Z",
+    "chapters13": "JAXIS_Remaining_Unresolved_Items.pdf",
+    "questionnaire": "Profile.pdf",
+    "masterStatus": "NEW_REQUEST",
+    "packageName": null,
+    "missingInfoReason": null,
+    "deliveredAt": null,
+    "filesPurgeAt": null,
+    "filesPurged": false,
+    "hasActiveDispute": false,
+    "hasPendingRefund": false,
+    "createdAt": "2026-08-22T08:14:05.330Z",
+    "updatedAt": "2026-08-22T08:14:05.330Z",
+    "client": {
+      "id": "usr_dev_client_001",
+      "fullName": "Client Ana Cruz",
+      "email": "client@jaxis.dev",
+      "clientProfile": {
+        "id": "profile_usr_dev_client_001",
+        "userId": "usr_dev_client_001",
+        "institutionSchool": "Central Mindanao Univeristy",
+        "academicProgram": "College of Information Sciences and Computing",
+        "contactNumber": "0976 215 5070",
+        "region": "REGION_10",
+        "createdAt": "2026-08-21T12:01:58.716Z",
+        "updatedAt": "2026-08-21T12:01:58.716Z"
+      }
+    },
+    "files": [
+      {
+        "id": "file_1787386445331_0",
+        "projectId": "proj_1787386445331",
+        "fileName": "JAXIS_Remaining_Unresolved_Items.pdf",
+        "filePath": "intake-uploads/JAXIS_Remaining_Unresolved_Items.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-22T08:14:05.331Z"
+      },
+      {
+        "id": "file_1787386445331_1",
+        "projectId": "proj_1787386445331",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "DATASET",
+        "uploadedAt": "2026-08-22T08:14:05.331Z"
+      },
+      {
+        "id": "file_1787386445331_2",
+        "projectId": "proj_1787386445331",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "QUESTIONNAIRE",
+        "uploadedAt": "2026-08-22T08:14:05.331Z"
+      }
+    ]
+  },
+  {
+    "id": "proj_1787386166686",
+    "intakeId": "JAXIS-202608-3753",
+    "clientId": "usr_dev_client_001",
+    "researchTitle": "ddddddddddddddd",
+    "researchQuestions": "ddddddddddddddd",
+    "researchObjectives": "ddddddddddddddd",
+    "hypotheses": "ddddddddddddddd",
+    "deadlineRequested": "2026-08-29T00:00:00.000Z",
+    "chapters13": "Profile.pdf",
+    "questionnaire": "Profile.pdf",
+    "masterStatus": "NEW_REQUEST",
+    "packageName": null,
+    "missingInfoReason": null,
+    "deliveredAt": null,
+    "filesPurgeAt": null,
+    "filesPurged": false,
+    "hasActiveDispute": false,
+    "hasPendingRefund": false,
+    "createdAt": "2026-08-22T08:09:26.686Z",
+    "updatedAt": "2026-08-22T08:09:26.686Z",
+    "client": {
+      "id": "usr_dev_client_001",
+      "fullName": "Client Ana Cruz",
+      "email": "client@jaxis.dev",
+      "clientProfile": {
+        "id": "profile_usr_dev_client_001",
+        "userId": "usr_dev_client_001",
+        "institutionSchool": "Central Mindanao Univeristy",
+        "academicProgram": "College of Information Sciences and Computing",
+        "contactNumber": "0976 215 5070",
+        "region": "REGION_10",
+        "createdAt": "2026-08-21T12:01:58.716Z",
+        "updatedAt": "2026-08-21T12:01:58.716Z"
+      }
+    },
+    "files": [
+      {
+        "id": "file_1787386166686_0",
+        "projectId": "proj_1787386166686",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-22T08:09:26.686Z"
+      },
+      {
+        "id": "file_1787386166686_1",
+        "projectId": "proj_1787386166686",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "DATASET",
+        "uploadedAt": "2026-08-22T08:09:26.686Z"
+      },
+      {
+        "id": "file_1787386166686_2",
+        "projectId": "proj_1787386166686",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "QUESTIONNAIRE",
+        "uploadedAt": "2026-08-22T08:09:26.686Z"
+      }
+    ]
+  },
+  {
+    "id": "proj_1787385693151",
+    "intakeId": "JAXIS-202608-6490",
+    "clientId": "usr_dev_client_001",
+    "researchTitle": "dddddddddddddd",
+    "researchQuestions": "dddddddddddddd",
+    "researchObjectives": "dddddddddddddd",
+    "hypotheses": "dddddddddddddd",
+    "deadlineRequested": "2026-08-29T00:00:00.000Z",
+    "chapters13": "Profile.pdf",
+    "questionnaire": "Profile.pdf",
+    "masterStatus": "CANCELLED",
+    "packageName": null,
+    "missingInfoReason": null,
+    "deliveredAt": null,
+    "filesPurgeAt": null,
+    "filesPurged": false,
+    "hasActiveDispute": false,
+    "hasPendingRefund": false,
+    "createdAt": "2026-08-22T08:01:33.151Z",
+    "updatedAt": "2026-08-22T08:02:14.332Z",
+    "client": {
+      "id": "usr_dev_client_001",
+      "fullName": "Client Ana Cruz",
+      "email": "client@jaxis.dev",
+      "clientProfile": {
+        "id": "profile_usr_dev_client_001",
+        "userId": "usr_dev_client_001",
+        "institutionSchool": "Central Mindanao Univeristy",
+        "academicProgram": "College of Information Sciences and Computing",
+        "contactNumber": "0976 215 5070",
+        "region": "REGION_10",
+        "createdAt": "2026-08-21T12:01:58.716Z",
+        "updatedAt": "2026-08-21T12:01:58.716Z"
+      }
+    },
+    "files": [
+      {
+        "id": "file_1787385693152_0",
+        "projectId": "proj_1787385693152",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-22T08:01:33.152Z"
+      },
+      {
+        "id": "file_1787385693152_1",
+        "projectId": "proj_1787385693152",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "DATASET",
+        "uploadedAt": "2026-08-22T08:01:33.152Z"
+      },
+      {
+        "id": "file_1787385693152_2",
+        "projectId": "proj_1787385693152",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "QUESTIONNAIRE",
+        "uploadedAt": "2026-08-22T08:01:33.152Z"
+      }
+    ]
+  },
+  {
+    "id": "proj_1787385660323",
+    "intakeId": "JAXIS-202608-3475",
+    "clientId": "usr_dev_client_001",
+    "researchTitle": "dddddddddddddd",
+    "researchQuestions": "dddddddddddddd",
+    "researchObjectives": "dddddddddddddd",
+    "hypotheses": "dddddddddddddd",
+    "deadlineRequested": "2026-08-29T00:00:00.000Z",
+    "chapters13": "Profile.pdf",
+    "questionnaire": "Profile.pdf",
+    "masterStatus": "NEW_REQUEST",
+    "packageName": null,
+    "missingInfoReason": null,
+    "deliveredAt": null,
+    "filesPurgeAt": null,
+    "filesPurged": false,
+    "hasActiveDispute": false,
+    "hasPendingRefund": false,
+    "createdAt": "2026-08-22T08:01:00.323Z",
+    "updatedAt": "2026-08-22T08:01:00.323Z",
+    "client": {
+      "id": "usr_dev_client_001",
+      "fullName": "Client Ana Cruz",
+      "email": "client@jaxis.dev",
+      "clientProfile": {
+        "id": "profile_usr_dev_client_001",
+        "userId": "usr_dev_client_001",
+        "institutionSchool": "Central Mindanao Univeristy",
+        "academicProgram": "College of Information Sciences and Computing",
+        "contactNumber": "0976 215 5070",
+        "region": "REGION_10",
+        "createdAt": "2026-08-21T12:01:58.716Z",
+        "updatedAt": "2026-08-21T12:01:58.716Z"
+      }
+    },
+    "files": [
+      {
+        "id": "file_1787385660323_0",
+        "projectId": "proj_1787385660323",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "RESEARCH_DOCUMENT",
+        "uploadedAt": "2026-08-22T08:01:00.323Z"
+      },
+      {
+        "id": "file_1787385660323_1",
+        "projectId": "proj_1787385660323",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "DATASET",
+        "uploadedAt": "2026-08-22T08:01:00.323Z"
+      },
+      {
+        "id": "file_1787385660323_2",
+        "projectId": "proj_1787385660323",
+        "fileName": "Profile.pdf",
+        "filePath": "intake-uploads/Profile.pdf",
+        "fileType": "application/pdf",
+        "fileCategory": "QUESTIONNAIRE",
+        "uploadedAt": "2026-08-22T08:01:00.323Z"
+      }
+    ]
+  },
+  {
     "id": "proj_sample_001",
     "intakeId": "JAXIS-202608-0001",
     "clientId": "usr_dev_client_001",

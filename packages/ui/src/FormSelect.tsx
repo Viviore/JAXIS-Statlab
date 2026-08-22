@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { IconChevronDown } from "@tabler/icons-react";
+import { IconChevronDown, IconAlertTriangle } from "@tabler/icons-react";
 
 export interface SelectOption {
   value: string;
@@ -102,16 +102,22 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
         </div>
 
         {error ? (
-          <span
-            className="text-xs text-[#EF4444] font-mono leading-relaxed px-0.5"
-            style={{ marginTop: "0.5rem" }}
+          <div
+            className="flex items-center gap-1.5 px-0.5"
+            style={{ marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
           >
-            {error}
-          </span>
+            <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" style={{ color: "#EF4444", flexShrink: 0 }} />
+            <span
+              className="text-xs text-[#EF4444] font-mono leading-relaxed"
+              style={{ fontSize: "0.75rem", color: "#EF4444" }}
+            >
+              {error}
+            </span>
+          </div>
         ) : helper ? (
           <span
             className="text-xs text-white/45 font-sans leading-relaxed px-0.5"
-            style={{ marginTop: "0.5rem" }}
+            style={{ marginTop: "0.375rem", display: "block" }}
           >
             {helper}
           </span>

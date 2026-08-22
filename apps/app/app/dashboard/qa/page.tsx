@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -10,9 +10,63 @@ import Link from "next/link";
 export default function QALeadDashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
 
-  const { projects } = useProjects({
+  const { projects, isLoading } = useProjects({
     initialLoading: false,
   });
+
+  const columns: Column<Project>[] = [
+    {
+      key: "id",
+      header: "Study ID",
+      width: "120px",
+      render: (study) => (
+        <span className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+          {study.id}
+        </span>
+      ),
+    },
+    {
+      key: "title",
+      header: "Project Title",
+      render: (study) => (
+        <span className="text-white font-medium text-sm line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
+          {study.title}
+        </span>
+      ),
+    },
+    {
+      key: "statisticians",
+      header: "Statistician",
+      width: "170px",
+      render: (study) => (
+        <span className="text-slate-300 font-sans text-xs whitespace-nowrap truncate max-w-[170px] block">
+          {study.statisticians || "Dr. Aris Thorne"}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      width: "170px",
+      render: (study) => <StatusBadge status={study.status} />,
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      width: "140px",
+      align: "right",
+      render: (study) => (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setSelectedStudy(study)}
+          className="px-3.5 py-1 font-mono text-xs whitespace-nowrap tracking-wider"
+        >
+          VERIFY STUDY
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full">
@@ -65,49 +119,12 @@ export default function QALeadDashboardPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th className="w-[120px] whitespace-nowrap">Study ID</th>
-                <th>Project Title</th>
-                <th className="w-[170px] whitespace-nowrap">Statistician</th>
-                <th className="w-[170px] whitespace-nowrap">Status</th>
-                <th className="w-[130px] text-right whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.slice(0, 4).map((study) => (
-                <tr key={study.id} className="group">
-                  <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
-                    {study.id}
-                  </td>
-                  <td className="text-white font-medium text-sm">
-                    <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
-                      {study.title}
-                    </span>
-                  </td>
-                  <td className="text-slate-300 font-sans text-xs whitespace-nowrap truncate max-w-[170px]">
-                    {study.statisticians || "Dr. Aris Thorne"}
-                  </td>
-                  <td className="whitespace-nowrap">
-                    <StatusBadge status={study.status} />
-                  </td>
-                  <td className="text-right whitespace-nowrap">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => setSelectedStudy(study)}
-                      className="px-3.5 py-1 font-mono text-xs whitespace-nowrap tracking-wider"
-                    >
-                      VERIFY STUDY
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable<Project>
+          columns={columns}
+          rows={projects.slice(0, 4)}
+          loading={isLoading}
+          className="border-0 rounded-none bg-transparent"
+        />
       </Card>
 
       {/* Modal */}
@@ -125,7 +142,7 @@ export default function QALeadDashboardPage() {
           }
         >
           <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
-            <div className="p-5 sm:px-7 rounded-[3px] bg-white/[0.03] border border-white/[0.08] flex flex-col gap-3.5">
+            <div className="p-4 sm:p-5 rounded-[2px] bg-white/[0.03] border border-white/[0.08] flex flex-col gap-3.5">
               <div className="flex flex-col gap-0.5">
                 <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Primary Statistician:</span>
                 <p className="text-sm font-semibold text-white">{selectedStudy.statisticians || "Dr. Aris Thorne"}</p>

@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
 
         <KpiCard
           label="Monthly Revenue Escrow"
-          value={kpis?.monthlyRevenueEscrow ?? "$42,800"}
+          value={kpis?.monthlyRevenueEscrow ?? "₱485,200"}
           variant="emerald"
           description={kpis?.escrowSecuredRatio ?? "99.4% Secured"}
         />
@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
           }
         >
           <div className="flex flex-col gap-5 text-xs font-sans text-white/80">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 sm:px-7 rounded-[3px] bg-white/[0.03] border border-white/[0.08]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 sm:p-5 rounded-[2px] bg-white/[0.03] border border-white/[0.08]">
               <div>
                 <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Lead Researcher:</span>
                 <p className="text-sm font-semibold text-white mt-1">{selectedStudy.client}</p>

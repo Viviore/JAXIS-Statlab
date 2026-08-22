@@ -1,18 +1,42 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
+import { useSearchParams } from "next/navigation";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, Toast } from "@repo/ui";
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
-export default function ClientDashboardPage() {
+function ClientDashboardContent() {
+  const searchParams = useSearchParams();
   const [projects, setProjects] = useState<ProjectDetailItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStudy, setSelectedStudy] = useState<ProjectDetailItem | null>(null);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
+  const [toast, setToast] = useState<{
+    variant: "success" | "danger" | "warning" | "info";
+    message: string;
+    description?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const created = searchParams.get("created");
+    const intakeId = searchParams.get("intakeId");
+    if (created === "true") {
+      setToast({
+        variant: "success",
+        message: "Study Intake Successfully Submitted",
+        description: intakeId
+          ? `Your research study specifications have been queued for triage. Assigned ID: ${intakeId}`
+          : "Your research study specifications have been queued for triage.",
+      });
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadData() {
@@ -369,7 +393,25 @@ export default function ClientDashboardPage() {
           </div>
         </Modal>
       )}
+
+      {/* ── Floating Responsive Toast Notification ── */}
+      {toast && (
+        <Toast
+          variant={toast.variant}
+          message={toast.message}
+          description={toast.description}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
+  );
+}
+
+export default function ClientDashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <ClientDashboardContent />
+    </Suspense>
   );
 }
 

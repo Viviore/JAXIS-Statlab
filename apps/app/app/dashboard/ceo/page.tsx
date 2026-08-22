@@ -1,16 +1,73 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column } from "@repo/ui";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
 export default function CEODashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
 
-  const { projects } = useProjects({
+  const { projects, isLoading } = useProjects({
     initialLoading: false,
   });
+
+  const columns: Column<Project>[] = [
+    {
+      key: "id",
+      header: "Study ID",
+      width: "120px",
+      render: (study) => (
+        <span className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+          {study.id}
+        </span>
+      ),
+    },
+    {
+      key: "client",
+      header: "Institution / Client",
+      render: (study) => (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-white font-medium group-hover:text-[#CC6600] transition-colors">
+            {study.client}
+          </span>
+          <span className="text-white/40 text-xs font-mono">{study.university}</span>
+        </div>
+      ),
+    },
+    {
+      key: "method",
+      header: "Methodology",
+      width: "220px",
+      render: (study) => (
+        <span className="font-mono text-xs text-white/60 whitespace-nowrap truncate max-w-[220px] block" title={study.method}>
+          {study.method}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      width: "170px",
+      render: (study) => <StatusBadge status={study.status} />,
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      width: "150px",
+      align: "right",
+      render: (study) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSelectedStudy(study)}
+          className="py-1 px-3 whitespace-nowrap font-mono text-xs tracking-wider"
+        >
+          EXECUTIVE AUDIT
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full">
@@ -27,7 +84,7 @@ export default function CEODashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <KpiCard
           label="Gross Pipeline Value"
-          value="$142,500"
+          value="₱1,425,000"
           variant="default"
           badge="+18.4%"
           badgeColor="emerald"
@@ -65,45 +122,12 @@ export default function CEODashboardPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px] text-left border-collapse font-sans text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase tracking-wider">
-                <th className="py-4 px-6">Study ID</th>
-                <th className="py-4 px-6">Institution / Client</th>
-                <th className="py-4 px-6">Methodology</th>
-                <th className="py-4 px-6">Status</th>
-                <th className="py-4 px-6 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.06]">
-              {projects.map((study) => (
-                <tr key={study.id} className="hover:bg-white/[0.03] transition-colors group">
-                  <td className="py-5 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap align-middle">{study.id}</td>
-                  <td className="py-5 px-6 text-white font-medium align-middle">
-                    <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors">
-                      {study.client} <span className="text-white/40 text-xs">({study.university})</span>
-                    </span>
-                  </td>
-                  <td className="py-5 px-6 font-mono text-xs text-white/60 whitespace-nowrap align-middle">{study.method}</td>
-                  <td className="py-5 px-6 whitespace-nowrap align-middle">
-                    <StatusBadge status={study.status} />
-                  </td>
-                  <td className="py-5 px-6 text-right whitespace-nowrap align-middle">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedStudy(study)}
-                      className="py-2 px-3.5 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
-                    >
-                      EXECUTIVE AUDIT
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable<Project>
+          columns={columns}
+          rows={projects}
+          loading={isLoading}
+          className="border-0 rounded-none bg-transparent"
+        />
       </Card>
 
       {/* Modal */}

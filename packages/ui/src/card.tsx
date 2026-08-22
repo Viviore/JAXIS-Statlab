@@ -8,10 +8,12 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   header?: React.ReactNode;
   footer?: React.ReactNode;
+  contentClassName?: string;
+  contentStyle?: React.CSSProperties;
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = "default", children, className = "", header, footer, style, ...props }, ref) => {
+  ({ variant = "default", children, className = "", header, footer, contentClassName = "", contentStyle, style, ...props }, ref) => {
     const isKpi = variant === "kpi";
     const hasZeroPadding = className.includes("p-0");
 
@@ -51,7 +53,18 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             {header}
           </div>
         )}
-        <div className="flex-1 w-full flex flex-col" style={{ flex: 1, width: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+        <div
+          className={`flex-1 w-full flex flex-col ${contentClassName}`}
+          style={{
+            flex: 1,
+            width: "100%",
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem",
+            ...contentStyle,
+          }}
+        >
           {children}
         </div>
         {footer && (

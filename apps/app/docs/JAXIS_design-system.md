@@ -190,3 +190,113 @@ Modal dialogs (`Modal.tsx`) enforce responsive containment:
 - **Role-Scoping**: Dynamically renders role-tailored navigation items (`CLIENT`, `STATISTICIAN`, `SENIOR_QA_LEAD`, `FINANCE_OFFICER`, `CEO`, `ADMIN`).
 - **Exact Active Matching**: Highlights active route with exact pathname matching (`pathname === item.href`) using `bg-[#CC6600]/15 text-white font-semibold`.
 - **Drawer Behavior**: Smooth slide-in from left with `bg-black/70 backdrop-blur-sm` overlay and automatic dismiss when any link is clicked or when clicking the backdrop.
+
+---
+
+## 6. Component Selection & Usage Guide (`@repo/ui`)
+
+Use this matrix to select the correct UI component pattern for each interaction type, layout context, and telemetry state across JAXIS StatLab.
+
+### 6.1. Notification Matrix: `Toast` vs. `Alert` vs. Form Inline Errors
+
+| Component | Scope & Lifetime | Screen Placement | Trigger Context | Example Usage |
+| :--- | :--- | :--- | :--- | :--- |
+| **`Toast`** | **Transient / Auto-Dismiss**<br>• `7000ms` for `success` & `info`<br>• `Persistent` for `danger` & `warning` | Viewport Bottom-Right (`z-[9999]`) via React Portal (`document.body`) | Post-action confirmations spanning redirects, asynchronous job status changes, global success receipts. | • *"Study Intake Submitted — Assigned ID: JAXIS-202608-1877"*<br>• *"Quotation Proposal Approved"*<br>• *"Syntax Verification Package Ready for Download"* |
+| **`Alert`** | **Persistent In-Page Banner**<br>Remains until condition resolves or user dismisses. | In-flow directly above tables, forms, or headers. | Blocking prerequisite warnings, critical workflow notices, form validation summaries. | • *"Profile Verification Required before submitting study intake"*<br>• *"Escrow Payment Locked pending QA verification seal"*<br>• Form submission payload errors. |
+| **Field Error** | **Instant Micro-Validation**<br>Appears below invalid control. | Under specific `FormInput` / `FormTextarea` / `FormSelect`. | Field-level Zod schema validation errors. | • *"Research Title must be at least 3 characters"*<br>• *"Target deadline must be in the future"* |
+
+#### `Toast` Usage Pattern & Features:
+```tsx
+import { Toast } from "@repo/ui";
+
+// Inside page or dashboard component:
+{toast && (
+  <Toast
+    variant={toast.variant} // "success" | "danger" | "warning" | "info"
+    message={toast.message}
+    description={toast.description}
+    onClose={() => setToast(null)}
+  />
+)}
+```
+- **Sticky React Portal**: Renders directly to `document.body` — stays pinned to viewport during scrolling, unaffected by parent CSS animation wrappers.
+- **7-Second Auto-Dismiss**: Runs a 60fps hardware-accelerated bottom countdown line. When the countdown completes, it triggers a smooth exit transition before unmounting.
+- **Hover to Pause**: Pauses the timer whenever the user hovers over the toast (e.g. to read or copy an ID).
+- **Responsive Inset**: `fixed bottom-4 left-4 right-4` on mobile devices; `sm:bottom-6 sm:right-6 sm:left-auto` on tablet/desktop.
+
+---
+
+### 6.2. Data Display: `DataTable` vs. Custom Card Grids vs. `KpiCard`
+
+| Component Pattern | Primary Purpose | Responsive Behavior | When to Use |
+| :--- | :--- | :--- | :--- |
+| **`DataTable`** (`<table>` inside `<Card className="p-0">`) | Multi-attribute, sortable, tabular dataset records. | Wrapped in `<div className="w-full overflow-x-auto">` with `min-w-[680px]` (standard) or `min-w-[850px]` (dense). | • Primary Study Registries (Client Portal, Statistician Workbench, QA Review Desk).<br>• Escrow Transactions & Payout Ledger.<br>• Staff User Management.<br>• QA Audit Logs. |
+| **Custom Card Grid** | Distinct entity inspection or document intake slots. | Single column on mobile (`grid-cols-1`), multi-column on desktop (`md:grid-cols-2 lg:grid-cols-3 gap-6`). | • Document upload intake slots (Chapters 1-3, Raw Dataset, Survey Instrument).<br>• Deliverable Package download bundles.<br>• Quotation pricing tier cards. |
+| **`KpiCard`** (`variant="kpi"`) | Single high-impact metric with trend indicator. | 1-col on mobile, 2-col on phablets, 4-col on desktop (`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`). | • Dashboard summary counters (Active Studies, Awaiting Information, QA Review Queue, Closed Studies). |
+
+#### `DataTable` Implementation Standard:
+```tsx
+<Card className="p-0 overflow-hidden">
+  <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between">
+    <h2 className="text-base font-bold text-white">Active Research Studies</h2>
+  </div>
+  <div className="w-full overflow-x-auto">
+    <table className="w-full min-w-[700px] text-left border-collapse text-sm">
+      <thead>
+        <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono text-white/50 uppercase">
+          <th className="py-3 px-4">Study ID</th>
+          <th className="py-3 px-4">Research Title</th>
+          <th className="py-3 px-4">Target Deadline</th>
+          <th className="py-3 px-4">Status</th>
+          <th className="py-3 px-4 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-white/[0.04]">
+        {/* Table Rows with Tabler icon buttons */}
+      </tbody>
+    </table>
+  </div>
+</Card>
+```
+
+---
+
+### 6.3. Overlays & Windows: `Modal` vs. `Drawer`
+
+| Component | Architecture & Dimensions | Content Capacity | When to Use |
+| :--- | :--- | :--- | :--- |
+| **`Modal`** (`Modal.tsx`) | Centered dialog (`max-w-md` to `max-w-4xl`) with `max-h-[70vh]` body scroll & `Escape` key cleanup. | Focused, discrete task or inspection view. | • Study Specifications Inspector modal.<br>• Quotation calculation review popup.<br>• Destructive action confirmations (suspend staff, revoke access).<br>• File preview or syntax modal. |
+| **`Drawer`** (`Drawer.tsx`) | Full-height off-canvas slide-out sheet from viewport edge. | Deep multi-section navigation or dense parameter configuration. | • Mobile navigation sidebar (`<lg`).<br>• Multi-variable statistical model setup sidebar.<br>• Live audit event stream panel. |
+
+---
+
+### 6.4. Action Primitives: `Button` Hierarchy & Sizing Standards
+
+| Size Prop | Dimensions & Padding | Typography | When to Use |
+| :--- | :--- | :--- | :--- |
+| **`size="sm"`** | `min-h-[30px]`, `padding: 0.35rem 0.875rem` | `text-[0.688rem]` / `11px`, `font-bold tracking-wider` | **Primary standard across all dashboard desks**: Topbar actions (`+ NEW PROJECT INTAKE`), table row actions, form wizard footers (`PROCEED TO ATTACHMENTS →`, `SUBMIT INTAKE →`). |
+| **`size="md"`** | `min-h-[38px]`, `padding: 0.55rem 1.25rem` | `text-xs` / `12px`, `font-semibold` | Modal action footers, authentication forms. |
+| **`size="lg"`** | `min-h-[46px]`, `padding: 0.75rem 1.75rem` | `text-sm` / `14px`, `font-bold` | Public landing page marketing hero CTAs. |
+
+#### `FormFooter` Responsive Button Rule:
+All action buttons placed in form footers must use `className="w-full sm:w-auto font-bold tracking-wider"`:
+- **Mobile (`< 640px`)**: Form footer automatically stacks buttons (`flex-col-reverse`) where every button expands to **100% full width** with identical touch targets.
+- **Desktop (`>= 640px`)**: Buttons sit side-by-side (`justify-between` or `justify-end`) with compact natural widths.
+
+---
+
+### 6.5. Process Guidance: `Stepper`
+- **When to Use**: Linear multi-step workflows (e.g. Project Intake: `01. Scope & Details` → `02. Document Uploads` → `03. Review & Submit`).
+- **Visual Design**: Borderless top profile (zero top glow lines), dark navy glass cards, `#CC6600` active step badges.
+- **Interactive State**: Supports `onStepClick` for bidirectional step navigation when previously completed.
+
+---
+
+### 6.6. Status Telemetry: `StatusBadge` & `Badge`
+- **Mandatory Icon Standard**: Always pair status labels with appropriate `@tabler/icons-react` components (`IconCircleCheck`, `IconClock`, `IconAlertTriangle`, `IconLock`). Zero emojis.
+- **Color Coding**:
+  - `ACTIVE` / `IN_PROGRESS` / `OPEN`: Sky Blue (`#38BDF8` / `bg-sky-500/10`)
+  - `FOR_QA` / `AWAITING_INFORMATION`: Amber (`#F59E0B` / `bg-amber-500/10`)
+  - `APPROVED` / `DELIVERED` / `PAID`: Verification Emerald (`#10B981` / `bg-emerald-500/10`)
+  - `SUSPENDED` / `REJECTED` / `CANCELLED`: Danger Red (`#EF4444` / `bg-red-500/10`)
+

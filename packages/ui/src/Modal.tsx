@@ -14,6 +14,8 @@ export interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  bodyClassName?: string;
+  bodyStyle?: React.CSSProperties;
   size?: ModalSize;
 }
 
@@ -34,6 +36,8 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   footer,
   className = "",
+  bodyClassName = "",
+  bodyStyle,
   size = "lg",
 }) => {
   const actualOpen = open ?? isOpen ?? false;
@@ -76,7 +80,7 @@ export const Modal: React.FC<ModalProps> = ({
       setIsVisible(false);
       exitTimerRef.current = setTimeout(() => {
         setIsRendered(false);
-      }, 200);
+      }, 180);
       return () => {
         if (exitTimerRef.current) {
           clearTimeout(exitTimerRef.current);
@@ -85,76 +89,79 @@ export const Modal: React.FC<ModalProps> = ({
     }
   }, [actualOpen]);
 
-  // RULE_MEM_01: Strict Keyboard Listener Cleanup
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isRendered) {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && actualOpen) {
         onClose();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
+    if (actualOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isRendered, onClose]);
+  }, [actualOpen, onClose]);
 
   if (!isRendered) return null;
 
-  const currentTitle = open ? title : (title ?? cachedContent.title);
-  const currentDesc = open ? description : (description ?? cachedContent.description);
-  const currentChildren = open ? children : (children ?? cachedContent.children);
-  const currentFooter = open ? footer : (footer ?? cachedContent.footer);
+  const currentTitle = actualOpen ? title : cachedContent.title;
+  const currentDesc = actualOpen ? description : cachedContent.description;
+  const currentChildren = actualOpen ? children : cachedContent.children;
+  const currentFooter = actualOpen ? footer : cachedContent.footer;
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
       style={{
         position: "fixed",
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 50,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "1.5rem",
         boxSizing: "border-box",
       }}
-      role="dialog"
-      aria-modal="true"
     >
-      {/* Backdrop with seamless fade in / out */}
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-[#010114]/85 backdrop-blur-md ${
+        className={`fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-200 ${
           isVisible ? "animate-modal-backdrop-in" : "animate-modal-backdrop-out"
         }`}
         style={{
           position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(1, 1, 20, 0.85)",
-          backdropFilter: "blur(12px)",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.82)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
         }}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Modal Dialog Box with seamless scale & translate in / out */}
+      {/* Modal Dialog Card */}
       <div
-        className={`relative z-10 w-full ${sizeClasses[size]} bg-gradient-to-b from-[#011C38] via-[#01162E] to-[#010D1F] border border-white/[0.12] rounded-[2px] shadow-2xl shadow-black/90 text-white overflow-hidden ${
+        className={`relative w-full ${sizeClasses[size]} border border-white/[0.12] rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 ${
           isVisible ? "animate-modal-dialog-in" : "animate-modal-dialog-out"
         } ${className}`}
         style={{
-          position: "relative",
-          zIndex: 10,
-          width: "100%",
-          maxWidth: size === "2xl" ? "56rem" : size === "xl" ? "48rem" : "42rem",
           backgroundColor: "#01162E",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          backgroundImage: "linear-gradient(180deg, rgba(1, 27, 56, 0.95) 0%, rgba(1, 18, 38, 0.98) 100%)",
+          borderColor: "rgba(255, 255, 255, 0.12)",
           borderRadius: "2px",
-          overflow: "hidden",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.85)",
+          boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08)",
           boxSizing: "border-box",
         }}
       >
-        {/* Subtle top edge specular highlight */}
+        {/* Decorative Top Accent Line */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.25] to-transparent"
+          className="absolute top-0 left-0 right-0 h-[1px]"
           style={{
             position: "absolute",
             top: 0,
@@ -175,7 +182,7 @@ export const Modal: React.FC<ModalProps> = ({
             alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "1rem",
-            padding: "0.875rem 1rem", // 14px top/bottom, 1rem (16px) left/right
+            padding: "0.875rem 1rem",
             borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
             boxSizing: "border-box",
           }}
@@ -211,16 +218,29 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* Content Body */}
         <div
-          className="text-sm text-white/90 overflow-y-auto"
+          className={`text-sm text-white/90 overflow-y-auto ${bodyClassName}`}
           style={{
-            padding: "1rem", // 1rem (16px) padding
+            padding: "1rem",
             maxHeight: "82vh",
             overflowY: "auto",
             boxSizing: "border-box",
             fontSize: "0.875rem",
+            ...bodyStyle,
           }}
         >
-          {currentChildren}
+          <div
+            className="modal-body-child-wrapper w-full flex flex-col"
+            style={{
+              paddingLeft: "2px",
+              paddingRight: "2px",
+              paddingTop: 0,
+              paddingBottom: 0,
+              boxSizing: "border-box",
+              width: "100%",
+            }}
+          >
+            {currentChildren}
+          </div>
         </div>
 
         {/* Footer */}
@@ -232,7 +252,7 @@ export const Modal: React.FC<ModalProps> = ({
               justifyContent: "flex-end",
               alignItems: "center",
               gap: "0.75rem",
-              padding: "0.875rem 1rem", // 14px top/bottom, 1rem (16px) left/right
+              padding: "0.875rem 1rem",
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",
               backgroundColor: "rgba(0, 0, 0, 0.35)",
               boxSizing: "border-box",

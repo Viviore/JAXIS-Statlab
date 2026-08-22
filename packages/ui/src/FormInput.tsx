@@ -126,28 +126,45 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         {error ? (
           errorVariant === "banner" ? (
             <div
-              className="flex items-start gap-2.5 rounded-[4px] bg-[#EF4444]/12 border border-[#EF4444]/35 text-[#FCA5A5] text-xs font-sans leading-relaxed"
+              className="flex items-start gap-2.5 rounded-[2px] bg-[#EF4444]/10 border border-[#EF4444]/35 text-[#FCA5A5] text-xs font-sans leading-relaxed"
               style={{
                 marginTop: "0.625rem",
-                padding: "0.75rem 1rem",
+                padding: "0.625rem 0.875rem",
                 lineHeight: "1.45",
+                borderRadius: "2px",
+                borderLeft: "3px solid #EF4444",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.625rem",
+                boxSizing: "border-box",
               }}
             >
-              <IconAlertTriangle className="w-4 h-4 text-[#EF4444] shrink-0 mt-0.5" size={16} stroke={1.5} />
-              <span className="font-normal">{error}</span>
+              <div
+                className="w-5 h-5 rounded-[2px] bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center text-[#EF4444] shrink-0 mt-0.5"
+                style={{ width: "1.25rem", height: "1.25rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px", flexShrink: 0 }}
+              >
+                <IconAlertTriangle size={12} stroke={2} />
+              </div>
+              <span className="font-medium text-white/90">{error}</span>
             </div>
           ) : (
-            <span
-              className="text-xs text-[#EF4444] font-mono leading-relaxed px-0.5"
-              style={{ marginTop: "0.5rem" }}
+            <div
+              className="flex items-center gap-1.5 px-0.5"
+              style={{ marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
             >
-              {error}
-            </span>
+              <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" style={{ color: "#EF4444", flexShrink: 0 }} />
+              <span
+                className="text-xs text-[#EF4444] font-mono leading-relaxed"
+                style={{ fontSize: "0.75rem", color: "#EF4444" }}
+              >
+                {error}
+              </span>
+            </div>
           )
         ) : helper ? (
           <span
             className="text-xs text-white/45 font-sans leading-relaxed px-0.5"
-            style={{ marginTop: "0.5rem" }}
+            style={{ marginTop: "0.375rem", display: "block" }}
           >
             {helper}
           </span>

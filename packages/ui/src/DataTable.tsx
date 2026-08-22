@@ -21,7 +21,7 @@ export interface DataTableProps<T> {
   skeletonRowCount?: number;
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object = Record<string, unknown>>({
   columns,
   rows,
   loading = false,
@@ -77,14 +77,14 @@ export function DataTable<T extends Record<string, unknown>>({
           ) : (
             rows.map((row, rIdx) => (
               <tr
-                key={(row.id as string) ?? rIdx}
+                key={((row as { id?: string }).id) ?? rIdx}
                 onClick={() => onRowClick?.(row)}
                 className={`transition-colors hover:bg-white/[0.03] group ${
                   onRowClick ? "cursor-pointer" : ""
                 }`}
               >
                 {columns.map((col) => {
-                  const content = col.render ? col.render(row) : (row[col.key] as React.ReactNode);
+                  const content = col.render ? col.render(row) : ((row as Record<string, unknown>)[col.key] as React.ReactNode);
                   return (
                     <td
                       key={col.key}

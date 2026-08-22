@@ -54,14 +54,6 @@ export const Stepper: React.FC<StepperProps> = ({
               boxSizing: "border-box",
             }}
           >
-            {/* Active Top Accent Line */}
-            {isActive && (
-              <span
-                className="absolute top-0 left-0 right-0 h-[2px] bg-[#CC6600]"
-                aria-hidden="true"
-              />
-            )}
-
             {/* Top Row: Index Badge + Status Indicator */}
             <div className="flex items-center justify-between w-full mb-3">
               <div

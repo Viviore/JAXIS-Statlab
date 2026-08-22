@@ -667,7 +667,20 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <label className="text-xs font-mono font-bold text-white/60 uppercase">
                 Select File from Device:
               </label>
-              <label className="border-2 border-dashed border-white/20 hover:border-[#CC6600] bg-black/30 hover:bg-black/50 transition-all p-6 rounded-[2px] flex flex-col items-center justify-center gap-2 cursor-pointer text-center">
+              <label
+                className="border-2 border-dashed border-white/20 hover:border-[#CC6600] bg-black/30 hover:bg-black/50 transition-all p-6 rounded-[2px] flex flex-col items-center justify-center gap-2 cursor-pointer text-center"
+                style={{
+                  padding: "1.75rem 1.25rem",
+                  minHeight: "140px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                  borderRadius: "2px",
+                  boxSizing: "border-box",
+                }}
+              >
                 <input
                   type="file"
                   className="hidden"
