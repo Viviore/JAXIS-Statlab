@@ -570,8 +570,10 @@ export async function updateProjectStatus(
   const { projectId, status: targetStatus } = parsed.data;
 
   try {
-    const existing = await db.project.findUnique({
-      where: { id: projectId },
+    const existing = await db.project.findFirst({
+      where: {
+        OR: [{ id: projectId }, { intakeId: projectId }],
+      },
     });
 
     if (!existing) {
@@ -585,7 +587,7 @@ export async function updateProjectStatus(
     assertValidStatusTransition(existing.masterStatus, targetStatus);
 
     const updated = await db.project.update({
-      where: { id: projectId },
+      where: { id: existing.id },
       data: { masterStatus: targetStatus },
       include: {
         client: {
@@ -609,6 +611,13 @@ export async function updateProjectStatus(
       data: updated as ProjectDetailItem,
     };
   } catch (dbError) {
+    if (dbError instanceof Error && dbError.message.includes("INVALID_STATUS_TRANSITION")) {
+      return {
+        success: false,
+        error: { code: "INVALID_STATUS_TRANSITION", message: dbError.message },
+      };
+    }
+
     console.warn("[updateProjectStatus] DB offline, updating in dev cache.", dbError);
 
     const devProjects = readPersistedDevProjects();
@@ -648,7 +657,8 @@ export async function updateProjectStatus(
 }
 
 /**
- * 5. Admin requests missing information, transitioning status to AWAITING_INFORMATION.
+ * 5. Admin requests missing information from client.
+ * Transitions project to AWAITING_INFORMATION and records reason.
  */
 export async function requestMissingInfo(
   input: unknown
@@ -676,8 +686,10 @@ export async function requestMissingInfo(
   const { projectId, reason } = parsed.data;
 
   try {
-    const existing = await db.project.findUnique({
-      where: { id: projectId },
+    const existing = await db.project.findFirst({
+      where: {
+        OR: [{ id: projectId }, { intakeId: projectId }],
+      },
     });
 
     if (!existing) {
@@ -690,7 +702,7 @@ export async function requestMissingInfo(
     assertValidStatusTransition(existing.masterStatus, "AWAITING_INFORMATION");
 
     const updated = await db.project.update({
-      where: { id: projectId },
+      where: { id: existing.id },
       data: {
         masterStatus: "AWAITING_INFORMATION",
         missingInfoReason: reason.trim(),
@@ -717,6 +729,13 @@ export async function requestMissingInfo(
       data: updated as ProjectDetailItem,
     };
   } catch (dbError) {
+    if (dbError instanceof Error && dbError.message.includes("INVALID_STATUS_TRANSITION")) {
+      return {
+        success: false,
+        error: { code: "INVALID_STATUS_TRANSITION", message: dbError.message },
+      };
+    }
+
     console.warn("[requestMissingInfo] DB offline, updating in dev cache.", dbError);
 
     const devProjects = readPersistedDevProjects();
@@ -760,8 +779,10 @@ export async function markIntakeComplete(
   }
 
   try {
-    const existing = await db.project.findUnique({
-      where: { id: projectId },
+    const existing = await db.project.findFirst({
+      where: {
+        OR: [{ id: projectId }, { intakeId: projectId }],
+      },
     });
 
     if (!existing) {
@@ -774,7 +795,7 @@ export async function markIntakeComplete(
     assertValidStatusTransition(existing.masterStatus, "UNDER_EVALUATION");
 
     const updated = await db.project.update({
-      where: { id: projectId },
+      where: { id: existing.id },
       data: {
         masterStatus: "UNDER_EVALUATION",
         missingInfoReason: null,
@@ -801,6 +822,13 @@ export async function markIntakeComplete(
       data: updated as ProjectDetailItem,
     };
   } catch (dbError) {
+    if (dbError instanceof Error && dbError.message.includes("INVALID_STATUS_TRANSITION")) {
+      return {
+        success: false,
+        error: { code: "INVALID_STATUS_TRANSITION", message: dbError.message },
+      };
+    }
+
     console.warn("[markIntakeComplete] DB offline, updating in dev cache.", dbError);
 
     const devProjects = readPersistedDevProjects();

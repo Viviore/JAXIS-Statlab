@@ -10,6 +10,10 @@ import {
   IconBolt,
   IconFlame,
   IconSparkles,
+  IconCheck,
+  IconDeviceFloppy,
+  IconReceipt,
+  IconX,
 } from "@tabler/icons-react";
 import {
   PACKAGES_CATALOG,
@@ -39,6 +43,10 @@ interface QuotationBuilderModalProps {
   existingQuotation?: QuotationDetailItem | null;
   customCatalog?: CommercialCatalogData;
   onSuccess?: () => void;
+}
+
+function Peso({ className = "" }: { className?: string }) {
+  return <span className={`font-sans font-normal opacity-85 select-none inline-block ${className}`}>₱</span>;
 }
 
 export function QuotationBuilderModal({
@@ -340,15 +348,16 @@ export function QuotationBuilderModal({
         isOpen={isOpen}
         onClose={onClose}
         title={`Commercial Proposal Builder · ${projectIntakeId || "Research Study"}`}
-        size="4xl"
+        size="5xl"
+        className="min-h-[min(820px,calc(100dvh-2.5rem))]"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch py-4 px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch py-8 px-8 sm:px-10 flex-1">
           {/* ── Left Column: Configuration Controls (7 cols) ── */}
-          <div className="lg:col-span-7 flex flex-col gap-7 justify-between">
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-7">
             {/* 1. Analytical Package Tier Selection */}
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
+                <label className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
                   1. Select Analytical Tier
                 </label>
                 <span className="text-xs font-mono text-[#FFA040] font-bold">
@@ -356,7 +365,7 @@ export function QuotationBuilderModal({
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-2 gap-4">
                 {(Object.keys(packagesCatalog) as PackageName[])
                   .filter((pkgKey) => packagesCatalog[pkgKey]?.isActive !== false)
                   .map((pkgKey) => {
@@ -369,35 +378,58 @@ export function QuotationBuilderModal({
                         key={pkgKey}
                         type="button"
                         onClick={() => handleSelectPackage(pkgKey)}
-                        className={`w-full p-4 rounded-[4px] text-left transition-all border flex flex-col justify-between cursor-pointer min-h-[105px] ${
+                        className={`w-full p-4.5 sm:p-5 rounded-[2px] text-left transition-all border flex flex-col justify-between cursor-pointer group relative min-h-[145px] ${
                           isSelected
-                            ? "bg-[#CC6600]/15 border-[#CC6600] ring-1 ring-[#CC6600] shadow-lg shadow-[#CC6600]/5"
-                            : "bg-[#010D1F] border-white/[0.08] hover:border-white/20 hover:bg-[#01142B]"
+                            ? "bg-[#012247] border-[#FFA040] shadow-md shadow-[#CC6600]/15"
+                            : "bg-[#01142B]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#011B38]"
                         }`}
                       >
-                        <div>
-                          <div className="flex items-center justify-between gap-1.5 mb-2">
-                            <span className="text-xs font-mono font-bold text-[#FFA040]">
+                        {/* Top: Tier ID + Category Badge */}
+                        <div className="w-full space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={`text-xs font-mono font-bold tracking-wider ${isSelected ? "text-[#FFA040]" : "text-sky-400"}`}>
                               {pkg.id}
                             </span>
-                            <span className="text-[0.625rem] font-sans font-medium text-white/50 bg-white/[0.04] px-2 py-0.5 rounded-[2px] border border-white/[0.06]">
+                            <span className="text-[0.625rem] font-mono uppercase font-semibold text-white/50 bg-white/[0.04] px-2 py-0.5 rounded-[2px] border border-white/[0.06]">
                               {pkg.badge}
                             </span>
                           </div>
-                          <div className="text-xs font-semibold text-white line-clamp-1 leading-snug">
-                            {pkg.name}
+
+                          <div className="text-sm font-bold text-white leading-snug">
+                            {pkg.name.replace(/^[A-Z0-9-]+\s*/, "")}
                           </div>
+
+                          <p className="text-xs text-white/55 line-clamp-2 leading-relaxed font-sans pt-0.5">
+                            {pkg.tagline}
+                          </p>
                         </div>
 
-                        <div className="mt-4 flex items-center justify-between text-xs font-mono">
-                          <span className="text-white font-bold">
-                            {pkg.maxPrice === null
-                              ? `₱${pkg.minPrice.toLocaleString()}+`
-                              : pkg.minPrice === pkg.maxPrice
-                              ? `₱${pkg.minPrice.toLocaleString()}`
-                              : `₱${pkg.minPrice.toLocaleString()} – ₱${pkg.maxPrice.toLocaleString()}`}
+                        {/* Bottom: Price Range & Payment Model */}
+                        <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between gap-2 w-full">
+                          <span className="font-mono text-xs font-bold text-white whitespace-nowrap">
+                            {pkg.maxPrice === null ? (
+                              <>
+                                <Peso />
+                                {pkg.minPrice.toLocaleString()}+
+                              </>
+                            ) : pkg.minPrice === pkg.maxPrice ? (
+                              <>
+                                <Peso />
+                                {pkg.minPrice.toLocaleString()}
+                              </>
+                            ) : (
+                              <>
+                                <Peso />
+                                {pkg.minPrice.toLocaleString()} – <Peso />
+                                {pkg.maxPrice.toLocaleString()}
+                              </>
+                            )}
                           </span>
-                          <span className="text-[0.625rem] font-sans text-white/40">
+                          <span className={`text-[0.625rem] font-mono uppercase px-2 py-0.5 rounded-[2px] border font-semibold ${
+                            pkg.isUpfront
+                              ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                              : "bg-sky-500/10 text-sky-300 border-sky-500/30"
+                          }`}>
                             {pkg.isUpfront ? "100% Upfront" : "50% Milestone"}
                           </span>
                         </div>
@@ -405,43 +437,33 @@ export function QuotationBuilderModal({
                     );
                   })}
               </div>
-            </div>
 
-            {/* 2. Base Package Price */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                  2. Base Package Price
-                </label>
-                <span className="text-xs font-mono text-white/50 bg-white/[0.04] px-2.5 py-1 rounded-[2px] border border-white/[0.06]">
-                  Allowed: ₱{currentPkgDef.minPrice.toLocaleString()}
-                  {currentPkgDef.maxPrice !== null ? ` – ₱${currentPkgDef.maxPrice.toLocaleString()}` : "+"}
-                </span>
-              </div>
-
-              {/* Clean structured input group with dedicated currency prefix */}
-              <div className="flex items-center rounded-[4px] border border-white/[0.14] bg-[#010114] focus-within:border-[#CC6600] focus-within:ring-1 focus-within:ring-[#CC6600]/50 transition-all overflow-hidden h-12">
-                <div
-                  className="h-full flex items-center bg-white/[0.05] border-r border-white/[0.10] text-[#FF9433] font-mono text-xs font-bold select-none whitespace-nowrap"
-                  style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
-                >
-                  PHP ₱
+              {/* Integrated Base Package Fee Input */}
+              <div className="p-4 sm:p-4.5 rounded-[2px] bg-[#01142B] border border-white/[0.12] flex items-center justify-between gap-4 mt-3 shadow-sm">
+                <div className="space-y-1">
+                  <div className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                    Base Package Fee
+                  </div>
+                  <div className="text-xs font-mono text-white/50">
+                    Allowed: <Peso />{currentPkgDef.minPrice.toLocaleString()}
+                    {currentPkgDef.maxPrice !== null ? <> – <Peso />{currentPkgDef.maxPrice.toLocaleString()}</> : "+"}
+                  </div>
                 </div>
-                <input
-                  type="number"
-                  min={currentPkgDef.minPrice}
-                  max={currentPkgDef.maxPrice || undefined}
-                  step="50"
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(Number(e.target.value))}
-                  style={{
-                    paddingLeft: "1.25rem",
-                    paddingRight: "1.25rem",
-                    MozAppearance: "textfield",
-                    appearance: "textfield",
-                  }}
-                  className="flex-1 h-full bg-transparent text-lg font-mono font-bold text-white focus:outline-none placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
+
+                <div className="flex items-center rounded-[2px] border border-white/[0.16] bg-[#010D1F] focus-within:border-[#FFA040] focus-within:ring-1 focus-within:ring-[#FFA040]/30 transition-all overflow-hidden h-11 w-60 sm:w-64">
+                  <div className="h-full px-3.5 flex items-center bg-white/[0.05] border-r border-white/[0.12] text-[#FFA040] font-mono text-xs font-bold select-none whitespace-nowrap">
+                    PHP (<Peso />)
+                  </div>
+                  <input
+                    type="number"
+                    min={currentPkgDef.minPrice}
+                    max={currentPkgDef.maxPrice || undefined}
+                    step="50"
+                    value={basePrice}
+                    onChange={(e) => setBasePrice(Number(e.target.value))}
+                    className="flex-1 h-full px-4 bg-transparent text-base font-mono font-bold text-white focus:outline-none placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
               </div>
 
               {!priceValidation.valid && (
@@ -452,18 +474,18 @@ export function QuotationBuilderModal({
               )}
             </div>
 
-            {/* 3. Priority Add-Ons */}
-            <div className="space-y-3">
+            {/* 2. Optional Priority Add-Ons (Streamlined Checklist) */}
+            <div className="space-y-3 pt-1">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                  3. Optional Priority Add-Ons
+                <label className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
+                  2. Optional Priority Add-Ons
                 </label>
                 <span className="text-xs font-mono text-[#FFA040] font-bold">
-                  {activeAddOnsList.length > 0 ? `${activeAddOnsList.length} Active` : "None Selected"}
+                  {activeAddOnsList.length > 0 ? `${activeAddOnsList.length} Selected` : "None"}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3.5">
+              <div className="space-y-3">
                 {Object.keys(addOnsCatalog)
                   .filter((addonKey) => addOnsCatalog[addonKey]?.isActive !== false)
                   .map((addonKey) => {
@@ -476,72 +498,84 @@ export function QuotationBuilderModal({
                         key={addonKey}
                         type="button"
                         onClick={() => toggleAddOn(addonKey)}
-                        className={`w-full p-3 px-3.5 rounded-[4px] text-left transition-all border flex flex-col justify-between cursor-pointer min-h-[64px] group ${
+                        className={`w-full p-3.5 sm:p-4 rounded-[2px] text-left transition-all border flex items-center justify-between cursor-pointer group ${
                           isChecked
-                            ? "bg-[#CC6600]/15 border-[#CC6600] ring-1 ring-[#CC6600] shadow-lg shadow-[#CC6600]/5"
-                            : "bg-[#010D1F] border-white/[0.08] hover:border-white/20 hover:bg-[#01142B]"
+                            ? "bg-[#012247] border-[#FFA040] shadow-sm"
+                            : "bg-[#01142B]/80 border-white/[0.08] hover:border-white/20 hover:bg-[#011B38]"
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 w-full">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            {getAddOnIcon(addonKey)}
-                            <span className="text-xs font-semibold text-white truncate leading-tight">
-                              {addon.name}
-                            </span>
-                          </div>
-                          <span className="text-xs font-mono font-bold text-[#FFA040] flex-shrink-0">
-                            +₱{addon.defaultPrice.toLocaleString()}
-                          </span>
-                        </div>
-
-                        <div className="mt-2 flex items-center justify-between gap-2 w-full">
-                          <span className="text-[0.625rem] font-mono font-medium text-white/50 bg-white/[0.04] px-1.5 py-0.5 rounded-[2px] border border-white/[0.06] uppercase tracking-wider truncate">
-                            {addon.badge}
-                          </span>
-                          <span
-                            className={`font-mono text-[0.625rem] uppercase px-2 py-0.5 rounded-[2px] font-bold transition-colors whitespace-nowrap flex-shrink-0 ${
+                        <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-3">
+                          {/* Custom Checkbox */}
+                          <div
+                            className={`w-4 h-4 rounded-[2px] flex items-center justify-center border transition-all flex-shrink-0 ${
                               isChecked
-                                ? "bg-[#CC6600] text-white border border-[#CC6600]"
-                                : "bg-white/[0.04] text-white/40 group-hover:text-white/70 border border-white/[0.06]"
+                                ? "bg-[#CC6600] border-[#CC6600] text-white"
+                                : "border-white/20 bg-white/[0.02] group-hover:border-white/40"
                             }`}
                           >
-                            {isChecked ? "✓ Added" : "+ Add"}
+                            {isChecked && <IconCheck size={12} stroke={3} />}
+                          </div>
+
+                          <div className={isChecked ? "text-amber-400" : "text-white/40"}>
+                            {getAddOnIcon(addonKey)}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-white truncate">
+                                {addon.name}
+                              </span>
+                              <span className="text-[0.625rem] font-mono text-white/40 uppercase tracking-wider hidden sm:inline-block">
+                                · {addon.badge}
+                              </span>
+                            </div>
+                            <p className="text-xs text-white/55 line-clamp-1 leading-relaxed font-sans pt-0.5">
+                              {addon.tagline}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex-shrink-0">
+                          <span className={`text-xs font-mono font-bold px-3 py-1 rounded-[2px] border ${
+                            isChecked
+                              ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                              : "bg-white/[0.04] text-white/60 border-white/[0.08]"
+                          }`}>
+                            +<Peso />{addon.defaultPrice.toLocaleString()}
                           </span>
                         </div>
                       </button>
                     );
-                })}
+                  })}
               </div>
             </div>
 
-            {/* 4. Notes & Validity */}
-            <div className="space-y-3">
+            {/* 3. Scope Clarifications & Validity Window */}
+            <div className="pt-2">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                    4. Scope Clarifications
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
+                    3. Scope Clarifications
                   </label>
                   <input
                     type="text"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. Include full Chapter 4 write-up and SPSS scripts..."
-                    style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
-                    className="w-full h-11 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[4px] text-xs text-white placeholder:text-white/30 focus:outline-none transition-colors"
+                    className="w-full h-11.5 px-4 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[2px] text-xs text-white placeholder:text-white/30 focus:outline-none transition-colors font-sans"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
                     Validity Window
                   </label>
                   <select
                     value={expiresInDays}
                     onChange={(e) => setExpiresInDays(Number(e.target.value))}
-                    style={{ paddingLeft: "1.25rem", paddingRight: "2rem" }}
-                    className="w-full h-11 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[4px] text-xs font-mono text-white focus:outline-none transition-colors cursor-pointer"
+                    className="w-full h-11.5 px-4 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[2px] text-xs font-mono text-white focus:outline-none transition-colors cursor-pointer"
                   >
-                    <option value={3}>3 Days (Standard Policy)</option>
+                    <option value={3}>3 Days (Standard)</option>
                     <option value={5}>5 Days</option>
                     <option value={7}>7 Days</option>
                     <option value={14}>14 Days</option>
@@ -551,105 +585,147 @@ export function QuotationBuilderModal({
             </div>
           </div>
 
-          {/* ── Right Column: Modern Live Summary Card (5 cols) ── */}
-          <div className="lg:col-span-5 p-7 rounded-[4px] bg-[#01142B] border border-white/[0.12] flex flex-col justify-between shadow-2xl space-y-6 h-full min-h-[580px]">
-            <div className="space-y-6">
+          {/* ── Right Column: Clean Commercial Summary Card (5 cols) ── */}
+          <div className="lg:col-span-5 p-6 sm:p-7 rounded-[2px] bg-[#01142B] border border-white/[0.12] flex flex-col justify-between shadow-2xl space-y-6 h-full min-h-[660px]">
+            <div className="space-y-5">
+              {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
-                <span className="text-xs font-semibold uppercase tracking-wider text-white flex items-center gap-2">
-                  <IconShieldCheck size={18} stroke={1.5} className="text-emerald-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-white flex items-center gap-2 font-mono">
+                  <IconReceipt size={16} stroke={1.5} className="text-sky-400" />
                   <span>Quotation Overview</span>
                 </span>
-                <span className="text-xs font-sans px-2.5 py-1 rounded-[2px] bg-white/[0.06] text-white/70 border border-white/[0.08]">
+                <span className="text-[0.6875rem] font-mono font-semibold px-2.5 py-0.5 rounded-[2px] bg-white/[0.06] text-white/70 border border-white/[0.08]">
                   {breakdown?.isUpfrontEnforced ? "100% Upfront" : "50% Milestone"}
                 </span>
               </div>
 
-              {/* Study Info */}
-              <div className="space-y-1.5">
-                <div className="text-xs font-mono text-[#FFA040] font-bold tracking-wide">
+              {/* Study Telemetry Header */}
+              <div className="p-4 rounded-[2px] bg-[#010D1F]/90 border border-white/[0.06] space-y-1.5">
+                <div className="text-[0.6875rem] font-mono text-[#FFA040] font-bold tracking-wider uppercase">
                   {projectIntakeId || "JAXIS-STUDY"}
                 </div>
-                <div className="text-sm font-semibold text-white leading-snug" title={projectTitle}>
+                <div className="text-xs font-semibold text-white leading-snug line-clamp-2" title={projectTitle}>
                   {projectTitle || "Research Study"}
                 </div>
                 {clientName && (
-                  <div className="text-xs text-white/50">
-                    Lead Researcher: {clientName}
+                  <div className="text-[0.6875rem] text-white/45 font-mono pt-0.5">
+                    Lead Researcher: <span className="text-white/75">{clientName}</span>
                   </div>
                 )}
               </div>
 
               {/* Itemized Line Items */}
-              <div className="p-4 rounded-[4px] bg-[#010D1F] border border-white/[0.06] space-y-3 text-xs">
-                <div className="flex justify-between items-center text-white/80">
-                  <span className="truncate pr-2 font-medium">{currentPkgDef.name}</span>
-                  <span className="font-mono font-semibold text-white">₱{breakdown?.basePrice.toLocaleString()}</span>
-                </div>
-
-                {activeAddOnsList.map((addon) => (
-                  <div key={addon.name} className="flex justify-between items-center text-amber-300 text-xs">
-                    <span className="truncate pr-2">+ {ADDONS_CATALOG[addon.name].name}</span>
-                    <span className="font-mono font-semibold">₱{addon.amount}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Totals Telemetry */}
-              <div className="space-y-3 pt-2">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-white/60">Total Contract Sum</span>
-                  <span className="text-2xl font-mono font-bold text-[#38BDF8]">
-                    ₱{breakdown?.totalAmount.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-baseline">
-                  <span className="text-xs text-white/60">Downpayment Due</span>
-                  <span className="text-base font-mono font-bold text-emerald-400">
-                    ₱{breakdown?.downpaymentRequired.toLocaleString()}
-                    <span className="text-xs text-emerald-300/70 font-normal ml-1.5 font-sans">
-                      ({breakdown?.downpaymentPercentage}%)
+              <div className="p-4 rounded-[2px] bg-[#010D1F]/90 border border-white/[0.06] space-y-3 text-xs">
+                {/* Main Analytical Package */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-white">
+                    <span className="font-bold text-xs">{currentPkgDef.name}</span>
+                    <span className="font-mono font-bold text-white flex-shrink-0">
+                      <Peso />{breakdown?.basePrice.toLocaleString()}
                     </span>
-                  </span>
+                  </div>
+                  {currentPkgDef.deliverables && currentPkgDef.deliverables.length > 0 && (
+                    <ul className="space-y-2 pt-1">
+                      {currentPkgDef.deliverables.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-[0.6875rem] text-white/65 leading-relaxed font-sans pr-1">
+                          <span className="text-sky-400 font-bold select-none">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
-                <div className="flex justify-between items-center text-xs text-white/40 pt-3 border-t border-white/[0.06]">
-                  <span>Quote Validity</span>
-                  <span className="text-white/80 font-medium">{expiresInDays} Days</span>
-                </div>
+                {/* Selected Priority Add-Ons */}
+                {activeAddOnsList.length > 0 && (
+                  <div className="pt-3 border-t border-white/[0.06] space-y-2">
+                    <div className="text-[0.625rem] font-mono uppercase text-amber-300 font-semibold tracking-wider">
+                      Selected Add-Ons:
+                    </div>
+                    {activeAddOnsList.map((addon) => {
+                      const addonDef = ADDONS_CATALOG[addon.name];
+                      return (
+                        <div key={addon.name} className="flex justify-between items-center text-amber-300 text-xs">
+                          <span className="text-[0.75rem] truncate pr-2">+ {addonDef?.name || addon.name}</span>
+                          <span className="font-mono font-bold text-amber-400 flex-shrink-0 text-[0.75rem]">
+                            <Peso />{addon.amount.toLocaleString()}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Actions Block */}
-            <div className="space-y-3 pt-6 border-t border-white/[0.10]">
-              <button
-                type="button"
-                onClick={() => setConfirmIssueModalOpen(true)}
-                disabled={isSubmitting || isIssuingDirect || !priceValidation.valid}
-                className="w-full h-12 rounded-[4px] bg-[#CC6600] hover:bg-[#E67300] active:bg-[#B35900] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#CC6600]/25 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
-              >
-                <IconSend size={16} stroke={2} />
-                <span>Issue Quote to Client →</span>
-              </button>
+            {/* Bottom Group: Totals & Action Controls */}
+            <div className="space-y-5">
+              {/* Totals Telemetry */}
+              <div className="p-4.5 rounded-[2px] bg-white/[0.02] border border-white/[0.06] space-y-3">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-white/60 font-sans">Total Contract Sum</span>
+                  <span className="text-xl font-mono font-bold text-[#38BDF8]">
+                    <Peso />{breakdown?.totalAmount.toLocaleString()}
+                  </span>
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-white/60 font-sans">
+                    {breakdown?.isUpfrontEnforced ? "Full Payment Due" : "Initial Escrow Deposit (50%)"}
+                  </span>
+                  <span className="text-sm font-mono font-bold text-emerald-400">
+                    <Peso />{breakdown?.downpaymentRequired.toLocaleString()}
+                  </span>
+                </div>
+
+                {!breakdown?.isUpfrontEnforced && (
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-white/50 font-sans">Final Balance on Completion (50%)</span>
+                    <span className="text-xs font-mono font-bold text-white/70">
+                      <Peso />{((breakdown?.totalAmount || 0) - (breakdown?.downpaymentRequired || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center text-[0.6875rem] text-white/40 pt-2.5 border-t border-white/[0.06] font-mono">
+                  <span>Quote Validity Window</span>
+                  <span className="text-white/80 font-bold">{expiresInDays} Days</span>
+                </div>
+              </div>
+
+              {/* Actions Block */}
+              <div className="space-y-3 pt-1">
                 <button
                   type="button"
-                  onClick={handleSaveDraft}
+                  onClick={() => setConfirmIssueModalOpen(true)}
                   disabled={isSubmitting || isIssuingDirect || !priceValidation.valid}
-                  className="w-full h-10 rounded-[4px] bg-[#012E57] hover:bg-[#013D73] border border-[#38BDF8]/30 hover:border-[#38BDF8]/60 text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                  className="w-full h-12 rounded-[2px] bg-gradient-to-b from-[#E67300] to-[#CC6600] text-white border border-[#CC6600] border-t-[#FFA040]/70 border-b-[#994D00] font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md shadow-[#CC6600]/20 hover:shadow-[0_2px_12px_rgba(204,102,0,0.4)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                 >
-                  <span>{isSubmitting ? "Saving..." : "Save Draft"}</span>
+                  <IconSend size={15} stroke={2} />
+                  <span>Issue Quote to Client →</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={isSubmitting || isIssuingDirect}
-                  className="w-full h-10 rounded-[4px] bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.14] hover:border-white/25 text-white/70 hover:text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting || isIssuingDirect || !priceValidation.valid}
+                    className="w-full h-10 rounded-[2px] bg-white/[0.05] hover:bg-white/[0.09] active:bg-white/[0.12] border border-white/15 hover:border-sky-400/40 text-white/90 hover:text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                  >
+                    <IconDeviceFloppy size={14} stroke={1.5} className="text-sky-400" />
+                    <span>{isSubmitting ? "Saving..." : "Save Draft"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={isSubmitting || isIssuingDirect}
+                    className="w-full h-10 rounded-[2px] bg-white/[0.02] hover:bg-white/[0.06] active:bg-white/[0.09] border border-white/10 hover:border-white/20 text-white/60 hover:text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <IconX size={14} stroke={1.5} />
+                    <span>Cancel</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -667,7 +743,7 @@ export function QuotationBuilderModal({
           <p className="leading-relaxed">
             You are about to issue a formal commercial quote of{" "}
             <strong className="text-[#38BDF8] font-mono font-bold">
-              ₱{breakdown?.totalAmount.toLocaleString()}
+              <Peso />{breakdown?.totalAmount.toLocaleString()}
             </strong>{" "}
             for study <span className="font-mono text-white">{projectIntakeId}</span>.
           </p>
@@ -679,12 +755,12 @@ export function QuotationBuilderModal({
             </div>
             <div className="flex justify-between">
               <span className="text-white/50 font-sans">Total Sum:</span>
-              <span className="text-[#38BDF8] font-bold">₱{breakdown?.totalAmount.toLocaleString()}</span>
+              <span className="text-[#38BDF8] font-bold"><Peso />{breakdown?.totalAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-white/50 font-sans">Required Downpayment:</span>
               <span className="text-emerald-400 font-bold">
-                ₱{breakdown?.downpaymentRequired.toLocaleString()} ({breakdown?.downpaymentPercentage}%)
+                <Peso />{breakdown?.downpaymentRequired.toLocaleString()} ({breakdown?.downpaymentPercentage}%)
               </span>
             </div>
             <div className="flex justify-between">

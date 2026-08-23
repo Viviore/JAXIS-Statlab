@@ -157,7 +157,6 @@ function ClientDashboardContent() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
                   <span className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
                     ACTION REQUIRED: Commercial Quotation Ready for Review
                   </span>
@@ -199,7 +198,6 @@ function ClientDashboardContent() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
                   <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
                     ACTION REQUIRED: Additional Files or Information Needed
                   </span>
