@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useTransition, use } from "react";
 import Link from "next/link";
 import {
+  PageHeader,
   Card,
   StatusBadge,
   Button,
@@ -11,36 +12,18 @@ import {
   Toast,
 } from "@repo/ui";
 import {
-  IconDownload,
   IconCheck,
   IconUpload,
   IconCloudUpload,
   IconFileText,
   IconDatabase,
   IconClipboardList,
-  IconTrash,
-  IconArrowLeft,
-  IconUser,
-  IconSchool,
-  IconBook,
-  IconMapPin,
-  IconShieldCheck,
-  IconSparkles,
-  IconCalendarEvent,
-  IconNotes,
-  IconAtom,
-  IconHelpCircle,
-  IconClock,
-  IconChecklist,
   IconCopy,
   IconReceipt,
 } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
+import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
-import {
-  getFileMeta,
-  triggerFileDownload,
-} from "@/lib/file-utils";
 import type { ProjectDetailItem, ProjectFileItem } from "@/features/projects/schemas";
 import type { FileCategory } from "@prisma/client";
 
@@ -48,14 +31,7 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const STAGES = [
-  { id: 1, stepNumber: "01", label: "Intake Submitted", statuses: ["NEW_REQUEST", "AWAITING_INFORMATION"] },
-  { id: 2, stepNumber: "02", label: "Feasibility Evaluation", statuses: ["UNDER_EVALUATION"] },
-  { id: 3, stepNumber: "03", label: "Quotation & SOW", statuses: ["QUOTE_SENT", "CLIENT_APPROVED", "SOW_PENDING", "SOW_SIGNED"] },
-  { id: 4, stepNumber: "04", label: "Active Computation", statuses: ["AWAITING_PAYMENT", "ACTIVE", "EXPERT_ASSIGNED", "IN_PROGRESS", "SLA_PAUSED", "SCOPE_CREEP_HALTED"] },
-  { id: 5, stepNumber: "05", label: "QA Peer Review", statuses: ["FOR_QA", "QA_REVISION"] },
-  { id: 6, stepNumber: "06", label: "Deliverables Released", statuses: ["DELIVERED", "REVISION_REQUESTED", "CLOSED"] },
-];
+
 
 const CATEGORY_OPTIONS: {
   id: string;
@@ -66,20 +42,20 @@ const CATEGORY_OPTIONS: {
   formatLabel: string;
 }[] = [
   {
-    id: "DATASET",
-    label: "Raw Dataset Matrix",
-    value: "DATASET",
-    desc: "Excel (.xlsx), CSV, or SPSS data matrix",
-    accept: ".xlsx,.xls,.csv,.sav,.dta",
-    formatLabel: "XLSX, CSV, SPSS (.SAV) (Max 15MB)",
-  },
-  {
     id: "PROPOSAL",
     label: "Research Proposal",
     value: "RESEARCH_DOCUMENT",
     desc: "Chapters 1-3 manuscript (.pdf, .docx)",
     accept: ".pdf,.docx,.doc",
     formatLabel: "PDF, DOCX (Max 15MB)",
+  },
+  {
+    id: "DATASET",
+    label: "Raw Dataset Matrix",
+    value: "DATASET",
+    desc: "Excel (.xlsx), CSV, or SPSS data matrix",
+    accept: ".xlsx,.xls,.csv,.sav,.dta",
+    formatLabel: "XLSX, CSV, SPSS (.SAV) (Max 15MB)",
   },
   {
     id: "QUESTIONNAIRE",
@@ -123,69 +99,6 @@ function formatRegion(regionCode?: string | null): string {
   return map[regionCode] || regionCode.replace(/_/g, " ");
 }
 
-function getStageIntelligence(status: string): { title: string; desc: string; sla: string; nextAction: string } {
-  switch (status) {
-    case "NEW_REQUEST":
-    case "UNDER_EVALUATION":
-      return {
-        title: "Initial Review & Feasibility Check",
-        desc: "Our statistical team is reviewing your research questions, data files, and study goals to prepare an accurate pricing quote and timeline.",
-        sla: "Quote & proposal expected in 24–48 hours",
-        nextAction: "Sit tight — we'll notify you as soon as your quote is ready for review.",
-      };
-    case "AWAITING_INFORMATION":
-      return {
-        title: "Action Required: Additional Files Needed",
-        desc: "Our statistical team needs some missing files or clarification before we can proceed. Please read the note above and upload what's needed.",
-        sla: "Review paused waiting for your upload",
-        nextAction: "Upload the requested file(s) below and click 'Submit Files & Continue Review'",
-      };
-    case "QUOTE_SENT":
-    case "CLIENT_APPROVED":
-    case "SOW_PENDING":
-    case "SOW_SIGNED":
-      return {
-        title: "Quote & Agreement Ready",
-        desc: "Your project quote and statistical roadmap are ready. Review the terms and complete the initial milestone to begin statistical work.",
-        sla: "Waiting for your review & approval",
-        nextAction: "Review and accept your quote to assign your dedicated statistician",
-      };
-    case "AWAITING_PAYMENT":
-    case "ACTIVE":
-    case "EXPERT_ASSIGNED":
-    case "IN_PROGRESS":
-      return {
-        title: "Statistical Analysis In Progress",
-        desc: "Your assigned lead statistician is actively running calculations, testing hypotheses, and formatting tables into clear APA 7th format.",
-        sla: "Analysis is actively running on schedule",
-        nextAction: "No action needed. We will notify you once calculations are complete.",
-      };
-    case "FOR_QA":
-    case "QA_REVISION":
-      return {
-        title: "Quality Review & Accuracy Check",
-        desc: "A Senior Quality Lead is independently re-checking all numbers, formulas, and interpretations to ensure 100% accuracy for your defense.",
-        sla: "Quality check in progress",
-        nextAction: "Almost done — our team is verifying results before final release.",
-      };
-    case "DELIVERED":
-    case "CLOSED":
-      return {
-        title: "Completed & Ready for Download",
-        desc: "All completed Chapter 4 findings, formatted tables, and statistical scripts are approved and ready in your file vault below.",
-        sla: "Available for download anytime",
-        nextAction: "Download your completed tables and write-up from the files section below.",
-      };
-    default:
-      return {
-        title: "Study In Progress",
-        desc: "Your research project is actively tracked and managed under JAXIS StatLab quality standards.",
-        sla: "Tracked in real time",
-        nextAction: "Track your study timeline and milestone updates here.",
-      };
-  }
-}
-
 function getCategoryIcon(category: string) {
   switch (category) {
     case "DATASET":
@@ -206,10 +119,7 @@ function getCategoryIcon(category: string) {
   }
 }
 
-function getFileExtension(fileName: string): string {
-  const parts = fileName.split(".");
-  return parts.length > 1 ? parts.pop()!.toUpperCase() : "FILE";
-}
+
 
 export default function ClientProjectDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
@@ -223,7 +133,6 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
     description?: string;
     variant: "success" | "danger" | "info";
   } | null>(null);
-  const [copiedId, setCopiedId] = useState(false);
 
   // File deletion & resolution state
   const [fileToDelete, setFileToDelete] = useState<ProjectFileItem | null>(null);
@@ -233,10 +142,12 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
   // File Upload State
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedUploadFile, setSelectedUploadFile] = useState<File | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("DATASET");
-  const [uploadCategory, setUploadCategory] = useState<FileCategory>("DATASET");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("PROPOSAL");
+  const [uploadCategory, setUploadCategory] = useState<FileCategory>("RESEARCH_DOCUMENT");
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [isUploading, startUploadTransition] = useTransition();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function loadProject() {
@@ -253,27 +164,14 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
     loadProject();
   }, [projectId]);
 
-  const getStageIndex = (status: string) => {
-    for (let i = 0; i < STAGES.length; i++) {
-      if (STAGES[i]!.statuses.includes(status)) {
-        return i;
-      }
-    }
-    return 0;
-  };
-
-  const activeStageIdx = project ? getStageIndex(project.masterStatus) : 0;
-
   const handleCopyId = () => {
     if (!project) return;
     navigator.clipboard.writeText(project.intakeId);
-    setCopiedId(true);
     setToastMessage({
       message: "Copied to Clipboard",
       description: `Study ID "${project.intakeId}" has been copied to your clipboard.`,
       variant: "info",
     });
-    setTimeout(() => setCopiedId(false), 2000);
   };
 
   const handleDeleteFile = () => {
@@ -307,16 +205,97 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
     });
   };
 
-  const handleDownloadFile = (filePath: string, fileName: string) => {
-    triggerFileDownload(filePath, fileName);
-    setToastMessage({
-      message: "Download Initiated",
-      description: `Transferring "${fileName}" to your local device.`,
-      variant: "info",
-    });
-  };
+
 
   const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15MB Storage Defense Limit
+
+  const validateUploadedFile = (
+    file: File,
+    categoryId: string
+  ): { valid: boolean; error?: string } => {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return {
+        valid: false,
+        error: `File size exceeds the 15MB limit (${(file.size / (1024 * 1024)).toFixed(2)} MB). Please compress your file.`,
+      };
+    }
+
+    const category = CATEGORY_OPTIONS.find((c) => c.id === categoryId);
+    if (!category) return { valid: true };
+
+    const allowedExtensions = category.accept
+      .split(",")
+      .map((ext) => ext.trim().toLowerCase());
+    const fileName = file.name.toLowerCase();
+    const lastDotIndex = fileName.lastIndexOf(".");
+    const fileExt = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : "";
+
+    const isAllowed = allowedExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!isAllowed) {
+      return {
+        valid: false,
+        error: `Invalid file format "${fileExt || "unknown"}". The "${category.label}" category requires: ${category.formatLabel.split(" (Max")[0]}.`,
+      };
+    }
+
+    return { valid: true };
+  };
+
+  const handleCategorySelect = (optId: string, optValue: FileCategory) => {
+    setSelectedCategoryId(optId);
+    setUploadCategory(optValue);
+    if (selectedUploadFile) {
+      const validation = validateUploadedFile(selectedUploadFile, optId);
+      if (!validation.valid) {
+        setSelectedUploadFile(null);
+        setUploadError(validation.error || null);
+        setToastMessage({
+          message: "File Format Incompatible",
+          description: validation.error || "Please select a compatible file format.",
+          variant: "danger",
+        });
+      } else {
+        setUploadError(null);
+      }
+    } else {
+      setUploadError(null);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const validation = validateUploadedFile(file, selectedCategoryId);
+      if (!validation.valid) {
+        setUploadError(validation.error || "Invalid file format.");
+        setSelectedUploadFile(null);
+        setToastMessage({
+          message: "Upload Rejected",
+          description: validation.error || "Selected file type is not supported.",
+          variant: "danger",
+        });
+        return;
+      }
+      setSelectedUploadFile(file);
+      setUploadError(null);
+    }
+  };
 
   const handleUploadFile = () => {
     if (!selectedUploadFile || !project) {
@@ -426,140 +405,31 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
     project.masterStatus === "CLIENT_APPROVED" ||
     project.masterStatus === "SOW_PENDING";
 
-  const stageIntel = getStageIntelligence(project.masterStatus);
-
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
-      {/* ── Unified Telemetry Header & Progress Console ── */}
-      <Card className="p-6 md:p-8 bg-[#01142B]/95 border-white/[0.10] shadow-2xl relative overflow-hidden flex flex-col gap-6">
-        {/* Top Bar: Back Link + Breadcrumbs + Interactive ID + Status Badge */}
-        <div className="flex items-center justify-between gap-4 flex-wrap border-b border-white/[0.08] pb-4">
-          <Link
-            href="/dashboard/client/projects"
-            className="inline-flex items-center gap-2 text-xs font-mono text-white/60 hover:text-[#CC6600] transition-colors uppercase tracking-wider group"
-          >
-            <IconArrowLeft size={14} stroke={1.5} className="group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to My Studies</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            {/* Interactive 1-Click Copy Study Identifier */}
-            <button
-              type="button"
-              onClick={handleCopyId}
-              title="Click to copy Study ID"
-              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-[#CC6600] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/40 px-2.5 py-1 rounded-[2px] tracking-wider transition-all cursor-pointer"
-            >
-              {copiedId ? (
-                <>
-                  <IconCheck size={13} stroke={2.5} className="text-emerald-400" />
-                  <span className="text-emerald-400">COPIED!</span>
-                </>
-              ) : (
-                <>
-                  <span>{project.intakeId}</span>
-                  <IconCopy size={13} stroke={1.5} className="opacity-60" />
-                </>
-              )}
-            </button>
-
-            <StatusBadge
-              status={project.masterStatus}
-              label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
-              pulse={project.masterStatus === "IN_PROGRESS" || project.masterStatus === "FOR_QA"}
-            />
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
+      <PageHeader
+        title={project.researchTitle}
+        description={`Study ID: ${project.intakeId} · Primary Client: ${project.client.fullName} · Submitted ${new Date(
+          project.createdAt
+        ).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} at ${new Date(
+          project.createdAt
+        ).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}`}
+        breadcrumbs={[
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Client Portal", href: "/dashboard/client" },
+          { label: "Projects", href: "/dashboard/client/projects" },
+          { label: project.intakeId },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/client/projects">
+              <Button variant="secondary" size="sm">
+                ← BACK TO MY STUDIES
+              </Button>
+            </Link>
           </div>
-        </div>
-
-        {/* Middle Section: Research Title & Target Deadline */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="flex flex-col gap-2 min-w-0 max-w-3xl">
-            <div className="flex items-center gap-2 text-[0.688rem] font-mono text-white/50 uppercase">
-              <span className="text-[#CC6600] font-bold">RESEARCH STUDY</span>
-              <span>•</span>
-              <span>
-                SUBMITTED ON{" "}
-                {new Date(project.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight leading-snug break-words">
-              {project.researchTitle}
-            </h1>
-          </div>
-
-          {/* Target Milestone Counter Box */}
-          <div className="flex items-center gap-3.5 bg-[#010D1F] border border-white/[0.08] hover:border-white/[0.15] px-4 py-3 rounded-[2px] flex-shrink-0 self-start md:self-auto shadow-sm transition-colors">
-            <div className="h-9 w-9 rounded-[2px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
-              <IconCalendarEvent size={18} stroke={1.75} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                Target Defense Deadline
-              </span>
-              <span className="text-sm font-mono font-bold text-amber-300">
-                {new Date(project.deadlineRequested).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section: Connected Linear Pipeline Stepper */}
-        <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-3">
-          <div className="flex items-center justify-between text-xs font-mono uppercase flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <IconSparkles size={14} stroke={1.5} className="text-[#CC6600]" />
-              <span className="text-white/90 font-bold tracking-wider">Statistical Lifecycle Progress</span>
-            </div>
-            <div className="text-[0.625rem] font-mono uppercase text-white/50 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 rounded-[2px] flex items-center gap-1.5">
-              <span>Stage {activeStageIdx + 1} of {STAGES.length}</span>
-              <span>•</span>
-              <span className="text-amber-400 font-bold">{STAGES[activeStageIdx]?.label}</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-            {STAGES.map((stage, idx) => {
-              const isPast = idx < activeStageIdx;
-              const isCurrent = idx === activeStageIdx;
-
-              return (
-                <div
-                  key={stage.id}
-                  className={`p-3 rounded-[2px] border transition-all flex flex-col gap-1.5 ${
-                    isCurrent
-                      ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-sm ring-1 ring-[#CC6600]/40"
-                      : isPast
-                      ? "bg-white/[0.03] border-white/[0.10] text-white/85"
-                      : "bg-[#010D1F]/50 border-white/[0.05] text-white/35"
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-[0.625rem] font-mono">
-                    <span className="font-bold opacity-60">{stage.stepNumber}</span>
-                    {isPast ? (
-                      <span className="text-emerald-400 flex items-center gap-0.5 font-bold">
-                        <IconCheck size={10} stroke={2.5} /> DONE
-                      </span>
-                    ) : isCurrent ? (
-                      <span className="text-amber-400 font-bold animate-pulse">● ACTIVE</span>
-                    ) : null}
-                  </div>
-                  <span className="font-mono text-[0.688rem] font-bold uppercase tracking-wider truncate">
-                    {stage.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </Card>
+        }
+      />
 
       {error && <Alert variant="danger">{error}</Alert>}
       {toastMessage && (
@@ -571,470 +441,302 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
         />
       )}
 
-      {/* ── Missing Information Banner (if AWAITING_INFORMATION) ── */}
-      {project.masterStatus === "AWAITING_INFORMATION" && (
-        <Card className="p-6 md:p-7 border border-amber-500/25 bg-amber-500/[0.04] flex flex-col gap-5 mt-2">
-          <div className="flex items-center gap-2.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
-            <h3 className="text-sm font-mono font-bold text-amber-400 uppercase tracking-wider">
-              Action Required: Additional Information or Files Needed
-            </h3>
-          </div>
-          <p className="text-xs text-white/90 leading-relaxed font-sans bg-black/40 p-4 rounded-[2px] border border-white/[0.08] mt-1">
-            &ldquo;{project.missingInfoReason || "Please review and attach the required dataset or questionnaire."}&rdquo;
-          </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-3 pt-4 border-t border-amber-500/20">
-            <p className="text-[0.688rem] text-white/50 font-mono">
-              Please upload the requested file(s) in the files section below, then click submit.
-            </p>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleResolveMissingInfo}
-              loading={isResolving}
-              className="py-1.5 px-4 font-mono text-xs font-bold tracking-wider whitespace-nowrap"
-            >
-              SUBMIT FILES &amp; CONTINUE REVIEW →
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {/* ── Commercial Proposal Banner for Client Review ── */}
-      {project.masterStatus === "QUOTE_SENT" && (
-        <Card className="p-5 border border-amber-500/40 bg-amber-500/[0.08] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="h-10 w-10 rounded-[2px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 flex-shrink-0">
-              <IconReceipt size={20} stroke={1.75} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
-                  ACTION REQUIRED: Commercial Quotation &amp; Proposal Ready
-                </span>
-              </div>
-              <p className="text-xs text-white/80 font-sans mt-0.5">
-                Our statistical team has prepared your customized scope and deliverables schedule. Review and accept your quote to lock your dedicated statistician.
-              </p>
-            </div>
-          </div>
-
-          <Link href={`/dashboard/client/projects/${project.id}/quote`} className="flex-shrink-0">
-            <Button
-              variant="primary"
-              size="md"
-              className="gap-2 whitespace-nowrap bg-[#CC6600] text-white hover:bg-[#E67300]"
-            >
-              <span>Review Proposal &amp; SOW →</span>
-            </Button>
-          </Link>
-        </Card>
-      )}
-
-      {project.masterStatus === "CLIENT_APPROVED" && (
-        <Card className="p-4 border border-emerald-500/30 bg-emerald-500/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-              <IconCheck size={16} stroke={2} />
-            </div>
-            <div>
-              <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">
-                Proposal Approved · SOW Agreement In Preparation
+      {/* ── Governance Status Action Bar ── */}
+      <Card className="p-4 sm:p-5 border-l-4 border-l-[#CC6600]">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-xs font-mono text-white/50 uppercase font-bold tracking-wider">
+                Current Master Status:
               </span>
-              <p className="text-[0.688rem] text-white/60 font-sans mt-0.5">
-                Your commercial terms have been confirmed. You will be notified when your formal SOW contract is ready for digital signature.
-              </p>
+              <StatusBadge
+                status={project.masterStatus}
+                label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
+                pulse={project.masterStatus === "IN_PROGRESS" || project.masterStatus === "FOR_QA"}
+              />
+              <button
+                type="button"
+                onClick={handleCopyId}
+                title="Click to copy Study ID"
+                className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2 py-0.5 rounded-[2px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1 group/btn ml-1"
+              >
+                <span>{project.intakeId}</span>
+                <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+              </button>
             </div>
           </div>
 
-          <Link href={`/dashboard/client/projects/${project.id}/quote`} className="flex-shrink-0">
-            <Button variant="secondary" size="sm" className="whitespace-nowrap">
-              View Quote Details
-            </Button>
-          </Link>
-        </Card>
-      )}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {project.masterStatus === "QUOTE_SENT" && (
+              <Link href={`/dashboard/client/projects/${project.id}/quote`}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="text-xs font-mono font-bold tracking-wider whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300]"
+                >
+                  <IconReceipt size={14} stroke={1.5} />
+                  <span>REVIEW COMMERCIAL PROPOSAL →</span>
+                </Button>
+              </Link>
+            )}
 
-      {/* ── LEVEL ROW 1: Research Problem & Stage Intelligence ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {/* Left (2 cols): Research Problem & Objectives Dossier (3-Column Bento Grid) */}
-        <div className="lg:col-span-2 flex flex-col">
-          <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5 flex-wrap gap-2">
-              <div className="flex items-center gap-2.5">
-                <IconNotes size={18} stroke={1.5} className="text-white/60" />
-                <h2 className="text-base font-bold text-white font-sans">
-                  Research Scope &amp; Objectives
-                </h2>
-              </div>
-              <span className="text-[0.625rem] font-mono uppercase font-bold text-white/60 bg-white/[0.04] border border-white/[0.10] px-2 py-0.5 rounded-[2px] tracking-wider">
-                STUDY OVERVIEW
-              </span>
-            </div>
+            {project.masterStatus === "CLIENT_APPROVED" && (
+              <Link href={`/dashboard/client/projects/${project.id}/quote`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
+                >
+                  <IconFileText size={14} stroke={1.5} />
+                  <span>VIEW QUOTE DETAILS</span>
+                </Button>
+              </Link>
+            )}
 
-            {/* 3-Column Tactical Bento Grid (Clean Monochrome) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 flex-1">
-              {/* Column 1: Core Research Questions */}
-              <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex flex-col gap-2.5 h-full">
-                <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
-                  <IconHelpCircle size={14} stroke={1.5} className="text-[#CC6600] flex-shrink-0" />
-                  <span className="text-[0.688rem] font-mono uppercase text-white/90 font-bold tracking-wider truncate">
-                    01 · Research Questions
-                  </span>
-                </div>
-                <div className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans flex-1">
-                  {project.researchQuestions || (
-                    <span className="italic text-white/40">No specific research questions provided yet.</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Column 2: Research Objectives */}
-              <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex flex-col gap-2.5 h-full">
-                <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
-                  <IconNotes size={14} stroke={1.5} className="text-sky-400 flex-shrink-0" />
-                  <span className="text-[0.688rem] font-mono uppercase text-white/90 font-bold tracking-wider truncate">
-                    02 · Objectives &amp; Goals
-                  </span>
-                </div>
-                <div className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans flex-1">
-                  {project.researchObjectives || (
-                    <span className="italic text-white/40">No specific research objectives provided yet.</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Column 3: Theoretical Hypotheses */}
-              <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex flex-col gap-2.5 h-full">
-                <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
-                  <IconAtom size={14} stroke={1.5} className="text-emerald-400 flex-shrink-0" />
-                  <span className="text-[0.688rem] font-mono uppercase text-white/90 font-bold tracking-wider truncate">
-                    03 · Hypotheses
-                  </span>
-                </div>
-                <div className="text-xs text-white/80 whitespace-pre-line leading-relaxed font-sans flex-1">
-                  {project.hypotheses ? (
-                    project.hypotheses
-                  ) : (
-                    <span className="italic text-white/40">
-                      No hypotheses specified during initial submission.
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Right (1 col): Progress & Next Steps (Level with Left Card) */}
-        <div className="lg:col-span-1 flex flex-col">
-          <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5 shadow-lg">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
-              <div className="flex items-center gap-2">
-                <IconSparkles size={16} stroke={1.5} className="text-[#CC6600]" />
-                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  Progress &amp; Next Steps
-                </h3>
-              </div>
-              <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1.5 tracking-wider">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                ACTIVE STATUS
-              </span>
-            </div>
-
-            {/* Current Focus Block */}
-            <div className="flex flex-col gap-4 flex-1">
-              <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[0.625rem] font-mono uppercase text-[#FFA040] font-bold tracking-wider">
-                    CURRENT PHASE
-                  </span>
-                  <span className="text-[0.625rem] font-mono text-white/40 uppercase">
-                    STAGE 0{activeStageIdx + 1} OF 06
-                  </span>
-                </div>
-                <h4 className="text-sm font-bold text-white font-sans tracking-tight leading-snug">
-                  {stageIntel.title}
-                </h4>
-                <p className="text-xs text-white/65 leading-relaxed font-sans mt-0.5">
-                  {stageIntel.desc}
-                </p>
-              </div>
-
-              {/* Next Client Action Directive */}
-              <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5 text-[0.625rem] font-mono uppercase text-white/60 font-bold tracking-wider">
-                  <IconChecklist size={13} stroke={1.75} className="text-[#CC6600]" />
-                  <span>What You Need To Do</span>
-                </div>
-                <p className="text-xs font-semibold text-white/90 font-sans leading-relaxed">
-                  {stageIntel.nextAction}
-                </p>
-              </div>
-            </div>
-
-            {/* Estimated SLA & Turnaround Footer */}
-            <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.08] flex items-center gap-3.5 mt-auto">
-              <div className="h-9 w-9 rounded-[2px] bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 flex-shrink-0">
-                <IconClock size={16} stroke={1.75} />
-              </div>
-              <div className="flex flex-col min-w-0 flex-1 gap-0.5">
-                <span className="text-[0.625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                  Estimated Timeline
-                </span>
-                <span className="text-xs font-mono font-semibold text-amber-300 leading-snug break-words">
-                  {stageIntel.sla}
-                </span>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* ── LEVEL ROW 2: Attached Datasets & Institutional Dossier ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {/* Left (2 cols): Attached Documents & Datasets (Tactical Table & Dropzone Registry) */}
-        <div className="lg:col-span-2 flex flex-col">
-          <Card className="p-6 md:p-8 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-4 gap-3">
-              <div>
-                <h2 className="text-base font-bold text-white font-sans flex items-center gap-2.5">
-                  <IconDatabase size={18} stroke={1.5} className="text-white/60" />
-                  <span>Your Uploaded Files &amp; Datasets</span>
-                </h2>
-                <p className="text-xs text-white/50 mt-1 font-mono">
-                  {project.files.length} file(s) attached to this study
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                {isPreSow && (
-                  <span className="text-[0.688rem] font-mono text-white/60 bg-white/[0.04] border border-white/[0.10] px-2.5 py-1 rounded-[2px] whitespace-nowrap">
-                    EDITABLE
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Document Registry Table */}
-            {project.files.length === 0 ? (
-              <div
+            {isPreSow && (
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setSelectedUploadFile(null);
                   setUploadError(null);
                   setIsUploadModalOpen(true);
                 }}
-                className="border-2 border-dashed border-white/15 hover:border-[#CC6600]/60 bg-white/[0.02] hover:bg-white/[0.04] transition-all p-10 rounded-[2px] flex flex-col items-center justify-center gap-3 cursor-pointer text-center group flex-1 my-2"
+                className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
               >
-                <div className="h-11 w-11 rounded-full bg-white/[0.05] group-hover:bg-[#CC6600]/15 flex items-center justify-center text-white/50 group-hover:text-amber-400 transition-colors text-lg font-mono">
-                  <IconUpload size={20} stroke={1.5} />
+                <IconUpload size={14} stroke={1.5} />
+                <span>UPLOAD DOCUMENT</span>
+              </Button>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {/* ── Missing Information Banner (if AWAITING_INFORMATION) ── */}
+      {project.masterStatus === "AWAITING_INFORMATION" && (
+        <Card className="p-5 bg-amber-500/[0.04] border-l-4 border-l-amber-500 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <span className="text-xs font-mono text-amber-400 font-bold uppercase">
+              Active Missing Information Request:
+            </span>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleResolveMissingInfo}
+              loading={isResolving}
+              className="text-xs font-mono font-bold tracking-wider"
+            >
+              SUBMIT FILES &amp; CONTINUE REVIEW →
+            </Button>
+          </div>
+          <p className="text-xs text-white/90 leading-relaxed font-sans bg-black/30 p-4 rounded-[2px] border border-white/[0.08]">
+            &ldquo;{project.missingInfoReason || "Please review and attach the requested dataset or questionnaire."}&rdquo;
+          </p>
+        </Card>
+      )}
+
+      {/* ── Main Inspection Layout ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left 2 Cols: Research Content, Commercial Proposal, & Datasets */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Commercial Proposal & Quotation Card */}
+          {(project.masterStatus === "QUOTE_SENT" || project.masterStatus === "CLIENT_APPROVED") && (
+            <Card className="p-6 bg-[#01142B] border border-white/[0.08] flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <IconReceipt size={18} stroke={1.5} className="text-[#CC6600]" />
+                  <h3 className="text-sm font-bold text-white font-sans">
+                    Commercial Proposal &amp; Quotation
+                  </h3>
                 </div>
-                <span className="text-xs font-bold text-white group-hover:text-amber-300 font-sans">
-                  No files uploaded yet. Click here to upload your research files or data.
-                </span>
-                <span className="text-[0.688rem] text-white/40 font-mono">
-                  Accepts PDF, Word (.docx), Excel (.xlsx, .csv), and SPSS (.sav) up to 15MB
+                <span className="text-[0.625rem] font-mono px-2 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
+                  {project.masterStatus === "CLIENT_APPROVED" ? "ACCEPTED & CONFIRMED" : "READY FOR REVIEW"}
                 </span>
               </div>
-            ) : (
-              <div className="flex flex-col gap-4 flex-1">
-                {/* Table Header Bar */}
-                <div className="hidden sm:flex items-center justify-between px-5 sm:px-6 py-2 text-[0.625rem] font-mono uppercase text-white/40 font-bold border-b border-white/[0.06] mb-1">
-                  <div className="flex-1">File Name &amp; Type</div>
-                  <div className="flex items-center gap-8 pr-2">
-                    <span>Category</span>
-                    <span>Actions</span>
-                  </div>
-                </div>
-
-                {/* File Rows with Responsive Flex Layout */}
-                <div className="flex flex-col gap-3">
-                  {project.files.map((file) => {
-                    const ext = getFileExtension(file.fileName);
-                    const categoryInfo = getCategoryIcon(file.fileCategory);
-                    const meta = getFileMeta(file.fileName, file.fileType);
-
-                    return (
-                      <div
-                        key={file.id}
-                        className="py-3.5 px-5 sm:px-6 rounded-[2px] bg-[#010D1F] border border-white/[0.08] hover:border-white/[0.18] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
-                      >
-                        {/* Left: Extension Badge + Name + Subtitle */}
-                        <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                          <div className="h-8 px-2.5 rounded-[2px] bg-white/[0.05] border border-white/[0.10] flex items-center justify-center font-mono text-[0.688rem] font-bold text-white/80 flex-shrink-0 tracking-wider">
-                            {ext}
-                          </div>
-
-                          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                            <span
-                              className="text-xs font-bold text-white truncate font-sans group-hover:text-[#CC6600] transition-colors"
-                              title={file.fileName}
-                            >
-                              {file.fileName}
-                            </span>
-                            <span className="text-[0.688rem] text-white/40 font-mono">
-                              {meta.friendlyType} · {new Date(file.uploadedAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Right: Category Tag + Action Buttons */}
-                        <div className="flex items-center justify-between sm:justify-end gap-3.5 flex-shrink-0">
-                          {/* Category Tag */}
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-white/[0.04] border border-white/[0.08] text-[0.688rem] font-mono text-white/70 whitespace-nowrap">
-                            {categoryInfo.icon}
-                            <span>{categoryInfo.tagLabel}</span>
-                          </span>
-
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() =>
-                                handleDownloadFile(file.filePath, file.fileName)
-                              }
-                              className="py-1 px-3 h-auto text-xs font-mono font-bold flex items-center gap-1 whitespace-nowrap"
-                            >
-                              <IconDownload size={13} stroke={1.5} />
-                              <span>DOWNLOAD</span>
-                            </Button>
-
-                            {isPreSow && (
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => setFileToDelete(file)}
-                                className="py-1 px-2.5 h-auto text-xs font-mono"
-                                title="Delete file"
-                              >
-                                <IconTrash size={13} stroke={1.5} />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Upload More Box */}
-                {isPreSow && (
-                  <div
-                    onClick={() => {
-                      setSelectedUploadFile(null);
-                      setUploadError(null);
-                      setIsUploadModalOpen(true);
-                    }}
-                    className="border border-dashed border-white/15 hover:border-[#CC6600]/60 bg-white/[0.01] hover:bg-white/[0.03] py-3.5 px-6 sm:px-8 rounded-[2px] flex items-center justify-center gap-2.5 text-xs font-mono text-white/50 hover:text-white transition-all cursor-pointer mt-4 group/drop"
+              <p className="text-xs text-white/70 font-sans leading-relaxed">
+                {project.masterStatus === "CLIENT_APPROVED"
+                  ? "Your commercial terms have been confirmed. You will be notified when your formal SOW contract is ready for digital signature."
+                  : "Our statistical team has prepared your customized analytical scope and deliverables schedule. Review and accept your quote to lock your dedicated statistician."}
+              </p>
+              <div className="pt-1">
+                <Link href={`/dashboard/client/projects/${project.id}/quote`}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="font-mono text-xs font-bold tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300]"
                   >
-                    <IconUpload size={14} stroke={1.5} className="text-white/40 group-hover/drop:text-[#CC6600] transition-colors" />
-                    <span>Click or drag files here to upload additional research documents or datasets (PDF, Word, Excel, SPSS up to 15MB)</span>
-                  </div>
+                    {project.masterStatus === "CLIENT_APPROVED" ? "VIEW QUOTE DETAILS →" : "REVIEW & APPROVE PROPOSAL →"}
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          )}
+
+          {/* Research Problem & Analytical Scope */}
+          <Card className="p-6 md:p-8 flex flex-col gap-6">
+            <div className="border-b border-white/[0.08] pb-3">
+              <h3 className="text-base font-bold text-white font-sans">
+                Research Problem &amp; Analytical Scope
+              </h3>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono uppercase text-white/40 font-bold">
+                Statement of the Problem / Key Questions
+              </span>
+              <div
+                className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans"
+                style={{ padding: "1rem" }}
+              >
+                {project.researchQuestions || (
+                  <span className="italic text-white/40">No specific research questions provided yet.</span>
                 )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono uppercase text-white/40 font-bold">
+                Core Research Objectives
+              </span>
+              <div
+                className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans"
+                style={{ padding: "1rem" }}
+              >
+                {project.researchObjectives || (
+                  <span className="italic text-white/40">No specific research objectives provided yet.</span>
+                )}
+              </div>
+            </div>
+
+            {project.hypotheses && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-mono uppercase text-white/40 font-bold">
+                  Theoretical Hypotheses
+                </span>
+                <div
+                  className="p-4 rounded-[2px] bg-[#011C38] border border-white/[0.08] text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans"
+                  style={{ padding: "1rem" }}
+                >
+                  {project.hypotheses}
+                </div>
               </div>
             )}
           </Card>
+
+          {/* Attached Research Documents & Datasets */}
+          <ProjectFilesCard
+            files={project.files}
+            studyId={project.intakeId}
+            canDelete={isPreSow}
+            onDeleteFile={(file) => setFileToDelete(file)}
+          />
         </div>
 
-        {/* Right (1 col): Researcher Profile & Institution (Level with Left Card) */}
-        <div className="lg:col-span-1 flex flex-col">
-          <Card className="p-6 md:p-7 bg-[#01142B]/90 border-white/[0.08] flex flex-col justify-between h-full gap-5 shadow-lg">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
-              <div className="flex items-center gap-2">
-                <IconSchool size={16} stroke={1.5} className="text-white/60" />
-                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                  Researcher Profile &amp; Institution
-                </h3>
-              </div>
-              <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1.5 tracking-wider">
-                <IconShieldCheck size={12} stroke={2} />
-                VERIFIED
-              </span>
-            </div>
+        {/* Right Col: Client Institutional Identity & Audit Telemetry */}
+        <div className="flex flex-col gap-6">
+          <Card className="p-6 flex flex-col gap-4">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-sky-400 font-bold border-b border-white/[0.08] pb-2">
+              Client &amp; Institutional Profile
+            </h3>
 
-            {/* Dossier Structured Data Rows */}
-            <div className="flex flex-col gap-2.5 text-xs flex-1">
-              {/* Row 1: Lead Researcher */}
-              <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
-                <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
-                  <IconUser size={14} stroke={1.5} />
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                    Lead Researcher
-                  </span>
-                  <span className="text-xs font-bold text-white font-sans mt-0.5 truncate">
-                    {project.client.fullName}
-                  </span>
-                  <span className="text-[0.688rem] text-white/40 font-mono truncate">
-                    {project.client.email}
-                  </span>
-                </div>
+            <div className="flex flex-col gap-3 text-xs">
+              <div>
+                <span className="text-white/40 block">Full Name</span>
+                <span className="text-white font-semibold font-sans">{project.client.fullName}</span>
               </div>
 
-              {project.client.clientProfile && (
+              <div>
+                <span className="text-white/40 block">Email Address</span>
+                <span className="text-white font-mono">{project.client.email}</span>
+              </div>
+
+              {project.client.clientProfile ? (
                 <>
-                  {/* Row 2: Institution / University */}
-                  <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
-                    <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
-                      <IconSchool size={14} stroke={1.5} />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                        Institution / University
-                      </span>
-                      <span className="text-xs font-bold text-white font-sans mt-0.5 leading-snug">
-                        {project.client.clientProfile.institutionSchool}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-white/40 block">University / Institution</span>
+                    <span className="text-white font-semibold font-sans">
+                      {project.client.clientProfile.institutionSchool}
+                    </span>
                   </div>
-
-                  {/* Row 3: Academic Program */}
-                  <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
-                    <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
-                      <IconBook size={14} stroke={1.5} />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                        Academic Program
-                      </span>
-                      <span className="text-xs font-bold text-white font-sans mt-0.5 leading-snug">
-                        {project.client.clientProfile.academicProgram}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-white/40 block">Academic Degree / Program</span>
+                    <span className="text-white font-semibold font-sans">
+                      {project.client.clientProfile.academicProgram}
+                    </span>
                   </div>
-
-                  {/* Row 4: Institutional Region */}
-                  <div className="p-3 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex items-start gap-3 hover:border-white/[0.12] transition-colors">
-                    <div className="h-7 w-7 rounded-[2px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/50 flex-shrink-0 mt-0.5">
-                      <IconMapPin size={14} stroke={1.5} />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
-                        Institutional Region
-                      </span>
-                      <span className="text-xs font-bold text-white font-sans mt-0.5 leading-snug">
-                        {formatRegion(project.client.clientProfile.region)}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-white/40 block">Contact Number</span>
+                    <span className="text-white font-mono">
+                      {project.client.clientProfile.contactNumber}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-white/40 block">Philippine Region</span>
+                    <span className="text-white font-semibold font-sans">
+                      {formatRegion(project.client.clientProfile.region)}
+                    </span>
                   </div>
                 </>
+              ) : (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-[2px] text-amber-300 text-xs">
+                  Institutional profile not registered.
+                </div>
               )}
             </div>
+          </Card>
 
-            {/* Quality & Governance Seal (Aligned to Bottom) */}
-            <div className="p-3.5 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col gap-1 mt-auto">
-              <div className="flex items-center gap-1.5 text-[0.625rem] font-mono uppercase text-emerald-400 font-bold tracking-wider">
-                <IconShieldCheck size={14} stroke={1.75} />
-                <span>100% Quality &amp; Accuracy Assurance</span>
+          {/* Study Information Summary */}
+          <Card className="p-6 flex flex-col gap-3">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-white/50 font-bold border-b border-white/[0.08] pb-2">
+              Study Information
+            </h3>
+            <div className="flex flex-col gap-2.5 text-xs font-mono text-white/60">
+              <div className="flex justify-between items-center gap-2">
+                <span>Created:</span>
+                <span className="text-white text-right">
+                  {new Date(project.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })},{" "}
+                  {new Date(project.createdAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
+                </span>
               </div>
-              <p className="text-xs text-white/70 leading-relaxed font-sans mt-0.5">
-                Every calculation and table is independently checked by a Senior QA Lead to ensure accurate results for your defense.
-              </p>
+              <div className="flex justify-between items-center gap-2">
+                <span>Last Modified:</span>
+                <span className="text-white text-right">
+                  {new Date(project.updatedAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })},{" "}
+                  {new Date(project.updatedAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center gap-2">
+                <span>Target Deadline:</span>
+                <span className="text-amber-400 font-mono font-medium text-right">
+                  {new Date(project.deadlineRequested).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Dispute Flag:</span>
+                <span className={project.hasActiveDispute ? "text-red-400" : "text-emerald-400"}>
+                  {project.hasActiveDispute ? "Active Dispute" : "Clean"}
+                </span>
+              </div>
             </div>
           </Card>
         </div>
@@ -1092,7 +794,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
           description="Attach updated proposal manuscripts, questionnaires, or raw dataset matrices to your study registry."
           size="lg"
           footer={
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-center justify-end gap-3 w-full">
               <Button
                 variant="secondary"
                 size="sm"
@@ -1140,10 +842,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => {
-                        setSelectedCategoryId(opt.id);
-                        setUploadCategory(opt.value);
-                      }}
+                      onClick={() => handleCategorySelect(opt.id, opt.value)}
                       className={`p-3.5 sm:p-4 rounded-[2px] border text-left transition-all flex items-start gap-3.5 cursor-pointer group ${
                         isSelected
                           ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-sm ring-1 ring-[#CC6600]/50"
@@ -1194,39 +893,75 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               </div>
 
               {selectedUploadFile ? (
-                /* Staged File Preview Card */
-                <div className="p-4 sm:p-5 rounded-[2px] bg-[#010D1F] border border-white/[0.15] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="h-10 px-3 rounded-[2px] bg-white/[0.06] border border-white/[0.15] flex items-center justify-center font-mono text-xs font-bold text-white flex-shrink-0 tracking-wider">
-                      {getFileExtension(selectedUploadFile.name)}
+                /* Staged File Progress Card (Photo 2 Telemetry Standard) */
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden group">
+                  {/* Top Row: File Icon + Name + 100% Badge */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0">
+                        <IconFileText size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate" title={selectedUploadFile.name}>
+                          {selectedUploadFile.name}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {selectedUploadFile.size < 1024
+                            ? `${selectedUploadFile.size} Bytes`
+                            : selectedUploadFile.size < 1024 * 1024
+                            ? `${(selectedUploadFile.size / 1024).toFixed(1)} KB`
+                            : `${(selectedUploadFile.size / (1024 * 1024)).toFixed(2)} MB`}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-xs font-bold text-white truncate font-sans" title={selectedUploadFile.name}>
-                        {selectedUploadFile.name}
-                      </span>
-                      <span className="text-[0.688rem] text-white/50 font-mono">
-                        {(selectedUploadFile.size / (1024 * 1024)).toFixed(2)} MB · Ready for upload
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
+                      100%
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-3 self-end sm:self-center">
-                    <span className="text-[0.688rem] font-mono font-bold text-emerald-400 flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-[2px] border border-emerald-500/20">
-                      <IconCheck size={13} stroke={2.5} /> STAGED &amp; VERIFIED
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedUploadFile(null)}
-                      className="text-xs font-mono text-white/50 hover:text-red-400 underline transition-colors cursor-pointer"
-                    >
-                      Change
-                    </button>
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div
+                        className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-300 w-full"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span className="font-semibold text-emerald-300 text-[0.6875rem]">
+                          {isUploading ? "Uploading..." : "Ready for attachment"}
+                        </span>
+                      </div>
+                      {!isUploading && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedUploadFile(null)}
+                          className="px-2.5 py-0.5 rounded-[2px] text-[0.6875rem] font-mono font-bold text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                        >
+                          Change
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
                 /* Interactive Drag & Drop Box based on inspiration design (Dynamic format per category) */
-                <label className="border border-dashed border-white/20 hover:border-white/40 bg-white/[0.01] hover:bg-white/[0.03] transition-all py-14 sm:py-16 px-6 min-h-[220px] rounded-[2px] flex flex-col items-center justify-center gap-4 cursor-pointer text-center group">
+                <div
+                  onDragEnter={handleDragOver}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border border-dashed transition-all py-14 sm:py-16 px-6 min-h-[220px] rounded-[2px] flex flex-col items-center justify-center gap-4 cursor-pointer text-center group select-none ${
+                    isDragging
+                      ? "border-[#CC6600] bg-[#CC6600]/10 ring-2 ring-[#CC6600]/40 scale-[1.01]"
+                      : "border-white/20 hover:border-white/40 bg-white/[0.01] hover:bg-white/[0.03]"
+                  }`}
+                >
                   <input
+                    ref={fileInputRef}
                     type="file"
                     className="hidden"
                     accept={
@@ -1236,9 +971,16 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        if (file.size > MAX_FILE_SIZE_BYTES) {
-                          setUploadError("File exceeds maximum allowed limit of 15MB. Please compress your file.");
+                        const validation = validateUploadedFile(file, selectedCategoryId);
+                        if (!validation.valid) {
+                          setUploadError(validation.error || "Invalid file format.");
                           setSelectedUploadFile(null);
+                          setToastMessage({
+                            message: "Upload Rejected",
+                            description: validation.error || "Selected file type is not supported.",
+                            variant: "danger",
+                          });
+                          e.target.value = "";
                           return;
                         }
                         setSelectedUploadFile(file);
@@ -1248,21 +990,31 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                   />
 
                   {/* Circular Cloud Icon */}
-                  <div className="h-12 w-12 rounded-full bg-white/[0.05] border border-white/[0.10] group-hover:border-white/20 flex items-center justify-center text-white/60 group-hover:text-white transition-colors shadow-sm">
+                  <div
+                    className={`h-12 w-12 rounded-full border flex items-center justify-center transition-colors shadow-sm ${
+                      isDragging
+                        ? "bg-[#CC6600]/20 border-[#CC6600] text-[#FFA040]"
+                        : "bg-white/[0.05] border-white/[0.10] group-hover:border-white/20 text-white/60 group-hover:text-white"
+                    }`}
+                  >
                     <IconCloudUpload size={22} stroke={1.5} />
                   </div>
 
                   {/* Heading & Subtitle (Dynamic based on selected category) */}
                   <div className="flex flex-col items-center gap-1.5">
-                    <span className="font-mono text-sm sm:text-base font-bold text-white tracking-wide">
-                      Click to browse or drop file
+                    <span
+                      className={`font-mono text-sm sm:text-base font-bold tracking-wide transition-colors ${
+                        isDragging ? "text-[#FFA040]" : "text-white"
+                      }`}
+                    >
+                      {isDragging ? "Drop file to attach" : "Click to browse or drop file"}
                     </span>
                     <span className="font-mono text-xs text-white/50">
                       {CATEGORY_OPTIONS.find((c) => c.id === selectedCategoryId)?.formatLabel ||
                         "PDF, DOCX, XLSX, CSV, SPSS (Max 15MB)"}
                     </span>
                   </div>
-                </label>
+                </div>
               )}
             </div>
           </div>

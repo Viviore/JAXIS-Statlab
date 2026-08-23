@@ -7,6 +7,7 @@ import {
   Card,
   Button,
   Modal,
+  ModalFooter,
   Toast,
 } from "@repo/ui";
 import {
@@ -629,7 +630,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
             Upon confirmation, your project will advance to Statement of Work (SOW) agreement generation.
           </p>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
+          <ModalFooter>
             <Button
               variant="ghost"
               size="sm"
@@ -648,7 +649,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
               <IconCheck size={14} stroke={2.5} />
               <span>{isPending ? "Approving..." : "Confirm & Accept Proposal"}</span>
             </Button>
-          </div>
+          </ModalFooter>
         </div>
       </Modal>
 
@@ -677,7 +678,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
+          <ModalFooter>
             <Button
               variant="ghost"
               size="sm"
@@ -694,7 +695,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
             >
               {isPending ? "Submitting..." : "Submit Decline"}
             </Button>
-          </div>
+          </ModalFooter>
         </div>
       </Modal>
 

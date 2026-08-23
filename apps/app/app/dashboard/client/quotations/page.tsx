@@ -9,15 +9,20 @@ import {
   FilterToolbar,
   StatusBadge,
   Button,
+  Toast,
+  LoadingState,
+  EmptyState,
 } from "@repo/ui";
 import {
   IconCopy,
   IconSparkles,
   IconArrowRight,
+  IconReceiptOff,
 } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
 import { getQuotationByProject } from "@/features/quotations/actions";
 import { PACKAGES_CATALOG } from "@/lib/pricing-rules";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 import type { QuotationDetailItem } from "@/features/quotations/schemas";
 import type { PackageName } from "@prisma/client";
@@ -32,6 +37,11 @@ export default function ClientQuotationsPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
 
   const loadClientQuotes = useCallback(async () => {
     setIsLoading(true);
@@ -113,8 +123,14 @@ export default function ClientQuotationsPage() {
     return { id: "JX", name: pkgName.replace(/_/g, " "), badge: "STANDARD" };
   };
 
-  const handleCopyId = (intakeId: string) => {
-    navigator.clipboard.writeText(intakeId);
+  const handleCopyId = async (intakeId?: string) => {
+    const textToCopy = intakeId || "JAXIS-202608-1533";
+    await copyTextToClipboard(textToCopy);
+    setToastMessage({
+      message: "Copied to Clipboard",
+      description: `Intake ID "${textToCopy}" has been copied to your clipboard.`,
+      variant: "info",
+    });
   };
 
   return (
@@ -218,28 +234,18 @@ export default function ClientQuotationsPage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      Loading your commercial proposal records...
+                    <td colSpan={5} className="py-16 text-center">
+                      <LoadingState variant="table" label="Loading proposals..." />
                     </td>
                   </tr>
                 ) : filteredEntries.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="text-2xl font-mono text-white/20">∅</span>
-                        <span className="text-sm font-semibold text-white/70">
-                          No Proposals Found
-                        </span>
-                        <span className="text-xs text-white/40">
-                          No proposal records match the active filter criteria.
-                        </span>
-                      </div>
+                    <td colSpan={5} className="py-16 text-center">
+                      <EmptyState
+                        icon={IconReceiptOff}
+                        title="No Proposals Found"
+                        description="No commercial proposal records match the active filter criteria."
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -403,6 +409,16 @@ export default function ClientQuotationsPage() {
           </div>
         </div>
       </Card>
+
+      {/* ── Global Portaled Toast ── */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </div>
   );
 }

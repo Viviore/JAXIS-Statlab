@@ -10,6 +10,7 @@ import {
   FormSelect,
   FormTextarea,
   Modal,
+  ModalFooter,
   Alert,
   Toast,
 } from "@repo/ui";
@@ -275,9 +276,9 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
 
       {/* ── Governance Status Action Bar ── */}
       <Card className="p-4 sm:p-5 border-l-4 border-l-[#CC6600]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-            <div className="flex items-center gap-2.5">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-xs font-mono text-white/50 uppercase font-bold tracking-wider">
                 Current Master Status:
               </span>
@@ -296,19 +297,9 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
               </button>
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-mono text-white/40">
-              <span>Target Deadline:</span>
-              <strong className="text-amber-400 font-medium">
-                {new Date(project.deadlineRequested).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </strong>
-            </div>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {project.masterStatus === "UNDER_EVALUATION" && (
               <Button
                 variant="primary"
@@ -610,21 +601,53 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
             </div>
           </Card>
 
-          {/* Audit Telemetry Summary */}
+          {/* Study Information Summary */}
           <Card className="p-6 flex flex-col gap-3">
             <h3 className="text-xs font-mono uppercase tracking-wider text-white/50 font-bold border-b border-white/[0.08] pb-2">
-              Audit Telemetry
+              Study Information
             </h3>
-            <div className="flex flex-col gap-2 text-xs font-mono text-white/60">
-              <div className="flex justify-between">
+            <div className="flex flex-col gap-2.5 text-xs font-mono text-white/60">
+              <div className="flex justify-between items-center gap-2">
                 <span>Created:</span>
-                <span className="text-white">{new Date(project.createdAt).toLocaleTimeString()}</span>
+                <span className="text-white text-right">
+                  {new Date(project.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })},{" "}
+                  {new Date(project.createdAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
+                </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center gap-2">
                 <span>Last Modified:</span>
-                <span className="text-white">{new Date(project.updatedAt).toLocaleTimeString()}</span>
+                <span className="text-white text-right">
+                  {new Date(project.updatedAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })},{" "}
+                  {new Date(project.updatedAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
+                </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center gap-2">
+                <span>Target Deadline:</span>
+                <span className="text-amber-400 font-mono font-medium text-right">
+                  {new Date(project.deadlineRequested).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span>Dispute Flag:</span>
                 <span className={project.hasActiveDispute ? "text-red-400" : "text-emerald-400"}>
                   {project.hasActiveDispute ? "Active Dispute" : "Clean"}
@@ -678,7 +701,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               monoLabel
             />
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+            <ModalFooter>
               <Button
                 variant="secondary"
                 size="sm"
@@ -695,7 +718,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               >
                 Send Request
               </Button>
-            </div>
+            </ModalFooter>
           </div>
         </Modal>
       )}
@@ -727,7 +750,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               <span className="text-xs text-red-400 font-mono">{statusModalError}</span>
             )}
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+            <ModalFooter>
               <Button
                 variant="secondary"
                 size="sm"
@@ -744,7 +767,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               >
                 Apply Transition
               </Button>
-            </div>
+            </ModalFooter>
           </div>
         </Modal>
       )}

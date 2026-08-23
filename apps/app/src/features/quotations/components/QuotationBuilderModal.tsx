@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Modal, Button, Toast } from "@repo/ui";
+import { Modal, ModalFooter, Button, Toast } from "@repo/ui";
 import {
   IconSend,
-  IconCheck,
   IconAlertTriangle,
   IconShieldCheck,
   IconSchool,
@@ -19,6 +18,8 @@ import {
   calculateQuotationTotals,
   validatePackageBasePrice,
   type PackageDefinition,
+  type AddOnDefinition,
+  type CommercialCatalogData,
 } from "@/lib/pricing-rules";
 import {
   createQuotation,
@@ -36,6 +37,7 @@ interface QuotationBuilderModalProps {
   projectTitle?: string;
   clientName?: string;
   existingQuotation?: QuotationDetailItem | null;
+  customCatalog?: CommercialCatalogData;
   onSuccess?: () => void;
 }
 
@@ -47,11 +49,17 @@ export function QuotationBuilderModal({
   projectTitle,
   clientName,
   existingQuotation,
+  customCatalog,
   onSuccess,
 }: QuotationBuilderModalProps) {
+  const packagesCatalog: Record<string, PackageDefinition> =
+    customCatalog?.packages || PACKAGES_CATALOG;
+  const addOnsCatalog: Record<string, AddOnDefinition> =
+    customCatalog?.addOns || ADDONS_CATALOG;
+
   const [selectedPackage, setSelectedPackage] = useState<PackageName>("JX_03_CORE");
   const [basePrice, setBasePrice] = useState<number>(2500);
-  const [selectedAddOns, setSelectedAddOns] = useState<Record<AddOnName, { selected: boolean; amount: number }>>({
+  const [selectedAddOns, setSelectedAddOns] = useState<Record<string, { selected: boolean; amount: number }>>({
     DEFENSELAB: { selected: false, amount: 250 },
     RUSH: { selected: false, amount: 300 },
     EXPRESS: { selected: false, amount: 600 },
@@ -69,78 +77,81 @@ export function QuotationBuilderModal({
     variant: "info" | "success" | "warning" | "danger";
   } | null>(null);
 
-  // Initialize or reset form based on existing quotation
+  // Initialize or reset form based on existing quotation and catalog
   useEffect(() => {
+    const initialAddOns: Record<string, { selected: boolean; amount: number }> = {};
+    Object.keys(addOnsCatalog).forEach((k) => {
+      const item = addOnsCatalog[k];
+      if (item) {
+        initialAddOns[k] = { selected: false, amount: item.defaultPrice };
+      }
+    });
+
     if (existingQuotation) {
       setSelectedPackage(existingQuotation.packageName);
       setBasePrice(existingQuotation.basePrice);
       setNotes(existingQuotation.notes || "");
 
-      const newAddOns: Record<AddOnName, { selected: boolean; amount: number }> = {
-        DEFENSELAB: { selected: false, amount: 250 },
-        RUSH: { selected: false, amount: 300 },
-        EXPRESS: { selected: false, amount: 600 },
-        EMERGENCY: { selected: false, amount: 1000 },
-      };
-
       existingQuotation.lineItems.forEach((li) => {
-        if (li.itemType === "ADDON" && li.itemName in newAddOns) {
-          newAddOns[li.itemName as AddOnName] = {
+        if (li.itemType === "ADDON" && li.itemName in initialAddOns) {
+          initialAddOns[li.itemName] = {
             selected: true,
             amount: li.amount,
           };
         }
       });
 
-      setSelectedAddOns(newAddOns);
+      setSelectedAddOns(initialAddOns);
       if (!existingQuotation.isUpfrontEnforced && existingQuotation.downpaymentRequired) {
         setCustomDownpayment(String(existingQuotation.downpaymentRequired));
       } else {
         setCustomDownpayment("");
       }
     } else {
-      setSelectedPackage("JX_03_CORE");
-      setBasePrice(PACKAGES_CATALOG.JX_03_CORE.defaultPrice);
-      setSelectedAddOns({
-        DEFENSELAB: { selected: false, amount: 250 },
-        RUSH: { selected: false, amount: 300 },
-        EXPRESS: { selected: false, amount: 600 },
-        EMERGENCY: { selected: false, amount: 1000 },
-      });
+      const defaultPkg = packagesCatalog.JX_03_CORE || Object.values(packagesCatalog)[0];
+      setSelectedPackage((defaultPkg?.code as PackageName) || "JX_03_CORE");
+      setBasePrice(defaultPkg?.defaultPrice || 2500);
+      setSelectedAddOns(initialAddOns);
       setNotes("");
       setCustomDownpayment("");
       setExpiresInDays(3);
     }
-  }, [existingQuotation, isOpen]);
+  }, [existingQuotation, isOpen, customCatalog, addOnsCatalog, packagesCatalog]);
 
   // Handle package change
   const handleSelectPackage = (pkg: PackageName) => {
     setSelectedPackage(pkg);
-    const def = PACKAGES_CATALOG[pkg];
-    setBasePrice(def.defaultPrice);
+    const def = packagesCatalog[pkg];
+    if (def) {
+      setBasePrice(def.defaultPrice);
+    }
     if (UPFRONT_PACKAGES.includes(pkg)) {
       setCustomDownpayment("");
     }
   };
 
   // Toggle add-on
-  const toggleAddOn = (name: AddOnName) => {
-    setSelectedAddOns((prev) => ({
-      ...prev,
-      [name]: {
-        ...prev[name],
-        selected: !prev[name].selected,
-      },
-    }));
+  const toggleAddOn = (name: string) => {
+    setSelectedAddOns((prev) => {
+      const current = prev[name];
+      if (!current) return prev;
+      return {
+        ...prev,
+        [name]: {
+          ...current,
+          selected: !current.selected,
+        },
+      };
+    });
   };
 
   // Active add-ons list for computation
   const activeAddOnsList = useMemo(() => {
-    return (Object.keys(selectedAddOns) as AddOnName[])
-      .filter((k) => selectedAddOns[k].selected)
+    return Object.keys(selectedAddOns)
+      .filter((k) => selectedAddOns[k]?.selected)
       .map((k) => ({
-        name: k,
-        amount: selectedAddOns[k].amount,
+        name: k as AddOnName,
+        amount: selectedAddOns[k]?.amount || 0,
       }));
   }, [selectedAddOns]);
 
@@ -164,7 +175,8 @@ export function QuotationBuilderModal({
     return validatePackageBasePrice(selectedPackage, basePrice);
   }, [selectedPackage, basePrice]);
 
-  const currentPkgDef: PackageDefinition = PACKAGES_CATALOG[selectedPackage];
+  const currentPkgDef: PackageDefinition =
+    packagesCatalog[selectedPackage] || PACKAGES_CATALOG.JX_03_CORE;
 
   // Save Draft action
   const handleSaveDraft = async () => {
@@ -307,7 +319,7 @@ export function QuotationBuilderModal({
     }
   };
 
-  const getAddOnIcon = (name: AddOnName) => {
+  const getAddOnIcon = (name: string) => {
     switch (name) {
       case "DEFENSELAB":
         return <IconSchool size={18} stroke={1.5} className="text-sky-400 flex-shrink-0" />;
@@ -330,9 +342,9 @@ export function QuotationBuilderModal({
         title={`Commercial Proposal Builder · ${projectIntakeId || "Research Study"}`}
         size="4xl"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start py-4 px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch py-4 px-6">
           {/* ── Left Column: Configuration Controls (7 cols) ── */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 flex flex-col gap-7 justify-between">
             {/* 1. Analytical Package Tier Selection */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -345,55 +357,58 @@ export function QuotationBuilderModal({
               </div>
 
               <div className="grid grid-cols-2 gap-3.5">
-                {(Object.keys(PACKAGES_CATALOG) as PackageName[]).map((pkgKey) => {
-                  const pkg = PACKAGES_CATALOG[pkgKey];
-                  const isSelected = selectedPackage === pkgKey;
+                {(Object.keys(packagesCatalog) as PackageName[])
+                  .filter((pkgKey) => packagesCatalog[pkgKey]?.isActive !== false)
+                  .map((pkgKey) => {
+                    const pkg = packagesCatalog[pkgKey];
+                    if (!pkg) return null;
+                    const isSelected = selectedPackage === pkgKey;
 
-                  return (
-                    <button
-                      key={pkgKey}
-                      type="button"
-                      onClick={() => handleSelectPackage(pkgKey)}
-                      className={`p-4 rounded-[4px] text-left transition-all border flex flex-col justify-between cursor-pointer min-h-[105px] ${
-                        isSelected
-                          ? "bg-[#CC6600]/15 border-[#CC6600] ring-1 ring-[#CC6600] shadow-lg shadow-[#CC6600]/5"
-                          : "bg-[#010D1F] border-white/[0.08] hover:border-white/20 hover:bg-[#01142B]"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between gap-1.5 mb-2">
-                          <span className="text-xs font-mono font-bold text-[#FFA040]">
-                            {pkg.id}
+                    return (
+                      <button
+                        key={pkgKey}
+                        type="button"
+                        onClick={() => handleSelectPackage(pkgKey)}
+                        className={`w-full p-4 rounded-[4px] text-left transition-all border flex flex-col justify-between cursor-pointer min-h-[105px] ${
+                          isSelected
+                            ? "bg-[#CC6600]/15 border-[#CC6600] ring-1 ring-[#CC6600] shadow-lg shadow-[#CC6600]/5"
+                            : "bg-[#010D1F] border-white/[0.08] hover:border-white/20 hover:bg-[#01142B]"
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-1.5 mb-2">
+                            <span className="text-xs font-mono font-bold text-[#FFA040]">
+                              {pkg.id}
+                            </span>
+                            <span className="text-[0.625rem] font-sans font-medium text-white/50 bg-white/[0.04] px-2 py-0.5 rounded-[2px] border border-white/[0.06]">
+                              {pkg.badge}
+                            </span>
+                          </div>
+                          <div className="text-xs font-semibold text-white line-clamp-1 leading-snug">
+                            {pkg.name}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between text-xs font-mono">
+                          <span className="text-white font-bold">
+                            {pkg.maxPrice === null
+                              ? `₱${pkg.minPrice.toLocaleString()}+`
+                              : pkg.minPrice === pkg.maxPrice
+                              ? `₱${pkg.minPrice.toLocaleString()}`
+                              : `₱${pkg.minPrice.toLocaleString()} – ₱${pkg.maxPrice.toLocaleString()}`}
                           </span>
-                          <span className="text-[0.625rem] font-sans font-medium text-white/50 bg-white/[0.04] px-2 py-0.5 rounded-[2px] border border-white/[0.06]">
-                            {pkg.badge}
+                          <span className="text-[0.625rem] font-sans text-white/40">
+                            {pkg.isUpfront ? "100% Upfront" : "50% Milestone"}
                           </span>
                         </div>
-                        <div className="text-xs font-semibold text-white line-clamp-1 leading-snug">
-                          {pkg.name}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex items-center justify-between text-xs font-mono">
-                        <span className="text-white font-bold">
-                          {pkg.maxPrice === null
-                            ? `₱${pkg.minPrice.toLocaleString()}+`
-                            : pkg.minPrice === pkg.maxPrice
-                            ? `₱${pkg.minPrice.toLocaleString()}`
-                            : `₱${pkg.minPrice.toLocaleString()} – ₱${pkg.maxPrice.toLocaleString()}`}
-                        </span>
-                        <span className="text-[0.625rem] font-sans text-white/40">
-                          {pkg.isUpfront ? "100% Upfront" : "50% Milestone"}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
               </div>
             </div>
 
             {/* 2. Base Package Price */}
-            <div className="p-4.5 rounded-[4px] bg-[#010D1F] border border-white/[0.08] space-y-3">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
                   2. Base Package Price
@@ -419,8 +434,13 @@ export function QuotationBuilderModal({
                   step="50"
                   value={basePrice}
                   onChange={(e) => setBasePrice(Number(e.target.value))}
-                  style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
-                  className="flex-1 h-full bg-transparent text-lg font-mono font-bold text-white focus:outline-none placeholder:text-white/20"
+                  style={{
+                    paddingLeft: "1.25rem",
+                    paddingRight: "1.25rem",
+                    MozAppearance: "textfield",
+                    appearance: "textfield",
+                  }}
+                  className="flex-1 h-full bg-transparent text-lg font-mono font-bold text-white focus:outline-none placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
 
@@ -438,90 +458,101 @@ export function QuotationBuilderModal({
                 <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
                   3. Optional Priority Add-Ons
                 </label>
-                <span className="text-xs font-mono text-white/40">
-                  {activeAddOnsList.length} Selected
+                <span className="text-xs font-mono text-[#FFA040] font-bold">
+                  {activeAddOnsList.length > 0 ? `${activeAddOnsList.length} Active` : "None Selected"}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3.5">
-                {(Object.keys(ADDONS_CATALOG) as AddOnName[]).map((addonKey) => {
-                  const addon = ADDONS_CATALOG[addonKey];
-                  const isChecked = selectedAddOns[addonKey].selected;
+                {Object.keys(addOnsCatalog)
+                  .filter((addonKey) => addOnsCatalog[addonKey]?.isActive !== false)
+                  .map((addonKey) => {
+                    const addon = addOnsCatalog[addonKey];
+                    if (!addon) return null;
+                    const isChecked = selectedAddOns[addonKey]?.selected;
 
-                  return (
-                    <div
-                      key={addonKey}
-                      onClick={() => toggleAddOn(addonKey)}
-                      className={`p-3.5 px-4 rounded-[4px] border transition-all flex items-center justify-between gap-3 cursor-pointer select-none min-h-[56px] ${
-                        isChecked
-                          ? "bg-[#CC6600]/15 border-[#CC6600] text-white"
-                          : "bg-[#010D1F] border-white/[0.08] hover:border-white/20 text-white/70 hover:text-white"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`w-4 h-4 rounded-[2px] border flex items-center justify-center transition-colors flex-shrink-0 ${
-                            isChecked
-                              ? "bg-[#CC6600] border-[#CC6600] text-white"
-                              : "border-white/30 bg-[#010114]"
-                          }`}
-                        >
-                          {isChecked && <IconCheck size={12} stroke={3} />}
+                    return (
+                      <button
+                        key={addonKey}
+                        type="button"
+                        onClick={() => toggleAddOn(addonKey)}
+                        className={`w-full p-3 px-3.5 rounded-[4px] text-left transition-all border flex flex-col justify-between cursor-pointer min-h-[64px] group ${
+                          isChecked
+                            ? "bg-[#CC6600]/15 border-[#CC6600] ring-1 ring-[#CC6600] shadow-lg shadow-[#CC6600]/5"
+                            : "bg-[#010D1F] border-white/[0.08] hover:border-white/20 hover:bg-[#01142B]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 w-full">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            {getAddOnIcon(addonKey)}
+                            <span className="text-xs font-semibold text-white truncate leading-tight">
+                              {addon.name}
+                            </span>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-[#FFA040] flex-shrink-0">
+                            +₱{addon.defaultPrice.toLocaleString()}
+                          </span>
                         </div>
-                        <div className="text-xs font-medium text-white truncate flex items-center gap-2">
-                          {getAddOnIcon(addonKey)}
-                          <span className="truncate">{addon.name}</span>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center gap-1 bg-[#CC6600]/15 border border-[#CC6600]/30 px-3 py-1 rounded-[2px] text-xs font-mono font-bold text-[#FFA040] whitespace-nowrap ml-2 flex-shrink-0">
-                        <span className="text-white/60 font-normal text-[11px] mr-0.5">+</span>
-                        <span>₱</span>
-                        <span>{addon.defaultPrice.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  );
+                        <div className="mt-2 flex items-center justify-between gap-2 w-full">
+                          <span className="text-[0.625rem] font-mono font-medium text-white/50 bg-white/[0.04] px-1.5 py-0.5 rounded-[2px] border border-white/[0.06] uppercase tracking-wider truncate">
+                            {addon.badge}
+                          </span>
+                          <span
+                            className={`font-mono text-[0.625rem] uppercase px-2 py-0.5 rounded-[2px] font-bold transition-colors whitespace-nowrap flex-shrink-0 ${
+                              isChecked
+                                ? "bg-[#CC6600] text-white border border-[#CC6600]"
+                                : "bg-white/[0.04] text-white/40 group-hover:text-white/70 border border-white/[0.06]"
+                            }`}
+                          >
+                            {isChecked ? "✓ Added" : "+ Add"}
+                          </span>
+                        </div>
+                      </button>
+                    );
                 })}
               </div>
             </div>
 
             {/* 4. Notes & Validity */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-              <div className="sm:col-span-2 space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                  4. Scope Clarifications
-                </label>
-                <input
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Include full Chapter 4 write-up and SPSS scripts..."
-                  style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
-                  className="w-full h-11 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[4px] text-xs text-white placeholder:text-white/30 focus:outline-none transition-colors"
-                />
-              </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
+                    4. Scope Clarifications
+                  </label>
+                  <input
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Include full Chapter 4 write-up and SPSS scripts..."
+                    style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
+                    className="w-full h-11 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[4px] text-xs text-white placeholder:text-white/30 focus:outline-none transition-colors"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                  Validity Window
-                </label>
-                <select
-                  value={expiresInDays}
-                  onChange={(e) => setExpiresInDays(Number(e.target.value))}
-                  style={{ paddingLeft: "1.25rem", paddingRight: "2rem" }}
-                  className="w-full h-11 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[4px] text-xs font-mono text-white focus:outline-none transition-colors cursor-pointer"
-                >
-                  <option value={3}>3 Days (Standard Policy)</option>
-                  <option value={5}>5 Days</option>
-                  <option value={7}>7 Days</option>
-                  <option value={14}>14 Days</option>
-                </select>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-white/80">
+                    Validity Window
+                  </label>
+                  <select
+                    value={expiresInDays}
+                    onChange={(e) => setExpiresInDays(Number(e.target.value))}
+                    style={{ paddingLeft: "1.25rem", paddingRight: "2rem" }}
+                    className="w-full h-11 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[4px] text-xs font-mono text-white focus:outline-none transition-colors cursor-pointer"
+                  >
+                    <option value={3}>3 Days (Standard Policy)</option>
+                    <option value={5}>5 Days</option>
+                    <option value={7}>7 Days</option>
+                    <option value={14}>14 Days</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
           {/* ── Right Column: Modern Live Summary Card (5 cols) ── */}
-          <div className="lg:col-span-5 p-7 rounded-[4px] bg-[#01142B] border border-white/[0.12] flex flex-col justify-between shadow-2xl space-y-6">
+          <div className="lg:col-span-5 p-7 rounded-[4px] bg-[#01142B] border border-white/[0.12] flex flex-col justify-between shadow-2xl space-y-6 h-full min-h-[580px]">
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <span className="text-xs font-semibold uppercase tracking-wider text-white flex items-center gap-2">
@@ -590,38 +621,35 @@ export function QuotationBuilderModal({
             </div>
 
             {/* Actions Block */}
-            <div className="space-y-3 pt-6 border-t border-white/[0.08]">
-              <Button
-                variant="primary"
-                size="md"
+            <div className="space-y-3 pt-6 border-t border-white/[0.10]">
+              <button
+                type="button"
                 onClick={() => setConfirmIssueModalOpen(true)}
                 disabled={isSubmitting || isIssuingDirect || !priceValidation.valid}
-                className="w-full h-12 gap-2 bg-[#CC6600] text-white hover:bg-[#E67300] font-semibold text-sm tracking-wide transition-all shadow-lg cursor-pointer"
+                className="w-full h-12 rounded-[4px] bg-[#CC6600] hover:bg-[#E67300] active:bg-[#B35900] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#CC6600]/25 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
-                <IconSend size={16} stroke={1.5} />
+                <IconSend size={16} stroke={2} />
                 <span>Issue Quote to Client →</span>
-              </Button>
+              </button>
 
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
                   onClick={handleSaveDraft}
                   disabled={isSubmitting || isIssuingDirect || !priceValidation.valid}
-                  className="flex-1 py-2.5 text-xs text-white/80 cursor-pointer"
+                  className="w-full h-10 rounded-[4px] bg-[#012E57] hover:bg-[#013D73] border border-[#38BDF8]/30 hover:border-[#38BDF8]/60 text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
                 >
-                  {isSubmitting ? "Saving..." : "Save Draft"}
-                </Button>
+                  <span>{isSubmitting ? "Saving..." : "Save Draft"}</span>
+                </button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={onClose}
                   disabled={isSubmitting || isIssuingDirect}
-                  className="py-2.5 px-4 text-xs text-white/60 hover:text-white cursor-pointer"
+                  className="w-full h-10 rounded-[4px] bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.14] hover:border-white/25 text-white/70 hover:text-white font-mono font-semibold text-xs uppercase tracking-wider flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Cancel
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -665,7 +693,7 @@ export function QuotationBuilderModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/[0.08]">
+          <ModalFooter>
             <Button
               variant="ghost"
               size="sm"
@@ -684,7 +712,7 @@ export function QuotationBuilderModal({
               <IconSend size={14} stroke={1.5} />
               <span>{isIssuingDirect ? "Issuing..." : "Confirm & Send Quote"}</span>
             </Button>
-          </div>
+          </ModalFooter>
         </div>
       </Modal>
 

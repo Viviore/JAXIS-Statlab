@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, Toast } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, Toast, LoadingState, EmptyState } from "@repo/ui";
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
+import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
@@ -15,6 +16,7 @@ function ClientDashboardContent() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStudy, setSelectedStudy] = useState<ProjectDetailItem | null>(null);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [toast, setToast] = useState<{
     variant: "success" | "danger" | "warning" | "info";
     message: string;
@@ -95,6 +97,18 @@ function ClientDashboardContent() {
     return { total, awaitingInfo, inProgress, forQa, delivered };
   }, [projects]);
 
+  const handleProfileSuccess = async () => {
+    const profile = await getClientProfile();
+    if (profile && profile.institutionSchool && profile.contactNumber) {
+      setIsProfileComplete(true);
+    }
+    setToast({
+      variant: "success",
+      message: "Institutional Affiliation Verified",
+      description: "Your academic credentials have been saved. Intake desk unlocked.",
+    });
+  };
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full animate-content-fade">
       <PageHeader
@@ -105,11 +119,31 @@ function ClientDashboardContent() {
           { label: "Client Portal" },
         ]}
         actions={
-          <Link href="/dashboard/client/projects/new">
-            <Button variant="primary" size="sm" className="font-bold tracking-wider">
-              + SUBMIT NEW STUDY REQUEST
+          isProfileComplete === null ? (
+            <Button
+              variant="primary"
+              size="sm"
+              disabled
+              className="font-bold tracking-wider font-mono text-xs opacity-50 cursor-wait pointer-events-none"
+            >
+              <LoadingState variant="inline" label="Loading..." />
             </Button>
-          </Link>
+          ) : isProfileComplete === false ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="font-bold tracking-wider font-mono text-xs animate-content-fade"
+            >
+              SETUP PROFILE FIRST →
+            </Button>
+          ) : (
+            <Link href="/dashboard/client/projects/new" className="animate-content-fade">
+              <Button variant="primary" size="sm" className="font-bold tracking-wider font-mono text-xs">
+                + SUBMIT NEW STUDY REQUEST
+              </Button>
+            </Link>
+          )
         }
       />
 
@@ -209,13 +243,19 @@ function ClientDashboardContent() {
           label="Profile Status"
           value={
             isProfileComplete === null
-              ? "CHECKING..."
+              ? "Checking..."
               : isProfileComplete
-              ? "100% COMPLETE"
-              : "INCOMPLETE"
+              ? "Complete"
+              : "Action Required"
           }
-          variant={isProfileComplete ? "emerald" : "orange"}
-          description={isProfileComplete ? "Institutional verified" : "Action required →"}
+          variant={isProfileComplete === null ? "default" : isProfileComplete ? "emerald" : "orange"}
+          description={
+            isProfileComplete === null
+              ? "Checking verification"
+              : isProfileComplete
+              ? "Profile verified"
+              : "Setup profile →"
+          }
           href="/dashboard/client/profile"
         />
 
@@ -286,28 +326,24 @@ function ClientDashboardContent() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-16 text-center text-white/30 font-mono text-xs"
-                    >
-                      Loading research projects...
+                    <td colSpan={5} className="py-14 text-center">
+                      <LoadingState variant="table" label="Loading research studies..." />
                     </td>
                   </tr>
                 ) : projects.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-16 text-center text-white/30 font-mono text-xs"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="text-2xl font-mono text-white/20">∅</span>
-                        <span className="text-sm font-semibold text-white/70">
-                          No Research Projects Found
-                        </span>
-                        <span className="text-xs text-white/40">
-                          Submit your first research intake questionnaire to begin.
-                        </span>
-                      </div>
+                    <td colSpan={5} className="py-14 text-center">
+                      <EmptyState
+                        title="No Research Projects Found"
+                        description="Submit your first research intake questionnaire to begin."
+                        action={
+                          <Link href="/dashboard/client/projects/new">
+                            <Button variant="primary" size="sm" className="font-mono text-xs font-bold tracking-wider">
+                              + SUBMIT STUDY INTAKE →
+                            </Button>
+                          </Link>
+                        }
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -370,7 +406,7 @@ function ClientDashboardContent() {
                                 : "outline"
                             }
                             size="sm"
-                            className="py-1 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
+                            className="whitespace-nowrap font-mono text-xs tracking-wider"
                           >
                             {study.masterStatus === "AWAITING_INFORMATION"
                               ? "RESOLVE →"
@@ -443,6 +479,13 @@ function ClientDashboardContent() {
           </div>
         </Modal>
       )}
+
+      {/* ── Quick Profile Setup Modal ── */}
+      <QuickProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onSuccess={handleProfileSuccess}
+      />
 
       {/* ── Floating Responsive Toast Notification ── */}
       {toast && (

@@ -48,6 +48,7 @@ export interface SidebarProps {
   roleLabel?: string;
   userFullName?: string;
   userEmail?: string;
+  clientProfileIncomplete?: boolean;
   className?: string;
   isOpen?: boolean;
   onClose?: () => void;
@@ -180,8 +181,8 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Submit to QA Queue",
-          href: "/dashboard/statistician/submissions",
+          label: "Upload Output Dataset",
+          href: "/dashboard/statistician/uploads",
           icon: Icons.UploadCloud,
           disabled: true,
           badge: "SOON",
@@ -198,10 +199,10 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "COLLABORATION & PROFILE",
+      groupTitle: "COMMUNICATION & ACCOUNT",
       items: [
         {
-          label: "Client Collaboration Desk",
+          label: "Research Direct Messaging",
           href: "/dashboard/statistician/messages",
           icon: Icons.Feedback,
           disabled: true,
@@ -209,15 +210,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Expert Compensation",
-          href: "/dashboard/statistician/payouts",
-          icon: Icons.FinanceVault,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
-        },
-        {
-          label: "Expert Profile & Skills",
+          label: "Statistician Profile",
           href: "/dashboard/statistician/profile",
           icon: Icons.Users,
         },
@@ -227,15 +220,15 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   SENIOR_QA_LEAD: [
     {
-      groupTitle: "VERIFICATION STUDIO",
+      groupTitle: "QUALITY ASSURANCE DESK",
       items: [
         {
-          label: "QA Studio Desk",
+          label: "QA Review Desk",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
         },
         {
-          label: "Dual-Blind Queue",
+          label: "Deliverable Verification Queue",
           href: "/dashboard/qa/queue",
           icon: Icons.CheckQueue,
           disabled: true,
@@ -243,15 +236,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "APA 7th Verification",
-          href: "/dashboard/qa/verification",
-          icon: Icons.Award,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
-        },
-        {
-          label: "Methodology Audits",
+          label: "Statistical Audit Logs",
           href: "/dashboard/qa/audits",
           icon: Icons.Audit,
           disabled: true,
@@ -261,18 +246,10 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "DELIVERABLES & PROFILE",
+      groupTitle: "ACCOUNT & SETTINGS",
       items: [
         {
-          label: "Deliverables Sign-Off",
-          href: "/dashboard/qa/deliverables",
-          icon: Icons.Vault,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
-        },
-        {
-          label: "QA Lead Profile",
+          label: "QA Specialist Profile",
           href: "/dashboard/qa/profile",
           icon: Icons.Users,
         },
@@ -282,33 +259,33 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   FINANCE_OFFICER: [
     {
-      groupTitle: "ESCROW & SETTLEMENT",
+      groupTitle: "TREASURY & ESCROW DESK",
       items: [
         {
-          label: "Finance Console",
+          label: "Finance Control Center",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
         },
         {
-          label: "Milestone Release Vault",
-          href: "/dashboard/finance/milestones",
-          icon: Icons.KeyRelease,
+          label: "Deposit Verification Queue",
+          href: "/dashboard/finance/deposits",
+          icon: Icons.CheckQueue,
           disabled: true,
           badge: "SOON",
           badgeColor: "gray",
         },
         {
-          label: "Payment Gateway & Stripe",
-          href: "/dashboard/finance/payments",
-          icon: Icons.Receipt,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
-        },
-        {
-          label: "Expert Payouts & Payroll",
+          label: "Milestone Payout Authorizations",
           href: "/dashboard/finance/payouts",
-          icon: Icons.Users,
+          icon: Icons.Award,
+          disabled: true,
+          badge: "SOON",
+          badgeColor: "gray",
+        },
+        {
+          label: "Refund & Dispute Adjudications",
+          href: "/dashboard/finance/refunds",
+          icon: Icons.Receipt,
           disabled: true,
           badge: "SOON",
           badgeColor: "gray",
@@ -316,11 +293,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "LEDGER & AUDIT",
+      groupTitle: "LEDGER & RECORDS",
       items: [
         {
-          label: "General Escrow Ledger",
-          href: "/dashboard/finance/ledger",
+          label: "Transaction Ledgers",
+          href: "/dashboard/finance/ledgers",
           icon: Icons.Audit,
           disabled: true,
           badge: "SOON",
@@ -333,6 +310,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           disabled: true,
           badge: "SOON",
           badgeColor: "gray",
+        },
+        {
+          label: "Finance Officer Profile",
+          href: "/dashboard/finance/profile",
+          icon: Icons.Users,
         },
       ],
     },
@@ -484,12 +466,12 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 };
 
 const BADGE_STYLES: Record<string, string> = {
-  orange: "bg-[#CC6600]/25 text-[#CC6600] border-[#CC6600]/40",
-  emerald: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-  sky: "bg-sky-500/20 text-sky-300 border-sky-500/30",
-  amber: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-  indigo: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-  gray: "bg-white/[0.04] text-white/30 border-white/[0.08]",
+  orange: "bg-[#CC6600]/20 text-[#FFA040] border-[#CC6600]/40",
+  emerald: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  sky: "bg-sky-500/15 text-sky-300 border-sky-500/30",
+  amber: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  indigo: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30",
+  gray: "bg-white/[0.04] text-white/35 border-white/[0.08]",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -498,6 +480,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   role = "ADMIN",
   userFullName = "Developer Account",
   userEmail = "dev@jaxis.local",
+  clientProfileIncomplete = false,
   className = "",
   isOpen = false,
   onClose,
@@ -510,13 +493,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
   } else if (normalizedRole === "FINANCE" || normalizedRole === "FINANCE_OFFICER") {
     effectiveRole = "FINANCE_OFFICER";
   }
-  const navGroups = ROLE_NAV_GROUPS[effectiveRole] || ROLE_NAV_GROUPS.ADMIN!;
+  let navGroups = ROLE_NAV_GROUPS[effectiveRole] || ROLE_NAV_GROUPS.ADMIN!;
+
+  if (effectiveRole === "CLIENT" && clientProfileIncomplete) {
+    navGroups = navGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) => {
+        if (item.href === "/dashboard/client/profile") {
+          return {
+            ...item,
+            badge: "REQUIRED",
+            badgeColor: "orange" as const,
+          };
+        }
+        if (item.href === "/dashboard/client/projects/new") {
+          return {
+            ...item,
+            badge: "SETUP REQ",
+            badgeColor: "amber" as const,
+          };
+        }
+        return item;
+      }),
+    }));
+  }
 
   return (
     <aside
       className={`
         fixed lg:static inset-y-0 left-0 z-50 lg:z-20
-        w-[18.5rem] min-w-[18.5rem] max-w-[18.5rem] h-full max-h-full
+        w-[19.5rem] min-w-[19.5rem] max-w-[19.5rem] h-full max-h-full
         bg-[#010114] border-r border-white/[0.08] flex flex-col justify-between
         select-none flex-shrink-0 overflow-hidden
         transition-transform duration-200 ease-out shadow-2xl lg:shadow-none
@@ -524,9 +530,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ${className}
       `}
       style={{
-        width: "18.5rem",
-        minWidth: "18.5rem",
-        maxWidth: "18.5rem",
+        width: "19.5rem",
+        minWidth: "19.5rem",
+        maxWidth: "19.5rem",
         height: "100%",
         maxHeight: "100%",
         flexShrink: 0,
@@ -541,9 +547,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Top Navigation Sections */}
       <div
-        className="p-4 sm:p-5 flex flex-col gap-5 overflow-y-auto flex-1"
+        className="p-3.5 sm:p-4 flex flex-col gap-5 overflow-y-auto flex-1"
         style={{
-          padding: "1.25rem",
+          padding: "1rem 0.875rem",
           display: "flex",
           flexDirection: "column",
           gap: "1.25rem",
@@ -594,39 +600,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   return (
                     <div
                       key={item.href + item.label}
-                      className="flex items-center justify-between px-3.5 py-2 text-sm rounded-md select-none opacity-40 cursor-not-allowed"
+                      className="flex items-center justify-between px-3 py-2 text-xs rounded-md select-none opacity-40 cursor-not-allowed"
                       style={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "0.5rem 0.875rem",
+                        padding: "0.5rem 0.75rem",
                         borderRadius: "4px",
                         boxSizing: "border-box",
-                        fontSize: "0.875rem",
-                        whiteSpace: "nowrap",
+                        fontSize: "0.8125rem",
                       }}
                       title={`${item.label} (Under Active Development)`}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0 }}>
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0, flex: 1, paddingRight: "0.5rem" }}>
                         <span className="text-white/30 flex-shrink-0">
                           {item.icon}
                         </span>
-                        <span className="font-sans font-normal text-white/40 whitespace-nowrap">{item.label}</span>
+                        <span className="font-sans font-normal text-white/40 text-[0.8125rem] truncate" title={item.label}>
+                          {item.label}
+                        </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
                         <span
                           className="text-xs font-sans px-1.5 py-0.5 rounded-[3px] border font-medium flex-shrink-0 bg-white/[0.04] text-white/30 border-white/[0.08]"
                           style={{
-                            padding: "0.1rem 0.4rem",
+                            padding: "0.1rem 0.375rem",
                             borderRadius: "3px",
                             fontSize: "0.625rem",
-                            fontWeight: 500,
+                            fontWeight: 600,
                             height: "18px",
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
                             lineHeight: 1,
+                            letterSpacing: "0.025em",
                           }}
                         >
                           {item.badge || "SOON"}
@@ -643,7 +651,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => {
                       if (onClose) onClose();
                     }}
-                    className={`flex items-center justify-between px-3.5 py-2.5 text-sm font-medium rounded-md transition-colors duration-150 ease-out group ${
+                    className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-md transition-colors duration-150 ease-out group ${
                       isActive
                         ? "bg-[#CC6600]/15 text-white font-semibold"
                         : "text-white/75 hover:text-white hover:bg-white/[0.05]"
@@ -652,22 +660,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "0.625rem 0.875rem",
+                      padding: "0.55rem 0.75rem",
                       borderRadius: "4px",
                       boxSizing: "border-box",
-                      fontSize: "0.875rem",
-                      whiteSpace: "nowrap",
+                      fontSize: "0.8125rem",
                     }}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0 }}>
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0, flex: 1, paddingRight: "0.5rem" }}>
                       <span className={`${isActive ? "text-[#CC6600]" : "text-white/60 group-hover:text-white"} transition-colors flex-shrink-0`}>
                         {item.icon}
                       </span>
-                      <span className="font-sans font-medium whitespace-nowrap">{item.label}</span>
+                      <span className="font-sans font-medium text-[0.8125rem] truncate" title={item.label}>
+                        {item.label}
+                      </span>
                     </div>
 
                     {/* Badges / Counters */}
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
                       {item.count !== undefined && (
                         <span
                           className={`text-xs font-sans px-2 py-0.5 rounded-full flex-shrink-0 ${
@@ -690,19 +699,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       )}
                       {item.badge && (
                         <span
-                          className={`text-xs font-sans px-2 py-0.5 rounded-[3px] border font-medium flex-shrink-0 ${
+                          className={`text-xs font-sans px-1.5 py-0.5 rounded-[3px] border font-medium flex-shrink-0 ${
                             BADGE_STYLES[item.badgeColor || "indigo"]
                           }`}
                           style={{
-                            padding: "0.15rem 0.5rem",
+                            padding: "0.1rem 0.4rem",
                             borderRadius: "3px",
-                            fontSize: "0.688rem",
+                            fontSize: "0.625rem",
                             fontWeight: 600,
-                            height: "20px",
+                            height: "18px",
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
                             lineHeight: 1,
+                            letterSpacing: "0.025em",
                           }}
                         >
                           {item.badge}

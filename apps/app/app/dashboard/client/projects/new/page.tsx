@@ -12,6 +12,7 @@ import {
   FormFooter,
   Stepper,
   Toast,
+  LoadingState,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -20,11 +21,12 @@ import {
   IconDatabase,
   IconListCheck,
   IconCloudUpload,
-  IconTrash,
   IconShieldCheck,
+  IconArrowRight,
 } from "@tabler/icons-react";
 import { createProject } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
+import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
 import type { FileCategory } from "@prisma/client";
 
 interface UploadedFileItem {
@@ -42,16 +44,7 @@ interface UploadProgressState {
   formattedSize: string;
 }
 
-const ALLOWED_MIMES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "text/csv",
-  "application/msword",
-];
 
-const MAX_DOC_SIZE = 15 * 1024 * 1024; // 15MB Storage Defense Limit
-const MAX_DATASET_SIZE = 15 * 1024 * 1024; // 15MB Storage Defense Limit
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
@@ -116,45 +109,82 @@ export default function NewProjectIntakePage() {
     loadProfile();
   }, []);
 
+  const [isQuickModalOpen, setIsQuickModalOpen] = useState(false);
+
   const isProfileComplete = Boolean(
     profile && profile.institutionSchool && profile.contactNumber
   );
 
+  const handleProfileSuccess = async () => {
+    const p = await getClientProfile();
+    if (p) {
+      setProfile({
+        institutionSchool: p.institutionSchool || "",
+        academicProgram: p.academicProgram || "",
+        contactNumber: p.contactNumber || "",
+        region: p.region || "",
+      });
+    }
+    setToast({
+      variant: "success",
+      message: "Institutional Affiliation Verified",
+      description: "Your academic credentials have been saved. Intake desk unlocked.",
+    });
+  };
+
   // Drag & drop active category tracking
   const [dragActiveCategory, setDragActiveCategory] = useState<FileCategory | null>(null);
 
-  // Core File Processing Logic with animated progress bar
-  const processFile = (file: File, category: FileCategory) => {
-    // Check MIME type or extension
-    const isValidMime =
-      ALLOWED_MIMES.includes(file.type) ||
-      file.name.endsWith(".csv") ||
-      file.name.endsWith(".xlsx") ||
-      file.name.endsWith(".docx") ||
-      file.name.endsWith(".pdf") ||
-      file.name.endsWith(".doc") ||
-      file.name.endsWith(".sav") ||
-      file.name.endsWith(".xls");
+  const CATEGORY_FILE_CONFIG: Partial<
+    Record<
+      FileCategory,
+      { extensions: string[]; label: string; maxBytes: number }
+    >
+  > = {
+    RESEARCH_DOCUMENT: {
+      extensions: [".pdf", ".docx", ".doc"],
+      label: "PDF, DOCX (Max 15MB)",
+      maxBytes: 15 * 1024 * 1024,
+    },
+    DATASET: {
+      extensions: [".xlsx", ".xls", ".csv", ".sav", ".dta", ".tsv"],
+      label: "CSV, XLSX, XLS, SPSS (Max 15MB)",
+      maxBytes: 15 * 1024 * 1024,
+    },
+    QUESTIONNAIRE: {
+      extensions: [".pdf", ".docx", ".doc", ".xlsx", ".csv"],
+      label: "PDF, DOCX, XLSX, CSV (Max 15MB)",
+      maxBytes: 15 * 1024 * 1024,
+    },
+  };
 
-    if (!isValidMime) {
-      const msg = `Invalid file format "${file.name}". Allowed formats: PDF, DOCX, XLSX, CSV, SPSS (.sav).`;
+  // Core File Processing Logic with strict format checker and animated progress bar
+  const processFile = (file: File, category: FileCategory) => {
+    const config = CATEGORY_FILE_CONFIG[category];
+    if (!config) return;
+
+    // Check slot-specific file extension
+    const fileNameLower = file.name.toLowerCase();
+    const lastDotIndex = fileNameLower.lastIndexOf(".");
+    const fileExt = lastDotIndex !== -1 ? fileNameLower.substring(lastDotIndex) : "";
+
+    const isAllowed = config.extensions.some((ext) => fileNameLower.endsWith(ext));
+
+    if (!isAllowed) {
       setToast({
         variant: "danger",
-        message: "Unsupported File Format",
-        description: msg,
+        message: "Upload Rejected",
+        description: `Invalid file format "${fileExt || "unknown"}". This slot only accepts: ${config.label.split(" (Max")[0]}.`,
       });
       return;
     }
 
     // Check file size
-    const maxSize =
-      category === "DATASET" ? MAX_DATASET_SIZE : MAX_DOC_SIZE;
-    if (file.size > maxSize) {
-      const msg = `File "${file.name}" exceeds maximum allowed size of ${formatBytes(maxSize)}.`;
+    if (file.size > config.maxBytes) {
       setToast({
         variant: "danger",
         message: "File Limit Exceeded",
-        description: msg,
+        description: `File "${file.name}" exceeds the 15MB limit (${formatBytes(file.size)}). Please compress your file.`,
       });
       return;
     }
@@ -208,10 +238,10 @@ export default function NewProjectIntakePage() {
 
           setToast({
             variant: "success",
-            message: "File Uploaded Successfully",
+            message: "File Attached Successfully",
             description: `"${file.name}" is attached to your submission.`,
           });
-        }, 320);
+        }, 280);
       } else {
         setUploadingState((prev) => ({
           ...prev,
@@ -223,7 +253,7 @@ export default function NewProjectIntakePage() {
           },
         }));
       }
-    }, 80);
+    }, 70);
   };
 
   // File Input Change Handler
@@ -397,7 +427,8 @@ export default function NewProjectIntakePage() {
     });
   };
 
-  if (isProfileLoaded && !isProfileComplete) {
+  // Prevent Flash of Unverified Content while profile verification is resolving
+  if (!isProfileLoaded) {
     return (
       <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
         <PageHeader
@@ -409,26 +440,79 @@ export default function NewProjectIntakePage() {
             { label: "New Project" },
           ]}
         />
+        <Card
+          className="p-8 border-l-4 border-l-[#CC6600]/60 min-h-[220px] bg-[#011B38]/40 border-white/[0.08]"
+          contentClassName="items-center justify-center h-full"
+        >
+          <LoadingState
+            variant="card"
+            label="Verifying profile..."
+            description="Checking your academic affiliation details"
+            className="min-h-0 p-0 h-full justify-center"
+          />
+        </Card>
+      </div>
+    );
+  }
 
-        <Card className="p-8 border-l-4 border-l-[#CC6600] flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#CC6600] animate-pulse" />
-            <h2 className="text-base font-bold text-white uppercase tracking-wider">
-              Profile Verification Required
+  if (!isProfileComplete) {
+    return (
+      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
+        {toast && (
+          <Toast
+            variant={toast.variant}
+            message={toast.message}
+            description={toast.description}
+            onClose={() => setToast(null)}
+          />
+        )}
+
+        <PageHeader
+          title="New Research Project Intake"
+          description="Formal submission desk for academic theses and quantitative dissertations."
+          breadcrumbs={[
+            { label: "WORKSPACE", href: "/dashboard" },
+            { label: "Client Portal", href: "/dashboard/client" },
+            { label: "New Project" },
+          ]}
+        />
+
+        <Card className="p-8 border-l-4 border-l-[#CC6600] flex flex-col justify-between min-h-[220px] gap-5 bg-[#011B38]/40 border-white/[0.08]">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-base font-bold text-white uppercase tracking-wider font-sans">
+              Institutional Profile Verification Required
             </h2>
+            <p className="text-sm text-white/70 leading-relaxed font-sans max-w-2xl">
+              You must complete your institutional affiliation details (university, academic program, contact number, and region) before you can submit research project intake forms.
+            </p>
           </div>
-          <p className="text-sm text-white/70 leading-relaxed font-sans max-w-2xl">
-            You must complete your institutional affiliation details (university, academic program, contact number, and region) before you can submit research project intake forms.
-          </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-wrap items-center gap-4">
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => setIsQuickModalOpen(true)}
+              className="font-mono text-xs font-bold tracking-wider"
+            >
+              COMPLETE PROFILE →
+            </Button>
             <Link
               href="/dashboard/client/profile"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#CC6600] text-white text-xs font-mono font-bold uppercase tracking-wider rounded-[2px] hover:bg-[#b35a00] transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors font-sans py-1.5"
             >
-              Complete Institutional Profile →
+              <span>Full Profile Settings</span>
+              <IconArrowRight size={13} stroke={1.5} />
             </Link>
           </div>
         </Card>
+
+        {/* Quick Setup Modal */}
+        <QuickProfileModal
+          isOpen={isQuickModalOpen}
+          onClose={() => setIsQuickModalOpen(false)}
+          onSuccess={handleProfileSuccess}
+          initialData={profile || undefined}
+        />
       </div>
     );
   }
@@ -638,95 +722,93 @@ export default function NewProjectIntakePage() {
 
               {/* Upload Zone / State */}
               {uploadingState.RESEARCH_DOCUMENT ? (
-                <div
-                  className="p-4 bg-[#011B38] border border-[#CC6600]/50 rounded-[2px] flex flex-col justify-center gap-3 min-h-[150px]"
-                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.75rem", boxSizing: "border-box" }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
-                      {uploadingState.RESEARCH_DOCUMENT.fileName}
-                    </span>
-                    <span className="text-xs font-mono text-[#CC6600] font-bold">
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0 animate-pulse">
+                        <IconCloudUpload size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate">
+                          {uploadingState.RESEARCH_DOCUMENT.fileName}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {uploadingState.RESEARCH_DOCUMENT.formattedSize}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
                       {uploadingState.RESEARCH_DOCUMENT.progress}%
                     </span>
                   </div>
-                  <div
-                    className="w-full bg-white/10 overflow-hidden"
-                    style={{ height: "4px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "0px" }}
-                  >
-                    <div
-                      className="h-full transition-all duration-150 ease-out"
-                      style={{ width: `${uploadingState.RESEARCH_DOCUMENT.progress}%`, backgroundColor: "#CC6600", borderRadius: "0px" }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                    <span>Uploading...</span>
-                    <span>{uploadingState.RESEARCH_DOCUMENT.formattedSize}</span>
+
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div
+                        className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-150"
+                        style={{ width: `${uploadingState.RESEARCH_DOCUMENT.progress}%` }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-amber-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        <span className="font-medium text-amber-300 text-[0.6875rem]">Uploading file...</span>
+                      </div>
+                      <span className="text-[0.6875rem] font-mono text-white/40">Please wait</span>
+                    </div>
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "RESEARCH_DOCUMENT") ? (
-                <div
-                  className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col justify-between min-h-[150px]"
-                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5"
-                      style={{ width: "1.75rem", height: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
-                    >
-                      <IconCheck size={15} stroke={2.5} />
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0">
+                        <IconFileText size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate" title={filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.name}>
+                          {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.name}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.formattedSize}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-xs font-mono text-emerald-200 font-semibold truncate">
-                        {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.name}
-                      </span>
-                      <span className="text-[0.688rem] text-white/40 font-mono mt-0.5">
-                        {filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.formattedSize} · Verified
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
+                      100%
+                    </span>
                   </div>
 
-                  <div
-                    className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1"
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "0.625rem", marginTop: "0.25rem" }}
-                  >
-                    <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
-                      Replace
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,.docx,.doc"
-                        onChange={(e) => handleFileInputChange(e, "RESEARCH_DOCUMENT")}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => removeFile("RESEARCH_DOCUMENT")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
-                    >
-                      <IconTrash size={13} stroke={2} />
-                      Remove
-                    </button>
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-300 w-full" />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span className="font-semibold text-emerald-300 text-[0.6875rem]">Ready for submission</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile("RESEARCH_DOCUMENT")}
+                        className="px-2.5 py-0.5 rounded-[2px] text-[0.6875rem] font-mono font-bold text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                      >
+                        Change
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <label
-                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[150px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
                     dragActiveCategory === "RESEARCH_DOCUMENT"
-                      ? "border-[#CC6600] bg-[#CC6600]/10"
-                      : "border-white/15 hover:border-[#CC6600]/60 bg-white/[0.01] hover:bg-white/[0.03]"
+                      ? "border-[#CC6600] bg-[#CC6600]/10 ring-2 ring-[#CC6600]/40 scale-[1.01]"
+                      : "border-white/15 hover:border-white/40 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
-                  style={{
-                    padding: "1.75rem 1.25rem",
-                    minHeight: "150px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.75rem",
-                    borderRadius: "2px",
-                    boxSizing: "border-box",
-                  }}
                 >
                   <input
                     type="file"
@@ -734,13 +816,10 @@ export default function NewProjectIntakePage() {
                     accept=".pdf,.docx,.doc"
                     onChange={(e) => handleFileInputChange(e, "RESEARCH_DOCUMENT")}
                   />
-                  <div
-                    className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#CC6600] group-hover:border-[#CC6600]/40 transition-colors"
-                    style={{ width: "2rem", height: "2rem", borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                  >
+                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#FFA040] group-hover:border-[#CC6600]/40 transition-colors">
                     <IconCloudUpload size={18} stroke={1.75} />
                   </div>
-                  <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem", textAlign: "center" }}>
+                  <div className="flex flex-col gap-0.5 text-center">
                     <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
                       Click to browse or drop file
                     </span>
@@ -803,109 +882,104 @@ export default function NewProjectIntakePage() {
 
               {/* Upload Zone / State */}
               {uploadingState.DATASET ? (
-                <div
-                  className="p-4 bg-[#011B38] border border-emerald-500/50 rounded-[2px] flex flex-col justify-center gap-3 min-h-[150px]"
-                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.75rem", boxSizing: "border-box" }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
-                      {uploadingState.DATASET.fileName}
-                    </span>
-                    <span className="text-xs font-mono text-emerald-400 font-bold">
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0 animate-pulse">
+                        <IconCloudUpload size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate">
+                          {uploadingState.DATASET.fileName}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {uploadingState.DATASET.formattedSize}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
                       {uploadingState.DATASET.progress}%
                     </span>
                   </div>
-                  <div
-                    className="w-full bg-white/10 overflow-hidden"
-                    style={{ height: "4px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "0px" }}
-                  >
-                    <div
-                      className="h-full transition-all duration-150 ease-out"
-                      style={{ width: `${uploadingState.DATASET.progress}%`, backgroundColor: "#10B981", borderRadius: "0px" }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                    <span>Validating schema...</span>
-                    <span>{uploadingState.DATASET.formattedSize}</span>
+
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div
+                        className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-150"
+                        style={{ width: `${uploadingState.DATASET.progress}%` }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-amber-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        <span className="font-medium text-amber-300 text-[0.6875rem]">Uploading dataset...</span>
+                      </div>
+                      <span className="text-[0.6875rem] font-mono text-white/40">Please wait</span>
+                    </div>
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "DATASET") ? (
-                <div
-                  className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col justify-between min-h-[150px]"
-                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5"
-                      style={{ width: "1.75rem", height: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
-                    >
-                      <IconCheck size={15} stroke={2.5} />
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0">
+                        <IconDatabase size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate" title={filesList.find((f) => f.category === "DATASET")?.name}>
+                          {filesList.find((f) => f.category === "DATASET")?.name}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {filesList.find((f) => f.category === "DATASET")?.formattedSize}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-xs font-mono text-emerald-200 font-semibold truncate">
-                        {filesList.find((f) => f.category === "DATASET")?.name}
-                      </span>
-                      <span className="text-[0.688rem] text-white/40 font-mono mt-0.5">
-                        {filesList.find((f) => f.category === "DATASET")?.formattedSize} · Verified
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
+                      100%
+                    </span>
                   </div>
 
-                  <div
-                    className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1"
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "0.625rem", marginTop: "0.25rem" }}
-                  >
-                    <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
-                      Replace
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".csv,.xlsx,.xls"
-                        onChange={(e) => handleFileInputChange(e, "DATASET")}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => removeFile("DATASET")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
-                    >
-                      <IconTrash size={13} stroke={2} />
-                      Remove
-                    </button>
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-300 w-full" />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span className="font-semibold text-emerald-300 text-[0.6875rem]">Ready for submission</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile("DATASET")}
+                        className="px-2.5 py-0.5 rounded-[2px] text-[0.6875rem] font-mono font-bold text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                      >
+                        Change
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <label
-                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[150px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
                     dragActiveCategory === "DATASET"
-                      ? "border-emerald-500 bg-emerald-500/10"
-                      : "border-white/15 hover:border-emerald-500/60 bg-white/[0.01] hover:bg-white/[0.03]"
+                      ? "border-[#CC6600] bg-[#CC6600]/10 ring-2 ring-[#CC6600]/40 scale-[1.01]"
+                      : "border-white/15 hover:border-white/40 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
-                  style={{
-                    padding: "1.75rem 1.25rem",
-                    minHeight: "150px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.75rem",
-                    borderRadius: "2px",
-                    boxSizing: "border-box",
-                  }}
                 >
                   <input
                     type="file"
                     className="hidden"
-                    accept=".csv,.xlsx,.xls"
+                    accept=".xlsx,.xls,.csv,.sav,.dta,.tsv"
                     onChange={(e) => handleFileInputChange(e, "DATASET")}
                   />
-                  <div
-                    className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors"
-                    style={{ width: "2rem", height: "2rem", borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                  >
+                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#FFA040] group-hover:border-[#CC6600]/40 transition-colors">
                     <IconCloudUpload size={18} stroke={1.75} />
                   </div>
-                  <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem", textAlign: "center" }}>
+                  <div className="flex flex-col gap-0.5 text-center">
                     <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
                       Click to browse or drop file
                     </span>
@@ -968,109 +1042,104 @@ export default function NewProjectIntakePage() {
 
               {/* Upload Zone / State */}
               {uploadingState.QUESTIONNAIRE ? (
-                <div
-                  className="p-4 bg-[#011B38] border border-amber-400/50 rounded-[2px] flex flex-col justify-center gap-3 min-h-[150px]"
-                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.75rem", boxSizing: "border-box" }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-white font-semibold truncate max-w-[170px]">
-                      {uploadingState.QUESTIONNAIRE.fileName}
-                    </span>
-                    <span className="text-xs font-mono text-amber-400 font-bold">
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0 animate-pulse">
+                        <IconCloudUpload size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate">
+                          {uploadingState.QUESTIONNAIRE.fileName}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {uploadingState.QUESTIONNAIRE.formattedSize}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
                       {uploadingState.QUESTIONNAIRE.progress}%
                     </span>
                   </div>
-                  <div
-                    className="w-full bg-white/10 overflow-hidden"
-                    style={{ height: "4px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "0px" }}
-                  >
-                    <div
-                      className="h-full transition-all duration-150 ease-out"
-                      style={{ width: `${uploadingState.QUESTIONNAIRE.progress}%`, backgroundColor: "#F59E0B", borderRadius: "0px" }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                    <span>Uploading...</span>
-                    <span>{uploadingState.QUESTIONNAIRE.formattedSize}</span>
+
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div
+                        className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-150"
+                        style={{ width: `${uploadingState.QUESTIONNAIRE.progress}%` }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-amber-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        <span className="font-medium text-amber-300 text-[0.6875rem]">Uploading tool...</span>
+                      </div>
+                      <span className="text-[0.6875rem] font-mono text-white/40">Please wait</span>
+                    </div>
                   </div>
                 </div>
               ) : filesList.some((f) => f.category === "QUESTIONNAIRE") ? (
-                <div
-                  className="p-4 bg-[#011B38] border border-emerald-500/30 rounded-[2px] flex flex-col justify-between min-h-[150px]"
-                  style={{ padding: "1.25rem", minHeight: "150px", borderRadius: "2px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-7 h-7 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5"
-                      style={{ width: "1.75rem", height: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "2px" }}
-                    >
-                      <IconCheck size={15} stroke={2.5} />
+                <div className="p-4 sm:p-5 rounded-[2px] bg-[#01142B] border border-[#CC6600]/80 flex flex-col justify-between min-h-[140px] shadow-lg relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center text-[#FFA040] flex-shrink-0">
+                        <IconListCheck size={16} stroke={1.75} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-mono text-xs font-bold text-white truncate" title={filesList.find((f) => f.category === "QUESTIONNAIRE")?.name}>
+                          {filesList.find((f) => f.category === "QUESTIONNAIRE")?.name}
+                        </span>
+                        <span className="text-[0.625rem] font-mono text-white/50">
+                          {filesList.find((f) => f.category === "QUESTIONNAIRE")?.formattedSize}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-xs font-mono text-emerald-200 font-semibold truncate">
-                        {filesList.find((f) => f.category === "QUESTIONNAIRE")?.name}
-                      </span>
-                      <span className="text-[0.688rem] text-white/40 font-mono mt-0.5">
-                        {filesList.find((f) => f.category === "QUESTIONNAIRE")?.formattedSize} · Verified
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/35 text-[#FFA040] font-mono text-xs font-bold tracking-wider flex-shrink-0">
+                      100%
+                    </span>
                   </div>
 
-                  <div
-                    className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 mt-1"
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "0.625rem", marginTop: "0.25rem" }}
-                  >
-                    <label className="text-xs font-mono text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
-                      Replace
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,.docx,.doc"
-                        onChange={(e) => handleFileInputChange(e, "QUESTIONNAIRE")}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => removeFile("QUESTIONNAIRE")}
-                      className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
-                    >
-                      <IconTrash size={13} stroke={2} />
-                      Remove
-                    </button>
+                  {/* Bottom Group: Progress Bar + Status Footer */}
+                  <div className="flex flex-col gap-2.5 mt-auto pt-4">
+                    <div className="w-full bg-[#000D1A] h-2 rounded-[1px] overflow-hidden border border-white/10 p-[1px] flex items-center">
+                      <div className="bg-[#CC6600] h-full rounded-[1px] transition-all duration-300 w-full" />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <div className="flex items-center gap-1.5 text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span className="font-semibold text-emerald-300 text-[0.6875rem]">Ready for submission</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile("QUESTIONNAIRE")}
+                        className="px-2.5 py-0.5 rounded-[2px] text-[0.6875rem] font-mono font-bold text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                      >
+                        Change
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <label
-                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[150px] ${
+                  className={`group cursor-pointer border border-dashed rounded-[2px] p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 min-h-[140px] ${
                     dragActiveCategory === "QUESTIONNAIRE"
-                      ? "border-amber-400 bg-amber-400/10"
-                      : "border-white/15 hover:border-amber-400/60 bg-white/[0.01] hover:bg-white/[0.03]"
+                      ? "border-[#CC6600] bg-[#CC6600]/10 ring-2 ring-[#CC6600]/40 scale-[1.01]"
+                      : "border-white/15 hover:border-white/40 bg-white/[0.01] hover:bg-white/[0.03]"
                   }`}
-                  style={{
-                    padding: "1.75rem 1.25rem",
-                    minHeight: "150px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.75rem",
-                    borderRadius: "2px",
-                    boxSizing: "border-box",
-                  }}
                 >
                   <input
                     type="file"
                     className="hidden"
-                    accept=".pdf,.docx,.doc"
+                    accept=".pdf,.docx,.doc,.xlsx,.csv"
                     onChange={(e) => handleFileInputChange(e, "QUESTIONNAIRE")}
                   />
-                  <div
-                    className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-amber-400 group-hover:border-amber-400/40 transition-colors"
-                    style={{ width: "2rem", height: "2rem", borderRadius: "9999px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                  >
+                  <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#FFA040] group-hover:border-[#CC6600]/40 transition-colors">
                     <IconCloudUpload size={18} stroke={1.75} />
                   </div>
-                  <div className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem", textAlign: "center" }}>
+                  <div className="flex flex-col gap-0.5 text-center">
                     <span className="text-xs font-mono font-semibold text-white/80 group-hover:text-white transition-colors">
                       Click to browse or drop file
                     </span>

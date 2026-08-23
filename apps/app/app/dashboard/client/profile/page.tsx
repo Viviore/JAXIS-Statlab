@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PageHeader, Card, FormInput, Button, FormSelect, FormFooter, Toast } from "@repo/ui";
 import { upsertClientProfile, getClientProfile } from "@/features/client-profile/actions";
 import { ClientProfileFormData } from "@/features/client-profile/schemas";
+import { formatPhilippinePhoneNumber } from "@/lib/formatters";
 
 const REGION_OPTIONS = [
   { value: "NCR", label: "National Capital Region (NCR / Metro Manila)" },
@@ -26,44 +27,6 @@ const REGION_OPTIONS = [
   { value: "REGION_13", label: "Region XIII – Caraga" },
   { value: "BARMM", label: "BARMM – Bangsamoro Autonomous Region in Muslim Mindanao" },
 ];
-
-function formatPhilippinePhoneNumber(value: string): string {
-  // Strip non-digit characters except leading plus
-  const raw = value.replace(/[^\d+]/g, "");
-
-  // Handle +63 format
-  if (raw.startsWith("+63")) {
-    const digits = raw.slice(3).replace(/\D/g, "").slice(0, 10);
-    if (digits.length <= 3) return `+63 ${digits}`;
-    if (digits.length <= 6) return `+63 ${digits.slice(0, 3)} ${digits.slice(3)}`;
-    return `+63 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
-  }
-
-  // Handle 63 format without plus
-  if (raw.startsWith("63") && raw.length > 2) {
-    const digits = raw.slice(2).replace(/\D/g, "").slice(0, 10);
-    if (digits.length <= 3) return `+63 ${digits}`;
-    if (digits.length <= 6) return `+63 ${digits.slice(0, 3)} ${digits.slice(3)}`;
-    return `+63 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
-  }
-
-  // Handle standard 09XX format (11 digits: 09XX XXX XXXX)
-  const digitsOnly = raw.replace(/\D/g, "").slice(0, 11);
-  if (digitsOnly.startsWith("0")) {
-    if (digitsOnly.length <= 4) return digitsOnly;
-    if (digitsOnly.length <= 7) return `${digitsOnly.slice(0, 4)} ${digitsOnly.slice(4)}`;
-    return `${digitsOnly.slice(0, 4)} ${digitsOnly.slice(4, 7)} ${digitsOnly.slice(7)}`;
-  }
-
-  // Handle raw 9XX format (auto-format as 09XX XXX XXXX)
-  if (digitsOnly.startsWith("9")) {
-    if (digitsOnly.length <= 3) return `0${digitsOnly}`;
-    if (digitsOnly.length <= 6) return `0${digitsOnly.slice(0, 3)} ${digitsOnly.slice(3)}`;
-    return `0${digitsOnly.slice(0, 3)} ${digitsOnly.slice(3, 6)} ${digitsOnly.slice(6, 10)}`;
-  }
-
-  return digitsOnly;
-}
 
 export default function ClientProfilePage() {
   const router = useRouter();
@@ -177,10 +140,12 @@ export default function ClientProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
             <FormInput
               label="Contact Number"
+              type="tel"
               required
               placeholder="0917 123 4567"
               value={formData.contactNumber}
               onChange={(e) => setFormData({ ...formData, contactNumber: formatPhilippinePhoneNumber(e.target.value) })}
+              maxLength={17}
               error={fieldErrors.contactNumber?.[0]}
               disabled={isPending}
               monoLabel

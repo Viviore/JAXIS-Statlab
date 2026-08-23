@@ -30,5 +30,44 @@
       ],
       "joinedAt": "2026-08-21T12:04:24.352Z"
     }
+  },
+  "bienual@gmail.com": {
+    "id": "usr_dev_staff_1787405545450",
+    "email": "bienual@gmail.com",
+    "fullName": "Bienuel Esmeralda",
+    "role": "STATISTICIAN",
+    "password": "JAXIS-7B7E1647",
+    "status": "ACTIVE",
+    "staffProfile": {
+      "bio": "sdsdsdsds",
+      "specializations": [
+        "Regression",
+        "ANOVA",
+        "SEM",
+        "Factor Analysis",
+        "Instrument Validation",
+        "Time Series",
+        "Descriptive Statistics",
+        "Mixed Methods",
+        "Gwapo"
+      ],
+      "updatedAt": "2026-08-22T13:35:09.021Z"
+    }
+  },
+  "juan@gmail.com": {
+    "id": "usr_dev_client_1787405932261",
+    "email": "juan@gmail.com",
+    "fullName": "Juan DelaCruz",
+    "role": "CLIENT",
+    "password": "Codex100@",
+    "status": "ACTIVE"
+  },
+  "juan@test.com": {
+    "id": "cmt5puj060002lr9whx2qfklt",
+    "email": "juan@test.com",
+    "fullName": "Juan DelaCruz",
+    "role": "CLIENT",
+    "password": "Codex100@",
+    "status": "ACTIVE"
   }
 }

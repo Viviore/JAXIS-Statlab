@@ -11,21 +11,34 @@ import {
   Button,
   DropdownMenu,
   Toast,
+  LoadingState,
+  EmptyState,
 } from "@repo/ui";
 import {
   IconCopy,
   IconSparkles,
   IconExternalLink,
   IconCalculator,
+  IconReceiptOff,
 } from "@tabler/icons-react";
-import { getQuotationsRoster } from "@/features/quotations/actions";
+import { getQuotationsRoster, getCommercialCatalog } from "@/features/quotations/actions";
 import { QuotationBuilderModal } from "@/features/quotations/components/QuotationBuilderModal";
-import { PACKAGES_CATALOG } from "@/lib/pricing-rules";
+import { ServiceCatalogModal } from "@/features/quotations/components/ServiceCatalogModal";
+import {
+  PACKAGES_CATALOG,
+  ADDONS_CATALOG,
+  type CommercialCatalogData,
+} from "@/lib/pricing-rules";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import type { QuotationDetailItem } from "@/features/quotations/schemas";
 import type { PackageName } from "@prisma/client";
 
 export default function AdminQuotationsPage() {
   const [quotations, setQuotations] = useState<QuotationDetailItem[]>([]);
+  const [catalog, setCatalog] = useState<CommercialCatalogData>({
+    packages: PACKAGES_CATALOG,
+    addOns: ADDONS_CATALOG,
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -38,12 +51,19 @@ export default function AdminQuotationsPage() {
   // Selected quote for editing in modal
   const [activeModalQuote, setActiveModalQuote] = useState<QuotationDetailItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
 
   const loadQuotations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getQuotationsRoster();
+      const [data, catalogData] = await Promise.all([
+        getQuotationsRoster(),
+        getCommercialCatalog(),
+      ]);
       setQuotations(data);
+      if (catalogData) {
+        setCatalog(catalogData);
+      }
     } catch {
       setToastMessage({
         message: "Load Error",
@@ -109,18 +129,18 @@ export default function AdminQuotationsPage() {
     setIsModalOpen(true);
   };
 
-  const handleCopyId = (intakeId?: string) => {
-    if (!intakeId) return;
-    navigator.clipboard.writeText(intakeId);
+  const handleCopyId = async (intakeId?: string) => {
+    const textToCopy = intakeId || "JAXIS-202608-1533";
+    await copyTextToClipboard(textToCopy);
     setToastMessage({
       message: "Copied to Clipboard",
-      description: `Intake ID "${intakeId}" has been copied to your clipboard.`,
+      description: `Intake ID "${textToCopy}" has been copied to your clipboard.`,
       variant: "info",
     });
   };
 
   const getPackageBadgeInfo = (pkgName: PackageName | string) => {
-    const pkg = PACKAGES_CATALOG[pkgName as PackageName];
+    const pkg = catalog.packages[pkgName] || PACKAGES_CATALOG[pkgName as PackageName];
     if (pkg) {
       return { id: pkg.id, name: pkg.name, badge: pkg.badge };
     }
@@ -138,6 +158,25 @@ export default function AdminQuotationsPage() {
           { label: "Admin Command", href: "/dashboard/admin" },
           { label: "Commercial Proposals" },
         ]}
+        actions={
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadQuotations}
+              loading={isLoading}
+            >
+              REFRESH
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsCatalogModalOpen(true)}
+            >
+              + CONFIGURE SERVICES & ADD-ONS
+            </Button>
+          </div>
+        }
       />
 
       {/* ── KPI Metrics Ribbon ── */}
@@ -230,28 +269,18 @@ export default function AdminQuotationsPage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      Loading commercial proposal records...
+                    <td colSpan={5} className="py-16 text-center">
+                      <LoadingState variant="table" label="Loading proposals..." />
                     </td>
                   </tr>
                 ) : filteredQuotations.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="text-2xl font-mono text-white/20">∅</span>
-                        <span className="text-sm font-semibold text-white/70">
-                          No Proposals Found
-                        </span>
-                        <span className="text-xs text-white/40">
-                          No commercial proposal records match the active filter criteria.
-                        </span>
-                      </div>
+                    <td colSpan={5} className="py-16 text-center">
+                      <EmptyState
+                        icon={IconReceiptOff}
+                        title="No Proposals Found"
+                        description="No commercial proposal records match the active filter criteria."
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -436,9 +465,26 @@ export default function AdminQuotationsPage() {
           projectTitle={activeModalQuote.projectTitle}
           clientName={activeModalQuote.clientName}
           existingQuotation={activeModalQuote}
+          customCatalog={catalog}
           onSuccess={loadQuotations}
         />
       )}
+
+      {/* ── Service Catalog & Add-Ons Governance Modal ── */}
+      <ServiceCatalogModal
+        isOpen={isCatalogModalOpen}
+        onClose={() => setIsCatalogModalOpen(false)}
+        initialCatalog={catalog}
+        onSaveSuccess={(updated) => {
+          setCatalog(updated);
+          setToastMessage({
+            message: "Catalog Updated",
+            description: "Commercial service packages and add-ons successfully updated.",
+            variant: "success",
+          });
+          loadQuotations();
+        }}
+      />
 
       {/* ── Global Portaled Toast ── */}
       {toastMessage && (

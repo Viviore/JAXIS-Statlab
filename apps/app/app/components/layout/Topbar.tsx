@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import {
-  IconSearch,
   IconChevronDown,
   IconSettings,
   IconLogout,
@@ -110,23 +109,6 @@ export const Topbar: React.FC<TopbarProps> = ({
             </span>
           </div>
         </Link>
-
-        {/* Global Search / Command Bar */}
-        <div
-          className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-sm bg-[#011B38]/50 border border-white/[0.08] text-white/40 text-xs w-72 hover:border-white/[0.18] transition-colors cursor-pointer"
-          style={{
-            padding: "0.375rem 0.875rem",
-            backgroundColor: "rgba(1, 27, 56, 0.5)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            borderRadius: "2px",
-            width: "18rem",
-            boxSizing: "border-box",
-          }}
-        >
-          <IconSearch size={14} stroke={1.5} className="flex-shrink-0 text-white/40" />
-          <span className="flex-1 truncate text-xs text-white/45">Search studies, datasets...</span>
-          <kbd className="font-mono text-[0.625rem] bg-white/[0.08] px-1.5 py-0.5 rounded text-white/60" style={{ padding: "0.125rem 0.375rem", borderRadius: "2px" }}>⌘K</kbd>
-        </div>
       </div>
 
       {/* Right Controls: User Profile + Mobile Hamburger */}

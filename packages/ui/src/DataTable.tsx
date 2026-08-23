@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Skeleton } from "./Skeleton";
+import { LoadingState } from "./LoadingState";
 
 export interface Column<T> {
   key: string;
@@ -18,7 +18,6 @@ export interface DataTableProps<T> {
   emptyState?: React.ReactNode;
   onRowClick?: (row: T) => void;
   className?: string;
-  skeletonRowCount?: number;
 }
 
 export function DataTable<T extends object = Record<string, unknown>>({
@@ -28,7 +27,6 @@ export function DataTable<T extends object = Record<string, unknown>>({
   emptyState,
   onRowClick,
   className = "",
-  skeletonRowCount = 5,
 }: DataTableProps<T>): React.ReactElement {
   return (
     <div className={`w-full overflow-x-auto border border-white/10 rounded-[2px] bg-[#010D1F] ${className}`}>
@@ -54,15 +52,11 @@ export function DataTable<T extends object = Record<string, unknown>>({
         </thead>
         <tbody className="divide-y divide-white/[0.06] text-sm text-white/90">
           {loading ? (
-            Array.from({ length: skeletonRowCount }).map((_, rIdx) => (
-              <tr key={rIdx} className="animate-pulse">
-                {columns.map((col) => (
-                  <td key={col.key} className="py-5 px-6 align-middle">
-                    <Skeleton height={16} className="bg-white/10" />
-                  </td>
-                ))}
-              </tr>
-            ))
+            <tr>
+              <td colSpan={columns.length} className="py-14 px-6 text-center">
+                <LoadingState variant="table" label="Loading data..." />
+              </td>
+            </tr>
           ) : rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="py-16 px-6 text-center text-white/40 font-mono text-xs">

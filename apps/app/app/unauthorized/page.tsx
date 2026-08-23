@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Button, Card, Skeleton } from "@repo/ui";
+import { Button, Card, LoadingState } from "@repo/ui";
 import { IconAlertTriangle } from "@tabler/icons-react";
 
 function UnauthorizedContent() {
@@ -63,7 +63,13 @@ function UnauthorizedContent() {
 
 export default function UnauthorizedPage() {
   return (
-    <Suspense fallback={<Skeleton height="350px" className="max-w-md w-full mx-auto" />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen w-full bg-[#010114] flex items-center justify-center p-6">
+          <LoadingState variant="card" label="Verifying access..." />
+        </div>
+      }
+    >
       <UnauthorizedContent />
     </Suspense>
   );

@@ -12,8 +12,11 @@ import {
   FormTextarea,
   FormSelect,
   Modal,
+  ModalFooter,
   DropdownMenu,
   Toast,
+  LoadingState,
+  EmptyState,
 } from "@repo/ui";
 import {
   IconDownload,
@@ -22,6 +25,7 @@ import {
   IconHelpCircle,
   IconCheck,
   IconCopy,
+  IconInbox,
   IconShieldCheck,
   IconCalculator,
 } from "@tabler/icons-react";
@@ -37,12 +41,22 @@ import {
   triggerFileDownload,
 } from "@/lib/file-utils";
 import { QuotationBuilderModal } from "@/features/quotations/components/QuotationBuilderModal";
+import { getCommercialCatalog } from "@/features/quotations/actions";
+import {
+  PACKAGES_CATALOG,
+  ADDONS_CATALOG,
+  type CommercialCatalogData,
+} from "@/lib/pricing-rules";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 export default function AdminIntakeTriagePage() {
   const [selectedStudyForQuote, setSelectedStudyForQuote] =
     useState<ProjectDetailItem | null>(null);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [catalog, setCatalog] = useState<CommercialCatalogData>({
+    packages: PACKAGES_CATALOG,
+    addOns: ADDONS_CATALOG,
+  });
   const [projects, setProjects] = useState<ProjectDetailItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -67,9 +81,15 @@ export default function AdminIntakeTriagePage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const res = await getProjects();
+      const [res, catalogData] = await Promise.all([
+        getProjects(),
+        getCommercialCatalog(),
+      ]);
       if (res.success) {
         setProjects(res.data);
+      }
+      if (catalogData) {
+        setCatalog(catalogData);
       }
     } catch (e) {
       console.error("Failed to load intake projects", e);
@@ -326,28 +346,18 @@ export default function AdminIntakeTriagePage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      Loading intake queue records...
+                    <td colSpan={5} className="py-16 text-center">
+                      <LoadingState variant="table" label="Loading intake queue..." />
                     </td>
                   </tr>
                 ) : filteredProjects.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="text-2xl font-mono text-white/20">∅</span>
-                        <span className="text-sm font-semibold text-white/70">
-                          No Intakes Found
-                        </span>
-                        <span className="text-xs text-white/40">
-                          No research project records match the active filter criteria.
-                        </span>
-                      </div>
+                    <td colSpan={5} className="py-16 text-center">
+                      <EmptyState
+                        icon={IconInbox}
+                        title="No Intakes Found"
+                        description="No research project records match the active filter criteria."
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -461,7 +471,7 @@ export default function AdminIntakeTriagePage() {
                                   handleMarkComplete(p.id, p.intakeId)
                                 }
                                 disabled={isPending}
-                                className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
+                                className="whitespace-nowrap font-mono text-xs tracking-wider"
                               >
                                 APPROVE →
                               </Button>
@@ -473,7 +483,7 @@ export default function AdminIntakeTriagePage() {
                                   setSelectedStudyForQuote(p);
                                   setIsQuoteModalOpen(true);
                                 }}
-                                className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300]"
+                                className="whitespace-nowrap font-mono text-xs tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300]"
                               >
                                 BUILD QUOTE →
                               </Button>
@@ -482,7 +492,7 @@ export default function AdminIntakeTriagePage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedStudyForInspect(p)}
-                                className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
+                                className="whitespace-nowrap font-mono text-xs tracking-wider"
                               >
                                 DETAILS
                               </Button>
@@ -784,7 +794,7 @@ export default function AdminIntakeTriagePage() {
               monoLabel
             />
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+            <ModalFooter>
               <Button
                 type="button"
                 variant="ghost"
@@ -802,7 +812,7 @@ export default function AdminIntakeTriagePage() {
               >
                 SEND REQUEST TO CLIENT →
               </Button>
-            </div>
+            </ModalFooter>
           </div>
         </Modal>
       )}
@@ -819,6 +829,7 @@ export default function AdminIntakeTriagePage() {
           projectIntakeId={selectedStudyForQuote.intakeId}
           projectTitle={selectedStudyForQuote.researchTitle}
           clientName={selectedStudyForQuote.client.fullName}
+          customCatalog={catalog}
           onSuccess={() => {
             loadData();
           }}

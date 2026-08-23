@@ -119,7 +119,25 @@ export const KpiCard: React.FC<KpiCardProps> = ({
               fontWeight: 700,
             }}
           >
-            {value}
+            {typeof value === "string" && value.includes("₱") ? (
+              (() => {
+                const parts = value.split("₱");
+                return (
+                  <span className="inline-flex items-baseline">
+                    {parts[0] && <span>{parts[0]}</span>}
+                    <span
+                      className="font-sans font-normal text-[0.72em] opacity-75 mr-0.5 select-none"
+                      style={{ fontWeight: 400 }}
+                    >
+                      ₱
+                    </span>
+                    <span>{parts.slice(1).join("₱")}</span>
+                  </span>
+                );
+              })()
+            ) : (
+              value
+            )}
           </span>
         </div>
 

@@ -132,7 +132,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
       style={{
         position: "fixed",
         top: 0,
@@ -143,7 +143,9 @@ export const Modal: React.FC<ModalProps> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        padding: "clamp(1rem, 5vw, 1.5rem)",
         boxSizing: "border-box",
+        overflowY: "auto",
       }}
     >
       {/* Backdrop */}
@@ -167,7 +169,7 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Modal Dialog Card */}
       <div
-        className={`relative w-full ${sizeClasses[size]} max-h-[min(90vh,calc(100dvh-2rem))] border border-white/[0.12] rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 ${
+        className={`relative w-full ${sizeClasses[size]} max-h-[min(90vh,calc(100dvh-2rem))] border border-white/[0.12] rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 mx-auto ${
           isVisible ? "animate-modal-dialog-in" : "animate-modal-dialog-out"
         } ${className}`}
         style={{
@@ -177,6 +179,7 @@ export const Modal: React.FC<ModalProps> = ({
           borderRadius: "2px",
           boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08)",
           boxSizing: "border-box",
+          width: "100%",
           maxWidth:
             size === "5xl"
               ? "1400px"
@@ -194,6 +197,8 @@ export const Modal: React.FC<ModalProps> = ({
               ? "512px"
               : "448px",
           maxHeight: "min(90vh, calc(100dvh - 2rem))",
+          marginLeft: "auto",
+          marginRight: "auto",
           display: "flex",
           flexDirection: "column",
         }}
@@ -291,20 +296,21 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Sticky Footer */}
         {currentFooter && (
           <div
-            className="sticky bottom-0 z-20 flex-shrink-0 border-t border-white/[0.08] bg-[#011226]/98 backdrop-blur-md flex justify-end items-center gap-3"
+            className="sticky bottom-0 z-20 flex-shrink-0 border-t border-white/[0.08] bg-[#011226]/98 backdrop-blur-md flex flex-col-reverse sm:flex-row sm:justify-end items-stretch sm:items-center gap-3 pt-5 pb-4.5 px-5 sm:px-6 w-full"
             style={{
               position: "sticky",
               bottom: 0,
               zIndex: 20,
               flexShrink: 0,
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
               gap: "0.75rem",
-              padding: "0.875rem 1.25rem",
+              paddingTop: "1.25rem",
+              paddingBottom: "1.125rem",
+              paddingLeft: "1.5rem",
+              paddingRight: "1.5rem",
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",
               backgroundColor: "rgba(1, 18, 38, 0.98)",
               boxSizing: "border-box",
+              width: "100%",
             }}
           >
             {currentFooter}
@@ -315,3 +321,46 @@ export const Modal: React.FC<ModalProps> = ({
     document.body
   );
 };
+
+export interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  align?: "right" | "left" | "between";
+  className?: string;
+  bordered?: boolean;
+}
+
+export const ModalFooter: React.FC<ModalFooterProps> = ({
+  children,
+  align = "right",
+  className = "",
+  bordered = true,
+  style,
+  ...props
+}) => {
+  const alignClass =
+    align === "between"
+      ? "sm:justify-between"
+      : align === "left"
+        ? "sm:justify-start"
+        : "sm:justify-end";
+
+  return (
+    <div
+      className={`flex flex-col-reverse sm:flex-row items-stretch sm:items-center ${alignClass} gap-3 pt-5 mt-6 w-full [&>*]:w-full sm:[&>*]:w-auto [&_button]:w-full sm:[&_button]:w-auto [&_a]:w-full sm:[&_a]:w-auto ${
+        bordered ? "border-t border-white/[0.08]" : ""
+      } ${className}`}
+      style={{
+        paddingTop: "1.25rem",
+        marginTop: "1.5rem",
+        borderTop: bordered ? "1px solid rgba(255, 255, 255, 0.08)" : "none",
+        boxSizing: "border-box",
+        width: "100%",
+        ...style,
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+

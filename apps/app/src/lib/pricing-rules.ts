@@ -7,7 +7,7 @@ import { PackageName, AddOnName, ProjectStatus, RoleName } from "@prisma/client"
  */
 
 export interface PackageDefinition {
-  code: PackageName;
+  code: PackageName | string;
   id: string;
   name: string;
   badge: string;
@@ -18,14 +18,21 @@ export interface PackageDefinition {
   tagline: string;
   deliverables: string[];
   recommendedFor: string;
+  isActive?: boolean;
 }
 
 export interface AddOnDefinition {
-  code: AddOnName;
+  code: AddOnName | string;
   name: string;
   defaultPrice: number;
   tagline: string;
   badge: string;
+  isActive?: boolean;
+}
+
+export interface CommercialCatalogData {
+  packages: Record<string, PackageDefinition>;
+  addOns: Record<string, AddOnDefinition>;
 }
 
 /**

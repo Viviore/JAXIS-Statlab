@@ -24,3 +24,8 @@ All AI coding assistants and developers working in this workspace must strictly 
 - Strictly use the 4 standard variants: `info` (Sky Blue), `success` (Emerald), `warning` (Amber), `danger` (Crimson).
 - Zero emojis in toast messages or descriptions.
 - Render portaled via `<Toast message="..." description="..." variant="..." onClose={...} />`.
+
+## 5. Copywriting & Tone Standard (CRITICAL)
+- **Zero Double Slashes Policy**: Double slashes (`//`) are **strictly forbidden** anywhere in UI copy, loading states, badges, alert headers, and toasts.
+- **Simple & Human-Friendly Language**: Keep all words simple, natural, and accessible. Avoid robotic, overly technical, or sci-fi jargon (e.g. NEVER use `"SYNCING TELEMETRY // RETRIEVING DATA"`, `"ESTABLISHING SECURE PROTOCOL"`, `"CALCULATING COMPUTE STATE"`).
+- **Clear, Direct Phrasing**: Use straightforward phrasing such as `"Loading research studies..."`, `"Verifying profile..."`, `"Loading workspace..."`, `"Please wait a moment"`.

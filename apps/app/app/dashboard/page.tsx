@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCardSkeleton, TableRowSkeleton, AnimateHeight } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, LoadingState, AnimateHeight } from "@repo/ui";
 import {
   IconRefresh,
   IconUpload,
@@ -86,12 +86,12 @@ export default function DashboardOverviewPage() {
         }}
       >
         {isLoading ? (
-          <div key="kpi-skeletons" className="contents animate-content-fade">
-            <KpiCardSkeleton />
-            <KpiCardSkeleton />
-            <KpiCardSkeleton />
-            <KpiCardSkeleton />
-          </div>
+          <>
+            <Card variant="kpi"><LoadingState variant="card" label="Loading studies..." /></Card>
+            <Card variant="kpi"><LoadingState variant="card" label="Loading revisions..." /></Card>
+            <Card variant="kpi"><LoadingState variant="card" label="Loading QA queue..." /></Card>
+            <Card variant="kpi"><LoadingState variant="card" label="Loading escrow..." /></Card>
+          </>
         ) : (
           <div key="kpi-loaded" className="contents animate-content-fade">
             {/* KPI 1 */}
@@ -304,12 +304,11 @@ export default function DashboardOverviewPage() {
                 style={{ fontSize: "0.875rem" }}
               >
                 {isLoading ? (
-                  <>
-                    <TableRowSkeleton />
-                    <TableRowSkeleton />
-                    <TableRowSkeleton />
-                    <TableRowSkeleton />
-                  </>
+                  <tr>
+                    <td colSpan={7} className="py-14 text-center">
+                      <LoadingState variant="table" label="Loading research studies..." />
+                    </td>
+                  </tr>
                 ) : projects.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-white/45 font-sans">
@@ -467,10 +466,10 @@ export default function DashboardOverviewPage() {
               <div className="flex items-center gap-2.5">
                 <span className="h-2 w-2 rounded-full bg-[#CC6600]" />
                 <h3 className="text-sm font-bold text-white font-sans" style={{ fontSize: "0.875rem" }}>
-                  Real-time Governance Audit Stream
+                  Recent Activity Log
                 </h3>
               </div>
-              <span className="text-xs font-mono text-white/40 uppercase tracking-wide" style={{ fontSize: "0.75rem" }}>Live Telemetry</span>
+              <span className="text-xs font-mono text-white/40 uppercase tracking-wide" style={{ fontSize: "0.75rem" }}>Live Updates</span>
             </div>
           }
         >

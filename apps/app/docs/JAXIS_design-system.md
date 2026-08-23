@@ -32,6 +32,16 @@ JAXIS StatLab follows a high-precision, industrial-scientific design system tail
   - Use Tailwind color classes (e.g., `className="text-[#CC6600]"`, `className="text-sky-400"`, `className="text-white/60"`).
 - **Zero Glow Policy**: Blurry box-shadow glows (`shadow-[0_0_...px]`) are prohibited. Use high-contrast flat borders (`border-white/10` to `border-white/20`) and calibrated opacity tints (`bg-white/[0.04]` or `bg-sky-500/10`).
 
+### 1.3. Copywriting, Tone & Labeling Standards (SIMPLE & HUMAN-FRIENDLY)
+- **Zero Double Slashes Policy**: Double slashes (`//`) are **strictly prohibited** in all UI text, loading states, badges, alert titles, and toasts.
+- **Simple, Direct English**: All interface wording must be simple, concise, and human-friendly. Never use robotic, artificial sci-fi jargon (e.g. NEVER use `"SYNCING TELEMETRY // RETRIEVING DATA"`, `"ESTABLISHING SECURE PROTOCOL"`, `"CALCULATING COMPUTE STATE"`).
+- **Standard Phrasing Examples**:
+  - `Loading research studies...` (not `SYNCING RESEARCH REGISTRY // FETCHING STUDIES...`)
+  - `Loading workspace...` (not `INITIALIZING WORKSPACE TELEMETRY // JAXIS v1.0`)
+  - `Verifying profile...` (not `VERIFYING INSTITUTIONAL CLEARANCE...`)
+  - `Please wait a moment` (not `Awaiting real-time analytical pipeline response`)
+- **Proper Terminology**: Always use **"Lead Researcher"** and **"Research Study"** (never "Principal Investigator" or "Investigator").
+
 ---
 
 ## 2. Global Layout Shell Architecture (`dashboard/layout.tsx`)
@@ -61,10 +71,10 @@ Every dashboard page and future module (`/dashboard/*`) runs inside the unified 
 
 | Breakpoint | Width | Behavior & Rules |
 | :--- | :--- | :--- |
-| **Mobile (`< 640px`)** | Phones (360px – 430px) | Single column vertical flow. Topbar hides text search and user full name (profile icon only). Sidebar becomes off-canvas slide-out drawer toggled via right hamburger. |
+| **Mobile (`< 640px`)** | Phones (360px – 430px) | Single column vertical flow. Topbar hides user full name (profile avatar only). Sidebar becomes off-canvas slide-out drawer toggled via right hamburger. |
 | **`sm` (`640px`)** | Large phones / phablets | 2-column KPI grids. User full name appears beside avatar in Topbar. |
 | **`md` (`768px`)** | Tablets / iPads | Dual-column form fields, multi-button toolbars wrap cleanly. |
-| **`lg` (`1024px`)** | Laptops (13" – 14") | Desktop Sidebar pinned permanently (296px). Topbar command search bar becomes visible. Split auth layout active. |
+| **`lg` (`1024px`)** | Laptops (13" – 14") | Desktop Sidebar pinned permanently (296px). Split auth layout active. |
 | **`xl` (`1280px`)** | High-res monitors | 4-column KPI telemetry matrix, full data inspection tables. |
 | **`2xl` (`1536px`)** | Ultra-wide displays | Content centered with max width bound (`max-w-7xl mx-auto`). |
 
@@ -306,12 +316,97 @@ setToastMessage({
 
 ---
 
-### 6.3. Overlays & Windows: `Modal` vs. `Drawer`
+### 6.3. Overlays & Windows: `Modal` vs. `Drawer` vs. `ModalFooter`
 
 | Component | Architecture & Dimensions | Content Capacity | When to Use |
 | :--- | :--- | :--- | :--- |
-| **`Modal`** (`Modal.tsx`) | Centered dialog (`max-w-md` to `max-w-4xl`) with `max-h-[70vh]` body scroll & `Escape` key cleanup. | Focused, discrete task or inspection view. | • Study Specifications Inspector modal.<br>• Quotation calculation review popup.<br>• Destructive action confirmations (suspend staff, revoke access).<br>• File preview or syntax modal. |
+| **`Modal`** (`Modal.tsx`) | Centered dialog (`max-w-md` to `max-w-7xl` / `sm` to `5xl`) with scrollable body, backdrop blur (`bg-black/80`), and `Escape` key capture. | Focused, discrete task or inspection view. | • Study Specifications Inspector modal.<br>• Quotation calculation review popup.<br>• Destructive action confirmations (suspend staff, revoke access).<br>• File upload / preview or syntax modal. |
+| **`ModalFooter`** (`Modal.tsx` / `@repo/ui`) | Standardized bottom action container with generous top spacing (`mt-6 pt-5`), hairline divider (`border-t border-white/[0.08]`), and responsive stacking. | Action buttons (`Cancel`, `Submit`, `Confirm`). | • Any modal containing interactive action buttons.<br>• Form submission footers inside modal dialogs. |
 | **`Drawer`** (`Drawer.tsx`) | Full-height off-canvas slide-out sheet from viewport edge. | Deep multi-section navigation or dense parameter configuration. | • Mobile navigation sidebar (`<lg`).<br>• Multi-variable statistical model setup sidebar.<br>• Live audit event stream panel. |
+
+#### Modal & ModalFooter Standard Specifications
+
+Every modal across the workspace must strictly comply with the following structural layout and spacing tokens:
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Modal Sticky Header (p-4 sm:p-5 border-b border-white/[0.08]) │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│ Modal Content Body (p-5 sm:p-6 overflow-y-auto)        │
+│                                                        │
+├────────────────────────────────────────────────────────┤
+│ ModalFooter (mt-6 pt-5 pb-4 px-5 sm:px-6 border-t)     │
+│ [Cancel / Ghost] [Secondary]   [Primary Action CTA →]  │
+└────────────────────────────────────────────────────────┘
+```
+
+1. **Standardized Spacing & Padding Tokens:**
+   - **Small Screen / Mobile Inset (Viewport Margin):** Outer overlay container applies `padding: clamp(1rem, 5vw, 1.5rem)` (`p-4 sm:p-6`) with `mx-auto`, guaranteeing clean left and right screen gutters on mobile devices so modals never touch the viewport edges.
+   - **Top Margin:** `marginTop: "1.5rem"` / `mt-6` (guarantees clear visual breathing room between form fields/content and buttons).
+   - **Top Padding:** `paddingTop: "1.25rem"` / `pt-5`
+   - **Horizontal Padding:** `paddingLeft/Right: "1.5rem"` / `px-5 sm:px-6`
+   - **Border Separation:** `1px solid rgba(255, 255, 255, 0.08)` / `border-t border-white/[0.08]`
+   - **Footer Background:** `rgba(1, 18, 38, 0.98)` / `bg-[#011226]/98 backdrop-blur-md`
+
+2. **Action Alignment & Responsive Stacking:**
+   - **Small Screen Mobile (`< 640px`):** Stacks vertically (`flex-col-reverse items-stretch`) where every action button automatically expands to **100% full width** (`w-full`) for accessible touch targets. Primary CTA sits on top, Cancel / Back sits below.
+   - **Desktop (`>= 640px`):** Arranges horizontally (`sm:flex-row items-center`) with natural compact widths (`sm:w-auto`).
+   - **Default (`align="right"`):** Primary CTA on the far right, Cancel / Ghost button on the left of the group.
+   - **Split (`align="between"`):** Contextual metadata / auxiliary button on the left; Action buttons grouped on the right.
+
+3. **Usage Example (Subcomponent Pattern):**
+```tsx
+import { Modal, ModalFooter, Button } from "@repo/ui";
+
+<Modal
+  isOpen={isOpen}
+  onClose={onClose}
+  title="Institutional Affiliation Verification"
+  description="Provide your academic credentials to unlock research intake."
+  size="md"
+>
+  <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    {/* Form inputs */}
+    <FormInput label="University / Institution" required />
+    <FormInput label="Primary Contact Number" required />
+
+    {/* Standardized Modal Footer */}
+    <ModalFooter>
+      <Button type="button" variant="outline" size="sm" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button type="submit" variant="primary" size="sm">
+        SAVE & UNLOCK INTAKE →
+      </Button>
+    </ModalFooter>
+  </form>
+</Modal>
+```
+
+4. **Usage Example (Prop Pattern):**
+```tsx
+<Modal
+  open={isOpen}
+  onClose={onClose}
+  title={`Study Inspection: ${study.id}`}
+  size="lg"
+  footer={
+    <div className="flex items-center justify-between w-full">
+      <Button variant="secondary" size="sm" onClick={onClose}>
+        CLOSE INSPECTOR
+      </Button>
+      <Link href={`/dashboard/client/projects/${study.id}`}>
+        <Button variant="primary" size="sm">
+          OPEN PROJECT DESK →
+        </Button>
+      </Link>
+    </div>
+  }
+>
+  {/* Inspection content */}
+</Modal>
+```
 
 ---
 
@@ -344,4 +439,77 @@ All action buttons placed in form footers must use `className="w-full sm:w-auto 
   - `FOR_QA` / `AWAITING_INFORMATION`: Amber (`#F59E0B` / `bg-amber-500/10`)
   - `APPROVED` / `DELIVERED` / `PAID`: Verification Emerald (`#10B981` / `bg-emerald-500/10`)
   - `SUSPENDED` / `REJECTED` / `CANCELLED`: Danger Red (`#EF4444` / `bg-red-500/10`)
+
+---
+
+### 6.7. Tactical Telemetry Loading System: `LoadingState`
+
+Generic shimmering grey skeletons are **strictly banned** across the workspace. In their place, all asynchronous data fetching and route transitions use the **`<LoadingState>`** component from `@repo/ui`.
+
+```
+┌────────────────────────────────────────────────────────┐
+│ [Table / Card Shell Pinned]                            │
+│                 [IconLoader2] (Spinning #CC6600)       │
+│                  Loading research studies...           │
+│                    Please wait a moment                │
+└────────────────────────────────────────────────────────┘
+```
+
+#### **The 4 Standard Loading Variants:**
+
+| Variant | Container Dimensions | Primary Visual Elements | Use Case |
+| :--- | :--- | :--- | :--- |
+| **`variant="table"`** | `py-12 px-4` inside `<tr><td colSpan={N}>` | Radar ping + `<IconLoader2 size={24} />` + Standard sans-serif typography (`text-sm font-semibold` + `text-xs text-white/40`). | Table bodies (`DataTable`, Study Registries, Payout Ledgers) while fetching records. Preserves table headers with **Zero CLS**. |
+| **`variant="card"`** | `min-h-[140px]` | Centered `<IconLoader2 size={22} />` + Sans-serif label & description (`text-sm font-semibold`). | Inside KPI matrix cards, verification guardrail loading cards, and inspector containers. |
+| **`variant="page"`** | `min-h-[50vh]` | Glass emblem + pulse radar + sans-serif status text. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
+| **`variant="inline"`** | Compact inline row | `<IconLoader2 size={16} />` + concise sans-serif string. | Inside button micro-interactions, modal sub-headers, or search bars. |
+
+#### **Usage Examples:**
+```tsx
+import { LoadingState } from "@repo/ui";
+
+// Inside a table:
+<LoadingState
+  variant="table"
+  label="Loading research studies..."
+  description="Please wait a moment"
+/>
+
+// Inside a card / KPI:
+<Card variant="kpi">
+  <LoadingState variant="card" label="Loading QA queue..." />
+</Card>
+
+// Inside loading.tsx:
+<LoadingState
+  variant="page"
+  label="Loading workspace..."
+  description="Please wait while we load your dashboard"
+/>
+```
+
+---
+
+### 6.8. Empty State Telemetry: `EmptyState`
+
+Raw character placeholders (such as `∅`) and plain unstyled text are **strictly banned**. All registry tables and empty data views must render the standardized **`<EmptyState />`** primitive from `@repo/ui`.
+
+```
+┌────────────────────────────────────────────────────────┐
+│                        ┌─────┐                         │
+│                        │ [⚑] │  (Tactical Emblem)       │
+│                        └─────┘                         │
+│               No Research Studies Found                │
+│   You have not submitted any study intake requests yet.│
+│                                                        │
+│            [ + SUBMIT YOUR FIRST INTAKE → ]            │
+└────────────────────────────────────────────────────────┘
+```
+
+#### **Props & Standards:**
+* **`icon`**: Tabler Icon component (`IconFolderOff`, `IconFileSearch`, `IconReceiptOff`, `IconInbox`). Defaults to `IconFolderOff`.
+* **`title`**: Clear, concise status header (e.g., `"No Research Studies Found"`).
+* **`description`**: Context-aware subtext explaining how to resolve or why the list is empty.
+* **`action`**: Optional primary CTA button directing the researcher to action (e.g. `+ SUBMIT STUDY INTAKE →`).
+
 

@@ -14,6 +14,7 @@ import {
   UPFRONT_PACKAGES,
   PACKAGES_CATALOG,
   ADDONS_CATALOG,
+  type CommercialCatalogData,
 } from "@/lib/pricing-rules";
 import { assertValidStatusTransition } from "@/lib/project-rules";
 import {
@@ -34,12 +35,114 @@ import type { QuotationStatus, LineItemType, ProjectStatus } from "@prisma/clien
 
 const DEV_QUOTATIONS_FILE = path.join(process.cwd(), ".dev-quotations.json");
 const DEV_PROJECTS_FILE = path.join(process.cwd(), ".dev-projects.json");
+const DEV_CATALOG_FILE = path.join(process.cwd(), ".dev-catalog.json");
+
+export async function getCommercialCatalog(): Promise<CommercialCatalogData> {
+  try {
+    if (fs.existsSync(DEV_CATALOG_FILE)) {
+      const data = fs.readFileSync(DEV_CATALOG_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch {
+    // Fall back to defaults
+  }
+  return {
+    packages: PACKAGES_CATALOG,
+    addOns: ADDONS_CATALOG,
+  };
+}
+
+export async function saveCommercialCatalog(
+  data: CommercialCatalogData
+): Promise<ActionResponse<CommercialCatalogData>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "You must be logged in as Admin or CEO." },
+    };
+  }
+
+  try {
+    assertCanManageQuotation(session.user.role || "CLIENT");
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: { code: "FORBIDDEN", message: (err as Error).message },
+    };
+  }
+
+  try {
+    fs.writeFileSync(DEV_CATALOG_FILE, JSON.stringify(data, null, 2), "utf-8");
+    revalidatePath("/dashboard/admin/quotations");
+    return {
+      success: true,
+      data,
+    };
+  } catch {
+    return {
+      success: false,
+      error: { code: "SERVER_ERROR", message: "Failed to persist commercial catalog changes." },
+    };
+  }
+}
+
+export async function resetCommercialCatalog(): Promise<ActionResponse<CommercialCatalogData>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "You must be logged in." },
+    };
+  }
+
+  try {
+    assertCanManageQuotation(session.user.role || "CLIENT");
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: { code: "FORBIDDEN", message: (err as Error).message },
+    };
+  }
+
+  try {
+    if (fs.existsSync(DEV_CATALOG_FILE)) {
+      fs.unlinkSync(DEV_CATALOG_FILE);
+    }
+    const defaultData: CommercialCatalogData = {
+      packages: PACKAGES_CATALOG,
+      addOns: ADDONS_CATALOG,
+    };
+    revalidatePath("/dashboard/admin/quotations");
+    return {
+      success: true,
+      data: defaultData,
+    };
+  } catch {
+    return {
+      success: false,
+      error: { code: "SERVER_ERROR", message: "Failed to reset catalog." },
+    };
+  }
+}
 
 function readPersistedDevQuotations(): QuotationDetailItem[] {
   try {
     if (fs.existsSync(DEV_QUOTATIONS_FILE)) {
       const data = fs.readFileSync(DEV_QUOTATIONS_FILE, "utf-8");
-      return JSON.parse(data);
+      const quotes: QuotationDetailItem[] = JSON.parse(data);
+      const projects = readPersistedDevProjectsList();
+
+      return quotes.map((q) => {
+        const proj = projects.find((p) => p.id === q.projectId);
+        return {
+          ...q,
+          projectIntakeId: q.projectIntakeId || proj?.intakeId || "JAXIS-202608-1533",
+          projectTitle: q.projectTitle || proj?.researchTitle || "Research Study",
+          clientName: q.clientName || proj?.client?.fullName || "Lead Researcher",
+          clientEmail: q.clientEmail || proj?.client?.email || "client@jaxis.dev",
+        };
+      });
     }
   } catch {
     // Ignore read errors

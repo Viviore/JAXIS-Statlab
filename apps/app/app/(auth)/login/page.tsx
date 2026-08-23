@@ -4,7 +4,7 @@ import React, { useState, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Alert, Button, Skeleton, FormInput, EyeIcon, EyeOffIcon } from "@repo/ui";
+import { Alert, Button, LoadingState, FormInput, EyeIcon, EyeOffIcon } from "@repo/ui";
 import { IconChevronDown } from "@tabler/icons-react";
 
 const DEV_PRESETS = [
@@ -264,12 +264,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full flex flex-col gap-4">
-          <Skeleton height="36px" width="160px" />
-          <Skeleton height="18px" width="280px" />
-          <Skeleton height="80px" width="100%" />
-          <Skeleton height="44px" width="100%" />
-          <Skeleton height="44px" width="100%" />
+        <div className="w-full min-h-[300px] flex items-center justify-center">
+          <LoadingState variant="card" label="INITIALIZING AUTHENTICATION..." />
         </div>
       }
     >

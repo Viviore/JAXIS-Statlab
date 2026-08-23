@@ -948,6 +948,30 @@ export async function addProjectFile(
       };
     }
 
+    const ALLOWED_CATEGORY_EXTENSIONS: Partial<Record<FileCategory, string[]>> = {
+      RESEARCH_DOCUMENT: [".pdf", ".docx", ".doc", ".zip"],
+      DATASET: [".xlsx", ".xls", ".csv", ".sav", ".dta", ".tsv"],
+      QUESTIONNAIRE: [".pdf", ".docx", ".doc", ".xlsx", ".csv"],
+      PAYMENT_PROOF: [".pdf", ".png", ".jpg", ".jpeg"],
+      ANALYSIS_OUTPUT: [".pdf", ".docx", ".xlsx", ".csv", ".zip", ".sav"],
+      DELIVERABLE: [".pdf", ".docx", ".xlsx", ".csv", ".zip"],
+      DISPUTE_EVIDENCE: [".pdf", ".docx", ".png", ".jpg", ".jpeg", ".zip"],
+    };
+
+    const fileNameLower = fileData.fileName.toLowerCase();
+    const allowed = ALLOWED_CATEGORY_EXTENSIONS[fileData.fileCategory] || [".pdf", ".docx", ".xlsx", ".csv", ".sav"];
+    const hasValidExtension = allowed.some((ext) => fileNameLower.endsWith(ext));
+
+    if (!hasValidExtension) {
+      return {
+        success: false,
+        error: {
+          code: "INVALID_FILE_TYPE",
+          message: `The file "${fileData.fileName}" is not an accepted format for the selected category (${allowed.join(", ")}).`,
+        },
+      };
+    }
+
     const created = await db.projectFile.create({
       data: {
         projectId,

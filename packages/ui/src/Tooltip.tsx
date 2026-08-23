@@ -36,12 +36,12 @@ export function Tooltip({
       {isVisible && (
         <div
           role="tooltip"
-          className={`absolute z-50 pointer-events-none rounded-[3px] bg-[#01142B] border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-md animate-content-fade ${positionClasses[position]}`}
+          className={`absolute z-[100] pointer-events-none rounded-[3px] bg-[#01142B] border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-md animate-content-fade ${positionClasses[position]}`}
           style={{
             padding: "0.875rem 1.125rem", // 14px vertical, 18px horizontal guaranteed padding
             boxShadow: "0 16px 40px -4px rgba(0, 0, 0, 0.85)",
-            minWidth: "190px",
-            maxWidth: "320px",
+            minWidth: "220px",
+            maxWidth: "360px",
           }}
         >
           {content}

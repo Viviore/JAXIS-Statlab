@@ -11,9 +11,13 @@ import {
   FilterToolbar,
   Modal,
   Toast,
+  LoadingState,
+  EmptyState,
 } from "@repo/ui";
-import { IconDownload, IconCopy } from "@tabler/icons-react";
+import { IconDownload, IconCopy, IconFolderOff, IconFileSearch } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
+import { getClientProfile } from "@/features/client-profile/actions";
+import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import {
   getFileMeta,
@@ -28,6 +32,8 @@ export default function ClientProjectsListPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedStudyForInspect, setSelectedStudyForInspect] = useState<ProjectDetailItem | null>(null);
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<{
     message: string;
     description?: string;
@@ -38,12 +44,20 @@ export default function ClientProjectsListPage() {
     async function loadData() {
       setIsLoading(true);
       try {
-        const res = await getProjects({
-          status: statusFilter,
-          search: searchQuery,
-        });
+        const [res, profile] = await Promise.all([
+          getProjects({
+            status: statusFilter,
+            search: searchQuery,
+          }),
+          getClientProfile(),
+        ]);
         if (res.success) {
           setProjects(res.data);
+        }
+        if (profile && profile.institutionSchool && profile.contactNumber) {
+          setIsProfileComplete(true);
+        } else {
+          setIsProfileComplete(false);
         }
       } catch (err) {
         console.error("Failed to load client projects", err);
@@ -114,6 +128,18 @@ export default function ClientProjectsListPage() {
     });
   };
 
+  const handleProfileSuccess = async () => {
+    const profile = await getClientProfile();
+    if (profile && profile.institutionSchool && profile.contactNumber) {
+      setIsProfileComplete(true);
+    }
+    setToastMessage({
+      message: "Institutional Affiliation Verified",
+      description: "Your academic credentials have been saved. Intake desk unlocked.",
+      variant: "success",
+    });
+  };
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
       <PageHeader
@@ -125,11 +151,31 @@ export default function ClientProjectsListPage() {
           { label: "Projects" },
         ]}
         actions={
-          <Link href="/dashboard/client/projects/new">
-            <Button variant="primary" size="sm" className="font-bold tracking-wider">
-              + NEW PROJECT INTAKE
+          isProfileComplete === null ? (
+            <Button
+              variant="primary"
+              size="sm"
+              disabled
+              className="font-bold tracking-wider font-mono text-xs opacity-50 cursor-wait pointer-events-none"
+            >
+              <LoadingState variant="inline" label="Loading..." />
             </Button>
-          </Link>
+          ) : isProfileComplete === false ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="font-bold tracking-wider font-mono text-xs animate-content-fade"
+            >
+              SETUP PROFILE FIRST →
+            </Button>
+          ) : (
+            <Link href="/dashboard/client/projects/new" className="animate-content-fade">
+              <Button variant="primary" size="sm" className="font-bold tracking-wider font-mono text-xs">
+                + NEW PROJECT INTAKE
+              </Button>
+            </Link>
+          )
         }
       />
 
@@ -269,35 +315,31 @@ export default function ClientProjectsListPage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td
-                      colSpan={4}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      Loading research studies...
+                    <td colSpan={4} className="py-16 text-center">
+                      <LoadingState variant="table" label="Loading research studies..." />
                     </td>
                   </tr>
                 ) : filteredProjects.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={4}
-                      className="py-20 text-center text-white/30 font-mono text-xs"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="text-2xl font-mono text-white/20">∅</span>
-                        <span className="text-sm font-semibold text-white/70">
-                          No Research Studies Found
-                        </span>
-                        <span className="text-xs text-white/40">
-                          {searchQuery || statusFilter !== "ALL"
+                    <td colSpan={4} className="py-16 text-center">
+                      <EmptyState
+                        icon={searchQuery || statusFilter !== "ALL" ? IconFileSearch : IconFolderOff}
+                        title="No Research Studies Found"
+                        description={
+                          searchQuery || statusFilter !== "ALL"
                             ? "No studies match your current filter criteria."
-                            : "You have not submitted any research project intake requests yet."}
-                        </span>
-                        <Link href="/dashboard/client/projects/new" className="mt-2">
-                          <Button variant="primary" size="sm">
-                            + SUBMIT YOUR FIRST INTAKE →
-                          </Button>
-                        </Link>
-                      </div>
+                            : "You have not submitted any research project intake requests yet."
+                        }
+                        action={
+                          !searchQuery && statusFilter === "ALL" ? (
+                            <Link href="/dashboard/client/projects/new">
+                              <Button variant="primary" size="sm" className="font-mono text-xs font-bold tracking-wider">
+                                + SUBMIT YOUR FIRST INTAKE →
+                              </Button>
+                            </Link>
+                          ) : undefined
+                        }
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -399,7 +441,7 @@ export default function ClientProjectsListPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => setSelectedStudyForInspect(p)}
-                              className="py-1 px-2.5 h-auto font-mono text-[0.6875rem] tracking-wider"
+                              className="font-mono text-[0.6875rem] tracking-wider"
                             >
                               DETAILS
                             </Button>
@@ -407,7 +449,7 @@ export default function ClientProjectsListPage() {
                               <Button
                                 variant={isAwaiting ? "primary" : "secondary"}
                                 size="sm"
-                                className="py-1 px-3 h-auto font-mono text-[0.6875rem] tracking-wider"
+                                className="font-mono text-[0.6875rem] tracking-wider"
                               >
                                 {isAwaiting ? "RESOLVE →" : "DESK →"}
                               </Button>
@@ -429,7 +471,7 @@ export default function ClientProjectsListPage() {
         <Modal
           open={!!selectedStudyForInspect}
           onClose={() => setSelectedStudyForInspect(null)}
-          title={`Study Telemetry: ${selectedStudyForInspect.intakeId}`}
+          title={`Study Details: ${selectedStudyForInspect.intakeId}`}
           description={selectedStudyForInspect.researchTitle}
           size="lg"
           footer={
@@ -602,6 +644,13 @@ export default function ClientProjectsListPage() {
           </div>
         </Modal>
       )}
+
+      {/* ── Quick Profile Setup Modal ── */}
+      <QuickProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onSuccess={handleProfileSuccess}
+      />
 
       {toastMessage && (
         <Toast

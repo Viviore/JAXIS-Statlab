@@ -13,6 +13,8 @@ import {
   IconFileText,
   IconDownload,
   IconCheck,
+  IconEye,
+  IconTrash,
 } from "@tabler/icons-react";
 import {
   getFileMeta,
@@ -21,6 +23,7 @@ import {
   type FileMetadata,
 } from "@/lib/file-utils";
 import type { ProjectFileItem } from "@/features/projects/schemas";
+import { DocumentViewerLightbox } from "./DocumentViewerLightbox";
 
 export interface ProjectFilesCardProps {
   files: ProjectFileItem[];
@@ -61,6 +64,7 @@ export function ProjectFilesCard({
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadSuccessId, setDownloadSuccessId] = useState<string | null>(null);
   const [isBatchDownloading, setIsBatchDownloading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<ProjectFileItem | null>(null);
   const [toastMessage, setToastMessage] = useState<{
     message: string;
     description?: string;
@@ -153,13 +157,16 @@ export function ProjectFilesCard({
             return (
               <div
                 key={file.id}
-                className="group rounded-[2px] bg-[#011C38] border border-white/[0.08] hover:border-white/20 transition-colors px-6 py-4.5 sm:px-7 sm:py-5 flex items-center justify-between gap-5 sm:gap-6"
+                className="group rounded-[2px] bg-[#011C38] border border-white/[0.08] hover:border-white/20 transition-colors px-6 sm:px-8 lg:px-9 py-4.5 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6"
               >
                 {/* Left: Type Icon + File Details */}
-                <div className="flex items-center gap-4 sm:gap-5 min-w-0 flex-1">
+                <div
+                  className="flex items-center gap-4 sm:gap-5 min-w-0 flex-1 cursor-pointer"
+                  onClick={() => setPreviewFile(file)}
+                >
                   {/* File Icon Block */}
                   <div
-                    className={`h-11 w-11 sm:h-12 sm:w-12 rounded-[2px] ${meta.theme.bg} ${meta.theme.border} border flex flex-col items-center justify-center flex-shrink-0`}
+                    className={`h-11 w-11 sm:h-12 sm:w-12 rounded-[2px] ${meta.theme.bg} ${meta.theme.border} border flex flex-col items-center justify-center flex-shrink-0 group-hover:scale-[1.03] transition-transform`}
                   >
                     <div className={meta.theme.iconColor}>
                       <FileTypeIcon type={meta.iconType} className="w-5 h-5" />
@@ -173,7 +180,10 @@ export function ProjectFilesCard({
                   <div className="flex flex-col gap-1.5 min-w-0 flex-1">
                     {/* Title + Category */}
                     <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-                      <span className="text-sm font-semibold font-sans text-white truncate max-w-sm sm:max-w-md lg:max-w-xl" title={file.fileName}>
+                      <span
+                        className="text-sm font-semibold font-sans text-white truncate max-w-sm sm:max-w-md lg:max-w-xl group-hover:text-sky-300 transition-colors"
+                        title={file.fileName}
+                      >
                         {file.fileName}
                       </span>
                       <span
@@ -200,16 +210,27 @@ export function ProjectFilesCard({
                   </div>
                 </div>
 
-                {/* Right Action: Clean Tactical Download Button */}
-                <div className="flex items-center gap-2.5 flex-shrink-0">
+                {/* Right Action: Harmonized Tactical Action Group */}
+                <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 self-end sm:self-center" style={{ paddingRight: "0.75rem" }}>
+                  {/* Built-in Preview Action */}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewFile(file)}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[2px] font-mono text-xs font-semibold uppercase transition-all duration-150 cursor-pointer select-none bg-white/[0.04] hover:bg-white/[0.09] text-white/80 hover:text-white border border-white/15 hover:border-sky-400/50 shadow-sm"
+                  >
+                    <IconEye size={15} stroke={1.5} className="text-sky-400" />
+                    <span>VIEW</span>
+                  </button>
+
+                  {/* Download Action */}
                   <button
                     type="button"
                     onClick={() => handleDownload(file)}
                     disabled={isDownloading}
-                    className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[2px] font-mono text-xs font-bold tracking-wider uppercase transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
+                    className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[2px] font-mono text-xs font-semibold uppercase transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
                       isSuccess
-                        ? "bg-emerald-600/30 text-emerald-300 border border-emerald-500 shadow-sm"
-                        : "bg-[#CC6600]/20 hover:bg-[#CC6600]/35 active:bg-[#CC6600]/45 text-white border border-[#CC6600] shadow-sm hover:shadow-[#CC6600]/30 hover:-translate-y-0.5 active:translate-y-0"
+                        ? "bg-emerald-600/25 text-emerald-300 border border-emerald-500 shadow-sm"
+                        : "bg-[#CC6600]/15 hover:bg-[#CC6600]/30 active:bg-[#CC6600]/40 text-white border border-[#CC6600]/70 hover:border-[#FFA040] shadow-sm hover:-translate-y-0.5 active:translate-y-0"
                     }`}
                   >
                     {isDownloading ? (
@@ -226,33 +247,41 @@ export function ProjectFilesCard({
                       </>
                     ) : isSuccess ? (
                       <>
-                        <IconCheck size={16} stroke={2.5} className="text-emerald-400" />
+                        <IconCheck size={15} stroke={2.5} className="text-emerald-400" />
                         <span>SAVED</span>
                       </>
                     ) : (
                       <>
-                        <IconDownload size={16} stroke={1.5} className="text-[#FFA040]" />
+                        <IconDownload size={15} stroke={1.5} className="text-[#FFA040]" />
                         <span>DOWNLOAD</span>
                       </>
                     )}
                   </button>
 
+                  {/* Quiet Tactical Remove Trigger */}
                   {canDelete && onDeleteFile && (
-                    <Button
+                    <button
                       type="button"
-                      variant="danger"
-                      size="sm"
                       onClick={() => onDeleteFile(file)}
-                      className="text-xs font-mono px-3 py-2"
+                      title={`Remove "${file.fileName}"`}
+                      className="inline-flex items-center justify-center p-2 rounded-[2px] font-mono text-xs text-rose-400 bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/30 hover:border-rose-400 transition-all cursor-pointer select-none shadow-sm"
                     >
-                      Remove
-                    </Button>
+                      <IconTrash size={15} stroke={1.5} />
+                    </button>
                   )}
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* ── Google Docs Style Document & PDF Preview Lightbox ── */}
+      {previewFile && (
+        <DocumentViewerLightbox
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
       )}
 
       {toastMessage && (
