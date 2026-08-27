@@ -552,8 +552,8 @@ export function QuotationBuilderModal({
             {/* 3. Scope Clarifications & Validity Window */}
             <div className="pt-2">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2 space-y-2">
-                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
+                <div className="sm:col-span-2 flex flex-col gap-2.5">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-white/90">
                     3. Scope Clarifications
                   </label>
                   <input
@@ -562,17 +562,19 @@ export function QuotationBuilderModal({
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. Include full Chapter 4 write-up and SPSS scripts..."
                     className="w-full h-11.5 px-4 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[2px] text-xs text-white placeholder:text-white/30 focus:outline-none transition-colors font-sans"
+                    style={{ paddingLeft: "1rem", paddingRight: "1rem", boxSizing: "border-box" }}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
+                <div className="flex flex-col gap-2.5">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-white/90">
                     Validity Window
                   </label>
                   <select
                     value={expiresInDays}
                     onChange={(e) => setExpiresInDays(Number(e.target.value))}
                     className="w-full h-11.5 px-4 bg-[#010D1F] border border-white/[0.12] focus:border-[#CC6600] rounded-[2px] text-xs font-mono text-white focus:outline-none transition-colors cursor-pointer"
+                    style={{ paddingLeft: "1rem", paddingRight: "1rem", boxSizing: "border-box" }}
                   >
                     <option value={3}>3 Days (Standard)</option>
                     <option value={5}>5 Days</option>

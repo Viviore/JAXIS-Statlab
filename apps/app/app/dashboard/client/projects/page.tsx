@@ -14,7 +14,7 @@ import {
   LoadingState,
   EmptyState,
 } from "@repo/ui";
-import { IconDownload, IconCopy, IconFolderOff, IconFileSearch } from "@tabler/icons-react";
+import { IconDownload, IconCopy, IconFolderOff, IconFileSearch, IconPlus, IconArrowRight } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
@@ -156,7 +156,7 @@ export default function ClientProjectsListPage() {
               variant="primary"
               size="sm"
               disabled
-              className="font-bold tracking-wider font-mono text-xs opacity-50 cursor-wait pointer-events-none"
+              className="opacity-50 cursor-wait pointer-events-none"
             >
               <LoadingState variant="inline" label="Loading..." />
             </Button>
@@ -165,14 +165,16 @@ export default function ClientProjectsListPage() {
               variant="primary"
               size="sm"
               onClick={() => setIsProfileModalOpen(true)}
-              className="font-bold tracking-wider font-mono text-xs animate-content-fade"
+              className="animate-content-fade"
             >
-              SETUP PROFILE FIRST →
+              <span>Setup Profile First</span>
+              <IconArrowRight size={14} stroke={2} />
             </Button>
           ) : (
             <Link href="/dashboard/client/projects/new" className="animate-content-fade">
-              <Button variant="primary" size="sm" className="font-bold tracking-wider font-mono text-xs">
-                + NEW PROJECT INTAKE
+              <Button variant="primary" size="sm">
+                <IconPlus size={15} stroke={2} />
+                <span>New Project Intake</span>
               </Button>
             </Link>
           )

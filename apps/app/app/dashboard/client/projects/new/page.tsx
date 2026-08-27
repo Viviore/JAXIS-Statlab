@@ -23,10 +23,12 @@ import {
   IconCloudUpload,
   IconShieldCheck,
   IconArrowRight,
+  IconCalendarEvent,
 } from "@tabler/icons-react";
 import { createProject } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
+import { uploadFileToR2 } from "@/lib/storage-client";
 import type { FileCategory } from "@prisma/client";
 
 interface UploadedFileItem {
@@ -35,6 +37,7 @@ interface UploadedFileItem {
   type: string;
   category: FileCategory;
   formattedSize: string;
+  storageUrl?: string;
 }
 
 interface UploadProgressState {
@@ -189,23 +192,31 @@ export default function NewProjectIntakePage() {
       return;
     }
 
-    // Start upload progress animation
+    // Start upload progress state
     setUploadingState((prev) => ({
       ...prev,
       [category]: {
         fileName: file.name,
         category,
-        progress: 15,
+        progress: 30,
         formattedSize: formatBytes(file.size),
       },
     }));
 
-    let currentProg = 15;
-    const interval = setInterval(() => {
-      currentProg += Math.floor(Math.random() * 22) + 16;
-      if (currentProg >= 100) {
-        currentProg = 100;
-        clearInterval(interval);
+    (async () => {
+      try {
+        const uploadRes = await uploadFileToR2(file, category, "intake");
+        if (!uploadRes.success || !uploadRes.data) {
+          setUploadingState((prev) => ({ ...prev, [category]: null }));
+          setToast({
+            variant: "danger",
+            message: "Cloudflare Upload Failed",
+            description: uploadRes.error?.message || "Failed to upload file to Cloudflare storage.",
+          });
+          return;
+        }
+
+        const storageUrl = uploadRes.data.publicUrl;
 
         setUploadingState((prev) => ({
           ...prev,
@@ -224,6 +235,7 @@ export default function NewProjectIntakePage() {
             type: file.type || "application/octet-stream",
             category,
             formattedSize: formatBytes(file.size),
+            storageUrl,
           };
 
           setFilesList((prev) => [
@@ -238,22 +250,19 @@ export default function NewProjectIntakePage() {
 
           setToast({
             variant: "success",
-            message: "File Attached Successfully",
-            description: `"${file.name}" is attached to your submission.`,
+            message: "File Uploaded to Cloudflare R2",
+            description: `"${file.name}" is stored in cloud storage and attached.`,
           });
-        }, 280);
-      } else {
-        setUploadingState((prev) => ({
-          ...prev,
-          [category]: {
-            fileName: file.name,
-            category,
-            progress: currentProg,
-            formattedSize: formatBytes(file.size),
-          },
-        }));
+        }, 250);
+      } catch (err) {
+        setUploadingState((prev) => ({ ...prev, [category]: null }));
+        setToast({
+          variant: "danger",
+          message: "Upload Error",
+          description: (err as Error).message || "An unexpected error occurred while uploading.",
+        });
       }
-    }, 70);
+    })();
   };
 
   // File Input Change Handler
@@ -397,11 +406,11 @@ export default function NewProjectIntakePage() {
         researchObjectives: researchObjectives.trim(),
         hypotheses: hypotheses.trim() || null,
         deadlineRequested,
-        chapters13: filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.name || null,
-        questionnaire: filesList.find((f) => f.category === "QUESTIONNAIRE")?.name || null,
+        chapters13: filesList.find((f) => f.category === "RESEARCH_DOCUMENT")?.storageUrl || null,
+        questionnaire: filesList.find((f) => f.category === "QUESTIONNAIRE")?.storageUrl || null,
         files: filesList.map((f) => ({
           fileName: f.name,
-          filePath: `intake-uploads/${f.name}`,
+          filePath: f.storageUrl || `intake-uploads/${f.name}`,
           fileType: f.type,
           fileCategory: f.category,
         })),
@@ -577,7 +586,6 @@ export default function NewProjectIntakePage() {
                 value={researchTitle}
                 onChange={(e) => setResearchTitle(e.target.value)}
                 error={fieldErrors.researchTitle?.[0]}
-                monoLabel
               />
 
               <FormTextarea
@@ -588,7 +596,6 @@ export default function NewProjectIntakePage() {
                 value={researchQuestions}
                 onChange={(e) => setResearchQuestions(e.target.value)}
                 error={fieldErrors.researchQuestions?.[0]}
-                monoLabel
               />
 
               <FormTextarea
@@ -599,20 +606,19 @@ export default function NewProjectIntakePage() {
                 value={researchObjectives}
                 onChange={(e) => setResearchObjectives(e.target.value)}
                 error={fieldErrors.researchObjectives?.[0]}
-                monoLabel
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-7 items-start">
                 <FormTextarea
                   label="Theoretical Hypotheses (Optional)"
-                  rows={3}
+                  rows={4}
                   placeholder="H0: There is no significant relationship between variable X and variable Y..."
                   value={hypotheses}
                   onChange={(e) => setHypotheses(e.target.value)}
-                  monoLabel
+                  className="min-h-[110px]"
                 />
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2.5">
                   <FormInput
                     label="Target Completion / Defense Deadline"
                     type="date"
@@ -620,11 +626,13 @@ export default function NewProjectIntakePage() {
                     value={deadlineRequested}
                     onChange={(e) => setDeadlineRequested(e.target.value)}
                     error={fieldErrors.deadlineRequested?.[0]}
-                    monoLabel
                   />
-                  <span className="text-[0.688rem] text-white/40 font-mono mt-1 px-0.5 leading-relaxed">
-                    Allows our statisticians to evaluate timeline feasibility and SLA delivery tiers.
-                  </span>
+                  <div className="p-3.5 rounded-[4px] bg-white/[0.03] border border-white/10 text-xs text-white/60 font-sans leading-relaxed flex items-start gap-2.5">
+                    <IconCalendarEvent size={16} stroke={1.5} className="text-[#CC6600] shrink-0 mt-0.5" />
+                    <span>
+                      Allows our statisticians to evaluate timeline feasibility and calculate SLA delivery tiers.
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

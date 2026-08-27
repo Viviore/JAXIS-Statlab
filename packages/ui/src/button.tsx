@@ -7,33 +7,33 @@ import { IconLoader2 } from "@tabler/icons-react";
 import { cn } from "./utils";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 font-sans uppercase rounded-[2px] transition-all duration-150 ease-out select-none cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#38BDF8] disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.985]",
+  "inline-flex items-center justify-center gap-2 font-sans font-semibold rounded-[2px] transition-colors duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CC6600]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#010114] disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:opacity-90",
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-b from-[#E67300] to-[#CC6600] hover:from-[#FF8000] hover:to-[#E67300] active:from-[#B35900] active:to-[#994D00] text-white font-bold border border-[#CC6600] border-t-[#FFA040]/70 border-b-[#994D00] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(204,102,0,0.35)] hover:-translate-y-0.5 active:translate-y-0",
+          "bg-[#CC6600] hover:bg-[#E67300] active:bg-[#B35900] text-white border border-[#E67300]/40 shadow-sm",
         primary:
-          "bg-gradient-to-b from-[#E67300] to-[#CC6600] hover:from-[#FF8000] hover:to-[#E67300] active:from-[#B35900] active:to-[#994D00] text-white font-bold border border-[#CC6600] border-t-[#FFA040]/70 border-b-[#994D00] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(204,102,0,0.35)] hover:-translate-y-0.5 active:translate-y-0",
+          "bg-[#CC6600] hover:bg-[#E67300] active:bg-[#B35900] text-white border border-[#E67300]/40 shadow-sm",
         secondary:
-          "bg-gradient-to-b from-[#02254B] to-[#011C38] hover:from-[#033468] hover:to-[#02254B] active:from-[#01142A] active:to-[#010D1F] text-white font-semibold border border-white/20 border-t-white/35 border-b-black/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_1px_3px_rgba(0,0,0,0.4)] hover:border-white/40 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 active:translate-y-0",
+          "bg-[#011B38] hover:bg-[#01254D] active:bg-[#01142B] text-white border border-white/15 hover:border-white/25 shadow-sm",
         outline:
-          "bg-transparent hover:bg-white/[0.06] active:bg-white/[0.12] text-white/90 hover:text-white font-semibold border border-white/30 hover:border-white/50 border-t-white/40 border-b-white/20 shadow-[0_1px_2px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0",
+          "bg-transparent hover:bg-white/[0.08] active:bg-white/[0.12] text-white/90 hover:text-white border border-white/20 hover:border-white/40",
         ghost:
-          "bg-transparent hover:bg-white/10 active:bg-white/15 text-white/80 hover:text-white font-semibold border border-transparent",
+          "bg-transparent hover:bg-white/[0.08] active:bg-white/[0.12] text-white/80 hover:text-white border border-transparent",
         destructive:
-          "bg-gradient-to-b from-[#EF4444] to-[#DC2626] hover:from-[#F87171] hover:to-[#EF4444] active:from-[#B91C1C] active:to-[#991B1B] text-white font-bold border border-[#DC2626] border-t-[#FCA5A5]/60 border-b-[#991B1B] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(220,38,38,0.35)] hover:-translate-y-0.5 active:translate-y-0",
+          "bg-[#DC2626] hover:bg-[#EF4444] active:bg-[#B91C1C] text-white border border-red-400/30 shadow-sm",
         danger:
-          "bg-gradient-to-b from-[#EF4444] to-[#DC2626] hover:from-[#F87171] hover:to-[#EF4444] active:from-[#B91C1C] active:to-[#991B1B] text-white font-bold border border-[#DC2626] border-t-[#FCA5A5]/60 border-b-[#991B1B] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_2px_8px_rgba(220,38,38,0.35)] hover:-translate-y-0.5 active:translate-y-0",
+          "bg-[#DC2626] hover:bg-[#EF4444] active:bg-[#B91C1C] text-white border border-red-400/30 shadow-sm",
         link:
-          "text-[#38BDF8] underline-offset-4 hover:underline border-transparent bg-transparent font-semibold lowercase tracking-normal",
+          "text-[#38BDF8] underline-offset-4 hover:underline border-transparent bg-transparent font-medium",
       },
       size: {
-        default: "text-xs px-5 sm:px-6 py-2 min-h-[38px] tracking-[0.06em]",
-        sm: "text-[0.688rem] px-3.5 sm:px-4.5 py-1.5 min-h-[32px] tracking-[0.06em]",
-        md: "text-xs px-5 sm:px-6 py-2 min-h-[38px] tracking-[0.06em]",
-        lg: "text-sm px-6 sm:px-8 py-2.5 min-h-[44px] tracking-[0.08em]",
-        icon: "h-9 w-9 p-0 min-h-[36px] min-w-[36px]",
+        default: "text-xs sm:text-sm px-5 py-2.5 min-h-[40px] tracking-wide",
+        sm: "text-xs px-4 py-2 min-h-[36px] tracking-wide",
+        md: "text-xs sm:text-sm px-5 py-2.5 min-h-[40px] tracking-wide",
+        lg: "text-sm sm:text-base px-7 py-3.5 min-h-[48px] tracking-wide",
+        icon: "h-10 w-10 p-0 min-h-[40px] min-w-[40px]",
       },
     },
     defaultVariants: {
@@ -88,14 +88,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         {...props}
       >
-        {loading ? (
-          <span className="inline-flex items-center gap-2">
-            <IconLoader2 size={16} stroke={2} className="animate-spin text-current shrink-0" />
-            <span>{children}</span>
-          </span>
-        ) : (
-          children
+        {loading && (
+          <IconLoader2
+            size={size === "sm" ? 14 : size === "lg" ? 18 : 16}
+            stroke={2.5}
+            className="animate-spin text-white/90 shrink-0"
+          />
         )}
+        {typeof children === "string" ? <span>{children}</span> : children}
       </Comp>
     );
   }

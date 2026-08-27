@@ -54,13 +54,6 @@ export function useProjects(options?: UseProjectsOptions) {
     setIsRefreshing(false);
   }, [fetchData]);
 
-  const simulateSync = useCallback(async () => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    await fetchData(false);
-    setIsLoading(false);
-  }, [fetchData]);
-
   return {
     projects,
     kpis,
@@ -69,7 +62,6 @@ export function useProjects(options?: UseProjectsOptions) {
     isRefreshing,
     error,
     refresh,
-    simulateSync,
     setIsLoading,
   };
 }

@@ -40,7 +40,7 @@ export default function AuthLayout({
                 STATLAB
               </span>
               <span className="text-[0.625rem] font-mono uppercase px-1.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 text-white/50 tracking-wider ml-1">
-                Workspace
+                Studio
               </span>
             </div>
           </Link>

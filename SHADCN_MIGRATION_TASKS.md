@@ -3,7 +3,7 @@
 **Active Phase:** `Migration Complete (All Batches 0–4 Verified)`\
 **Target Package:** `@repo/ui` (`packages/ui`)\
 **Consumers:** `apps/app` (SaaS Platform, Port 3001) & `apps/web` (Marketing Site, Port 3002)\
-**Design Standard:** Tactical Telemetry / Industrial Precision Brutalism ([`DESIGN.md`](./DESIGN.md) & [`.agents/AGENTS.md`](./.agents/AGENTS.md))\
+**Design Standard:** Enterprise Scientific / Dark Ocean Precision ([`apps/app/docs/design-system.md`](./apps/app/docs/design-system.md) & [`DESIGN.md`](./DESIGN.md))\
 **Iconography:** Tabler Icons (`@tabler/icons-react`) exclusively\
 **Quality Gate:** Every batch must pass `npm run check-types`, `npm run lint`, and verify dev server status with 0 errors before proceeding.
 

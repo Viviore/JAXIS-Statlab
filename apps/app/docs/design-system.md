@@ -1,7 +1,7 @@
 # JAXIS StatLab — Comprehensive Design System & UI Specifications
 
 **Workspace:** `apps/app` & `@repo/ui`  
-**Aesthetic Standard:** Dark Precision Terminal / Enterprise Brutalism  
+**Aesthetic Standard:** Dark Precision Terminal / Enterprise Scientific  
 **Primary Color Tokens:** Midnight Navy (`#010114`), Deep Ocean Glass (`#011B38`), Enterprise Orange (`#CC6600`)
 
 ---
@@ -14,26 +14,27 @@ JAXIS StatLab follows a high-precision, industrial-scientific design system tail
 | Role | Token / Hex | Usage |
 | :--- | :--- | :--- |
 | **Master Canvas** | `#010114` | Unified background for Viewport, Topbar, Sidebar, and Main Canvas. |
-| **Surface Card** | `rgba(1, 22, 46, 0.75)` | Elevated panel background for cards, tables, and inspection modals. |
-| **Subtle Overlay** | `rgba(255, 255, 255, 0.02)` | Table headers, muted footers, and passive card hover states. |
+| **Surface Card** | `rgba(1, 22, 46, 0.75)` / `#01142B` / `#011B38` | Elevated panel background for cards, tables, and inspection modals. |
+| **Subtle Overlay** | `rgba(255, 255, 255, 0.04)` | Table headers, muted footers, and passive card hover states. |
 | **Primary Accent** | `#CC6600` (Orange) | Active route tabs, primary CTA buttons, required asterisks, study ID highlights. |
 | **Analytical Tone** | `#0284C7` / `#38BDF8` (Sky) | Methodology badges, statistical script outputs, dataset inspection badges. |
 | **Verification Gate** | `#10B981` (Emerald) | QA approval seals, APA 7th verified badges, released escrow status. |
 | **Escrow / Attention** | `#F59E0B` (Amber) | Escrow locked indicators, pending recalculation stages, urgent QA queue. |
-| **Border Division** | `rgba(255, 255, 255, 0.08)` | Hairline dividers, table row borders, card perimeter lines. |
+| **Border Division** | `rgba(255, 255, 255, 0.08)` / `border-white/10` | Hairline dividers, table row borders, card perimeter lines. |
 
 ### 1.2. Iconography & Strict Visual Standard (TABLER ICONS ONLY — NO EMOJIS)
-- **Mandatory Icon Library — Tabler Icons (`@tabler/icons-react`)**: All icons across the entire project (in `@repo/ui` and `apps/app`) **must exclusively use Tabler Icons** from `@tabler/icons-react` (e.g., `IconDownload`, `IconEye`, `IconEyeOff`, `IconFileDescription`, `IconSearch`, `IconCheck`, `IconUser`, `IconTrash`, `IconFolder`, etc.).
+- **Mandatory Icon Library — Tabler Icons (`@tabler/icons-react`)**: All icons across the entire project (in `@repo/ui` and `apps/app`) **must exclusively use Tabler Icons** from `@tabler/icons-react` (e.g., `IconDownload`, `IconEye`, `IconFileDescription`, `IconSearch`, `IconCheck`, `IconUser`, `IconTrash`, `IconFolder`, `IconClock`, `IconAlertTriangle`, etc.).
 - **Strict Prohibition on Emojis**: Emojis (e.g. 🔍, ⏸, ⛔, 📋, 🚀, 💡, 📁, 📄, 🔒) are **strictly forbidden** across the entire UI codebase, dropdown menus, action items, buttons, notifications, toasts, table columns, and form labels.
-- **No Ad-Hoc Inline SVGs or Other Icon Libraries**: Do not introduce miscellaneous icon packages or sprawling raw inline SVGs when a Tabler icon is available. Always import standard icons from `@tabler/icons-react`.
+- **No Ad-Hoc Inline SVGs or Other Icon Libraries**: Do not introduce miscellaneous icon packages or raw inline SVGs when a Tabler icon is available. Always import standard icons from `@tabler/icons-react`.
 - **Icon Styling Standards**:
   - Use `stroke={1.5}` or `stroke={2}` for consistent optical weight.
   - Scale with `size={16}` (micro/badges), `size={18}` / `size={20}` (standard buttons/inputs), or `size={24}` (featured cards).
   - Use Tailwind color classes (e.g., `className="text-[#CC6600]"`, `className="text-sky-400"`, `className="text-white/60"`).
-- **Zero Glow Policy**: Blurry box-shadow glows (`shadow-[0_0_...px]`) are prohibited. Use high-contrast flat borders (`border-white/10` to `border-white/20`) and calibrated opacity tints (`bg-white/[0.04]` or `bg-sky-500/10`).
+- **Zero Glow Policy**: Blurry box-shadow glows (`shadow-[0_0_...px]`) are prohibited. Use crisp, high-contrast flat borders (`border-white/10` to `border-white/20`) and calibrated opacity tints (`bg-white/[0.04]` or `bg-sky-500/10`).
+- **No Awkward Gradients**: Do not use heavy gradient fills (`bg-gradient-to-r`) on action bars, banners, or modal headers. Rely on solid substrates (`#01142B` / `#011B38`) with calibrated borders.
 
 ### 1.3. Copywriting, Tone & Labeling Standards (SIMPLE & HUMAN-FRIENDLY)
-- **Zero Double Slashes Policy**: Double slashes (`//`) are **strictly prohibited** in all UI text, loading states, badges, alert titles, and toasts.
+- **Zero Double Slashes Policy**: Double slashes (`//`) are **strictly prohibited** in all UI copy, loading states, badges, alert titles, and toasts.
 - **Simple, Direct English**: All interface wording must be simple, concise, and human-friendly. Never use robotic, artificial sci-fi jargon (e.g. NEVER use `"SYNCING TELEMETRY // RETRIEVING DATA"`, `"ESTABLISHING SECURE PROTOCOL"`, `"CALCULATING COMPUTE STATE"`).
 - **Standard Phrasing Examples**:
   - `Loading research studies...` (not `SYNCING RESEARCH REGISTRY // FETCHING STUDIES...`)
@@ -41,10 +42,11 @@ JAXIS StatLab follows a high-precision, industrial-scientific design system tail
   - `Verifying profile...` (not `VERIFYING INSTITUTIONAL CLEARANCE...`)
   - `Please wait a moment` (not `Awaiting real-time analytical pipeline response`)
 - **Proper Terminology**: Always use **"Lead Researcher"** and **"Research Study"** (never "Principal Investigator" or "Investigator").
+- **Button Casing**: Use Title Case or Clean Sentence Case for buttons (e.g. `"Review & Sign Contract →"`, `"Download All"`, `"Configure Services"`), never aggressive all-caps shouting.
 
 ---
 
-## 2. Global Layout Shell Architecture (`dashboard/layout.tsx`)
+## 2. Global Layout Shell Architecture (`DashboardShell.tsx`)
 
 Every dashboard page and future module (`/dashboard/*`) runs inside the unified `DashboardShell`:
 
@@ -54,16 +56,22 @@ Every dashboard page and future module (`/dashboard/*`) runs inside the unified 
 ├─────────────────┬────────────────────────────────────────────────────────┤
 │ Sidebar         │ Main Content Container (<main>)                        │
 │ Width: 296px    │ Background: #010114 | overflow-y-auto overflow-x-hidden│
-│ Fixed on Desktop│ Padding: clamp(1.5rem, 3.5vw, 2.5rem)                  │
-│ Slide-out Drawer│ Inner Content: max-w-7xl mx-auto                       │
+│ Fixed on Desktop│ Padding: clamp(2rem, 4vw, 3.5rem) (Handled by Shell)  │
+│ Slide-out Drawer│ Inner Content: max-w-7xl mx-auto pb-24 w-full          │
 │ on Mobile (<lg) │                                                        │
 └─────────────────┴────────────────────────────────────────────────────────┘
 ```
 
-### 2.1. Viewport Lock Rules
+### 2.1. Viewport Lock & Anti-Double-Padding Rules
 - **Container Constraint**: Root container is strictly locked to `100dvh` (`max-h-[100dvh] overflow-hidden`).
 - **Independent Scrolling**: `<main>` is the **only** scrollable element in the workspace. The Topbar and Sidebar stay fixed at all times.
-- **Universal Content Padding**: `<main>` enforces `padding: clamp(1.5rem, 3.5vw, 2.5rem)` with `box-sizing: border-box`. Future pages **never** need to manually add outer viewport margins.
+- **Universal Shell Padding**: `<main>` enforces `padding: clamp(2rem, 4vw, 3.5rem)` with `box-sizing: border-box`.
+- **Anti-Double-Padding Mandate**: Page routes inside `/dashboard` **must NEVER add redundant outer horizontal padding** (NO `px-4 sm:px-8 lg:px-12 py-8`). All inner page containers must use the uniform standard:
+  ```tsx
+  <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
+  ```
+  *(or `max-w-5xl` for focused legal contract / SOW document desks).*
+- **Guaranteed Consistency**: This standard guarantees that switching between tabs (Intake Triage, Quotation Desk, Staff Directory, Admin Command Center) maintains 100% pixel-perfect horizontal alignment without jumping.
 
 ---
 
@@ -172,7 +180,7 @@ All inputs (`FormInput`, `FormSelect`, `FormTextarea`) strictly enforce:
 
 1. **Labels**: Uppercase mono typography (`font-mono text-xs text-slate-200 uppercase tracking-wider`).
 2. **Required Asterisk**: Preceded by space, rendered in `#CC6600` (`<span style={{ color: "#CC6600" }}>*</span>`).
-3. **Field Dimensions**: Standard `3rem` (48px) height with brutalist `2px` border-radius.
+3. **Field Dimensions**: Standard `3rem` (48px) height with crisp `3px`–`4px` border-radius.
 4. **Focus Rings**: `focus:border-[#CC6600] focus:ring-1 focus:ring-[#CC6600]/40`.
 5. **Box Sizing**: Strict `box-sizing: border-box` to prevent horizontal form overflow on mobile.
 
@@ -377,7 +385,7 @@ import { Modal, ModalFooter, Button } from "@repo/ui";
         Cancel
       </Button>
       <Button type="submit" variant="primary" size="sm">
-        SAVE & UNLOCK INTAKE →
+        Save & Unlock Intake →
       </Button>
     </ModalFooter>
   </form>
@@ -394,11 +402,11 @@ import { Modal, ModalFooter, Button } from "@repo/ui";
   footer={
     <div className="flex items-center justify-between w-full">
       <Button variant="secondary" size="sm" onClick={onClose}>
-        CLOSE INSPECTOR
+        Close Inspector
       </Button>
       <Link href={`/dashboard/client/projects/${study.id}`}>
         <Button variant="primary" size="sm">
-          OPEN PROJECT DESK →
+          Open Project Desk →
         </Button>
       </Link>
     </div>
@@ -414,7 +422,7 @@ import { Modal, ModalFooter, Button } from "@repo/ui";
 
 | Size Prop | Dimensions & Padding | Typography | When to Use |
 | :--- | :--- | :--- | :--- |
-| **`size="sm"`** | `min-h-[30px]`, `padding: 0.35rem 0.875rem` | `text-[0.688rem]` / `11px`, `font-bold tracking-wider` | **Primary standard across all dashboard desks**: Topbar actions (`+ NEW PROJECT INTAKE`), table row actions, form wizard footers (`PROCEED TO ATTACHMENTS →`, `SUBMIT INTAKE →`). |
+| **`size="sm"`** | `min-h-[30px]`, `padding: 0.35rem 0.875rem` | `text-[0.688rem]` / `11px`, `font-bold tracking-wider` | **Primary standard across all dashboard desks**: Topbar actions (`+ New Project Intake`), table row actions, form wizard footers (`Proceed to Attachments →`, `Submit Intake →`). |
 | **`size="md"`** | `min-h-[38px]`, `padding: 0.55rem 1.25rem` | `text-xs` / `12px`, `font-semibold` | Modal action footers, authentication forms. |
 | **`size="lg"`** | `min-h-[46px]`, `padding: 0.75rem 1.75rem` | `text-sm` / `14px`, `font-bold` | Public landing page marketing hero CTAs. |
 
@@ -442,27 +450,33 @@ All action buttons placed in form footers must use `className="w-full sm:w-auto 
 
 ---
 
-### 6.7. Tactical Telemetry Loading System: `LoadingState`
+### 6.7. Enterprise Scientific Loading System: `LoadingState`
 
-Generic shimmering grey skeletons are **strictly banned** across the workspace. In their place, all asynchronous data fetching and route transitions use the **`<LoadingState>`** component from `@repo/ui`.
+Generic shimmering grey skeletons and clunky square boxes with pinging blobs are **strictly banned** across the workspace. In their place, all asynchronous data fetching and route transitions use the high-precision **`<LoadingState>`** component from `@repo/ui`.
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │ [Table / Card Shell Pinned]                            │
-│                 [IconLoader2] (Spinning #CC6600)       │
-│                  Loading research studies...           │
-│                    Please wait a moment                │
+│                 [OrbitalLoader Gauge]                  │
+│               (High-Precision Sweep Ring)              │
+│               Loading research studies...              │
+│         Please wait while telemetry synchronizes       │
 └────────────────────────────────────────────────────────┘
 ```
+
+#### **The Precision Orbital Loader (`OrbitalSpinner`):**
+- **Dual-Layer Calibrated Track:** Ultra-thin background radial track (`border-white/[0.08]`) with an active high-contrast gradient sweep arc (`border-t-[#CC6600] border-r-[#FFA040]/60 animate-spin`).
+- **Center Micro-Emitter Node:** Glowing core node (`bg-[#CC6600] shadow-[0_0_8px_#CC6600]`) conveying authoritative statistical telemetry.
+- **Calibrated Typography:** Crisp Sans-Serif title (`text-base font-semibold text-white tracking-tight`) + soft secondary reading text (`text-xs text-white/50 leading-relaxed max-w-sm`). Zero double slashes.
 
 #### **The 4 Standard Loading Variants:**
 
 | Variant | Container Dimensions | Primary Visual Elements | Use Case |
 | :--- | :--- | :--- | :--- |
-| **`variant="table"`** | `py-12 px-4` inside `<tr><td colSpan={N}>` | Radar ping + `<IconLoader2 size={24} />` + Standard sans-serif typography (`text-sm font-semibold` + `text-xs text-white/40`). | Table bodies (`DataTable`, Study Registries, Payout Ledgers) while fetching records. Preserves table headers with **Zero CLS**. |
-| **`variant="card"`** | `min-h-[140px]` | Centered `<IconLoader2 size={22} />` + Sans-serif label & description (`text-sm font-semibold`). | Inside KPI matrix cards, verification guardrail loading cards, and inspector containers. |
-| **`variant="page"`** | `min-h-[50vh]` | Glass emblem + pulse radar + sans-serif status text. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
-| **`variant="inline"`** | Compact inline row | `<IconLoader2 size={16} />` + concise sans-serif string. | Inside button micro-interactions, modal sub-headers, or search bars. |
+| **`variant="table"`** | `py-16 px-4` inside `<tr><td colSpan={N}>` | `OrbitalSpinner size="md"` + Sans-serif typography (`text-sm font-semibold` + `text-xs text-white/45`). | Table bodies (`DataTable`, Study Registries, Payout Ledgers) while fetching records. Preserves table headers with **Zero CLS**. |
+| **`variant="card"`** | `min-h-[160px]` | Centered `OrbitalSpinner` + Sans-serif label & description (`text-sm font-semibold`). | Inside KPI matrix cards, verification guardrail loading cards, and inspector containers. |
+| **`variant="page"`** | `min-h-[50vh]` | Large `OrbitalSpinner size="lg"` + Sans-serif status heading and subtext. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
+| **`variant="inline"`** | Compact inline row | `OrbitalSpinner size="sm"` + concise sans-serif string. | Inside button micro-interactions, modal sub-headers, or search bars. |
 
 #### **Usage Examples:**
 ```tsx
@@ -502,7 +516,7 @@ Raw character placeholders (such as `∅`) and plain unstyled text are **strictl
 │               No Research Studies Found                │
 │   You have not submitted any study intake requests yet.│
 │                                                        │
-│            [ + SUBMIT YOUR FIRST INTAKE → ]            │
+│            [ + Submit Your First Intake → ]            │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -510,6 +524,75 @@ Raw character placeholders (such as `∅`) and plain unstyled text are **strictl
 * **`icon`**: Tabler Icon component (`IconFolderOff`, `IconFileSearch`, `IconReceiptOff`, `IconInbox`). Defaults to `IconFolderOff`.
 * **`title`**: Clear, concise status header (e.g., `"No Research Studies Found"`).
 * **`description`**: Context-aware subtext explaining how to resolve or why the list is empty.
-* **`action`**: Optional primary CTA button directing the researcher to action (e.g. `+ SUBMIT STUDY INTAKE →`).
+* **`action`**: Optional primary CTA button directing the researcher to action (e.g. `+ Submit Study Intake →`).
+
+---
+
+### 6.9. View Navigation & Filter Controls: `Tabs`
+
+For switching between sub-views, nested records, or segmented catalog categories within a module or modal, use the standardized **`<Tabs>`** primitive from `@repo/ui` (built on `@radix-ui/react-tabs`):
+
+```
+┌────────────────────────────────────────────────────────┐
+│ [ Service Packages (4) ] [ Priority Add-Ons (2) ]      │
+├────────────────────────────────────────────────────────┤
+│ Active Tab Content Area (animate-content-fade)         │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+#### **Standard Specifications:**
+- **Container (`TabsList`):**
+  - **`variant="default"` (Segmented / Pill):** Dark glass substrate (`bg-[#01142B]/90 border border-white/[0.08]`), height `h-10`, precision `rounded-[2px]`, padding `p-1`, gap `gap-1`.
+  - **`variant="underline"`:** Flat hairline bottom border (`border-b border-white/10 bg-transparent px-1 gap-6 w-full`).
+- **Trigger Button (`TabsTrigger`):**
+  - **Typography:** Clean Sans-Serif (`font-sans text-xs font-medium`). Title Case copy (never aggressive all-caps shouting).
+  - **Active State (`variant="default"`):** High-contrast Enterprise Orange (`data-[state=active]:bg-[#CC6600] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:shadow-sm`).
+  - **Active State (`variant="underline"`):** Hairline bottom border in Enterprise Orange (`data-[state=active]:border-[#CC6600] data-[state=active]:text-white`).
+  - **Hover & Passive:** `text-white/60 hover:text-white hover:bg-white/[0.04]` with smooth transition.
+  - **Iconography:** Optional leading Tabler Icon scaled to `size={16}` with `stroke={1.5}`.
+- **Content Panel (`TabsContent`):** Automatically applies `mt-4 animate-content-fade` for smooth content swapping without layout jitter.
+
+#### **Usage Example (Segmented / Pill Standard):**
+```tsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/ui";
+import { IconPackage, IconBolt } from "@tabler/icons-react";
+
+<Tabs defaultValue="packages" className="w-full">
+  <TabsList>
+    <TabsTrigger value="packages">
+      <IconPackage size={16} stroke={1.5} />
+      <span>Service Packages</span>
+    </TabsTrigger>
+    <TabsTrigger value="addons">
+      <IconBolt size={16} stroke={1.5} />
+      <span>Priority Add-Ons</span>
+    </TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="packages">
+    {/* Package catalog list */}
+  </TabsContent>
+  <TabsContent value="addons">
+    {/* Addon catalog list */}
+  </TabsContent>
+</Tabs>
+```
+
+#### **Usage Example (Underline Standard for In-Page Sub-Navigation):**
+```tsx
+<Tabs defaultValue="overview" className="w-full">
+  <TabsList variant="underline">
+    <TabsTrigger variant="underline" value="overview">Overview</TabsTrigger>
+    <TabsTrigger variant="underline" value="dataset">Dataset Inspection</TabsTrigger>
+    <TabsTrigger variant="underline" value="history">Audit History</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="overview">...</TabsContent>
+  <TabsContent value="dataset">...</TabsContent>
+  <TabsContent value="history">...</TabsContent>
+</Tabs>
+```
+
 
 

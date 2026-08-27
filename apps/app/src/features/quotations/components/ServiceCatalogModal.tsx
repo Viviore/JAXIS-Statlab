@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, ModalFooter } from "@repo/ui";
+import { Modal, ModalFooter, Button } from "@repo/ui";
 import {
   IconPackage,
   IconBolt,
@@ -14,6 +14,7 @@ import {
   IconFlame,
   IconAlertTriangle,
   IconSparkles,
+  IconCheck,
 } from "@tabler/icons-react";
 import {
   type CommercialCatalogData,
@@ -263,15 +264,15 @@ export function ServiceCatalogModal({
   const getAddonIcon = (key: string) => {
     switch (key) {
       case "DEFENSELAB":
-        return <IconSchool size={16} stroke={1.5} className="text-sky-400 flex-shrink-0" />;
+        return <IconSchool size={18} stroke={1.5} className="text-sky-400 shrink-0" />;
       case "RUSH":
-        return <IconBolt size={16} stroke={1.5} className="text-amber-400 flex-shrink-0" />;
+        return <IconBolt size={18} stroke={1.5} className="text-amber-400 shrink-0" />;
       case "EXPRESS":
-        return <IconFlame size={16} stroke={1.5} className="text-orange-400 flex-shrink-0" />;
+        return <IconFlame size={18} stroke={1.5} className="text-orange-400 shrink-0" />;
       case "EMERGENCY":
-        return <IconAlertTriangle size={16} stroke={1.5} className="text-rose-400 flex-shrink-0" />;
+        return <IconAlertTriangle size={18} stroke={1.5} className="text-rose-400 shrink-0" />;
       default:
-        return <IconSparkles size={16} stroke={1.5} className="text-amber-400 flex-shrink-0" />;
+        return <IconSparkles size={18} stroke={1.5} className="text-amber-400 shrink-0" />;
     }
   };
 
@@ -283,26 +284,27 @@ export function ServiceCatalogModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Commercial Service Catalog & Pricing Governance"
-      size="xl"
+      description="Manage statistical analysis tiers, pricing ranges, and priority add-on riders."
+      size="2xl"
     >
-      <div className="flex flex-col gap-5 text-white font-sans">
-        {/* Sleek Segmented Tab Switcher + Action Header */}
-        <div className="flex items-center justify-between gap-4 pb-3 border-b border-white/[0.08]">
+      <div className="flex flex-col gap-6 text-white font-sans">
+        {/* Segmented Tab Switcher + Action Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
           {/* Segmented Tabs */}
-          <div className="flex items-center p-1 rounded-[4px] bg-[#010D1F] border border-white/[0.08]">
+          <div className="flex items-center p-1 rounded-[4px] bg-[#010D1F] border border-white/10">
             <button
               type="button"
               onClick={() => {
                 setActiveTab("packages");
                 setErrorMsg(null);
               }}
-              className={`px-3.5 py-1.5 rounded-[3px] font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-[3px] font-sans text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
                 activeTab === "packages"
                   ? "bg-[#CC6600] text-white shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
-              <IconPackage size={14} stroke={1.5} />
+              <IconPackage size={16} stroke={1.5} />
               <span>Service Packages ({packageKeys.length})</span>
             </button>
 
@@ -312,20 +314,22 @@ export function ServiceCatalogModal({
                 setActiveTab("addons");
                 setErrorMsg(null);
               }}
-              className={`px-3.5 py-1.5 rounded-[3px] font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-[3px] font-sans text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
                 activeTab === "addons"
                   ? "bg-[#CC6600] text-white shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
-              <IconBolt size={14} stroke={1.5} />
+              <IconBolt size={16} stroke={1.5} />
               <span>Priority Add-Ons ({addonKeys.length})</span>
             </button>
           </div>
 
           {/* Quick Add Button */}
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => {
               if (activeTab === "packages") {
                 setIsAddingPackage((prev) => !prev);
@@ -333,20 +337,19 @@ export function ServiceCatalogModal({
                 setIsAddingAddon((prev) => !prev);
               }
             }}
-            className="px-3 py-1.5 rounded-[3px] bg-[#011B38] hover:bg-[#012E57] border border-[#38BDF8]/40 text-xs font-mono font-semibold text-[#38BDF8] hover:text-white uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
           >
-            <IconPlus size={14} stroke={2} />
+            <IconPlus size={16} stroke={2} />
             <span>
               {activeTab === "packages"
-                ? (isAddingPackage ? "Close Form" : "+ Add Service Package")
-                : (isAddingAddon ? "Close Form" : "+ Add Priority Rider")}
+                ? (isAddingPackage ? "Close Form" : "Add Service Package")
+                : (isAddingAddon ? "Close Form" : "Add Priority Rider")}
             </span>
-          </button>
+          </Button>
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-[4px] bg-red-950/40 border border-red-500/40 text-red-300 text-xs font-mono flex items-center gap-2">
-            <IconInfoCircle size={16} stroke={1.5} className="flex-shrink-0" />
+          <div className="p-4 rounded-[4px] bg-red-950/40 border border-red-500/40 text-red-300 text-xs font-sans flex items-center gap-2.5">
+            <IconInfoCircle size={18} stroke={1.5} className="shrink-0 text-red-400" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -356,88 +359,91 @@ export function ServiceCatalogModal({
           <div className="flex flex-col gap-4">
             {/* Add New Package Drawer */}
             {isAddingPackage && (
-              <div className="p-4 rounded-[4px] bg-[#01142B] border border-[#38BDF8]/40 space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
-                  <span className="text-xs font-mono font-bold text-[#38BDF8] uppercase tracking-wider">
+              <div
+                className="rounded-[4px] bg-[#01142B] border border-[#38BDF8]/40 space-y-4 animate-fadeIn"
+                style={{ padding: "1.5rem", boxSizing: "border-box" }}
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-sm font-sans font-bold text-[#38BDF8] uppercase tracking-wide">
                     New Commercial Service Package
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsAddingPackage(false)}
-                    className="text-white/40 hover:text-white cursor-pointer"
+                    className="text-white/40 hover:text-white cursor-pointer p-1 rounded hover:bg-white/10"
                   >
-                    <IconX size={16} stroke={1.5} />
+                    <IconX size={18} stroke={1.5} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Code (e.g. JX_05)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Code (e.g. JX_05)</label>
                     <input
                       type="text"
                       placeholder="JX_05_META"
                       value={newPkgCode}
                       onChange={(e) => setNewPkgCode(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Package Name</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Package Name</label>
                     <input
                       type="text"
                       placeholder="JX-05 Meta-Analysis Suite"
                       value={newPkgName}
                       onChange={(e) => setNewPkgName(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs text-white focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-sans text-white focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Category Badge</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Category Badge</label>
                     <input
                       type="text"
                       placeholder="SYNTHESIS"
                       value={newPkgBadge}
                       onChange={(e) => setNewPkgBadge(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-3">
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Min Price (₱)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Min Price (₱)</label>
                     <input
                       type="number"
                       value={newPkgMinPrice}
                       onChange={(e) => setNewPkgMinPrice(Number(e.target.value))}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Max Price (₱ or null)</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Max Price (₱)</label>
                     <input
                       type="number"
                       placeholder="None"
                       value={newPkgMaxPrice || ""}
                       onChange={(e) => setNewPkgMaxPrice(e.target.value ? Number(e.target.value) : null)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Default Price (₱)</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Default Price (₱)</label>
                     <input
                       type="number"
                       value={newPkgDefaultPrice}
                       onChange={(e) => setNewPkgDefaultPrice(Number(e.target.value))}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Payment Rule</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Payment Rule</label>
                     <select
                       value={newPkgIsUpfront ? "upfront" : "milestone"}
                       onChange={(e) => setNewPkgIsUpfront(e.target.value === "upfront")}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-sans text-white focus:border-[#CC6600] focus:outline-none cursor-pointer"
                     >
                       <option value="milestone">50% Milestone</option>
                       <option value="upfront">100% Upfront</option>
@@ -445,49 +451,51 @@ export function ServiceCatalogModal({
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Scope Tagline</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-sans font-medium text-white/70">Scope Tagline</label>
                   <input
                     type="text"
                     placeholder="Brief methodology summary..."
                     value={newPkgTagline}
                     onChange={(e) => setNewPkgTagline(e.target.value)}
-                    className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs text-white focus:border-[#CC6600] focus:outline-none"
+                    className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-sans text-white focus:border-[#CC6600] focus:outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Deliverables (1 per line)</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-sans font-medium text-white/70">Deliverables (1 per line)</label>
                   <textarea
                     rows={2}
                     placeholder="Effect size forest plots&#10;Publication-grade APA 7th write-up"
                     value={newPkgDeliverables}
                     onChange={(e) => setNewPkgDeliverables(e.target.value)}
-                    className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs text-white focus:border-[#CC6600] focus:outline-none"
+                    className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-sans text-white focus:border-[#CC6600] focus:outline-none leading-relaxed"
                   />
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setIsAddingPackage(false)}
-                    className="px-3 py-1.5 rounded-[3px] bg-white/[0.06] hover:bg-white/[0.10] text-xs font-mono text-white/70 uppercase cursor-pointer"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={handleCreatePackage}
-                    className="px-4 py-1.5 rounded-[3px] bg-[#CC6600] hover:bg-[#E67300] text-xs font-mono font-bold text-white uppercase tracking-wider cursor-pointer"
                   >
                     Save New Package
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
 
             {/* 2-Column Responsive Card Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[460px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1">
               {packageKeys.map((key) => {
                 const pkg = catalog.packages[key];
                 if (!pkg) return null;
@@ -496,24 +504,25 @@ export function ServiceCatalogModal({
                 return (
                   <div
                     key={key}
-                    className={`p-4 rounded-[4px] border transition-all flex flex-col justify-between ${
+                    className={`rounded-[4px] border transition-all flex flex-col justify-between ${
                       isActive
-                        ? "bg-[#010D1F] border-white/[0.08] hover:border-white/20"
-                        : "bg-[#010D1F]/40 border-white/[0.04] opacity-50"
+                        ? "bg-[#01142B] border-white/10 hover:border-white/20"
+                        : "bg-[#01142B]/50 border-white/5 opacity-60"
                     }`}
+                    style={{ padding: "1.25rem 1.5rem", boxSizing: "border-box" }}
                   >
                     <div>
                       {/* Header Row: ID + Badge + Payment Rule + Active Toggle */}
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-mono font-bold text-[#FFA040]">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-mono font-bold text-[#FFA040] bg-[#CC6600]/10 px-2 py-0.5 rounded-[3px] border border-[#CC6600]/25">
                             {pkg.id || pkg.code}
                           </span>
-                          <span className="text-[0.625rem] font-sans font-medium text-white/50 bg-white/[0.04] px-1.5 py-0.5 rounded-[2px] border border-white/[0.06] uppercase tracking-wider">
+                          <span className="text-[11px] font-sans font-medium text-white/60 bg-white/[0.04] px-2 py-0.5 rounded-[3px] border border-white/10 uppercase tracking-wider">
                             {pkg.badge}
                           </span>
                           <span
-                            className={`text-[0.625rem] font-mono px-1.5 py-0.5 rounded-[2px] border uppercase font-medium ${
+                            className={`text-[11px] font-sans px-2 py-0.5 rounded-[3px] border font-medium ${
                               pkg.isUpfront
                                 ? "bg-amber-500/10 text-amber-300 border-amber-500/25"
                                 : "bg-sky-500/10 text-sky-300 border-sky-500/25"
@@ -526,77 +535,92 @@ export function ServiceCatalogModal({
                         <button
                           type="button"
                           onClick={() => handleTogglePackageActive(key)}
-                          className={`px-2 py-0.5 rounded-[2px] text-[0.625rem] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border flex-shrink-0 ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-xs font-sans font-semibold transition-all cursor-pointer border shrink-0 ${
                             isActive
-                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25"
-                              : "bg-white/[0.04] text-white/40 border-white/[0.08] hover:text-white/70"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                              : "bg-white/[0.04] text-white/40 border-white/10 hover:text-white/70"
                           }`}
                         >
-                          {isActive ? "✓ Active" : "Disabled"}
+                          {isActive ? (
+                            <>
+                              <IconCheck size={13} stroke={2.5} />
+                              <span>Active</span>
+                            </>
+                          ) : (
+                            <span>Disabled</span>
+                          )}
                         </button>
                       </div>
 
                       {/* Package Name */}
-                      <div className="text-xs font-semibold text-white line-clamp-1 leading-snug">
+                      <div className="text-sm font-semibold text-white line-clamp-1 leading-snug font-sans">
                         {pkg.name}
                       </div>
 
                       {/* Tagline */}
-                      <p className="text-[0.6875rem] text-white/50 font-sans mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-white/50 font-sans mt-1.5 line-clamp-2 leading-relaxed">
                         {pkg.tagline}
                       </p>
                     </div>
 
                     {/* Pricing Guardrails Controller */}
-                    <div className="mt-3 pt-3 border-t border-white/[0.06] space-y-1.5">
-                      <div className="flex items-center justify-between text-[0.625rem] font-mono text-white/40 uppercase tracking-wider">
-                        <span>Allowed Range (Min – Max)</span>
-                        <span className="text-[#FFA040]/80">Default Starting</span>
+                    <div className="mt-4 pt-3.5 border-t border-white/10 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
+                        <span>Price Governance</span>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                        <div className="flex items-center rounded-[3px] bg-[#01142B] border border-white/[0.10] px-2 py-1 focus-within:border-[#CC6600]">
-                          <span className="text-white/40 text-[0.6875rem] mr-1 select-none">₱</span>
-                          <input
-                            type="number"
-                            value={pkg.minPrice}
-                            onChange={(e) =>
-                              handleUpdatePackagePrice(key, "minPrice", Number(e.target.value))
-                            }
-                            className="w-full bg-transparent text-white focus:outline-none [appearance:textfield] font-bold text-xs"
-                            title="Minimum Allowed Price"
-                          />
+                      <div className="grid grid-cols-3 gap-2.5 font-sans">
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[11px] font-sans text-white/50 font-medium">Min (₱)</span>
+                          <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-white/15 px-2.5 py-1.5 focus-within:border-[#CC6600]">
+                            <span className="text-white/40 text-xs font-mono mr-1 select-none">₱</span>
+                            <input
+                              type="number"
+                              value={pkg.minPrice}
+                              onChange={(e) =>
+                                handleUpdatePackagePrice(key, "minPrice", Number(e.target.value))
+                              }
+                              className="w-full bg-transparent text-white focus:outline-none [appearance:textfield] font-mono text-xs font-semibold"
+                              title="Minimum Allowed Price"
+                            />
+                          </div>
                         </div>
 
-                        <div className="flex items-center rounded-[3px] bg-[#01142B] border border-white/[0.10] px-2 py-1 focus-within:border-[#CC6600]">
-                          <span className="text-white/40 text-[0.6875rem] mr-1 select-none">₱</span>
-                          <input
-                            type="number"
-                            placeholder="Uncapped"
-                            value={pkg.maxPrice === null ? "" : pkg.maxPrice}
-                            onChange={(e) =>
-                              handleUpdatePackagePrice(
-                                key,
-                                "maxPrice",
-                                e.target.value ? Number(e.target.value) : null
-                              )
-                            }
-                            className="w-full bg-transparent text-white placeholder:text-white/30 focus:outline-none [appearance:textfield] text-xs"
-                            title="Maximum Allowed Price (leave empty for Uncapped)"
-                          />
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[11px] font-sans text-white/50 font-medium">Max (₱)</span>
+                          <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-white/15 px-2.5 py-1.5 focus-within:border-[#CC6600]">
+                            <span className="text-white/40 text-xs font-mono mr-1 select-none">₱</span>
+                            <input
+                              type="number"
+                              placeholder="Uncapped"
+                              value={pkg.maxPrice === null ? "" : pkg.maxPrice}
+                              onChange={(e) =>
+                                handleUpdatePackagePrice(
+                                  key,
+                                  "maxPrice",
+                                  e.target.value ? Number(e.target.value) : null
+                                )
+                              }
+                              className="w-full bg-transparent text-white placeholder:text-white/30 focus:outline-none [appearance:textfield] font-mono text-xs"
+                              title="Maximum Allowed Price (leave empty for Uncapped)"
+                            />
+                          </div>
                         </div>
 
-                        <div className="flex items-center rounded-[3px] bg-[#01142B] border border-[#CC6600]/40 px-2 py-1 focus-within:border-[#CC6600]">
-                          <span className="text-[#FFA040] text-[0.6875rem] mr-1 select-none">₱</span>
-                          <input
-                            type="number"
-                            value={pkg.defaultPrice}
-                            onChange={(e) =>
-                              handleUpdatePackagePrice(key, "defaultPrice", Number(e.target.value))
-                            }
-                            className="w-full bg-transparent text-[#FFA040] font-bold focus:outline-none [appearance:textfield] text-xs"
-                            title="Default Starting Price"
-                          />
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[11px] font-sans text-[#FFA040] font-semibold">Default (₱)</span>
+                          <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-[#CC6600]/50 px-2.5 py-1.5 focus-within:border-[#CC6600]">
+                            <span className="text-[#FFA040] text-xs font-mono mr-1 select-none font-bold">₱</span>
+                            <input
+                              type="number"
+                              value={pkg.defaultPrice}
+                              onChange={(e) =>
+                                handleUpdatePackagePrice(key, "defaultPrice", Number(e.target.value))
+                              }
+                              className="w-full bg-transparent text-[#FFA040] font-bold font-mono focus:outline-none [appearance:textfield] text-xs"
+                              title="Default Starting Price"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -612,96 +636,101 @@ export function ServiceCatalogModal({
           <div className="flex flex-col gap-4">
             {/* Add New Add-on Drawer */}
             {isAddingAddon && (
-              <div className="p-4 rounded-[4px] bg-[#01142B] border border-[#38BDF8]/40 space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
-                  <span className="text-xs font-mono font-bold text-[#38BDF8] uppercase tracking-wider">
+              <div
+                className="rounded-[4px] bg-[#01142B] border border-[#38BDF8]/40 space-y-4 animate-fadeIn"
+                style={{ padding: "1.5rem", boxSizing: "border-box" }}
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-sm font-sans font-bold text-[#38BDF8] uppercase tracking-wide">
                     New Priority Add-On Rider
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsAddingAddon(false)}
-                    className="text-white/40 hover:text-white cursor-pointer"
+                    className="text-white/40 hover:text-white cursor-pointer p-1 rounded hover:bg-white/10"
                   >
-                    <IconX size={16} stroke={1.5} />
+                    <IconX size={18} stroke={1.5} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Key / Code</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Key / Code</label>
                     <input
                       type="text"
                       placeholder="PLAGIARISM"
                       value={newAddonCode}
                       onChange={(e) => setNewAddonCode(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Add-On Name</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Add-On Name</label>
                     <input
                       type="text"
                       placeholder="Plagiarism & AI Similarity Scrub"
                       value={newAddonName}
                       onChange={(e) => setNewAddonName(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs text-white focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-sans text-white focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">SLA Badge</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">SLA Badge</label>
                     <input
                       type="text"
                       placeholder="AI AUDIT"
                       value={newAddonBadge}
                       onChange={(e) => setNewAddonBadge(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white uppercase focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Default Fee (₱)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Default Fee (₱)</label>
                     <input
                       type="number"
                       value={newAddonPrice}
                       onChange={(e) => setNewAddonPrice(Number(e.target.value))}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-mono text-white [appearance:textfield] focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[0.6875rem] font-mono text-white/60 uppercase">Tagline / SLA Description</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-sans font-medium text-white/70">Tagline / SLA Description</label>
                     <input
                       type="text"
                       placeholder="Comprehensive similarity report..."
                       value={newAddonTagline}
                       onChange={(e) => setNewAddonTagline(e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 rounded-[3px] bg-[#010D1F] border border-white/[0.12] text-xs text-white focus:border-[#CC6600] focus:outline-none"
+                      className="w-full px-3 py-2 rounded-[4px] bg-[#010D1F] border border-white/15 text-xs font-sans text-white focus:border-[#CC6600] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setIsAddingAddon(false)}
-                    className="px-3 py-1.5 rounded-[3px] bg-white/[0.06] hover:bg-white/[0.10] text-xs font-mono text-white/70 uppercase cursor-pointer"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={handleCreateAddon}
-                    className="px-4 py-1.5 rounded-[3px] bg-[#CC6600] hover:bg-[#E67300] text-xs font-mono font-bold text-white uppercase tracking-wider cursor-pointer"
                   >
                     Save New Add-On
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
 
             {/* 2-Column Responsive Add-Ons Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[460px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1">
               {addonKeys.map((key) => {
                 const addon = catalog.addOns[key];
                 if (!addon) return null;
@@ -710,58 +739,66 @@ export function ServiceCatalogModal({
                 return (
                   <div
                     key={key}
-                    className={`p-4 rounded-[4px] border transition-all flex flex-col justify-between min-h-[110px] ${
+                    className={`rounded-[4px] border transition-all flex flex-col justify-between min-h-[130px] ${
                       isActive
-                        ? "bg-[#010D1F] border-white/[0.08] hover:border-white/20"
-                        : "bg-[#010D1F]/40 border-white/[0.04] opacity-50"
+                        ? "bg-[#01142B] border-white/10 hover:border-white/20"
+                        : "bg-[#01142B]/50 border-white/5 opacity-60"
                     }`}
+                    style={{ padding: "1.25rem 1.5rem", boxSizing: "border-box" }}
                   >
                     <div>
                       {/* Header */}
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-[0.625rem] font-mono font-bold text-white/60 bg-white/[0.04] px-2 py-0.5 rounded-[2px] border border-white/[0.06] uppercase tracking-wider">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="text-[11px] font-sans font-semibold text-white/70 bg-white/[0.04] px-2.5 py-0.5 rounded-[3px] border border-white/10 uppercase tracking-wider">
                           {addon.badge}
                         </span>
 
                         <button
                           type="button"
                           onClick={() => handleToggleAddonActive(key)}
-                          className={`px-2 py-0.5 rounded-[2px] text-[0.625rem] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border flex-shrink-0 ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-xs font-sans font-semibold transition-all cursor-pointer border shrink-0 ${
                             isActive
-                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25"
-                              : "bg-white/[0.04] text-white/40 border-white/[0.08] hover:text-white/70"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                              : "bg-white/[0.04] text-white/40 border-white/10 hover:text-white/70"
                           }`}
                         >
-                          {isActive ? "✓ Active" : "Disabled"}
+                          {isActive ? (
+                            <>
+                              <IconCheck size={13} stroke={2.5} />
+                              <span>Active</span>
+                            </>
+                          ) : (
+                            <span>Disabled</span>
+                          )}
                         </button>
                       </div>
 
                       {/* Title & Icon */}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         {getAddonIcon(key)}
-                        <span className="text-xs font-semibold text-white leading-snug">
+                        <span className="text-sm font-semibold text-white leading-snug font-sans">
                           {addon.name}
                         </span>
                       </div>
 
                       {/* Tagline */}
-                      <p className="text-[0.6875rem] text-white/50 font-sans mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-white/50 font-sans mt-1.5 line-clamp-2 leading-relaxed">
                         {addon.tagline}
                       </p>
                     </div>
 
                     {/* Fee Input */}
-                    <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between gap-2">
-                      <span className="text-[0.625rem] font-mono text-white/40 uppercase tracking-wider">
+                    <div className="mt-4 pt-3.5 border-t border-white/10 flex items-center justify-between gap-4">
+                      <span className="text-xs font-sans font-medium text-white/60">
                         Default Fee Rate
                       </span>
-                      <div className="flex items-center rounded-[3px] bg-[#01142B] border border-[#CC6600]/40 px-2.5 py-1 focus-within:border-[#CC6600]">
+                      <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-[#CC6600]/40 px-3 py-1.5 focus-within:border-[#CC6600]">
                         <span className="text-[#FFA040] text-xs font-mono font-bold mr-1 select-none">₱</span>
                         <input
                           type="number"
                           value={addon.defaultPrice}
                           onChange={(e) => handleUpdateAddonPrice(key, Number(e.target.value))}
-                          className="w-20 bg-transparent text-[#FFA040] font-mono font-bold focus:outline-none [appearance:textfield] text-xs text-right"
+                          className="w-24 bg-transparent text-[#FFA040] font-mono font-bold focus:outline-none [appearance:textfield] text-xs text-right"
                         />
                       </div>
                     </div>
@@ -774,35 +811,36 @@ export function ServiceCatalogModal({
 
         {/* ── Modal Actions Footer ── */}
         <ModalFooter align="between">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={handleReset}
             disabled={isSaving || isResetting}
-            className="px-3.5 py-2 rounded-[4px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.10] text-xs font-mono text-white/60 hover:text-white uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40"
           >
-            <IconRotateClockwise size={14} stroke={1.5} />
+            <IconRotateClockwise size={16} stroke={1.5} className={isResetting ? "animate-spin" : ""} />
             <span>{isResetting ? "Resetting..." : "Reset Factory Defaults"}</span>
-          </button>
+          </Button>
 
           <div className="flex items-center gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
               disabled={isSaving || isResetting}
-              className="px-4 py-2 rounded-[4px] bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.12] text-xs font-mono text-white/70 hover:text-white uppercase tracking-wider transition-all cursor-pointer disabled:opacity-40"
             >
               Cancel
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={handleSave}
               disabled={isSaving || isResetting}
-              className="px-5 py-2 rounded-[4px] bg-[#CC6600] hover:bg-[#E67300] active:bg-[#B35900] text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-[#CC6600]/25 cursor-pointer disabled:opacity-40"
+              loading={isSaving}
             >
-              <IconDeviceFloppy size={15} stroke={2} />
-              <span>{isSaving ? "Saving..." : "Save & Apply Changes"}</span>
-            </button>
+              <IconDeviceFloppy size={16} stroke={2} />
+              <span>Save &amp; Apply Changes</span>
+            </Button>
           </div>
         </ModalFooter>
       </div>

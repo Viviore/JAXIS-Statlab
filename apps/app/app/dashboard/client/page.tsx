@@ -110,7 +110,7 @@ function ClientDashboardContent() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full animate-content-fade">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       <PageHeader
         title="My Research Studies"
         description="Submit new research requests, track real-time statistical analysis progress, and download completed defense-ready tables and write-ups."
@@ -122,24 +122,24 @@ function ClientDashboardContent() {
           isProfileComplete === null ? (
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               disabled
-              className="font-bold tracking-wider font-mono text-xs opacity-50 cursor-wait pointer-events-none"
+              className="font-bold tracking-wider font-sans text-xs sm:text-sm opacity-50 cursor-wait pointer-events-none px-5 py-2.5"
             >
               <LoadingState variant="inline" label="Loading..." />
             </Button>
           ) : isProfileComplete === false ? (
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               onClick={() => setIsProfileModalOpen(true)}
-              className="font-bold tracking-wider font-mono text-xs animate-content-fade"
+              className="font-bold tracking-wider font-sans text-xs sm:text-sm px-5 py-2.5 animate-content-fade"
             >
               SETUP PROFILE FIRST →
             </Button>
           ) : (
             <Link href="/dashboard/client/projects/new" className="animate-content-fade">
-              <Button variant="primary" size="sm" className="font-bold tracking-wider font-mono text-xs">
+              <Button variant="primary" size="md" className="font-bold tracking-wider font-sans text-xs sm:text-sm px-5 py-2.5">
                 + SUBMIT NEW STUDY REQUEST
               </Button>
             </Link>
@@ -236,7 +236,7 @@ function ClientDashboardContent() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 items-stretch">
         <KpiCard
           label="Profile Status"
           value={
@@ -286,57 +286,76 @@ function ClientDashboardContent() {
 
       {/* Studies Table */}
       <Card
-        className="p-0 overflow-hidden border border-white/[0.08] bg-[#010D1F]"
+        className="p-0 overflow-hidden border border-white/10 bg-[#01142B]/90 rounded-[4px] shadow-2xl"
         style={{ padding: 0 }}
       >
         <div
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          style={{ padding: "1.75rem 1.75rem 1.25rem 1.75rem" }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10"
+          style={{
+            padding: "1.75rem 2rem",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+            display: "flex",
+            justifyContent: "space-between",
+            boxSizing: "border-box",
+          }}
         >
           <div>
-            <h2 className="text-base font-bold text-white tracking-wide font-sans">
+            <h2 className="text-lg sm:text-xl font-semibold text-white tracking-normal font-sans">
               My Research Projects
             </h2>
-            <p className="text-xs text-white/50 mt-1.5 font-sans leading-relaxed">
+            <p className="text-sm text-white/60 mt-1 font-sans leading-relaxed">
               Real-time status of your commissioned statistical analyses
             </p>
           </div>
           <Link href="/dashboard/client/projects">
-            <span className="text-xs font-mono text-white/60 hover:text-white transition-colors bg-white/[0.04] px-3 py-1.5 rounded-[2px] border border-white/10">
+            <span
+              className="text-xs font-sans font-semibold text-white/70 hover:text-white transition-colors bg-white/[0.06] hover:bg-white/[0.12] px-3.5 py-2 rounded-[4px] border border-white/10 flex items-center gap-1.5"
+              style={{
+                padding: "0.5rem 0.875rem",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.375rem",
+              }}
+            >
               View All ({projects.length}) →
             </span>
           </Link>
         </div>
 
         {/* ─ Table ─ */}
-        <div style={{ padding: "0 1.75rem 1.75rem 1.75rem" }}>
-          <div className="w-full overflow-x-auto rounded-[3px] border border-white/[0.08]">
+        <div
+          style={{
+            padding: "0 2rem 2rem 2rem",
+            boxSizing: "border-box",
+          }}
+        >
+          <div className="w-full overflow-x-auto rounded-[4px] border border-white/10">
             <table className="data-table">
               <thead>
                 <tr>
                   <th className="w-[140px] whitespace-nowrap">Study ID</th>
                   <th>Research Study Title</th>
-                  <th className="w-[140px] whitespace-nowrap">Target Deadline</th>
-                  <th className="w-[160px] whitespace-nowrap">Status</th>
-                  <th className="w-[120px] text-right whitespace-nowrap">Actions</th>
+                  <th className="w-[150px] whitespace-nowrap">Target Deadline</th>
+                  <th className="w-[170px] whitespace-nowrap">Status</th>
+                  <th className="w-[130px] text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="py-14 text-center">
+                    <td colSpan={5} className="py-16 text-center">
                       <LoadingState variant="table" label="Loading research studies..." />
                     </td>
                   </tr>
                 ) : projects.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-14 text-center">
+                    <td colSpan={5} className="py-16 text-center">
                       <EmptyState
                         title="No Research Projects Found"
                         description="Submit your first research intake questionnaire to begin."
                         action={
                           <Link href="/dashboard/client/projects/new">
-                            <Button variant="primary" size="sm" className="font-mono text-xs font-bold tracking-wider">
+                            <Button variant="primary" size="md" className="font-sans text-xs sm:text-sm font-bold tracking-wider px-5 py-2.5">
                               + SUBMIT STUDY INTAKE →
                             </Button>
                           </Link>
@@ -346,9 +365,9 @@ function ClientDashboardContent() {
                   </tr>
                 ) : (
                   projects.slice(0, 5).map((study) => (
-                    <tr key={study.id} className="group">
+                    <tr key={study.id} className="group hover:bg-white/[0.02] transition-colors">
                       <td className="font-mono text-xs text-[#FF9433] font-bold whitespace-nowrap">
-                        <span className="bg-[#CC6600]/15 border border-[#CC6600]/30 px-2 py-0.5 rounded-[2px]">
+                        <span className="bg-[#CC6600]/15 border border-[#CC6600]/35 px-2.5 py-1 rounded-[3px] shadow-sm">
                           {study.intakeId}
                         </span>
                       </td>
@@ -356,7 +375,7 @@ function ClientDashboardContent() {
                         <div className="flex flex-col gap-1 pr-2 min-w-0">
                           <Link
                             href={`/dashboard/client/projects/${study.id}`}
-                            className="text-xs font-semibold text-white group-hover:text-sky-300 transition-colors line-clamp-2 leading-snug"
+                            className="text-sm font-semibold text-white group-hover:text-sky-300 transition-colors line-clamp-2 leading-relaxed"
                             title={study.researchTitle}
                           >
                             {study.researchTitle}
@@ -364,7 +383,7 @@ function ClientDashboardContent() {
                           {study.missingInfoReason &&
                             study.masterStatus === "AWAITING_INFORMATION" && (
                               <span
-                                className="text-[0.6875rem] text-amber-300/90 font-mono truncate italic block min-w-0"
+                                className="text-xs text-amber-300/90 font-sans truncate italic block min-w-0"
                                 title={`Action Required: ${study.missingInfoReason}`}
                               >
                                 Action Required: {study.missingInfoReason}
@@ -374,13 +393,13 @@ function ClientDashboardContent() {
                       </td>
                       <td className="whitespace-nowrap">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-mono text-amber-400 font-bold">
+                          <span className="text-sm font-sans text-amber-400 font-semibold">
                             {new Date(study.deadlineRequested).toLocaleDateString(
                               "en-US",
                               { month: "short", day: "numeric", year: "numeric" }
                             )}
                           </span>
-                          <span className="text-[0.6875rem] text-white/40 font-mono">
+                          <span className="text-xs text-white/40 font-sans">
                             Target
                           </span>
                         </div>
@@ -404,7 +423,7 @@ function ClientDashboardContent() {
                                 : "outline"
                             }
                             size="sm"
-                            className="whitespace-nowrap font-mono text-xs tracking-wider"
+                            className="whitespace-nowrap font-sans text-xs font-semibold px-3 py-1.5"
                           >
                             {study.masterStatus === "AWAITING_INFORMATION"
                               ? "RESOLVE →"

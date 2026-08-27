@@ -321,15 +321,18 @@ export function formatFileCategory(category: string): { label: string; badgeClas
  * and executes secure URL streaming when connected to cloud object storage (R2/S3).
  */
 export async function triggerFileDownload(filePath: string, fileName: string): Promise<void> {
-  const isRealExternalUrl =
-    filePath.startsWith("http://") ||
-    filePath.startsWith("https://") ||
-    filePath.startsWith("blob:");
+  const R2_PUBLIC_DEV_URL = "https://pub-70de33883ce54230863841fbf74f07b3.r2.dev";
+  const downloadUrl =
+    filePath.startsWith("http://") || filePath.startsWith("https://") || filePath.startsWith("blob:")
+      ? filePath
+      : filePath.startsWith("studies/") || filePath.startsWith("uploads/") || filePath.startsWith("intake-uploads/")
+      ? `${R2_PUBLIC_DEV_URL}/${filePath}`
+      : null;
 
-  if (isRealExternalUrl) {
+  if (downloadUrl) {
     try {
       const anchor = document.createElement("a");
-      anchor.href = filePath;
+      anchor.href = downloadUrl;
       anchor.download = fileName || "download";
       anchor.target = "_blank";
       anchor.rel = "noopener noreferrer";

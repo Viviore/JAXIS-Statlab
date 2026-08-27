@@ -22,7 +22,7 @@ if (env.NODE_ENV !== "production") {
  */
 export async function withDbTimeout<T>(
   promise: Promise<T>,
-  timeoutMs: number = env.NODE_ENV === "development" ? 6000 : 8000
+  timeoutMs: number = env.NODE_ENV === "development" ? 15000 : 20000
 ): Promise<T> {
   let timer: NodeJS.Timeout | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {

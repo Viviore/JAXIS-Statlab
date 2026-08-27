@@ -93,9 +93,9 @@ export function QuickProfileModal({
       description="Provide your academic credentials to unlock research intake and quantitative statistical services."
       size="md"
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 pt-2">
         {/* Information Callout */}
-        <div className="p-3.5 bg-[#011B38]/80 border border-white/[0.08] rounded-[2px] flex items-start gap-3">
+        <div className="p-3.5 bg-sky-500/[0.06] border border-sky-500/20 rounded-[4px] flex items-start gap-3">
           <IconShieldCheck size={18} stroke={1.5} className="text-[#38BDF8] flex-shrink-0 mt-0.5" />
           <div className="text-xs text-white/70 font-sans leading-relaxed">
             Academic affiliations ensure your assigned statistical team adheres to your institution&apos;s methodology guidelines and APA 7th standards.
@@ -103,12 +103,12 @@ export function QuickProfileModal({
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-sans rounded-[2px]">
+          <div className="p-3.5 bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-sans rounded-[4px]">
             {errorMsg}
           </div>
         )}
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <FormInput
             label="University / Institution / College"
             placeholder="e.g. University of the Philippines Diliman"
@@ -125,7 +125,7 @@ export function QuickProfileModal({
             required
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <FormInput
               label="Primary Contact Number"
               type="tel"

@@ -51,7 +51,7 @@ export const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-[#02254B] font-mono font-bold text-[#38BDF8] uppercase tracking-wider",
+      "flex h-full w-full items-center justify-center rounded-full bg-[#02254B] font-sans font-semibold text-xs tracking-normal text-white",
       className
     )}
     {...props}
@@ -97,7 +97,7 @@ export function UserAvatar({
 
   const initials = getInitials(name, email);
 
-  // Tactical Telemetry Role color variants
+  // Enterprise Role color variants
   const getRoleBg = (r?: string) => {
     switch (r?.toUpperCase()) {
       case "SUPERADMIN":

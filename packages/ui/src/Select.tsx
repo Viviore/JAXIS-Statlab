@@ -16,14 +16,14 @@ export const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 sm:h-12 w-full items-center justify-between rounded-[2px] border border-white/12 bg-[#011C38] px-3.5 sm:px-4 py-2 text-sm text-white placeholder:text-slate-500 transition-colors hover:border-white/20 focus:outline-none focus:ring-1 focus:ring-[#38BDF8] disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-11 sm:h-12 w-full items-center justify-between rounded-[4px] border border-white/15 bg-[#01142B] px-4 py-2 text-sm text-white placeholder:text-slate-500 transition-colors hover:border-white/25 focus:outline-none focus:border-[#CC6600] focus:ring-1 focus:ring-[#CC6600]/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 cursor-pointer font-sans",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <IconChevronDown size={16} stroke={1.5} className="text-white/60 shrink-0" />
+      <IconChevronDown size={16} stroke={1.5} className="text-white/50 shrink-0" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -65,7 +65,7 @@ export const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[2px] border border-white/15 bg-[#01142B]/95 text-white shadow-lg backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[4px] border border-white/15 bg-[#01142B] text-white shadow-2xl backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 p-1.5",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -95,7 +95,7 @@ export const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("py-1.5 pl-8 pr-2 text-xs font-mono font-semibold uppercase tracking-wider text-white/50", className)}
+    className={cn("py-1.5 pl-8 pr-2 text-xs font-sans font-semibold uppercase tracking-wider text-white/50", className)}
     {...props}
   />
 ));
@@ -108,14 +108,14 @@ export const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-[1px] py-2 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-[#CC6600]/20 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-pointer select-none items-center rounded-[3px] py-2 pl-8 pr-3 text-sm font-sans outline-none transition-colors focus:bg-white/[0.08] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <IconCheck size={14} stroke={2.5} className="text-[#CC6600]" />
+        <IconCheck size={15} stroke={2} className="text-[#CC6600]" />
       </SelectPrimitive.ItemIndicator>
     </span>
 

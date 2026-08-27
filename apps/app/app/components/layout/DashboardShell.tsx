@@ -35,7 +35,7 @@ export function DashboardShell({
         overflow: "hidden",
       }}
     >
-      {/* Topbar (56px) with Mobile Hamburger */}
+      {/* Topbar (72px / 4.5rem) with Mobile Hamburger */}
       <Topbar
         userFullName={userFullName}
         userRole={userRole}
@@ -45,12 +45,12 @@ export function DashboardShell({
 
       {/* Main Workspace Body */}
       <div
-        className="flex flex-1 h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] w-full overflow-hidden relative"
+        className="flex flex-1 h-[calc(100dvh-72px)] max-h-[calc(100dvh-72px)] w-full overflow-hidden relative"
         style={{
           display: "flex",
           flex: 1,
-          height: "calc(100dvh - 56px)",
-          maxHeight: "calc(100dvh - 56px)",
+          height: "calc(100dvh - 4.5rem)",
+          maxHeight: "calc(100dvh - 4.5rem)",
           width: "100%",
           overflow: "hidden",
           position: "relative",
@@ -88,7 +88,7 @@ export function DashboardShell({
             overflowY: "auto",
             overflowX: "hidden",
             boxSizing: "border-box",
-            padding: "clamp(1.5rem, 3.5vw, 2.5rem)",
+            padding: "clamp(2rem, 4vw, 3.5rem)",
           }}
         >
           <div

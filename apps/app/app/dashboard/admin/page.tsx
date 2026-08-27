@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard } from "@repo/ui";
+import { IconPlus } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -17,8 +18,6 @@ export default function AdminDashboardPage() {
     projects,
     kpis,
     auditStream,
-    isLoading,
-    simulateSync,
   } = useProjects({
     initialLoading: false,
   });
@@ -36,19 +35,12 @@ export default function AdminDashboardPage() {
         actions={
           <div className="flex items-center gap-3">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={simulateSync}
-              loading={isLoading}
-            >
-              SYNC LIVE DESK
-            </Button>
-            <Button
               variant="primary"
               size="sm"
               onClick={() => alert("Project Intake modal will open.")}
             >
-              + NEW PROJECT INTAKE
+              <IconPlus size={15} stroke={2} />
+              <span>New Project Intake</span>
             </Button>
           </div>
         }
@@ -89,22 +81,35 @@ export default function AdminDashboardPage() {
 
       {/* ── Live Pipeline Table ── */}
       <Card
-        className="p-0 overflow-hidden border border-white/[0.08] bg-[#010D1F]"
+        className="p-0 overflow-hidden border border-white/10 bg-[#01142B]/90 rounded-[4px] shadow-2xl"
         style={{ padding: 0 }}
       >
         <div
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          style={{ padding: '1.75rem 1.75rem 1.25rem 1.75rem' }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10"
+          style={{
+            padding: "1.75rem 2rem",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+            display: "flex",
+            justifyContent: "space-between",
+            boxSizing: "border-box",
+          }}
         >
           <div>
-            <h2 className="text-base font-bold text-white tracking-wide font-sans">
+            <h2 className="text-lg sm:text-xl font-semibold text-white tracking-normal font-sans">
               System-Wide Study Registry
             </h2>
-            <p className="text-xs text-white/50 mt-1.5 font-sans leading-relaxed">
+            <p className="text-sm text-white/60 mt-1 font-sans leading-relaxed">
               Comprehensive pipeline with full audit history and role assignments
             </p>
           </div>
-          <span className="text-xs font-mono text-white/60 bg-white/[0.04] px-3.5 py-1.5 rounded-[2px] border border-white/10 self-start sm:self-auto whitespace-nowrap">
+          <span
+            className="text-xs font-sans font-semibold text-white/70 bg-white/[0.06] px-3.5 py-2 rounded-[4px] border border-white/10 self-start sm:self-auto whitespace-nowrap"
+            style={{
+              padding: "0.5rem 0.875rem",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
             {projects.length} Active Studies
           </span>
         </div>
@@ -212,32 +217,60 @@ export default function AdminDashboardPage() {
           description={selectedStudy.title}
           size="lg"
           footer={
-            <Button variant="secondary" onClick={() => setSelectedStudy(null)}>
-              CLOSE INSPECTOR
+            <Button variant="secondary" size="sm" onClick={() => setSelectedStudy(null)}>
+              Close Inspector
             </Button>
           }
         >
-          <div className="flex flex-col gap-5 text-xs font-sans text-white/80">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 sm:p-5 rounded-[2px] bg-white/[0.03] border border-white/[0.08]">
+          <div className="flex flex-col gap-6 text-sm font-sans">
+            {/* Overview Metadata Card */}
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 gap-6 rounded-[4px] bg-[#01142B] border border-white/10"
+              style={{ padding: "1.5rem", boxSizing: "border-box" }}
+            >
               <div>
-                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Lead Researcher:</span>
-                <p className="text-sm font-semibold text-white mt-1">{selectedStudy.client}</p>
-                <p className="text-white/50 text-xs mt-0.5">{selectedStudy.university}</p>
+                <span className="text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
+                  Lead Researcher
+                </span>
+                <p className="text-base font-semibold text-white mt-1 font-sans">
+                  {selectedStudy.client}
+                </p>
+                <p className="text-xs text-white/60 mt-0.5 font-sans">
+                  {selectedStudy.university}
+                </p>
               </div>
               <div>
-                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Statistical Methodology:</span>
-                <p className="text-sm font-semibold text-white mt-1 leading-snug">{selectedStudy.method}</p>
-                <p className="text-white/50 text-xs mt-0.5">Field: {selectedStudy.field}</p>
+                <span className="text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
+                  Statistical Methodology
+                </span>
+                <p className="text-base font-semibold text-white mt-1 font-sans leading-snug">
+                  {selectedStudy.method}
+                </p>
+                <p className="text-xs text-white/60 mt-0.5 font-sans">
+                  Field: {selectedStudy.field}
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Audit Stream &amp; Verification Trail:</span>
-              <div className="space-y-2 max-h-52 overflow-y-auto">
+            {/* Audit Trail Section */}
+            <div className="flex flex-col gap-2.5">
+              <span className="text-xs font-sans font-semibold text-white/60 uppercase tracking-wider">
+                Audit Stream &amp; Verification Trail
+              </span>
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
                 {auditStream.slice(0, 4).map((log) => (
-                  <div key={log.id} className="py-3 px-5 rounded-[2px] bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-4">
-                    <span className="font-mono text-[0.72rem] text-slate-300">{log.action}: {log.detail}</span>
-                    <span className="font-mono text-[0.65rem] text-white/40 whitespace-nowrap">{log.timestamp}</span>
+                  <div
+                    key={log.id}
+                    className="rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-between gap-4 hover:border-white/20 transition-colors"
+                    style={{ padding: "1rem 1.25rem", boxSizing: "border-box" }}
+                  >
+                    <div className="text-xs font-sans text-white/90 leading-relaxed">
+                      <span className="font-semibold text-white">{log.action}: </span>
+                      <span className="text-white/70">{log.detail}</span>
+                    </div>
+                    <span className="text-xs font-sans text-white/40 whitespace-nowrap shrink-0">
+                      {log.timestamp}
+                    </span>
                   </div>
                 ))}
               </div>

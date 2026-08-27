@@ -547,12 +547,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Top Navigation Sections */}
       <div
-        className="p-3.5 sm:p-4 flex flex-col gap-5 overflow-y-auto flex-1"
+        className="p-5 sm:p-6 flex flex-col gap-6 overflow-y-auto flex-1"
         style={{
-          padding: "1rem 0.875rem",
+          padding: "1.5rem 1.25rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.25rem",
+          gap: "1.5rem",
           overflowY: "auto",
           flex: 1,
         }}

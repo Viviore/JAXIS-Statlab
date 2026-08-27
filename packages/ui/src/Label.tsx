@@ -6,12 +6,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "./utils";
 
 export const labelVariants = cva(
-  "text-xs leading-none select-none transition-colors peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+  "inline-block text-xs sm:text-sm font-semibold select-none transition-colors peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
   {
     variants: {
       variant: {
-        default: "font-sans text-white/80 font-medium",
-        mono: "font-mono uppercase tracking-wider font-semibold text-slate-200",
+        default: "font-sans text-white/90 tracking-normal",
+        mono: "font-sans uppercase text-xs tracking-wider text-white/80 font-bold",
       },
     },
     defaultVariants: {
@@ -36,7 +36,7 @@ export const Label = React.forwardRef<
     {...props}
   >
     {children}
-    {required && <span className="text-[#CC6600] ml-1">*</span>}
+    {required && <span className="text-[#CC6600] ml-1 font-bold">*</span>}
   </LabelPrimitive.Root>
 ));
 Label.displayName = LabelPrimitive.Root.displayName;

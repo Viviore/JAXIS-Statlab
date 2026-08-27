@@ -683,51 +683,51 @@
 
 ### Task 1 — Database Schema & Prisma Models
 **Objective:** Add `SOW` model, `SOWType` enum, and project relations to `prisma/schema.prisma`.
-- [ ] Add `SOWType` enum (`PRIMARY`, `SUPPLEMENTAL`)
-- [ ] Add `SOW` model with `contentSnapshot Json`, `isLocked Boolean`, signing fields, and generation metadata
-- [ ] Add relation `sows SOW[]` to `Project` model
-- [ ] Run `npx prisma db push` and `npx prisma generate`
+- [x] Add `SOWType` enum (`PRIMARY`, `SUPPLEMENTAL`)
+- [x] Add `SOW` model with `contentSnapshot Json`, `isLocked Boolean`, signing fields, and generation metadata
+- [x] Add relation `sows SOW[]` to `Project` model
+- [x] Run `npx prisma db push` and `npx prisma generate`
 
 ### Task 2 — Core Business Rules & Locking Guardrails
 **Objective:** Implement immutability and signature validation in `src/lib/sow-rules.ts`.
-- [ ] Implement `assertSOWUnlocked(isLocked)` — enforce 403 `SOW_LOCKED` on any locked contract mutation
-- [ ] Implement `validateSignatoryName(typedName, registeredName)` with case-insensitive trim verification
-- [ ] Define standard legal clauses (`DEFAULT_REVISION_POLICY`, `DEFAULT_REFUND_POLICY`, `DEFAULT_COMMUNICATION_POLICY`, `DEFAULT_LIABILITY_BOUNDARY`)
-- [ ] Implement `buildSOWSnapshot(...)` helper creating unalterable snapshot data
+- [x] Implement `assertSOWUnlocked(isLocked)` — enforce 403 `SOW_LOCKED` on any locked contract mutation
+- [x] Implement `validateSignatoryName(typedName, registeredName)` with case-insensitive trim verification
+- [x] Define standard legal clauses (`DEFAULT_REVISION_POLICY`, `DEFAULT_REFUND_POLICY`, `DEFAULT_COMMUNICATION_POLICY`, `DEFAULT_LIABILITY_BOUNDARY`)
+- [x] Implement `buildSOWSnapshot(...)` helper creating unalterable snapshot data
 
 ### Task 3 — Validation Schemas & Server Actions
 **Objective:** Implement Zod schemas and server actions in `src/features/sow/`.
-- [ ] Create `GenerateSOWSchema` and `SignSOWSchema` in `src/features/sow/schemas.ts`
-- [ ] Create `generateSOW` server action (Admin creates SOW from accepted quote, transitions project to `SOW_PENDING`)
-- [ ] Create `getSOWByProject` server action with role-based access
-- [ ] Create `signSOW` server action (Client types full name, atomic lock `isLocked = true`, transitions to `SOW_SIGNED` / `AWAITING_PAYMENT`)
-- [ ] Create `generateSupplementalSOW` server action
+- [x] Create `GenerateSOWSchema` and `SignSOWSchema` in `src/features/sow/schemas.ts`
+- [x] Create `generateSOW` server action (Admin creates SOW from accepted quote, transitions project to `SOW_PENDING`)
+- [x] Create `getSOWByProject` server action with role-based access
+- [x] Create `signSOW` server action (Client types full name, atomic lock `isLocked = true`, transitions to `SOW_SIGNED` / `AWAITING_PAYMENT`)
+- [x] Create `generateSupplementalSOW` server action
 
 ### Task 4 — SOW Document Component & Printable Export
 **Objective:** Build high-fidelity official Statement of Work document with print/export support.
-- [ ] Create `src/features/sow/components/SowDocument.tsx` with tactical header, parties, scope, terms, and digital signature seal
-- [ ] Include `@media print` clean formatting for 1-click A4 PDF saving
+- [x] Create `src/features/sow/components/SowDocument.tsx` with tactical header, parties, scope, terms, and digital signature seal
+- [x] Include `@media print` clean formatting for 1-click A4 PDF saving
 
 ### Task 5 — Client SOW Review & Digital Signing Page
 **Objective:** Build `/dashboard/client/projects/[id]/sow`.
-- [ ] Render interactive contract view with legal agreement checkbox
-- [ ] Real-time typed name match verification against registered account name
-- [ ] "Sign Statement of Work & Proceed" button using `@repo/ui` `ConfirmDialog`
-- [ ] Post-sign state: displays permanent lock badge, timestamp, and "Download Official SOW" action
+- [x] Render interactive contract view with legal agreement checkbox
+- [x] Real-time typed name match verification against registered account name
+- [x] "Sign Statement of Work & Proceed" button using `@repo/ui` `ConfirmDialog`
+- [x] Post-sign state: displays permanent lock badge, timestamp, and "Download Official SOW" action
 
 ### Task 6 — Admin SOW Control Center & Project Links
 **Objective:** Build Admin SOW desk and wire project navigation.
-- [ ] Build `/dashboard/admin/projects/[id]/sow` for generating and reviewing SOWs
-- [ ] Update `/dashboard/client/projects/[id]` to show SOW action banner when in `SOW_PENDING`
-- [ ] Update `/dashboard/admin/projects/[id]` with direct SOW generation trigger
+- [x] Build `/dashboard/admin/projects/[id]/sow` for generating and reviewing SOWs
+- [x] Update `/dashboard/client/projects/[id]` to show SOW action banner when in `SOW_PENDING`
+- [x] Update `/dashboard/admin/projects/[id]` with direct SOW generation trigger
 
 ### Task 7 — Quality Gate & Verification
 **Objective:** Run monorepo checks and create verification report.
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings
-- [ ] `npm run build` → clean production build
-- [ ] Generate `docs/modules/06-verification-report.md`
-- [ ] Mark Module 06 completed
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] `npm run build` → clean production build
+- [x] Generate `docs/modules/06-verification-report.md`
+- [x] Mark Module 06 completed
 
 ---
 
@@ -741,8 +741,8 @@
 | `03` | `03-client-profile` — Client Profile & Account        | ✅ Completed                     |
 | `04` | `04-intake` — Project Intake & Submission             | ✅ Completed                     |
 | `05` | `05-quotation` — Quotation & Pricing                  | ✅ Completed                     |
-| `06` | `06-sow` — SOW Generation & Signing                   | 🔄 In Progress                   |
-| `07` | `07-payments` — Payment & Installments                | ⏳ Blocked — awaiting `06`       |
+| `06` | `06-sow` — SOW Generation & Signing                   | ✅ Completed                     |
+| `07` | `07-payments` — Payment & Installments                | ⏳ Ready to Start                |
 | `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Blocked — awaiting `07`, `02` |
 | `09` | `09-messaging` — Messaging & Communication Firewall   | ⏳ Blocked — awaiting `04`, `08` |
 | `10` | `10-analysis` — Analysis Workbench                    | ⏳ Blocked — awaiting `08`, `09` |

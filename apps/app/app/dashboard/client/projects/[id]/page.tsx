@@ -21,8 +21,11 @@ import {
   IconDatabase,
   IconClipboardList,
   IconReceipt,
+  IconShieldCheck,
+  IconFileCertificate,
 } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
+import { uploadFileToR2 } from "@/lib/storage-client";
 import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
 import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
 import type { ProjectDetailItem, ProjectFileItem } from "@/features/projects/schemas";
@@ -301,9 +304,17 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
     setUploadError(null);
     startUploadTransition(async () => {
+      // 1. Upload the physical binary directly to Cloudflare R2
+      const uploadRes = await uploadFileToR2(selectedUploadFile, uploadCategory, project.intakeId);
+      if (!uploadRes.success || !uploadRes.data) {
+        setUploadError(uploadRes.error?.message || "Failed to upload file to Cloudflare storage.");
+        return;
+      }
+
+      // 2. Attach record into Supabase with the permanent Cloudflare storage URL
       const res = await addProjectFile(project.id, {
         fileName: selectedUploadFile.name,
-        filePath: `uploads/${selectedUploadFile.name}`,
+        filePath: uploadRes.data.publicUrl,
         fileType: selectedUploadFile.type || "application/octet-stream",
         fileCategory: uploadCategory,
       });
@@ -318,8 +329,8 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
             : null
         );
         setToastMessage({
-          message: "Document Attached",
-          description: `"${selectedUploadFile.name}" attached successfully to your study registry.`,
+          message: "Document Uploaded to Cloudflare R2",
+          description: `"${selectedUploadFile.name}" stored securely in Cloudflare bucket.`,
           variant: "success",
         });
         setSelectedUploadFile(null);
@@ -433,11 +444,14 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
       )}
 
       {/* ── Governance Status Action Bar ── */}
-      <Card className="p-4 sm:p-5 border-l-4 border-l-[#CC6600]">
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <Card
+        className="overflow-hidden border border-white/10 bg-[#01142B]/90 rounded-[4px] shadow-lg"
+        style={{ padding: "0.875rem 1.5rem" }}
+      >
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="text-xs font-mono text-white/50 uppercase font-bold tracking-wider">
+              <span className="text-xs font-sans text-white/60 uppercase font-semibold tracking-wider">
                 Current Master Status:
               </span>
               <StatusBadge
@@ -448,6 +462,13 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <CopyButton
                 value={project.intakeId}
                 label={project.intakeId}
+                onCopy={() =>
+                  setToastMessage({
+                    message: "Copied to Clipboard",
+                    description: `Study ID "${project.intakeId}" has been copied to your clipboard.`,
+                    variant: "info",
+                  })
+                }
                 className="ml-1 text-[#FF9433] bg-[#CC6600]/15 border-[#CC6600]/30 hover:border-[#CC6600] hover:bg-[#CC6600]/25"
               />
             </div>
@@ -480,6 +501,36 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               </Link>
             )}
 
+            {project.masterStatus === "SOW_PENDING" && (
+              <Link href={`/dashboard/client/projects/${project.id}/sow`}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="text-xs font-mono font-bold tracking-wider whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#FFA040]"
+                >
+                  <IconFileText size={14} stroke={2} />
+                  <span>REVIEW &amp; SIGN SOW →</span>
+                </Button>
+              </Link>
+            )}
+
+            {(project.masterStatus === "SOW_SIGNED" ||
+              project.masterStatus === "AWAITING_PAYMENT" ||
+              project.masterStatus === "ACTIVE" ||
+              project.masterStatus === "EXPERT_ASSIGNED" ||
+              project.masterStatus === "IN_PROGRESS") && (
+              <Link href={`/dashboard/client/projects/${project.id}/sow`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                >
+                  <IconShieldCheck size={14} stroke={1.5} />
+                  <span>VIEW SIGNED SOW</span>
+                </Button>
+              </Link>
+            )}
+
             {isPreSow && (
               <Button
                 variant="outline"
@@ -498,6 +549,34 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
           </div>
         </div>
       </Card>
+
+      {/* ── SOW Pending Execution Banner (if SOW_PENDING) ── */}
+      {project.masterStatus === "SOW_PENDING" && (
+        <Card className="p-6 sm:p-7 bg-[#01142B] border border-amber-500/30 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-[2px] bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <IconFileCertificate size={20} stroke={1.5} className="text-amber-400" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-xs font-sans text-amber-400 font-semibold uppercase tracking-wider block">
+                Action Required · Statement of Work Ready for Signature
+              </span>
+              <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                Your formal Statement of Work contract has been prepared. Review the empirical objectives, turnaround days, and payment milestones to digitally sign.
+              </p>
+            </div>
+          </div>
+          <Link href={`/dashboard/client/projects/${project.id}/sow`}>
+            <Button
+              variant="primary"
+              size="md"
+              className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#E67300] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
+            >
+              Review &amp; Sign Contract →
+            </Button>
+          </Link>
+        </Card>
+      )}
 
       {/* ── Missing Information Banner (if AWAITING_INFORMATION) ── */}
       {project.masterStatus === "AWAITING_INFORMATION" && (

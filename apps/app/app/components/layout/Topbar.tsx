@@ -51,41 +51,46 @@ export const Topbar: React.FC<TopbarProps> = ({
 
   return (
     <header
-      className={`h-14 w-full bg-[#010114] border-b border-white/[0.08] px-4 sm:px-6 md:px-8 flex items-center justify-between z-30 select-none ${className}`}
+      className={`h-16 sm:h-18 w-full bg-[#010114] border-b border-white/10 px-6 sm:px-10 lg:px-14 flex items-center justify-between z-30 select-none ${className}`}
+      style={{
+        height: "4.5rem",
+        paddingLeft: "clamp(1.5rem, 4vw, 3.5rem)",
+        paddingRight: "clamp(1.5rem, 4vw, 3.5rem)",
+      }}
     >
-      {/* Brand logo mark & search */}
+      {/* Brand logo mark & title */}
       <div className="flex items-center gap-4 sm:gap-6">
-        <Link href="/dashboard" className="flex items-center gap-2 text-decoration-none group">
+        <Link href="/dashboard" className="flex items-center gap-3 text-decoration-none group py-1">
           <Image
             src="/jaxislogo.png"
             alt="JAXIS Logo"
-            width={24}
-            height={24}
-            className="h-6 w-auto"
+            width={28}
+            height={28}
+            className="h-7 w-auto transition-transform group-hover:scale-105"
             priority
           />
-          <div className="flex items-baseline gap-1.5 font-sans">
-            <span className="font-bold text-sm tracking-wider text-white">
+          <div className="flex items-center gap-2 font-sans">
+            <span className="font-extrabold text-base tracking-wider text-white">
               JAXIS
             </span>
-            <span className="font-bold text-sm tracking-wider text-[#CC6600]">
+            <span className="font-extrabold text-base tracking-wider text-[#CC6600]">
               STATLAB
             </span>
-            <span className="hidden sm:inline-block text-[0.625rem] font-mono uppercase px-1.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 text-white/50 tracking-wider ml-1">
-              Workspace
+            <span className="hidden sm:inline-flex items-center text-xs font-sans uppercase px-2.5 py-0.5 rounded-[4px] bg-white/[0.08] border border-white/15 text-white/70 font-semibold tracking-wider ml-1">
+              Studio
             </span>
           </div>
         </Link>
       </div>
 
       {/* Right Controls: User Profile + Mobile Hamburger */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-3 sm:gap-4">
         {/* Radix / Shadcn Dropdown Menu */}
         <DropdownMenuRoot>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-2 py-1 px-1.5 sm:px-2 rounded-[3px] hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer focus:outline-none"
+              className="flex items-center gap-2.5 sm:gap-3 py-1.5 px-2 sm:px-2.5 rounded-[4px] bg-transparent hover:bg-white/[0.06] transition-all duration-150 cursor-pointer focus:outline-none group select-none"
             >
               <UserAvatar
                 name={userFullName}
@@ -93,57 +98,57 @@ export const Topbar: React.FC<TopbarProps> = ({
                 size="sm"
               />
 
-              <span className="hidden sm:inline-block text-sm font-medium text-white tracking-tight">
+              <span className="hidden sm:inline-block text-sm font-semibold text-white tracking-tight">
                 {userFullName}
               </span>
 
               <IconChevronDown
-                size={14}
+                size={16}
                 stroke={2}
-                className="hidden sm:block text-white/60 transition-transform duration-200"
+                className="hidden sm:block text-white/50 group-hover:text-white/80 transition-transform duration-150"
               />
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-56 p-1.5">
+          <DropdownMenuContent
+            align="end"
+            className="w-64 p-2 bg-[#01142B] border border-white/15 shadow-2xl rounded-[4px] backdrop-blur-xl"
+          >
             {/* Header User Identity */}
-            <div className="px-2.5 py-2 border-b border-white/[0.08] mb-1">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold text-white truncate">
-                  {userFullName}
-                </p>
-                <span className="text-[0.563rem] font-mono font-bold uppercase px-1.5 py-0.5 rounded-[2px] bg-[#CC6600]/20 text-[#CC6600] border border-[#CC6600]/30 leading-none shrink-0">
-                  {userRole}
-                </span>
-              </div>
-              <p className="text-[0.688rem] font-mono text-white/45 truncate mt-0.5">
+            <div className="px-3 py-2 mb-1 flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-white truncate font-sans">
+                {userFullName}
+              </span>
+              <span className="text-xs font-sans font-normal text-white/50 truncate">
                 {userEmail}
-              </p>
+              </span>
             </div>
+
+            <DropdownMenuSeparator className="-mx-2 my-1.5 bg-white/10" />
 
             {/* Menu Options */}
             <DropdownMenuItem asChild>
               <Link
                 href="/dashboard#settings"
-                className="flex items-center gap-2.5 cursor-pointer w-full text-xs text-white/80"
+                className="flex items-center gap-3 cursor-pointer w-full text-sm font-sans font-medium text-white/85 px-3 py-2.5 rounded-[4px] hover:bg-white/[0.06] hover:text-white transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0"
               >
-                <IconSettings size={16} stroke={1.5} className="text-white/50" />
-                <span>Settings</span>
+                <IconSettings size={18} stroke={1.5} className="text-white/60 shrink-0" />
+                <span>Account Settings</span>
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="-mx-2 my-1.5 bg-white/10" />
 
             {/* Logout Action */}
             <DropdownMenuItem
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer text-xs"
+              className="flex items-center gap-3 cursor-pointer w-full text-sm font-sans font-semibold text-red-400 px-3 py-2.5 rounded-[4px] hover:bg-red-500/10 hover:text-red-300 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0"
             >
               {isLoggingOut ? (
-                <span className="h-3.5 w-3.5 border-2 border-white/20 border-t-red-400 rounded-full animate-spin mr-2" />
+                <span className="h-4 w-4 border-2 border-white/20 border-t-red-400 rounded-full animate-spin mr-1" />
               ) : (
-                <IconLogout size={16} stroke={1.5} className="text-red-400 mr-2 shrink-0" />
+                <IconLogout size={18} stroke={1.5} className="text-red-400 shrink-0" />
               )}
               <span>Logout</span>
             </DropdownMenuItem>
@@ -154,10 +159,10 @@ export const Topbar: React.FC<TopbarProps> = ({
         <button
           type="button"
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+          className="lg:hidden p-2 rounded-md text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10"
           aria-label="Toggle navigation menu"
         >
-          <IconMenu2 size={20} stroke={1.5} />
+          <IconMenu2 size={22} stroke={1.5} />
         </button>
       </div>
     </header>

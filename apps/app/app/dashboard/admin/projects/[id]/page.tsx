@@ -275,11 +275,14 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Governance Status Action Bar ── */}
-      <Card className="p-4 sm:p-5 border-l-4 border-l-[#CC6600]">
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <Card
+        className="overflow-hidden border border-white/10 bg-[#01142B]/90 rounded-[4px] shadow-lg"
+        style={{ padding: "0.875rem 1.5rem" }}
+      >
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="text-xs font-mono text-white/50 uppercase font-bold tracking-wider">
+              <span className="text-xs font-sans text-white/60 uppercase font-semibold tracking-wider">
                 Current Master Status:
               </span>
               <StatusBadge
@@ -291,10 +294,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 type="button"
                 onClick={handleCopyId}
                 title="Click to copy Study ID"
-                className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2 py-0.5 rounded-[2px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1 group/btn ml-1"
+                className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2.5 py-1 rounded-[3px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1.5 group/btn ml-1"
               >
                 <span>{project.intakeId}</span>
-                <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                <IconCopy size={13} stroke={1.5} className="opacity-60 group-hover/btn:opacity-100 transition-opacity" />
               </button>
             </div>
           </div>
@@ -426,31 +429,31 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                      <div className="text-xs font-sans uppercase text-white/50 font-semibold tracking-wider">
                         Contract Sum
                       </div>
-                      <div className="text-xs font-bold text-[#38BDF8] font-mono mt-0.5">
+                      <div className="text-sm font-bold text-[#38BDF8] font-mono mt-0.5">
                         ₱{quotation.totalAmount.toLocaleString()}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                      <div className="text-xs font-sans uppercase text-white/50 font-semibold tracking-wider">
                         Downpayment Due
                       </div>
-                      <div className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
+                      <div className="text-sm font-bold text-emerald-400 font-mono mt-0.5">
                         ₱{quotation.downpaymentRequired.toLocaleString()}
-                        <span className="text-[0.625rem] font-normal text-white/40 ml-1">
+                        <span className="text-xs font-normal text-white/50 ml-1">
                           ({quotation.downpaymentPercentage}%)
                         </span>
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-[0.5625rem] font-mono uppercase text-white/40 font-bold tracking-wider">
+                      <div className="text-xs font-sans uppercase text-white/50 font-semibold tracking-wider">
                         Proposal Validity
                       </div>
-                      <div className="text-xs font-bold text-amber-300 font-mono mt-0.5">
+                      <div className="text-sm font-bold text-amber-300 font-mono mt-0.5">
                         {quotation.isExpired ? (
                           <span className="text-rose-400">Expired</span>
                         ) : (
@@ -468,15 +471,37 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                     <span className="text-xs text-white/60 font-mono">
                       {quotation.lineItems.length} line item(s) included in this proposal
                     </span>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setIsQuotationModalOpen(true)}
-                      className="gap-1.5"
-                    >
-                      <IconEdit size={13} stroke={1.5} />
-                      <span>{quotation.status === "DRAFT" ? "Edit Quote Draft" : "View Quote Details"}</span>
-                    </Button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsQuotationModalOpen(true)}
+                        className="gap-1.5"
+                      >
+                        <IconEdit size={13} stroke={1.5} />
+                        <span>{quotation.status === "DRAFT" ? "Edit Quote Draft" : "View Quote Details"}</span>
+                      </Button>
+
+                      {(project.masterStatus === "CLIENT_APPROVED" ||
+                        project.masterStatus === "SOW_PENDING" ||
+                        project.masterStatus === "SOW_SIGNED" ||
+                        project.masterStatus === "AWAITING_PAYMENT") && (
+                        <Link href={`/dashboard/admin/projects/${project.id}/sow`}>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="gap-2 bg-[#CC6600] text-white hover:bg-[#FFA040] font-sans text-xs font-semibold px-3.5 py-2"
+                          >
+                            <IconFileText size={15} stroke={1.5} />
+                            <span>
+                              {project.masterStatus === "CLIENT_APPROVED"
+                                ? "Compile SOW Contract →"
+                                : "View SOW Contract →"}
+                            </span>
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (

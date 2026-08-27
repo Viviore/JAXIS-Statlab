@@ -29,18 +29,28 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const isKpi = variant === "kpi";
     const hasZeroPadding = className?.includes("p-0");
 
+    const defaultPadding = hasZeroPadding
+      ? "0px"
+      : isKpi
+      ? "1.5rem"
+      : "1.75rem";
+
     return (
       <div
         ref={ref}
         className={cn(
-          "relative overflow-hidden rounded-[2px] border border-white/[0.09] hover:border-white/[0.18] transition-colors duration-150 backdrop-blur-md flex flex-col box-border",
+          "relative overflow-hidden rounded-[4px] border border-white/10 hover:border-white/20 transition-all duration-200 backdrop-blur-md flex flex-col box-border shadow-xl",
           isKpi
-            ? "bg-[#01162E]/90 justify-between"
-            : "bg-[#01142B]/80 justify-start",
-          hasZeroPadding ? "" : isKpi ? "p-4 sm:p-5" : "p-4 sm:p-6",
+            ? "bg-[#01142B]/95 justify-between"
+            : "bg-[#01142B]/90 justify-start",
+          hasZeroPadding ? "p-0" : isKpi ? "p-6" : "p-6 sm:p-8",
           className
         )}
-        style={style}
+        style={{
+          boxSizing: "border-box",
+          padding: defaultPadding,
+          ...style,
+        }}
         {...props}
       >
         {/* Subtle top edge specular highlight */}
@@ -51,7 +61,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
         {/* Legacy header support */}
         {header && (
-          <div className="border-b border-white/[0.08] pb-3 mb-4 w-full">
+          <div className="border-b border-white/10 pb-4 mb-6 w-full">
             {header}
           </div>
         )}
@@ -70,7 +80,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
         {/* Legacy footer support */}
         {footer && (
-          <div className="border-t border-white/[0.08] pt-3 mt-4 w-full">
+          <div className="border-t border-white/10 pt-4 mt-6 w-full">
             {footer}
           </div>
         )}
@@ -86,7 +96,7 @@ export const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 pb-3 border-b border-white/[0.06] mb-4 w-full", className)}
+    className={cn("flex flex-col space-y-1.5 pb-4 border-b border-white/10 mb-6 w-full", className)}
     {...props}
   />
 ));
@@ -99,7 +109,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-mono text-sm sm:text-base font-bold text-white tracking-wide uppercase",
+      "font-sans text-base sm:text-lg font-semibold text-white tracking-normal",
       className
     )}
     {...props}
@@ -113,7 +123,7 @@ export const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-xs text-white/60 leading-relaxed font-sans", className)}
+    className={cn("text-sm text-white/60 leading-relaxed font-sans mt-1", className)}
     {...props}
   />
 ));
@@ -133,7 +143,7 @@ export const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center pt-3 border-t border-white/[0.06] mt-4 w-full", className)}
+    className={cn("flex items-center pt-4 border-t border-white/10 mt-6 w-full", className)}
     {...props}
   />
 ));

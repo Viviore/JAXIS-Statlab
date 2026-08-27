@@ -52,10 +52,10 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
     const hasError = Boolean(error) || Boolean(isInvalid);
 
     return (
-      <div className={cn("flex flex-col w-full", containerClassName)}>
+      <div className={cn("flex flex-col gap-2.5 w-full", containerClassName)}>
         {/* Label Row */}
         {(label || labelRightAction) && (
-          <div className="flex items-center justify-between px-0.5 mb-2">
+          <div className="flex items-center justify-between px-0.5">
             {label && (
               <Label
                 htmlFor={inputId}
@@ -66,7 +66,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
               </Label>
             )}
             {labelRightAction && (
-              <div className="text-xs">{labelRightAction}</div>
+              <div className="text-xs font-sans text-white/60">{labelRightAction}</div>
             )}
           </div>
         )}
@@ -103,22 +103,22 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         {/* Error or Helper text */}
         {error ? (
           errorVariant === "banner" ? (
-            <div className="flex items-start gap-2.5 rounded-[2px] bg-[#EF4444]/10 border border-[#EF4444]/35 text-[#FCA5A5] text-xs font-sans leading-relaxed mt-2.5 p-2.5 sm:p-3 border-l-4 border-l-[#EF4444]">
-              <div className="w-5 h-5 rounded-[2px] bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center text-[#EF4444] shrink-0 mt-0.5">
-                <IconAlertTriangle size={12} stroke={2} />
+            <div className="flex items-start gap-2.5 rounded-[5px] bg-[#EF4444]/10 border border-[#EF4444]/35 text-[#FCA5A5] text-xs font-sans leading-relaxed mt-1 p-3 border-l-4 border-l-[#EF4444]">
+              <div className="w-5 h-5 rounded-[3px] bg-[#EF4444]/20 border border-[#EF4444]/40 flex items-center justify-center text-[#EF4444] shrink-0 mt-0.5">
+                <IconAlertTriangle size={14} stroke={2} />
               </div>
               <span className="font-medium text-white/90">{error}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-0.5 mt-1.5">
-              <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" />
-              <span className="text-xs text-[#EF4444] font-mono leading-relaxed">
+            <div className="flex items-center gap-2 px-0.5 mt-0.5">
+              <IconAlertTriangle size={14} stroke={2} className="text-[#EF4444] shrink-0" />
+              <span className="text-xs text-[#EF4444] font-sans font-medium leading-relaxed">
                 {error}
               </span>
             </div>
           )
         ) : helper ? (
-          <span className="text-xs text-white/45 font-sans leading-relaxed px-0.5 mt-1.5 block">
+          <span className="text-xs text-white/50 font-sans leading-relaxed px-0.5 mt-0.5 block">
             {helper}
           </span>
         ) : null}

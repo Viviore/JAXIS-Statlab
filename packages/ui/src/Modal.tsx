@@ -169,14 +169,14 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Modal Dialog Card */}
       <div
-        className={`relative w-full ${sizeClasses[size]} max-h-[min(90vh,calc(100dvh-2rem))] border border-white/[0.12] rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 mx-auto ${
+        className={`relative w-full ${sizeClasses[size]} max-h-[min(90vh,calc(100dvh-2rem))] border border-white/[0.12] rounded-[4px] shadow-2xl overflow-hidden flex flex-col z-10 mx-auto ${
           isVisible ? "animate-modal-dialog-in" : "animate-modal-dialog-out"
         } ${className}`}
         style={{
           backgroundColor: "#01162E",
           backgroundImage: "linear-gradient(180deg, rgba(1, 27, 56, 0.98) 0%, rgba(1, 18, 38, 0.99) 100%)",
           borderColor: "rgba(255, 255, 255, 0.12)",
-          borderRadius: "2px",
+          borderRadius: "4px",
           boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08)",
           boxSizing: "border-box",
           width: "100%",
@@ -220,7 +220,7 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* Sticky Header */}
         <div
-          className="sticky top-0 z-20 flex-shrink-0 flex items-start justify-between gap-4 border-b border-white/[0.08] bg-[#011B38]/98 backdrop-blur-md"
+          className="sticky top-0 z-20 flex-shrink-0 flex items-start justify-between gap-4 border-b border-white/10 bg-[#011B38]/98 backdrop-blur-md"
           style={{
             position: "sticky",
             top: 0,
@@ -230,18 +230,18 @@ export const Modal: React.FC<ModalProps> = ({
             alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "1rem",
-            padding: "1rem 1.25rem",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            padding: "1.5rem 1.75rem",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
             backgroundColor: "rgba(1, 27, 56, 0.98)",
             boxSizing: "border-box",
           }}
         >
           <div className="min-w-0 pr-2">
-            {currentTitle && <div className="text-base font-bold text-white tracking-tight font-sans">{currentTitle}</div>}
+            {currentTitle && <div className="text-base sm:text-lg font-semibold text-white tracking-tight font-sans">{currentTitle}</div>}
             {currentDesc && (
               <p
-                className="text-xs text-white/60 mt-1 font-sans leading-relaxed"
-                style={{ fontSize: "0.813rem", color: "rgba(255, 255, 255, 0.6)", marginTop: "0.25rem" }}
+                className="text-xs sm:text-sm text-white/60 mt-1 font-sans leading-relaxed"
+                style={{ color: "rgba(255, 255, 255, 0.6)", marginTop: "0.25rem" }}
               >
                 {currentDesc}
               </p>
@@ -250,10 +250,10 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors p-1.5 rounded-[2px] hover:bg-white/10 select-none focus:outline-none flex-shrink-0 cursor-pointer"
+            className="text-white/40 hover:text-white transition-colors p-1.5 rounded-[4px] hover:bg-white/10 select-none focus:outline-none flex-shrink-0 cursor-pointer"
             style={{
               padding: "0.375rem",
-              borderRadius: "2px",
+              borderRadius: "4px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -271,7 +271,7 @@ export const Modal: React.FC<ModalProps> = ({
           style={{
             flex: "1 1 0%",
             minHeight: 0,
-            padding: "1.25rem 1.25rem",
+            padding: "1.75rem",
             overflowY: "auto",
             boxSizing: "border-box",
             fontSize: "0.875rem",
@@ -281,10 +281,6 @@ export const Modal: React.FC<ModalProps> = ({
           <div
             className="modal-body-child-wrapper w-full flex flex-col"
             style={{
-              paddingLeft: "2px",
-              paddingRight: "2px",
-              paddingTop: 0,
-              paddingBottom: 0,
               boxSizing: "border-box",
               width: "100%",
             }}
@@ -296,19 +292,19 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Sticky Footer */}
         {currentFooter && (
           <div
-            className="sticky bottom-0 z-20 flex-shrink-0 border-t border-white/[0.08] bg-[#011226]/98 backdrop-blur-md flex flex-col-reverse sm:flex-row sm:justify-end items-stretch sm:items-center gap-3 pt-5 pb-4.5 px-5 sm:px-6 w-full"
+            className="sticky bottom-0 z-20 flex-shrink-0 border-t border-white/10 bg-[#011226]/98 backdrop-blur-md flex flex-col-reverse sm:flex-row sm:justify-end items-stretch sm:items-center gap-3 p-5 sm:px-7 w-full"
             style={{
               position: "sticky",
               bottom: 0,
               zIndex: 20,
               flexShrink: 0,
-              gap: "0.75rem",
-              paddingTop: "1.25rem",
-              paddingBottom: "1.125rem",
-              paddingLeft: "1.5rem",
-              paddingRight: "1.5rem",
-              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
               backgroundColor: "rgba(1, 18, 38, 0.98)",
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: "0.75rem",
+              padding: "1.25rem 1.75rem",
               boxSizing: "border-box",
               width: "100%",
             }}

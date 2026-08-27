@@ -21,14 +21,14 @@ export const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-[1px] px-2 py-1.5 text-xs outline-none focus:bg-[#CC6600]/20 data-[state=open]:bg-[#CC6600]/20",
+      "flex cursor-default select-none items-center rounded-[5px] px-3.5 py-2.5 text-sm font-sans outline-none focus:bg-white/[0.08] data-[state=open]:bg-white/[0.08]",
       inset && "pl-8",
       className
     )}
     {...props}
   >
     {children}
-    <IconChevronRight size={14} stroke={1.5} className="ml-auto" />
+    <IconChevronRight size={16} stroke={1.5} className="ml-auto text-white/50" />
   </DropdownMenuPrimitive.SubTrigger>
 ));
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
@@ -40,7 +40,7 @@ export const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-[2px] border border-white/15 bg-[#01142B] p-1 text-white shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 min-w-[10rem] overflow-hidden rounded-[8px] border border-white/15 bg-[#01142B] p-2 text-white shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     )}
     {...props}
@@ -51,15 +51,21 @@ DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayNam
 export const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+>(({ className, sideOffset = 6, style, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-[2px] border border-white/15 bg-[#01142B]/95 p-1 text-white shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "z-50 min-w-[15rem] overflow-hidden rounded-[4px] border border-white/15 bg-[#01142B] p-2 text-white shadow-2xl backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className
       )}
+      style={{
+        padding: "0.5rem",
+        boxSizing: "border-box",
+        minWidth: "15rem",
+        ...style,
+      }}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
@@ -72,17 +78,25 @@ export const DropdownMenuItem = React.forwardRef<
     inset?: boolean;
     variant?: "default" | "destructive";
   }
->(({ className, inset, variant = "default", ...props }, ref) => (
+>(({ className, inset, variant = "default", style, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-[1px] px-2 py-1.5 text-xs outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-pointer select-none items-center gap-3 rounded-[3px] px-3.5 py-2.5 text-sm font-sans outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       variant === "destructive"
-        ? "text-[#F87171] focus:bg-[#EF4444]/20 focus:text-white"
-        : "text-white/90 focus:bg-[#CC6600]/20 focus:text-white",
+        ? "text-red-400 focus:bg-red-500/10 focus:text-red-300"
+        : "text-white/90 focus:bg-white/[0.08] focus:text-white",
       inset && "pl-8",
       className
     )}
+    style={{
+      padding: "0.625rem 0.875rem",
+      boxSizing: "border-box",
+      gap: "0.75rem",
+      display: "flex",
+      alignItems: "center",
+      ...style,
+    }}
     {...props}
   />
 ));
@@ -95,15 +109,15 @@ export const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-[1px] py-1.5 pl-8 pr-2 text-xs outline-none transition-colors focus:bg-[#CC6600]/20 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-pointer select-none items-center rounded-[3px] py-2.5 pl-9 pr-3.5 text-sm font-sans outline-none transition-colors focus:bg-white/[0.08] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-2.5 flex h-4 w-4 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <IconCheck size={14} stroke={2.5} className="text-[#CC6600]" />
+        <IconCheck size={16} stroke={2.5} className="text-[#CC6600]" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -118,12 +132,12 @@ export const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-[1px] py-1.5 pl-8 pr-2 text-xs outline-none transition-colors focus:bg-[#CC6600]/20 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-pointer select-none items-center rounded-[3px] py-2.5 pl-9 pr-3.5 text-sm font-sans outline-none transition-colors focus:bg-white/[0.08] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-2.5 flex h-4 w-4 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
         <IconCircle size={8} className="fill-current text-[#CC6600]" />
       </DropdownMenuPrimitive.ItemIndicator>
@@ -142,7 +156,7 @@ export const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-[0.688rem] font-mono uppercase tracking-wider text-white/50",
+      "px-3.5 py-2 text-xs font-sans font-bold uppercase tracking-wider text-white/50",
       inset && "pl-8",
       className
     )}
@@ -157,7 +171,7 @@ export const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-white/10", className)}
+    className={cn("-mx-1 my-1.5 h-px bg-white/10", className)}
     {...props}
   />
 ));
@@ -169,7 +183,7 @@ export const DropdownMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
-      className={cn("ml-auto text-[0.625rem] tracking-widest text-white/40", className)}
+      className={cn("ml-auto text-xs font-sans tracking-widest text-white/40", className)}
       {...props}
     />
   );
@@ -218,16 +232,16 @@ export function DropdownMenu({
         ) : (
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-[2px] border border-white/15 bg-white/5 text-white/70 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-[4px] border border-white/15 bg-white/5 text-white/70 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white cursor-pointer"
           >
-            <IconDotsVertical size={16} stroke={1.5} />
+            <IconDotsVertical size={18} stroke={1.5} />
           </button>
         )}
       </DropdownMenuPrimitive.Trigger>
 
       <DropdownMenuContent
         align={normalizedAlign}
-        className={cn("p-1", className)}
+        className={cn("p-2", className)}
         style={{ width: width ?? undefined }}
       >
         {items.map((item, index) => (
@@ -237,17 +251,17 @@ export function DropdownMenu({
               disabled={item.disabled}
               variant={item.variant === "danger" ? "destructive" : "default"}
               onClick={item.onClick}
-              className="flex items-center gap-2 px-2.5 py-1.5"
+              className="flex items-center gap-3 px-3.5 py-2.5"
             >
-              {item.icon && <span className="shrink-0">{item.icon}</span>}
-              <div className="flex flex-col flex-1">
-                <span className="font-medium text-xs">{item.label}</span>
+              {item.icon && <span className="shrink-0 text-white/60">{item.icon}</span>}
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="font-semibold text-sm font-sans truncate">{item.label}</span>
                 {item.subtitle && (
-                  <span className="text-[0.625rem] text-white/50">{item.subtitle}</span>
+                  <span className="text-xs text-white/50 font-sans mt-0.5 truncate">{item.subtitle}</span>
                 )}
               </div>
               {item.badge && (
-                <span className="ml-auto rounded-[2px] bg-white/10 px-1.5 py-0.5 text-[0.563rem] font-mono uppercase text-white/70">
+                <span className="ml-auto rounded-[3px] bg-white/10 px-2 py-0.5 text-xs font-sans font-semibold text-white/80">
                   {item.badge}
                 </span>
               )}

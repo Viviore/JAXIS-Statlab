@@ -113,7 +113,7 @@ export default function ClientProfilePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             <FormInput
               label="Institution / University"
               required
@@ -122,7 +122,6 @@ export default function ClientProfilePage() {
               onChange={(e) => setFormData({ ...formData, institutionSchool: e.target.value })}
               error={fieldErrors.institutionSchool?.[0]}
               disabled={isPending}
-              monoLabel
             />
 
             <FormInput
@@ -133,11 +132,10 @@ export default function ClientProfilePage() {
               onChange={(e) => setFormData({ ...formData, academicProgram: e.target.value })}
               error={fieldErrors.academicProgram?.[0]}
               disabled={isPending}
-              monoLabel
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mt-2">
             <FormInput
               label="Contact Number"
               type="tel"
@@ -148,7 +146,6 @@ export default function ClientProfilePage() {
               maxLength={17}
               error={fieldErrors.contactNumber?.[0]}
               disabled={isPending}
-              monoLabel
             />
 
             <FormSelect
@@ -158,7 +155,6 @@ export default function ClientProfilePage() {
               value={formData.region}
               onChange={(e) => setFormData({ ...formData, region: e.target.value })}
               disabled={isPending}
-              monoLabel
             />
           </div>
 

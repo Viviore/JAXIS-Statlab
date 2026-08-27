@@ -1,92 +1,69 @@
 ---
 name: industrial-brutalist-ui
-description: Raw mechanical interfaces fusing Swiss typographic print with military terminal aesthetics. Rigid grids, extreme type scale contrast, utilitarian color, analog degradation effects. For data-heavy dashboards, portfolios, or editorial sites that need to feel like declassified blueprints.
+description: Master Enterprise Scientific & Statistical Consultation UI standard for JAXIS StatLab. Anchored strictly to apps/app/docs/design-system.md and canonical reference photos. Enforces deep navy substrates (#010114, #01142B, #011B38), enterprise orange accents (#CC6600), spacious card padding (p-6 to p-12), Tabler icons exclusively, orbital loading states, and clean sans-serif typography.
 ---
 
-# SKILL: Industrial Brutalism & Tactical Telemetry UI
+# SKILL: JAXIS StatLab Enterprise Scientific Design System
 
-## 1. Skill Meta
-**Name:** Industrial Brutalism & Tactical Telemetry Interface Engineering
-**Description:** Advanced proficiency in architecting web interfaces that synthesize mid-century Swiss Typographic design, industrial manufacturing manuals, and retro-futuristic aerospace/military terminal interfaces. This discipline requires absolute mastery over rigid modular grids, extreme typographic scale contrast, purely utilitarian color palettes, and the programmatic simulation of analog degradation (halftones, CRT scanlines, bitmap dithering). The objective is to construct digital environments that project raw functionality, mechanical precision, and high data density, deliberately discarding conventional consumer UI patterns.
+## 1. Master Reference Directive (MANDATORY)
+This skill directly enforces the canonical visual design specifications from **[`apps/app/docs/design-system.md`](../../apps/app/docs/design-system.md)** and the official reference interfaces:
+1. **Intake Flow Reference:** Multi-stage stepper (`01 SCOPE & DETAILS`, `02 DOCUMENT UPLOADS`, `03 REVIEW & SUBMIT`), dark inputs (`#010915`), uppercase mono labels with orange required asterisks (`<span className="text-[#CC6600]">*</span>`), and prominent enterprise orange CTAs (`PROCEED TO ATTACHMENTS →`).
+2. **Client Portal Reference:** Spacious KPI metric ribbon, clean data tables with orange ID badges (`JAXIS-202608-XXXX`), status pill indicators, and high-contrast action buttons (`View Study Details →`).
+3. **Admin Triage Reference:** Top status action bar (`CURRENT MASTER STATUS: UNDER EVALUATION`), balanced 2-column problem scope and institutional profile dossiers, and structured document/dataset cards with 1-click preview and download actions.
 
-## 2. Visual Archetypes
-The design system operates by merging two distinct but highly compatible visual paradigms. **Pick ONE per project and commit to it. Do not alternate or mix both modes within the same interface.**
+---
 
-### 2.1 Swiss Industrial Print
-Derived from 1960s corporate identity systems and heavy machinery blueprints.
-*   **Characteristics:** High-contrast light modes (newsprint/off-white substrates). Reliance on monolithic, heavy sans-serif typography. Unforgiving structural grids outlined by visible dividing lines. Aggressive, asymmetric use of negative space punctuated by oversized, viewport-bleeding numerals or letterforms. Heavy use of primary red as an alert/accent color.
+## 2. Palette & Surface Hierarchy
+- **Master Canvas (95% Foundation):** `#010114` (Midnight Deep Space Navy).
+- **Surface Elevation Cards:** `rgba(1, 22, 46, 0.75)` or `#01142B` / `#011B38` with crisp 1px borders (`border-white/10` to `border-white/15`).
+- **Primary Brand Accent (5–10% Max Rule):** `#CC6600` (Enterprise Orange) / Hover: `#FFA040` / `#E67300`. Used strictly for high-priority CTAs, active stepper tabs, and important badges.
+- **Analytical Deliverable Sky:** `#38BDF8` (Deliverable metrics, secondary data points).
+- **Verification Emerald:** `#10B981` (Paid, accepted, approved, complete).
+- **Escrow Amber:** `#F59E0B` (Awaiting client review, pending SOW, payment due).
+- **Danger Crimson:** `#EF4444` (Disputed, missing info, expired).
+- **Zero Glow Rule:** Blurry box-shadow glows (`shadow-[0_0_...px]`) are **strictly forbidden**. Rely on crisp 1px borders (`border-white/10`).
+- **No Awkward Gradients:** Do not use heavy gradient fills (`bg-gradient-to-r`) on action bars, banners, or modal headers. Rely on solid substrates (`#01142B` / `#011B38`) with calibrated borders.
 
-### 2.2 Tactical Telemetry & CRT Terminal
-Derived from classified military databases, legacy mainframes, and aerospace Heads-Up Displays (HUDs).
-*   **Characteristics:** Dark mode exclusivity. High-density tabular data presentation. Absolute dominance of monospaced typography. Integration of technical framing devices (ASCII brackets, crosshairs). Application of simulated hardware limitations (phosphor glow, scanlines, low bit-depth rendering).
+---
 
-## 3. Typographic Architecture
-Typography is the primary structural and decorative infrastructure. Imagery is secondary. The system demands extreme variance in scale, weight, and spacing.
+## 3. Spacing & Container Standard (ANTI-DOUBLE-PADDING MANDATE)
+- **Root Shell vs. Inner Pages:** `DashboardShell.tsx` provides `padding: clamp(2rem, 4vw, 3.5rem)` on `<main>`. Inner page routes inside `/dashboard` **must NOT add redundant outer padding** (NO `px-4 sm:px-8 lg:px-12 py-8`).
+- **Standard Page Container:**
+  ```tsx
+  <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
+  ```
+  *(or `max-w-5xl mx-auto` for focused legal contract / SOW document desks).*
+- **Cards & Containers:** Standard card padding is **`p-6 sm:p-8 md:p-10`** (or `p-8 sm:p-12 lg:p-16` for contract/SOW sheets). Microscopic `p-1`, `p-2`, or `p-3` cards are strictly banned.
+- **Nested Boxes:** Never nest dark tight border boxes inside cards with 0 margin. Give all text and lists generous breathing room (`space-y-4`, `p-5` to `p-6`).
 
-### 3.1 Macro-Typography (Structural Headers)
-*   **Classification:** Neo-Grotesque / Heavy Sans-Serif.
-*   **Optimal Web Fonts:** Neue Haas Grotesk (Black), Inter (Extra Bold/Black), Archivo Black, Roboto Flex (Heavy), Monument Extended.
-*   **Implementation Parameters:**
-    *   **Scale:** Deployed at massive scales using fluid typography (e.g., `clamp(4rem, 10vw, 15rem)`).
-    *   **Tracking (Letter-spacing):** Extremely tight, often negative (`-0.03em` to `-0.06em`), forcing glyphs to form solid architectural blocks.
-    *   **Leading (Line-height):** Highly compressed (`0.85` to `0.95`).
-    *   **Casing:** Exclusively uppercase for structural impact.
+---
 
-### 3.2 Micro-Typography (Data & Telemetry)
-*   **Classification:** Monospace / Technical Sans.
-*   **Optimal Web Fonts:** JetBrains Mono, IBM Plex Mono, Space Mono, VT323, Courier Prime.
-*   **Implementation Parameters:**
-    *   **Scale:** Fixed and small (`10px` to `14px` / `0.7rem` to `0.875rem`).
-    *   **Tracking:** Generous (`0.05em` to `0.1em`) to simulate mechanical typewriter spacing or terminal matrices.
-    *   **Leading:** Standard to tight (`1.2` to `1.4`).
-    *   **Casing:** Exclusively uppercase. Used for all metadata, navigation, unit IDs, and coordinates.
+## 4. Button, Dropdown & Interaction Standards
+- **Button Corner Radius:** Crisp precision `rounded-[2px]` across all primary and secondary buttons.
+- **Button Casing:** Use Title Case or Clean Sentence Case (e.g. `"Review & Sign Contract →"`, `"Download All"`, `"+ Configure Services"`), never aggressive all-caps shouting.
+- **Button Loading Spinner:** Centered `<IconLoader2 size={16} stroke={2.5} className="animate-spin text-white/90" />` directly inside button flex container.
+- **Dropdown & Menu Items:** Zero orange outline/rings on focus or hover. Use `outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0` with subtle background tinting (`hover:bg-white/[0.06]`).
+- **Tabs & Segmented Controls:** Use `<Tabs>`, `<TabsList>`, `<TabsTrigger>`, `<TabsContent>` from `@repo/ui`. Precision `rounded-[2px]`, Title Case Sans-Serif labels, and `#CC6600` Enterprise Orange active indicator (`data-[state=active]:bg-[#CC6600]`).
+- **File Row Actions:** Compact `h-9 w-9 rounded-[2px]` icon buttons using standard Tabler icons.
 
-### 3.3 Textural Contrast (Artistic Disruption)
-*   **Classification:** High-Contrast Serif.
-*   **Optimal Web Fonts:** Playfair Display, EB Garamond, Times New Roman.
-*   **Implementation Parameters:** Used exceedingly sparingly. Must be subjected to heavy post-processing (halftone filters, 1-bit dithering) to degrade vector perfection and create textural juxtaposition against the clean sans-serifs.
+---
 
-## 4. Color System
-The color architecture is uncompromising. Gradients, soft drop shadows, and modern translucency are strictly prohibited. Colors simulate physical media or primitive emissive displays.
+## 5. Telemetry & Loading States (NO CLUNKY BOXES / NO PING BLOBS)
+- **Standard Component:** All data retrieval and async states must use `<LoadingState variant="page" | "table" | "card" | "inline" />` from `@repo/ui`.
+- **Orbital Loader Standard:** High-precision orbital sweep gauge with dual-layer calibrated track (`border-white/[0.08]` + `border-t-[#CC6600] border-r-[#FFA040]/60`) and glowing center micro-emitter node (`OrbitalSpinner`).
+- **Typography:** Clean Sans-Serif title and subtitle with zero robotic double slashes.
 
-**CRITICAL: Choose ONE substrate palette per project and use it consistently. Never mix light and dark substrates within the same interface.**
+---
 
-### If Swiss Industrial Print (Light):
-*   **Background:** `#F4F4F0` or `#EAE8E3` (Matte, unbleached documentation paper).
-*   **Foreground:** `#050505` to `#111111` (Carbon Ink).
-*   **Accent:** `#E61919` or `#FF2A2A` (Aviation/Hazard Red). This is the ONLY accent color. Used for strike-throughs, thick structural dividing lines, or vital data highlights.
+## 6. Typography Hierarchy
+- **Readable Content & Prose:** Clean **Sans-Serif (`font-sans`)** for all titles, descriptions, research objectives, legal terms, form inputs, and table cells.
+- **Monospace Usage:** `font-mono` is strictly reserved for study IDs (e.g. `JAXIS-202608-0001`), financial sums (`₱1,000`), status codes, and telemetry metrics. Never render paragraphs or sentences in monospace.
+- **Font Sizes:** Body text must be `text-sm` (14px) or `text-base` (16px) with `leading-relaxed`. Microscopic `text-[0.688rem]` is only permitted for micro-badges.
 
-### If Tactical Telemetry (Dark):
-*   **Background:** `#0A0A0A` or `#121212` (Deactivated CRT. Avoid pure `#000000`).
-*   **Foreground:** `#EAEAEA` (White phosphor). This is the primary text color.
-*   **Accent:** `#E61919` or `#FF2A2A` (Aviation/Hazard Red). Same red, same rules.
-*   **Terminal Green (`#4AF626`):** Optional. Use ONLY for a single specific UI element (e.g., one status indicator or one data readout) — never as a general text color. If it doesn't serve a clear purpose, omit it entirely.
+---
 
-## 5. Layout and Spatial Engineering
-The layout must appear mathematically engineered. It rejects conventional web padding in favor of visible compartmentalization.
-
-*   **The Blueprint Grid:** Strict adherence to CSS Grid architectures. Elements do not float; they are anchored precisely to grid tracks and intersections.
-*   **Visible Compartmentalization:** Extensive utilization of solid borders (`1px` or `2px solid`) to delineate distinct zones of information. Horizontal rules (`<hr>`) frequently span the entire container width to segregate operational units.
-*   **Bimodal Density:** Layouts oscillate between extreme data density (tightly packed monospace metadata clustered together) and vast expanses of calculated negative space framing macro-typography.
-*   **Geometry:** Absolute rejection of `border-radius`. All corners must be exactly 90 degrees to enforce mechanical rigidity.
-
-## 6. UI Components and Symbology
-Standard web UI conventions are replaced with utilitarian, industrial graphic elements.
-
-*   **Syntax Decoration:** Utilization of ASCII characters to frame data points.
-    *   *Framing:* `[ DELIVERY SYSTEMS ]`, `< RE-IND >`
-    *   *Directional:* `>>>`, `///`, `\\\\`
-*   **Industrial Markers:** Prominent integration of registration (`®`), copyright (`©`), and trademark (`™`) symbols functioning as structural geometric elements rather than legal text.
-*   **Technical Assets:** Integration of crosshairs (`+`) at grid intersections, repeating vertical lines (barcodes), thick horizontal warning stripes, and randomized string data (e.g., `REV 2.6`, `UNIT / D-01`) to simulate active mechanical processes.
-
-## 7. Textural and Post-Processing Effects
-To prevent the design from appearing purely digital, simulated analog degradation is engineered into the frontend via CSS and SVG filters.
-
-*   **Halftone and 1-Bit Dithering:** Transforming continuous-tone images or large serif typography into dot-matrix patterns. Achieved via pre-processing or CSS `mix-blend-mode: multiply` overlays combined with SVG radial dot patterns.
-*   **CRT Scanlines:** For terminal interfaces, applying a `repeating-linear-gradient` to the background to simulate horizontal electron beam sweeps (e.g., `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)`).
-*   **Mechanical Noise:** A global, low-opacity SVG static/noise filter applied to the DOM root to introduce a unified physical grain across both dark and light modes.
-
-## 8. Web Engineering Directives
-1.  **Grid Determinism:** Utilize `display: grid; gap: 1px;` with contrasting parent/child background colors to generate mathematically perfect, razor-thin dividing lines without complex border declarations.
-2.  **Semantic Rigidity:** Construct the DOM using precise semantic tags (`<data>`, `<samp>`, `<kbd>`, `<output>`, `<dl>`) to accurately reflect the technical nature of the telemetry.
-3.  **Typography Clamping:** Implement CSS `clamp()` functions exclusively for macro-typography to ensure massive text scales aggressively while maintaining structural integrity across viewports.
+## 7. Iconography & Copy Tone
+- **Icon Library:** **Tabler Icons (`@tabler/icons-react`) exclusively** with `stroke={1.5}` or `stroke={2}` and standard sizing (`size={16|18|20|24}`).
+- **Zero Emojis Policy:** Emojis are strictly banned anywhere in the application.
+- **Zero Double Slashes Policy:** Double slashes (`//`) are strictly forbidden in UI copy, loading states, and badges. Use simple, natural human language (e.g. *"Loading research studies..."*, *"Preparing Statement of Work..."*).
+- **Terminology:** Always use **"Lead Researcher"** and **"Research Study"** (never "Principal Investigator" or "Investigator").

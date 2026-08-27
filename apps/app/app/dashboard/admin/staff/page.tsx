@@ -619,22 +619,13 @@ export default function StaffRosterPage() {
                   >
                     {/* Staff Member */}
                     <td>
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-9 h-9 rounded-[2px] bg-[#011B38] border border-white/[0.10] flex items-center justify-center font-mono font-bold text-xs text-[#CC6600] flex-shrink-0">
-                          {staff.fullName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .slice(0, 2)
-                            .join("")}
-                        </div>
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
-                            {staff.fullName}
-                          </span>
-                          <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate">
-                            {staff.email}
-                          </span>
-                        </div>
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
+                          {staff.fullName}
+                        </span>
+                        <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate">
+                          {staff.email}
+                        </span>
                       </div>
                     </td>
 
@@ -742,12 +733,16 @@ export default function StaffRosterPage() {
           size="lg"
         >
           <div className="flex flex-col gap-6 font-sans">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:px-7 rounded-[3px] bg-[#011B38] border border-white/10">
+            {/* Staff Identity Card */}
+            <div
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-[4px] bg-[#01142B] border border-white/10"
+              style={{ padding: "1.5rem", boxSizing: "border-box" }}
+            >
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+                <span className="text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
                   Email Address
                 </span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-base font-semibold text-white font-sans">
                   {selectedStaff.email}
                 </span>
               </div>
@@ -758,11 +753,14 @@ export default function StaffRosterPage() {
             </div>
 
             {/* Bio Section */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            <div className="flex flex-col gap-2.5">
+              <span className="text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
                 Professional Bio &amp; Focus
               </span>
-              <p className="text-sm text-slate-300 bg-white/[0.02] p-5 sm:px-7 rounded-[3px] border border-white/10 leading-relaxed">
+              <p
+                className="text-sm text-slate-200 bg-[#01142B] rounded-[4px] border border-white/10 leading-relaxed font-sans"
+                style={{ padding: "1.25rem 1.5rem", boxSizing: "border-box" }}
+              >
                 {detailData?.bio ||
                   selectedStaff.bio ||
                   "No biographical profile entered yet."}
@@ -770,8 +768,8 @@ export default function StaffRosterPage() {
             </div>
 
             {/* Specializations List */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            <div className="flex flex-col gap-2.5">
+              <span className="text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
                 Certified Specializations
               </span>
               <div className="flex flex-wrap gap-2">
@@ -780,7 +778,8 @@ export default function StaffRosterPage() {
                 ).map((spec, i) => (
                   <span
                     key={i}
-                    className="text-xs font-mono px-3 py-1 rounded-[2px] bg-[#012E57] text-sky-200 border border-sky-400/30"
+                    className="text-xs font-sans font-medium rounded-[3px] bg-[#01142B] text-sky-300 border border-sky-400/30"
+                    style={{ padding: "0.375rem 0.75rem", display: "inline-flex", alignItems: "center" }}
                   >
                     {spec}
                   </span>
@@ -789,21 +788,21 @@ export default function StaffRosterPage() {
             </div>
 
             {/* Disciplinary / Suspension Logs */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">
+            <div className="flex flex-col gap-2.5">
+              <span className="text-xs font-sans font-semibold text-white/50 uppercase tracking-wider">
                 Governance &amp; Disciplinary History
               </span>
               {detailData?.suspensionLogs &&
               detailData.suspensionLogs.length > 0 ? (
-                <div className="overflow-x-auto border border-white/10 rounded-[3px]">
+                <div className="overflow-x-auto border border-white/10 rounded-[4px]">
                   <table className="w-full text-xs text-left font-sans">
                     <thead className="bg-white/[0.03] text-white/50 border-b border-white/[0.08]">
                       <tr>
-                        <th className="py-3.5 px-5 font-mono font-semibold">Action</th>
-                        <th className="py-3.5 px-5 font-mono font-semibold">Reason</th>
-                        <th className="py-3.5 px-5 font-mono font-semibold">Violation Type</th>
-                        <th className="py-3.5 px-5 font-mono font-semibold">Date</th>
-                        <th className="py-3.5 px-5 font-mono font-semibold">Status</th>
+                        <th className="py-3.5 px-5 font-sans font-semibold">Action</th>
+                        <th className="py-3.5 px-5 font-sans font-semibold">Reason</th>
+                        <th className="py-3.5 px-5 font-sans font-semibold">Violation Type</th>
+                        <th className="py-3.5 px-5 font-sans font-semibold">Date</th>
+                        <th className="py-3.5 px-5 font-sans font-semibold">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -823,12 +822,12 @@ export default function StaffRosterPage() {
                           </td>
                           <td className="py-3.5 px-5">
                             {log.liftedAt ? (
-                              <span className="text-emerald-400 font-mono">
+                              <span className="text-emerald-400 font-sans font-medium">
                                 Lifted on{" "}
                                 {new Date(log.liftedAt).toLocaleDateString()}
                               </span>
                             ) : (
-                              <span className="text-amber-400 font-mono">
+                              <span className="text-amber-400 font-sans font-medium">
                                 Active Record
                               </span>
                             )}
@@ -839,7 +838,10 @@ export default function StaffRosterPage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-xs text-white/40 italic p-4 sm:px-7 bg-white/[0.02] border border-white/10 rounded-[3px]">
+                <div
+                  className="text-xs text-white/50 italic bg-[#01142B] border border-white/10 rounded-[4px] font-sans"
+                  style={{ padding: "1.25rem 1.5rem", boxSizing: "border-box" }}
+                >
                   Clean record — zero disciplinary actions or suspensions logged.
                 </div>
               )}
@@ -906,15 +908,15 @@ export default function StaffRosterPage() {
               />
 
               {/* Automated Credentials Notice Badge */}
-              <div className="p-3.5 rounded-[2px] bg-[#011B38]/80 border border-sky-500/25 text-xs text-slate-300 flex items-start gap-3 mt-0.5">
-                <div className="p-1.5 rounded-[2px] bg-sky-500/10 border border-sky-500/20 text-sky-400 mt-0.5 flex-shrink-0">
+              <div className="p-4 rounded-[4px] bg-sky-500/[0.06] border border-sky-500/20 text-xs text-slate-300 flex items-start gap-3 mt-1">
+                <div className="p-1.5 rounded-[3px] bg-sky-500/10 border border-sky-500/20 text-sky-400 mt-0.5 flex-shrink-0">
                   <IconKey size={14} stroke={1.5} />
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-mono uppercase font-bold text-sky-400 text-[0.688rem] tracking-wider">
+                  <span className="font-sans uppercase font-bold text-sky-400 text-xs tracking-wider">
                     Automated Credentials
                   </span>
-                  <p className="text-[0.688rem] text-slate-300/80 leading-relaxed font-sans">
+                  <p className="text-xs text-slate-300/80 leading-relaxed font-sans mt-0.5">
                     A cryptographically secure password (<code className="text-sky-300 font-mono">JAXIS-XXXXXXXX</code>) will be generated for immediate one-time handoff.
                   </p>
                 </div>
@@ -929,7 +931,7 @@ export default function StaffRosterPage() {
                   <span className="text-xs font-semibold text-slate-200 whitespace-nowrap">
                     Certified Specializations <span className="text-[#CC6600]">*</span>
                   </span>
-                  <div className="flex items-center gap-2 text-[0.688rem] font-mono text-white/40 flex-shrink-0">
+                  <div className="flex items-center gap-2 text-xs font-sans text-white/40 flex-shrink-0">
                     {provSpecs.length > 0 && (
                       <button
                         type="button"
@@ -942,11 +944,11 @@ export default function StaffRosterPage() {
                     <span>{provSpecs.length} selected</span>
                   </div>
                 </div>
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-white/50 font-sans">
                   Select methodologies, modeling frameworks, or domain competencies
                 </p>
 
-                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <div className="flex flex-wrap gap-2 pt-1">
                   {[
                     ...STANDARD_SPECIALIZATIONS,
                     ...provSpecs.filter(
@@ -960,14 +962,14 @@ export default function StaffRosterPage() {
                         key={spec}
                         type="button"
                         onClick={() => toggleProvSpec(spec)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-xs font-mono transition-all duration-150 cursor-pointer select-none border ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-xs font-sans transition-all duration-150 cursor-pointer select-none border ${
                           isSelected
                             ? "bg-[#CC6600]/15 text-[#FF9433] border-[#CC6600] font-medium shadow-sm shadow-[#CC6600]/10"
                             : "bg-[#01142B] text-slate-300 border-white/10 hover:border-white/25 hover:text-white hover:bg-white/[0.04]"
                         }`}
                       >
                         {isSelected ? (
-                          <IconCheck size={12} stroke={2.5} className="text-[#CC6600] flex-shrink-0" />
+                          <IconCheck size={13} stroke={2.5} className="text-[#CC6600] flex-shrink-0" />
                         ) : (
                           <span className="text-white/30 font-bold text-xs leading-none">+</span>
                         )}

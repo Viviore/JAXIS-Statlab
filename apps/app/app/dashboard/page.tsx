@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { PageHeader, Card, StatusBadge, Button, Modal, LoadingState, AnimateHeight } from "@repo/ui";
 import {
-  IconRefresh,
   IconUpload,
   IconLock,
   IconCheck,
@@ -24,7 +23,6 @@ export default function DashboardOverviewPage() {
     kpis,
     auditStream,
     isLoading,
-    simulateSync,
   } = useProjects({
     status: selectedStatusFilter === "ALL" ? undefined : selectedStatusFilter,
     initialLoading: false,
@@ -55,15 +53,6 @@ export default function DashboardOverviewPage() {
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={simulateSync}
-              title="Click to test live backend sync with skeleton loader"
-            >
-              <IconRefresh size={16} stroke={1.5} className={`text-sky-400 ${isLoading ? "animate-spin" : ""}`} />
-              <span>{isLoading ? "Syncing..." : "Simulate Sync"}</span>
-            </Button>
             <Button variant="secondary" size="md">
               <IconUpload size={16} stroke={1.5} className="text-white/70" />
               <span>Upload Survey Data</span>
@@ -530,18 +519,17 @@ export default function DashboardOverviewPage() {
           <div className="flex flex-col gap-6 text-sm font-sans" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             {/* Top Governance & Release Status Bar */}
             <div
-              className="px-4 py-3 rounded-[2px] bg-white/[0.03] border border-white/[0.08] flex flex-wrap items-center justify-between gap-3"
-              style={{ padding: "0.75rem 1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.08)" }}
+              className="px-4 py-3 rounded-[4px] bg-[#01142B] border border-white/10 flex flex-wrap items-center justify-between gap-3"
             >
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/45" style={{ fontSize: "0.688rem" }}>
+                <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
                   QA Review Gate:
                 </span>
                 <StatusBadge status={selectedStudy.qaStatus} pulse={selectedStudy.qaStatus === "FOR_QA"} />
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/45" style={{ fontSize: "0.688rem" }}>
-                  Payment Gate (RULE_REL_01):
+                <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
+                  Payment Gate:
                 </span>
                 <StatusBadge status={selectedStudy.paymentStatus} />
               </div>
@@ -553,41 +541,39 @@ export default function DashboardOverviewPage() {
               <div className="flex flex-col gap-5">
                 {/* Researcher & Institutional Affiliation */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/45" style={{ fontSize: "0.688rem" }}>
+                  <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
                     Researcher &amp; Institution
                   </span>
                   <div
-                    className="p-4 rounded-[2px] bg-[#011C38]/70 border border-white/[0.08] flex flex-col gap-2.5"
-                    style={{ padding: "1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.08)" }}
+                    className="p-4 rounded-[4px] bg-[#01142B] border border-white/10 flex flex-col gap-2.5"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-white/50" style={{ fontSize: "0.75rem" }}>Primary Researcher</span>
-                      <span className="text-sm font-semibold text-white" style={{ fontSize: "0.875rem" }}>{selectedStudy.client}</span>
+                      <span className="text-xs text-white/50">Primary Researcher</span>
+                      <span className="text-sm font-semibold text-white">{selectedStudy.client}</span>
                     </div>
                     <div className="h-px bg-white/[0.05]" />
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-white/50" style={{ fontSize: "0.75rem" }}>University / Affiliation</span>
-                      <span className="text-sm font-medium text-white/90" style={{ fontSize: "0.875rem" }}>{selectedStudy.university}</span>
+                      <span className="text-xs text-white/50">University / Affiliation</span>
+                      <span className="text-sm font-medium text-white/90">{selectedStudy.university}</span>
                     </div>
                     <div className="h-px bg-white/[0.05]" />
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-white/50" style={{ fontSize: "0.75rem" }}>Degree &amp; Program</span>
-                      <span className="text-xs font-medium text-sky-400" style={{ fontSize: "0.75rem" }}>{selectedStudy.field}</span>
+                      <span className="text-xs text-white/50">Degree &amp; Program</span>
+                      <span className="text-xs font-medium text-sky-400">{selectedStudy.field}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Methodology Matrix */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/45" style={{ fontSize: "0.688rem" }}>
+                  <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
                     Methodology &amp; Computational Model
                   </span>
                   <div
-                    className="p-4 rounded-[2px] bg-[#011C38]/70 border border-white/[0.08] flex items-start gap-3"
-                    style={{ padding: "1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.08)" }}
+                    className="p-4 rounded-[4px] bg-[#01142B] border border-white/10 flex items-start gap-3"
                   >
                     <IconChartBar size={16} stroke={1.5} className="text-sky-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-white/85 leading-relaxed font-sans" style={{ fontSize: "0.75rem", lineHeight: 1.6 }}>
+                    <p className="text-xs text-white/85 leading-relaxed font-sans">
                       {selectedStudy.method}
                     </p>
                   </div>
@@ -598,28 +584,25 @@ export default function DashboardOverviewPage() {
               <div className="flex flex-col gap-5">
                 {/* Assigned Desk */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/45" style={{ fontSize: "0.688rem" }}>
+                  <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
                     Assigned Statistical Desk
                   </span>
                   <div
-                    className="p-3.5 rounded-[2px] bg-white/[0.03] border border-white/[0.08] flex items-center justify-between"
-                    style={{ padding: "0.875rem 1rem", borderRadius: "2px", border: "1px solid rgba(255, 255, 255, 0.08)" }}
+                    className="p-3.5 rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className="h-9 w-9 rounded-full bg-[#012E57] border border-white/20 flex items-center justify-center text-xs font-bold text-white shadow-inner flex-shrink-0"
-                        style={{ height: "2.25rem", width: "2.25rem", borderRadius: "9999px" }}
                       >
                         {selectedStudy.statisticians.charAt(0)}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white" style={{ fontSize: "0.875rem" }}>{selectedStudy.statisticians}</span>
-                        <span className="text-xs text-white/45" style={{ fontSize: "0.75rem" }}>Senior Statistical Lead</span>
+                        <span className="text-sm font-semibold text-white">{selectedStudy.statisticians}</span>
+                        <span className="text-xs text-white/45">Senior Statistical Lead</span>
                       </div>
                     </div>
                     <span
-                      className="text-xs font-sans font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[2px] border border-emerald-500/25"
-                      style={{ fontSize: "0.75rem", padding: "0.2rem 0.625rem", borderRadius: "2px" }}
+                      className="text-xs font-sans font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[3px] border border-emerald-500/25"
                     >
                       Active Desk
                     </span>

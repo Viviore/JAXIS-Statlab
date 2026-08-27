@@ -367,4 +367,66 @@ model SOW {
   @@map("sows")
 }
 
+// ─── Module 07: Payment & Installments ───────────────────────────────────────
+
+enum PaymentStatus {
+  AWAITING_PAYMENT
+  PROOF_SUBMITTED
+  VERIFIED
+  REJECTED
+  FULLY_PAID
+}
+
+enum PaymentType {
+  DOWNPAYMENT
+  INSTALLMENT
+  BALANCE
+  FULL
+}
+
+enum PaymentMethod {
+  GCASH
+  BANK_TRANSFER
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  projectId         String
+  quotationId       String
+  paymentType       PaymentType
+  paymentMethod     PaymentMethod?
+  amountSubmitted   Decimal       @db.Decimal(10, 2)
+  balancePaidTotal  Decimal       @db.Decimal(10, 2) @default(0)
+  referenceNumber   String?
+  paymentStatus     PaymentStatus @default(AWAITING_PAYMENT)
+  rejectionReason   String?
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  quotation Quotation      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  proofs    PaymentProof[]
+
+  @@index([projectId])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+model PaymentProof {
+  id         String   @id @default(cuid())
+  paymentId  String
+  filePath   String   // R2/S3 object key
+  fileName   String
+  fileSize   Int?
+  uploadedAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@map("payment_proofs")
+}
+
 

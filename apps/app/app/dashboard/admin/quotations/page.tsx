@@ -329,24 +329,13 @@ export default function AdminQuotationsPage() {
 
                         {/* 2. Lead Researcher */}
                         <td>
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-[2px] bg-[#011B38] border border-white/[0.10] flex items-center justify-center font-mono font-bold text-[0.6875rem] text-[#CC6600] flex-shrink-0">
-                              {quote.clientName
-                                ? quote.clientName
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .slice(0, 2)
-                                    .join("")
-                                : "CU"}
-                            </div>
-                            <div className="flex flex-col gap-0.5 min-w-0">
-                              <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
-                                {quote.clientName || "Lead Researcher"}
-                              </span>
-                              <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate max-w-[170px]">
-                                {quote.clientEmail || "client@jaxis.dev"}
-                              </span>
-                            </div>
+                          <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
+                              {quote.clientName || "Lead Researcher"}
+                            </span>
+                            <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate max-w-[190px]">
+                              {quote.clientEmail || "client@jaxis.dev"}
+                            </span>
                           </div>
                         </td>
 

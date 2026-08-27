@@ -579,11 +579,21 @@ export function DocumentViewerLightbox({
 
   const meta = getFileMeta(file.fileName, file.fileType);
   const category = formatFileCategory(file.fileCategory);
-  const isPdfOrDoc =
-    file.fileName.toLowerCase().endsWith(".pdf") ||
+  const isPdf = file.fileName.toLowerCase().endsWith(".pdf");
+  const isDoc =
     file.fileName.toLowerCase().endsWith(".docx") ||
-    file.fileName.toLowerCase().endsWith(".doc") ||
-    file.fileCategory === "RESEARCH_DOCUMENT";
+    file.fileName.toLowerCase().endsWith(".doc");
+
+  const R2_PUBLIC_DEV_URL = "https://pub-70de33883ce54230863841fbf74f07b3.r2.dev";
+  const realFileUrl =
+    file.filePath.startsWith("http://") || file.filePath.startsWith("https://")
+      ? file.filePath
+      : file.filePath.startsWith("studies/") || file.filePath.startsWith("uploads/") || file.filePath.startsWith("intake-uploads/")
+      ? `${R2_PUBLIC_DEV_URL}/${file.filePath}`
+      : null;
+
+  const isRealPdf = isPdf && Boolean(realFileUrl);
+  const isPdfOrDoc = isPdf || isDoc || file.fileCategory === "RESEARCH_DOCUMENT";
 
   const isCsv =
     file.fileName.toLowerCase().endsWith(".csv") ||
@@ -613,31 +623,31 @@ export function DocumentViewerLightbox({
 
   const content = (
     <div className="fixed inset-0 z-50 bg-[#000814]/96 backdrop-blur-md flex flex-col select-none text-white animate-in fade-in duration-200">
-      {/* ── Top Google Drive Style Toolbar ── */}
+      {/* ── Top Precision Document Toolbar ── */}
       <header
-        className="h-14 flex-shrink-0 bg-[#01142B]/95 border-b border-white/[0.10] flex items-center justify-between gap-4 z-40"
+        className="h-16 flex-shrink-0 bg-[#010D1F] border-b border-white/10 flex items-center justify-between gap-4 z-40 px-6 sm:px-8"
         style={{ paddingLeft: "1.5rem", paddingRight: "1.5rem" }}
       >
         {/* Left: Document Icon + Title */}
-        <div className="flex items-center gap-3 min-w-0 max-w-[40%]">
-          <div className="h-8 w-8 rounded-[2px] bg-white/[0.08] border border-white/15 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3.5 min-w-0 max-w-[45%]">
+          <div className="h-9 w-9 rounded-[2px] bg-[#011B38] border border-white/15 flex items-center justify-center flex-shrink-0">
             {meta.iconType === "pdf" ? (
-              <IconFileTypePdf size={18} stroke={1.5} className="text-rose-400" />
+              <IconFileTypePdf size={20} stroke={1.5} className="text-rose-400" />
             ) : meta.iconType === "doc" ? (
-              <IconFileTypeDocx size={18} stroke={1.5} className="text-sky-400" />
+              <IconFileTypeDocx size={20} stroke={1.5} className="text-sky-400" />
             ) : meta.iconType === "data" ? (
-              <IconFileTypeCsv size={18} stroke={1.5} className="text-emerald-400" />
+              <IconFileTypeCsv size={20} stroke={1.5} className="text-emerald-400" />
             ) : meta.iconType === "sheet" ? (
-              <IconFileTypeXls size={18} stroke={1.5} className="text-emerald-400" />
+              <IconFileTypeXls size={20} stroke={1.5} className="text-emerald-400" />
             ) : (
-              <IconFileText size={18} stroke={1.5} className="text-white/70" />
+              <IconFileText size={20} stroke={1.5} className="text-white/70" />
             )}
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="font-sans font-bold text-xs sm:text-sm text-white truncate" title={file.fileName}>
+          <div className="flex flex-col min-w-0 gap-0.5">
+            <span className="font-sans font-semibold text-sm text-white truncate" title={file.fileName}>
               {file.fileName}
             </span>
-            <div className="flex items-center gap-2 text-[0.625rem] font-mono text-white/50">
+            <div className="flex items-center gap-2 text-xs font-mono text-white/50">
               <span className="text-sky-300 font-semibold">{category.label}</span>
               <span>·</span>
               <span>
@@ -651,9 +661,9 @@ export function DocumentViewerLightbox({
           </div>
         </div>
 
-        {/* Center: Pagination & Zoom Controls (Google Docs Toolbar) */}
-        {isPdfOrDoc && (
-          <div className="hidden md:flex items-center gap-2 bg-[#000E20] border border-white/10 px-3 py-1 rounded-[3px] shadow-sm">
+        {/* Center: Pagination & Zoom Controls (for Simulated Documents) */}
+        {!isRealPdf && isPdfOrDoc ? (
+          <div className="hidden md:flex items-center gap-2 bg-[#01142B] border border-white/15 px-3 py-1.5 rounded-[2px] shadow-sm">
             {/* Page Navigation */}
             <div className="flex items-center gap-1.5 font-mono text-xs text-white/70">
               <span>Page</span>
@@ -700,7 +710,7 @@ export function DocumentViewerLightbox({
             <button
               type="button"
               onClick={handleResetZoom}
-              className="px-1.5 py-0.5 text-[0.6875rem] font-mono font-bold text-white/80 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
+              className="px-1.5 py-0.5 text-xs font-mono font-bold text-white/80 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
               title="Reset Zoom to 100%"
             >
               {zoomLevel}%
@@ -715,40 +725,50 @@ export function DocumentViewerLightbox({
               <IconZoomIn size={16} stroke={1.5} />
             </button>
           </div>
-        )}
+        ) : null}
 
         {/* Right: Download & Close Actions */}
-        <div className="flex items-center gap-2.5 flex-shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
           <button
             type="button"
             onClick={() => window.print()}
-            className="hidden sm:inline-flex p-2 rounded-[2px] text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+            className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-[2px] text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 hover:border-white/30 transition-colors cursor-pointer"
             title="Print Document"
           >
-            <IconPrinter size={17} stroke={1.5} />
+            <IconPrinter size={16} stroke={1.5} />
           </button>
 
           <button
             type="button"
             onClick={handleDownload}
             disabled={isDownloading}
-            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-[2px] font-mono text-xs font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-[2px] font-sans text-xs font-semibold transition-all duration-150 cursor-pointer min-h-[36px] select-none ${
               downloadSuccess
-                ? "bg-emerald-600/30 text-emerald-300 border border-emerald-500"
-                : "bg-gradient-to-b from-[#E67300] to-[#CC6600] text-white border border-[#CC6600] border-t-[#FFA040]/70 border-b-[#994D00] hover:shadow-[0_2px_8px_rgba(204,102,0,0.35)]"
+                ? "bg-emerald-600/25 text-emerald-300 border border-emerald-500 shadow-sm"
+                : "bg-[#CC6600] hover:bg-[#E67300] active:bg-[#B35900] text-white border border-[#E67300]/40 shadow-sm"
             }`}
           >
             {downloadSuccess ? (
               <>
-                <IconCheck size={14} stroke={2.5} className="text-emerald-400" />
-                <span>SAVED</span>
+                <IconCheck size={15} stroke={2.5} className="text-emerald-400" />
+                <span>Saved</span>
               </>
             ) : isDownloading ? (
-              <span>DOWNLOADING...</span>
+              <>
+                <svg className="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <span>Downloading...</span>
+              </>
             ) : (
               <>
-                <IconDownload size={14} stroke={1.5} />
-                <span>DOWNLOAD</span>
+                <IconDownload size={15} stroke={1.5} />
+                <span>Download</span>
               </>
             )}
           </button>
@@ -756,10 +776,10 @@ export function DocumentViewerLightbox({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer border border-transparent hover:border-white/20"
+            className="h-9 w-9 inline-flex items-center justify-center rounded-[2px] text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 hover:border-white/30 transition-colors cursor-pointer select-none"
             title="Close Preview (Esc)"
           >
-            <IconX size={20} stroke={1.5} />
+            <IconX size={18} stroke={1.5} />
           </button>
         </div>
       </header>
@@ -797,7 +817,16 @@ export function DocumentViewerLightbox({
             className="transition-transform duration-150 origin-center flex flex-col items-center justify-center w-full max-w-5xl my-auto"
             style={{ transform: `scale(${zoomLevel / 100})` }}
           >
-            {isPdfOrDoc ? (
+            {isRealPdf ? (
+              /* ── Real Cloudflare PDF Document Viewer ── */
+              <div className="w-full max-w-5xl h-[85vh] bg-[#01142B] border border-white/20 rounded-[2px] shadow-2xl overflow-hidden flex flex-col my-auto">
+                <iframe
+                  src={realFileUrl!}
+                  className="w-full h-full border-none rounded-[2px] bg-white"
+                  title={file.fileName}
+                />
+              </div>
+            ) : isPdfOrDoc ? (
               /* ── Google Docs Style Paper Manuscript Page ── */
               <div className="w-full max-w-[800px] min-h-[1050px] bg-white text-slate-900 shadow-[0_15px_45px_rgba(0,0,0,0.65)] p-10 sm:p-14 md:p-16 rounded-[2px] my-4 border border-slate-300 flex flex-col justify-between select-text">
                 {/* Dynamic Document Content Renderer */}
@@ -941,7 +970,7 @@ export function DocumentViewerLightbox({
               <div className="p-4 bg-[#01142B] border border-white/15 rounded-[2px] shadow-2xl flex items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={file.filePath}
+                  src={realFileUrl || file.filePath}
                   alt={file.fileName}
                   className="max-h-[85vh] max-w-full object-contain rounded-[2px]"
                 />
