@@ -44,6 +44,7 @@ export interface Project {
   datasetSize: string;
   syntaxName: string;
   artifacts?: ProjectDatasetArtifact[];
+  rawId?: string;
 }
 
 export interface ProjectKPIs {

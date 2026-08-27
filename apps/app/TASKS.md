@@ -731,6 +731,53 @@
 
 ---
 
+## Module 07: Payment & Installments (`07-payments`)
+
+### Task 1 — Database Schema & Reverse Relations
+**Objective:** Add reverse relations on `Project` and `Quotation` for `Payment` and sync Supabase.
+- [x] Add `payments Payment[]` to `Project` and `Quotation`
+- [x] Run `npx prisma db push` and `npx prisma generate`
+- [x] Validate schema with zero errors
+
+### Task 2 — Core Business Rules & Balance Engine
+**Objective:** Implement `src/lib/payment-rules.ts`.
+- [x] Implement `assertCanVerifyPayment(role)` enforcing `RULE_ROL_02` (Finance Officer, Admin, CEO only; 403 on staff/client)
+- [x] Define official corporate channels (`OFFICIAL_PAYMENT_CHANNELS`) for GCash and BDO/BPI Bank Deposits
+- [x] Implement `calculateProjectBalance(...)` calculating downpayment thresholds, remaining release balance, and percentage progress
+
+### Task 3 — Validation Schemas & Server Actions
+**Objective:** Implement Zod schemas and server actions in `src/features/payments/`.
+- [x] Create `SubmitPaymentProofSchema`, `VerifyPaymentSchema`, `RejectPaymentSchema` in `schemas.ts`
+- [x] Create `submitPaymentProof` action with file metadata and project transition to `AWAITING_PAYMENT`
+- [x] Create `verifyPayment` action with atomic balance updates and automatic project activation (`ACTIVE`) upon downpayment clearance
+- [x] Create `rejectPayment` action with explanatory reason requirement
+- [x] Create `getPaymentsByProject` role-scoped query action
+- [x] Create `getPendingPaymentsQueue` for Finance & Admin verification desk
+
+### Task 4 — UI Components & Ledger Primitives
+**Objective:** Build high-precision UI components using `@repo/ui`.
+- [x] Create `PaymentLedgerCard.tsx` with milestone ribbon, progress bar, and transaction ledger
+- [x] Create `PaymentProofUploadModal.tsx` utilizing `@repo/ui` `<Modal>` and newly standardized `<Tabs>`
+- [x] Create `PaymentVerificationModal.tsx` for Finance Officer and Admin inspection & clearance
+
+### Task 5 — Page Views & Route Integration
+**Objective:** Wire client and finance routes into the workspace.
+- [x] Build `/dashboard/client/projects/[id]/payment` dedicated client payment portal
+- [x] Update `/dashboard/client/projects/[id]` with prominent Awaiting Payment milestone banner and CTA
+- [x] Build `/dashboard/finance/payments` Deposit Verification Queue with method filters and verification modals
+- [x] Update `/dashboard/finance` with direct queue link and anti-double-padding standard
+- [x] Build `/dashboard/admin/projects/[id]/payment` administrative payment audit desk
+- [x] Enable Deposit Verification Queue link in `Sidebar.tsx` for Finance Officer and CEO
+
+### Task 6 — Quality Gate & Verification
+**Objective:** Run monorepo validation scripts and generate verification report.
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] Generate `docs/modules/07-verification-report.md`
+- [x] Mark Module 07 completed
+
+---
+
 ## Upcoming Modules (Roadmap v2)
 
 | #    | Module                                                | Status                           |
@@ -742,8 +789,8 @@
 | `04` | `04-intake` — Project Intake & Submission             | ✅ Completed                     |
 | `05` | `05-quotation` — Quotation & Pricing                  | ✅ Completed                     |
 | `06` | `06-sow` — SOW Generation & Signing                   | ✅ Completed                     |
-| `07` | `07-payments` — Payment & Installments                | ⏳ Ready to Start                |
-| `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Blocked — awaiting `07`, `02` |
+| `07` | `07-payments` — Payment & Installments                | ✅ Completed                     |
+| `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Ready to Start                |
 | `09` | `09-messaging` — Messaging & Communication Firewall   | ⏳ Blocked — awaiting `04`, `08` |
 | `10` | `10-analysis` — Analysis Workbench                    | ⏳ Blocked — awaiting `08`, `09` |
 | `11` | `11-qa` — Quality Assurance                           | ⏳ Blocked — awaiting `10`       |
@@ -753,5 +800,6 @@
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks       | ⏳ Blocked — awaiting `14`       |
 | `16` | `16-notifications` — Email Notifications              | ⏳ Blocked — awaiting `07–15`    |
 | `17` | `17-reporting` — Reporting, Analytics & Archive       | ⏳ Blocked — awaiting all        |
+
 
 

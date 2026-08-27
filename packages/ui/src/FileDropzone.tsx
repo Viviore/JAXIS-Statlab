@@ -23,6 +23,7 @@ export interface FileDropzoneProps {
     name: string;
     size?: number;
     formattedSize?: string;
+    previewUrl?: string | null;
   } | null;
   onFileSelect?: (file: File) => void;
   onRemove?: () => void;
@@ -173,7 +174,7 @@ export function FileDropzone({
         </div>
       ) : uploadedFile ? (
         /* ── State 2: Uploaded File Active ── */
-        <div className="p-4 rounded-[2px] bg-[#010D1F] border border-[#10B981]/40 flex flex-col justify-between min-h-[110px] shadow-lg">
+        <div className="p-4 rounded-[2px] bg-[#010D1F] border border-[#10B981]/40 flex flex-col gap-3 min-h-[110px] shadow-lg">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <div className="w-8 h-8 rounded-[2px] bg-white/[0.04] border border-white/15 flex items-center justify-center shrink-0">
@@ -197,7 +198,18 @@ export function FileDropzone({
             </span>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-white/5 mt-auto">
+          {/* Photo / Image Preview inside Dropzone */}
+          {uploadedFile.previewUrl && (
+            <div className="w-full max-h-60 rounded-[2px] overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center p-2.5 my-1">
+              <img
+                src={uploadedFile.previewUrl}
+                alt={uploadedFile.name}
+                className="max-h-52 w-auto object-contain rounded-[2px] shadow-md border border-white/10"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-2.5 border-t border-white/5 mt-auto">
             <button
               type="button"
               onClick={() => inputRef.current?.click()}

@@ -268,11 +268,10 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         },
         {
           label: "Deposit Verification Queue",
-          href: "/dashboard/finance/deposits",
+          href: "/dashboard/finance/payments",
           icon: Icons.CheckQueue,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          badge: "QUEUE",
+          badgeColor: "orange",
         },
         {
           label: "Milestone Payout Authorizations",

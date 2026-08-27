@@ -1,0 +1,80 @@
+[
+  {
+    "id": "pay_dev_1787844845748",
+    "projectId": "cmt5plzax000glrrkkntcj94a",
+    "quotationId": "cmt5plzax000glrrkkntcj94a",
+    "paymentType": "DOWNPAYMENT",
+    "paymentMethod": "GCASH",
+    "amountSubmitted": 1375,
+    "balancePaidTotal": 0,
+    "referenceNumber": "tester",
+    "paymentStatus": "REJECTED",
+    "rejectionReason": "unclear screenshot",
+    "verifiedBy": "cmt5plt6q0002lrrkr5jnsghs",
+    "verifiedAt": "2026-08-27T15:35:15.439Z",
+    "createdAt": "2026-08-27T15:34:05.748Z",
+    "updatedAt": "2026-08-27T15:35:15.439Z",
+    "proofs": [
+      {
+        "id": "proof_dev_1787844845748",
+        "paymentId": "pay_dev_1787844845748",
+        "filePath": "https://pub-70de33883ce54230863841fbf74f07b3.r2.dev/studies/JAXIS-202608-0001/1787844844295-Profile__2_.pdf",
+        "fileName": "Profile (2).pdf",
+        "fileSize": 766,
+        "uploadedAt": "2026-08-27T15:34:05.748Z"
+      }
+    ]
+  },
+  {
+    "id": "pay_dev_1787845043634",
+    "projectId": "cmt5plzax000glrrkkntcj94a",
+    "quotationId": "cmt5plzax000glrrkkntcj94a",
+    "paymentType": "DOWNPAYMENT",
+    "paymentMethod": "GCASH",
+    "amountSubmitted": 2325,
+    "balancePaidTotal": 2325,
+    "referenceNumber": "tester",
+    "paymentStatus": "VERIFIED",
+    "rejectionReason": null,
+    "verifiedBy": "cmt5plt6q0002lrrkr5jnsghs",
+    "verifiedAt": "2026-08-27T16:00:56.638Z",
+    "createdAt": "2026-08-27T15:37:23.634Z",
+    "updatedAt": "2026-08-27T16:00:56.638Z",
+    "proofs": [
+      {
+        "id": "proof_dev_1787845043634",
+        "paymentId": "pay_dev_1787845043634",
+        "filePath": "https://pub-70de33883ce54230863841fbf74f07b3.r2.dev/studies/JAXIS-202608-0001/1787845042094-FUZE__9_.jpg",
+        "fileName": "FUZE (9).jpg",
+        "fileSize": 162630,
+        "uploadedAt": "2026-08-27T15:37:23.634Z"
+      }
+    ]
+  },
+  {
+    "id": "pay_dev_1787845211034",
+    "projectId": "cmt5plzax000glrrkkntcj94a",
+    "quotationId": "cmt5plzax000glrrkkntcj94a",
+    "paymentType": "DOWNPAYMENT",
+    "paymentMethod": "GCASH",
+    "amountSubmitted": 2325,
+    "balancePaidTotal": 2325,
+    "referenceNumber": "tester",
+    "paymentStatus": "VERIFIED",
+    "rejectionReason": null,
+    "verifiedBy": "cmt5plt6q0002lrrkr5jnsghs",
+    "verifiedAt": "2026-08-27T16:03:08.550Z",
+    "createdAt": "2026-08-27T15:40:11.034Z",
+    "updatedAt": "2026-08-27T16:03:08.550Z",
+    "proofs": [
+      {
+        "id": "proof_dev_1787845211034",
+        "paymentId": "pay_dev_1787845211034",
+        "filePath": "https://pub-70de33883ce54230863841fbf74f07b3.r2.dev/studies/JAXIS-202608-0001/1787845209370-FUZE__9_.jpg",
+        "fileName": "FUZE (9).jpg",
+        "fileSize": 162630,
+        "uploadedAt": "2026-08-27T15:40:11.034Z"
+      }
+    ]
+  }
+]

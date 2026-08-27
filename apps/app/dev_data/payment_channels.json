@@ -1,0 +1,35 @@
+[
+  {
+    "id": "GCASH",
+    "name": "GCash Corporate Transfer",
+    "badge": "INSTANT VERIFICATION",
+    "accountName": "JAXIS STATISTICAL CONSULTING SERVICES",
+    "accountNumber": "091788200000",
+    "institution": "GCash / Mynt",
+    "branchOrProvider": "Merchant Pay & Express Send",
+    "notes": "Please include your Study Intake ID in the optional message box before completing transfer.",
+    "isEnabled": true
+  },
+  {
+    "id": "BANK_TRANSFER",
+    "name": "BDO Institutional Direct Deposit",
+    "badge": "CLEARING: 1-2 HOURS",
+    "accountName": "JAXIS STATISTICAL CONSULTING SERVICES",
+    "accountNumber": "0012-8801-4491",
+    "institution": "Banco de Oro (BDO)",
+    "branchOrProvider": "Ortigas Center Business Branch",
+    "notes": "Direct deposit or InstaPay/PESONet. Upload the official transaction confirmation screenshot or deposit slip PDF.",
+    "isEnabled": true
+  },
+  {
+    "id": "BANK_TRANSFER",
+    "name": "BPI Corporate Account",
+    "badge": "CLEARING: 1-2 HOURS",
+    "accountName": "JAXIS STATISTICAL CONSULTING SERVICES",
+    "accountNumber": "2881-0042-99",
+    "institution": "Bank of the Philippine Islands (BPI)",
+    "branchOrProvider": "Ayala Avenue Corporate Center",
+    "notes": "Include your Study Intake ID in the transfer reference notes.",
+    "isEnabled": true
+  }
+]

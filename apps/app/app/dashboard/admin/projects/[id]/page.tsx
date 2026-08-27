@@ -19,6 +19,7 @@ import {
   IconSettings,
   IconCopy,
   IconCalculator,
+  IconReceipt,
   IconReceipt2,
   IconFileText,
   IconEdit,
@@ -325,6 +326,24 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 <IconFileText size={14} stroke={1.5} />
                 <span>COMMERCIAL QUOTE DETAILS</span>
               </Button>
+            )}
+
+            {(project.masterStatus === "SOW_SIGNED" ||
+              project.masterStatus === "AWAITING_PAYMENT" ||
+              project.masterStatus === "ACTIVE" ||
+              project.masterStatus === "EXPERT_ASSIGNED" ||
+              project.masterStatus === "IN_PROGRESS" ||
+              project.masterStatus === "FOR_QA") && (
+              <Link href={`/dashboard/admin/projects/${project.id}/payment`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs font-sans whitespace-nowrap flex items-center gap-1.5"
+                >
+                  <IconReceipt size={14} stroke={1.5} />
+                  <span>Payment Ledger</span>
+                </Button>
+              </Link>
             )}
 
             {(project.masterStatus === "NEW_REQUEST" ||

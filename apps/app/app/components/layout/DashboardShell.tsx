@@ -24,82 +24,50 @@ export function DashboardShell({
 
   return (
     <div
-      className="h-[100dvh] max-h-[100dvh] w-full flex flex-col bg-[#010114] text-white overflow-hidden"
-      style={{
-        backgroundColor: "#010114",
-        height: "100dvh",
-        maxHeight: "100dvh",
-        width: "100vw",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
+      className="h-[100dvh] max-h-[100dvh] w-full flex flex-col bg-[#010114] text-white overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white"
     >
       {/* Topbar (72px / 4.5rem) with Mobile Hamburger */}
-      <Topbar
-        userFullName={userFullName}
-        userRole={userRole}
-        userEmail={userEmail}
-        onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
-      />
+      <div className="print:hidden">
+        <Topbar
+          userFullName={userFullName}
+          userRole={userRole}
+          userEmail={userEmail}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+        />
+      </div>
 
       {/* Main Workspace Body */}
       <div
-        className="flex flex-1 h-[calc(100dvh-72px)] max-h-[calc(100dvh-72px)] w-full overflow-hidden relative"
-        style={{
-          display: "flex",
-          flex: 1,
-          height: "calc(100dvh - 4.5rem)",
-          maxHeight: "calc(100dvh - 4.5rem)",
-          width: "100%",
-          overflow: "hidden",
-          position: "relative",
-        }}
+        className="flex flex-1 h-[calc(100dvh-72px)] max-h-[calc(100dvh-72px)] w-full overflow-hidden relative print:h-auto print:max-h-none print:overflow-visible"
       >
         {/* Mobile Backdrop */}
         {isMobileSidebarOpen && (
           <div
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden animate-modal-backdrop-in"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden animate-modal-backdrop-in print:hidden"
             aria-hidden="true"
           />
         )}
 
         {/* Responsive Role-Aware Sidebar */}
-        <Sidebar
-          role={userRole}
-          roleLabel={userRole}
-          userFullName={userFullName}
-          userEmail={userEmail}
-          clientProfileIncomplete={clientProfileIncomplete}
-          isOpen={isMobileSidebarOpen}
-          onClose={() => setIsMobileSidebarOpen(false)}
-        />
+        <div className="print:hidden">
+          <Sidebar
+            role={userRole}
+            roleLabel={userRole}
+            userFullName={userFullName}
+            userEmail={userEmail}
+            clientProfileIncomplete={clientProfileIncomplete}
+            isOpen={isMobileSidebarOpen}
+            onClose={() => setIsMobileSidebarOpen(false)}
+          />
+        </div>
 
         {/* Content Area with Guaranteed Consistent Responsive Padding */}
         <main
-          className="flex-1 min-w-0 h-full max-h-full bg-[#010114] overflow-y-auto overflow-x-hidden"
-          style={{
-            flex: 1,
-            minWidth: 0,
-            height: "100%",
-            maxHeight: "100%",
-            backgroundColor: "#010114",
-            overflowY: "auto",
-            overflowX: "hidden",
-            boxSizing: "border-box",
-            padding: "clamp(2rem, 4vw, 3.5rem)",
-          }}
+          className="flex-1 min-w-0 h-full max-h-full bg-[#010114] overflow-y-auto overflow-x-hidden p-[clamp(2rem,4vw,3.5rem)] print:p-0 print:h-auto print:max-h-none print:overflow-visible print:bg-white"
         >
           <div
-            className="w-full max-w-7xl mx-auto"
-            style={{
-              width: "100%",
-              maxWidth: "80rem",
-              marginLeft: "auto",
-              marginRight: "auto",
-              boxSizing: "border-box",
-            }}
+            className="w-full max-w-7xl mx-auto print:max-w-none print:w-full print:m-0"
           >
             {children}
           </div>

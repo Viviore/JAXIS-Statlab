@@ -231,6 +231,7 @@ model Project {
   files      ProjectFile[]
   quotations Quotation[]
   sows       SOW[]
+  payments   Payment[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -300,6 +301,7 @@ model Quotation {
 
   project   Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   lineItems QuotationLineItem[]
+  payments  Payment[]
 
   @@index([projectId])
   @@index([status])

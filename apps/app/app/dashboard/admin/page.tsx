@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard } from "@repo/ui";
 import { IconPlus } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
@@ -23,25 +24,23 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {/* ── Page Header ── */}
       <PageHeader
         title="Admin Operations & Governance Desk"
         description="System-wide command console for stakeholder orchestration, live pipeline audit enforcement, and global deliverable verification."
         breadcrumbs={[
-          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Dashboard", href: "/dashboard" },
           { label: "Admin Operations" },
         ]}
         actions={
           <div className="flex items-center gap-3">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => alert("Project Intake modal will open.")}
-            >
-              <IconPlus size={15} stroke={2} />
-              <span>New Project Intake</span>
-            </Button>
+            <Link href="/dashboard/admin/intake">
+              <Button variant="primary" size="sm" className="gap-2 font-sans font-semibold">
+                <IconPlus size={15} stroke={2} />
+                <span>Intake Triage Queue →</span>
+              </Button>
+            </Link>
           </div>
         }
       />
@@ -171,37 +170,45 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {projects.map((study) => (
-                  <tr key={study.id} className="group">
-                    <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
-                      {study.id}
-                    </td>
-                    <td className="text-white font-medium text-sm">
-                      <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
-                        {study.title}
-                      </span>
-                    </td>
-                    <td className="text-slate-300 text-xs font-sans whitespace-nowrap truncate max-w-[160px]">
-                      {study.client}
-                    </td>
-                    <td className="text-slate-400 text-xs font-sans whitespace-nowrap truncate max-w-[160px]">
-                      {study.method}
-                    </td>
-                    <td className="whitespace-nowrap">
-                      <StatusBadge status={study.status} />
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedStudy(study)}
-                        className="py-1 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
-                      >
-                        INSPECT
-                      </Button>
+                {projects.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-12 text-white/40 font-sans text-xs">
+                      No active research studies match your current filters.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  projects.map((study) => (
+                    <tr key={study.id} className="group">
+                      <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+                        {study.id}
+                      </td>
+                      <td className="text-white font-medium text-sm">
+                        <span className="line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
+                          {study.title}
+                        </span>
+                      </td>
+                      <td className="text-slate-300 text-xs font-sans whitespace-nowrap truncate max-w-[160px]">
+                        {study.client}
+                      </td>
+                      <td className="text-slate-400 text-xs font-sans whitespace-nowrap truncate max-w-[160px]">
+                        {study.method}
+                      </td>
+                      <td className="whitespace-nowrap">
+                        <StatusBadge status={study.status} />
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedStudy(study)}
+                          className="py-1 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider"
+                        >
+                          INSPECT
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -217,9 +224,16 @@ export default function AdminDashboardPage() {
           description={selectedStudy.title}
           size="lg"
           footer={
-            <Button variant="secondary" size="sm" onClick={() => setSelectedStudy(null)}>
-              Close Inspector
-            </Button>
+            <div className="flex items-center justify-end gap-3 w-full">
+              <Button variant="secondary" size="sm" onClick={() => setSelectedStudy(null)}>
+                Close Inspector
+              </Button>
+              <Link href={`/dashboard/admin/projects/${selectedStudy.rawId || selectedStudy.id}`}>
+                <Button variant="primary" size="sm" className="font-sans text-xs font-semibold">
+                  Open Project Desk →
+                </Button>
+              </Link>
+            </div>
           }
         >
           <div className="flex flex-col gap-6 text-sm font-sans">
@@ -257,23 +271,32 @@ export default function AdminDashboardPage() {
               <span className="text-xs font-sans font-semibold text-white/60 uppercase tracking-wider">
                 Audit Stream &amp; Verification Trail
               </span>
-              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                {auditStream.slice(0, 4).map((log) => (
-                  <div
-                    key={log.id}
-                    className="rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-between gap-4 hover:border-white/20 transition-colors"
-                    style={{ padding: "1rem 1.25rem", boxSizing: "border-box" }}
-                  >
-                    <div className="text-xs font-sans text-white/90 leading-relaxed">
-                      <span className="font-semibold text-white">{log.action}: </span>
-                      <span className="text-white/70">{log.detail}</span>
+              {auditStream.length > 0 ? (
+                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                  {auditStream.slice(0, 4).map((log) => (
+                    <div
+                      key={log.id}
+                      className="rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-between gap-4 hover:border-white/20 transition-colors"
+                      style={{ padding: "1rem 1.25rem", boxSizing: "border-box" }}
+                    >
+                      <div className="text-xs font-sans text-white/90 leading-relaxed">
+                        <span className="font-semibold text-white">{log.action}: </span>
+                        <span className="text-white/70">{log.detail}</span>
+                      </div>
+                      <span className="text-xs font-sans text-white/40 whitespace-nowrap shrink-0">
+                        {log.timestamp}
+                      </span>
                     </div>
-                    <span className="text-xs font-sans text-white/40 whitespace-nowrap shrink-0">
-                      {log.timestamp}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className="rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-center text-center text-xs text-white/40 font-sans"
+                  style={{ padding: "1.5rem 1rem", boxSizing: "border-box" }}
+                >
+                  No telemetry audit logs recorded yet for this study.
+                </div>
+              )}
             </div>
           </div>
         </Modal>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Mrs_Saint_Delafield } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,6 +11,13 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono-code",
+  display: "swap",
+});
+
+const signatureFont = Mrs_Saint_Delafield({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-signature",
   display: "swap",
 });
 
@@ -32,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${signatureFont.variable}`}
       style={{ backgroundColor: "#010114" }}
     >
       <body className="font-sans antialiased" style={{ backgroundColor: "#010114" }}>

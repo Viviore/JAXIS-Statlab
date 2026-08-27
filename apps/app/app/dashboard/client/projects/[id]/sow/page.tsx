@@ -132,7 +132,7 @@ export default function ClientSowPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-24 w-full animate-content-fade">
+      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
         <div className="py-24 text-center">
           <LoadingState variant="page" label="Retrieving Statement of Work contract..." description="Please wait a moment while we load your agreement" />
         </div>
@@ -142,7 +142,7 @@ export default function ClientSowPage() {
 
   if (error || !project) {
     return (
-      <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-24 w-full animate-content-fade">
+      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
         <PageHeader
           title="Contract Execution Error"
           breadcrumbs={[
@@ -164,7 +164,7 @@ export default function ClientSowPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-24 w-full animate-content-fade">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade print:p-0 print:m-0 print:max-w-none print:pb-0 print:animate-none">
       {/* ── Page Header (hidden in print) ── */}
       <div className="print:hidden">
         <PageHeader
@@ -288,18 +288,29 @@ export default function ClientSowPage() {
                   />
 
                   {typedName.trim().length > 0 && (
-                    <div className="flex items-center gap-2 text-xs font-sans mt-1">
-                      {isNameMatch ? (
-                        <span className="text-emerald-400 flex items-center gap-1.5 font-medium">
-                          <IconCheck size={16} stroke={2.5} />
-                          Signature name matches your verified registered account profile.
+                    <div className="flex flex-col gap-2 mt-1">
+                      <div className="p-4 rounded-[4px] bg-[#010915] border border-white/10 flex flex-col gap-1">
+                        <span className="text-[0.688rem] font-mono uppercase tracking-wider text-white/40">
+                          Digital Signature Calligraphy Preview
                         </span>
-                      ) : (
-                        <span className="text-amber-400 flex items-center gap-1.5 font-medium">
-                          <IconAlertTriangle size={16} stroke={2} />
-                          Name does not match yet. Please type exactly: &ldquo;{registeredName}&rdquo;
-                        </span>
-                      )}
+                        <p className="font-signature text-3xl sm:text-4xl text-emerald-400 select-none leading-none py-1">
+                          {typedName}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs font-sans">
+                        {isNameMatch ? (
+                          <span className="text-emerald-400 flex items-center gap-1.5 font-medium">
+                            <IconCheck size={16} stroke={2.5} />
+                            Signature name matches your verified registered account profile.
+                          </span>
+                        ) : (
+                          <span className="text-amber-400 flex items-center gap-1.5 font-medium">
+                            <IconAlertTriangle size={16} stroke={2} />
+                            Name does not match yet. Please type exactly: &ldquo;{registeredName}&rdquo;
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

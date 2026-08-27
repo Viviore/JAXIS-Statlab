@@ -1,10 +1,10 @@
 import { Project, ProjectKPIs, AuditTelemetryEvent } from "@/types/project";
-import { INITIAL_PROJECTS, INITIAL_KPIS, INITIAL_AUDIT_STREAM } from "@/lib/mock-data/projects.data";
-
-// In-memory data store for client runtime mutations
-let projectsStore: Project[] = [...INITIAL_PROJECTS];
-const kpisStore: ProjectKPIs = { ...INITIAL_KPIS };
-let auditStore: AuditTelemetryEvent[] = [...INITIAL_AUDIT_STREAM];
+import {
+  getProjects as fetchDbProjects,
+  getProjectById as fetchDbProjectById,
+  createProject as createDbProject,
+} from "../actions";
+import type { ProjectDetailItem } from "../schemas";
 
 export interface ProjectFilterOptions {
   status?: string;
@@ -12,61 +12,137 @@ export interface ProjectFilterOptions {
   statistician?: string;
 }
 
+function mapDetailItemToProject(item: ProjectDetailItem): Project {
+  const firstDataset = item.files?.find((f) => f.fileCategory === "DATASET") || item.files?.[0];
+  return {
+    id: item.intakeId || item.id,
+    rawId: item.id,
+    title: item.researchTitle || "Untitled Research Study",
+    client: item.client?.fullName || "Lead Researcher",
+    university: item.client?.clientProfile?.institutionSchool || "Academic Institution",
+    field: item.client?.clientProfile?.academicProgram || "Empirical Research",
+    statisticians: "Lead Statistical Specialist",
+    method: item.packageName ? item.packageName.replace(/_/g, " ") : "Empirical Analysis",
+    status: item.masterStatus as unknown as Project["status"],
+    qaStatus: item.masterStatus === "FOR_QA" ? "FOR_QA" : "QA_APPROVED",
+    paymentStatus:
+      item.masterStatus === "ACTIVE" ||
+      item.masterStatus === "EXPERT_ASSIGNED" ||
+      item.masterStatus === "IN_PROGRESS"
+        ? "DOWNPAYMENT_PAID"
+        : item.masterStatus === "DELIVERED"
+        ? "FULLY_PAID"
+        : "UNPAID",
+    updated: new Date(item.updatedAt || item.createdAt).toLocaleDateString("en-PH", {
+      month: "short",
+      day: "numeric",
+    }),
+    datasetName: firstDataset?.fileName || "Dataset.xlsx",
+    datasetSize: "Verified",
+    syntaxName: "analysis_script.R",
+    artifacts: (item.files || []).map((f) => ({
+      name: f.fileName,
+      size: "Verified",
+      mimeType: f.fileType,
+      verified: true,
+      uploadedAt: typeof f.uploadedAt === "string" ? f.uploadedAt : new Date(f.uploadedAt).toISOString(),
+    })),
+  };
+}
+
 export class ProjectService {
   /**
-   * Retrieves active projects with optional search & status filtering
+   * Retrieves active projects from database with optional search & status filtering
    */
   async getProjects(filter?: ProjectFilterOptions): Promise<Project[]> {
-    // Simulates non-blocking micro-latency for smooth UX
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    try {
+      const res = await fetchDbProjects({
+        status: filter?.status && filter.status !== "ALL" ? filter.status : undefined,
+        search: filter?.search && filter.search.trim() ? filter.search.trim() : undefined,
+      });
 
-    let results = [...projectsStore];
-
-    if (filter?.status && filter.status !== "ALL") {
-      results = results.filter((p) => p.status === filter.status);
+      if (res.success && res.data) {
+        return res.data.map(mapDetailItemToProject);
+      }
+    } catch (err) {
+      console.warn("[ProjectService] Could not fetch real projects:", err);
     }
-
-    if (filter?.search && filter.search.trim() !== "") {
-      const q = filter.search.toLowerCase().trim();
-      results = results.filter(
-        (p) =>
-          p.id.toLowerCase().includes(q) ||
-          p.title.toLowerCase().includes(q) ||
-          p.client.toLowerCase().includes(q) ||
-          p.university.toLowerCase().includes(q) ||
-          p.field.toLowerCase().includes(q) ||
-          p.statisticians.toLowerCase().includes(q) ||
-          p.method.toLowerCase().includes(q)
-      );
-    }
-
-    if (filter?.statistician && filter.statistician !== "ALL") {
-      results = results.filter((p) => p.statisticians === filter.statistician);
-    }
-
-    return results;
+    return [];
   }
 
   /**
-   * Retrieves a single project by ID
+   * Retrieves a single project by ID or Intake ID
    */
   async getProjectById(id: string): Promise<Project | null> {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    const project = projectsStore.find((p) => p.id === id);
-    return project || null;
+    try {
+      const res = await fetchDbProjectById(id);
+      if (res.success && res.data) {
+        return mapDetailItemToProject(res.data);
+      }
+    } catch {
+      // Fallback
+    }
+    return null;
   }
 
   /**
-   * Retrieves dashboard KPI aggregated metrics
+   * Creates a new project in the database
+   */
+  async createProject(input: unknown): Promise<Project | null> {
+    try {
+      const res = await createDbProject(input);
+      if (res.success && res.data) {
+        return mapDetailItemToProject(res.data);
+      }
+    } catch {
+      // Fallback
+    }
+    return null;
+  }
+
+  /**
+   * Retrieves dashboard KPI aggregated metrics computed from active database projects
    */
   async getKPIs(): Promise<ProjectKPIs> {
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    try {
+      const res = await fetchDbProjects({});
+      if (res.success && res.data) {
+        const list = res.data;
+        const underEvaluationCount = list.filter(
+          (p) =>
+            p.masterStatus === "UNDER_EVALUATION" ||
+            p.masterStatus === "NEW_REQUEST" ||
+            p.masterStatus === "QUOTE_SENT"
+        ).length;
+        const qaReviewGateCount = list.filter(
+          (p) => p.masterStatus === "FOR_QA" || p.masterStatus === "IN_PROGRESS"
+        ).length;
+        const fullyPaidReleasedCount = list.filter(
+          (p) => p.masterStatus === "DELIVERED" || p.masterStatus === "ACTIVE"
+        ).length;
+
+        return {
+          totalActiveStudies: list.length,
+          totalActiveStudiesTrend: `${list.length} active studies`,
+          underEvaluationCount,
+          qaReviewGateCount,
+          fullyPaidReleasedCount,
+          monthlyRevenueEscrow: "₱0.00",
+          escrowSecuredRatio: "100% Escrow Secured",
+        };
+      }
+    } catch {
+      // Fallback
+    }
+
     return {
-      ...kpisStore,
-      totalActiveStudies: projectsStore.length,
-      underEvaluationCount: projectsStore.filter((p) => p.status === "UNDER_EVALUATION" || p.status === "DRAFT").length,
-      qaReviewGateCount: projectsStore.filter((p) => p.qaStatus === "FOR_QA" || p.qaStatus === "IN_QA_REVIEW").length,
-      fullyPaidReleasedCount: projectsStore.filter((p) => p.paymentStatus === "FULLY_PAID").length,
+      totalActiveStudies: 0,
+      totalActiveStudiesTrend: "0 active studies",
+      underEvaluationCount: 0,
+      qaReviewGateCount: 0,
+      fullyPaidReleasedCount: 0,
+      monthlyRevenueEscrow: "₱0.00",
+      escrowSecuredRatio: "100% Escrow Secured",
     };
   }
 
@@ -74,70 +150,7 @@ export class ProjectService {
    * Retrieves live governance audit telemetry stream
    */
   async getAuditStream(): Promise<AuditTelemetryEvent[]> {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    return [...auditStore];
-  }
-
-  /**
-   * Creates a new project intake record
-   */
-  async createProject(input: Partial<Project>): Promise<Project> {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    const nextNumber = projectsStore.length + 90;
-    const newProject: Project = {
-      id: input.id || `JAX-2026-0${nextNumber}`,
-      title: input.title || "Untitled Research Study",
-      client: input.client || "Lead Researcher",
-      university: input.university || "Academic Institution",
-      field: input.field || "General Science",
-      statisticians: input.statisticians || "Unassigned",
-      method: input.method || "Descriptive & Inferential Analysis",
-      status: input.status || "UNDER_EVALUATION",
-      qaStatus: input.qaStatus || "FOR_QA",
-      paymentStatus: input.paymentStatus || "UNPAID",
-      updated: "Just now",
-      datasetName: input.datasetName || "survey_data.csv",
-      datasetSize: input.datasetSize || "1.0 MB",
-      syntaxName: input.syntaxName || "syntax.sps",
-      artifacts: input.artifacts || [],
-    };
-
-    projectsStore = [newProject, ...projectsStore];
-
-    // Add telemetry log
-    const auditEvent: AuditTelemetryEvent = {
-      id: `aud-${Date.now()}`,
-      timestamp: "Just now",
-      actor: "Client System",
-      actorRole: "CLIENT",
-      action: "submitted new intake dataset",
-      targetId: newProject.id,
-      detail: `${newProject.title.slice(0, 50)}...`,
-      badgeText: "Intake Submitted",
-      badgeType: "info",
-    };
-    auditStore = [auditEvent, ...auditStore];
-
-    return newProject;
-  }
-
-  /**
-   * Updates an existing project status / fields
-   */
-  async updateProject(id: string, updates: Partial<Project>): Promise<Project | null> {
-    await new Promise((resolve) => setTimeout(resolve, 60));
-    const index = projectsStore.findIndex((p) => p.id === id);
-    if (index === -1) return null;
-
-    const existing = projectsStore[index]!;
-    const updated: Project = {
-      ...existing,
-      ...updates,
-      id: existing.id,
-      updated: "Just now",
-    };
-    projectsStore[index] = updated;
-    return updated;
+    return [];
   }
 }
 

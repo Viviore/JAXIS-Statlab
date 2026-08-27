@@ -523,10 +523,39 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                  className="text-xs font-sans whitespace-nowrap flex items-center gap-1.5 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
                 >
                   <IconShieldCheck size={14} stroke={1.5} />
-                  <span>VIEW SIGNED SOW</span>
+                  <span>View Signed SOW</span>
+                </Button>
+              </Link>
+            )}
+
+            {(project.masterStatus === "SOW_SIGNED" ||
+              project.masterStatus === "AWAITING_PAYMENT") && (
+              <Link href={`/dashboard/client/projects/${project.id}/payment`}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#FFA040]"
+                >
+                  <IconReceipt size={14} stroke={2} />
+                  <span>Proceed to Payment Desk →</span>
+                </Button>
+              </Link>
+            )}
+
+            {(project.masterStatus === "ACTIVE" ||
+              project.masterStatus === "EXPERT_ASSIGNED" ||
+              project.masterStatus === "IN_PROGRESS") && (
+              <Link href={`/dashboard/client/projects/${project.id}/payment`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs font-sans whitespace-nowrap flex items-center gap-1.5"
+                >
+                  <IconReceipt size={14} stroke={1.5} />
+                  <span>Payment Ledger</span>
                 </Button>
               </Link>
             )}
@@ -543,7 +572,7 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                 className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
               >
                 <IconUpload size={14} stroke={1.5} />
-                <span>UPLOAD DOCUMENT</span>
+                <span>ATTACH DOCUMENT</span>
               </Button>
             )}
           </div>
@@ -573,6 +602,34 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#E67300] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
             >
               Review &amp; Sign Contract →
+            </Button>
+          </Link>
+        </Card>
+      )}
+
+      {/* ── Awaiting Payment Deposit Banner (if SOW_SIGNED or AWAITING_PAYMENT) ── */}
+      {(project.masterStatus === "SOW_SIGNED" || project.masterStatus === "AWAITING_PAYMENT") && (
+        <Card className="p-6 sm:p-7 bg-[#01142B] border border-[#CC6600]/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center shrink-0">
+              <IconReceipt size={20} stroke={1.5} className="text-[#FFA040]" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-xs font-sans text-[#FFA040] font-semibold uppercase tracking-wider block">
+                Milestone Deposit Required · Downpayment Verification
+              </span>
+              <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                Your Statement of Work is executed. Transfer your agreed downpayment via GCash or Bank Deposit and submit the receipt to activate computational modeling.
+              </p>
+            </div>
+          </div>
+          <Link href={`/dashboard/client/projects/${project.id}/payment`}>
+            <Button
+              variant="primary"
+              size="md"
+              className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#FFA040] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
+            >
+              Proceed to Payment Desk →
             </Button>
           </Link>
         </Card>

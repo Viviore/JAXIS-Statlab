@@ -112,7 +112,7 @@ export default function AdminSowPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-24 w-full animate-content-fade">
+      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
         <div className="py-24 text-center">
           <LoadingState variant="page" label="Loading contract console..." description="Retrieving study specification and quotation basis" />
         </div>
@@ -122,7 +122,7 @@ export default function AdminSowPage() {
 
   if (error || !project) {
     return (
-      <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-24 w-full animate-content-fade">
+      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
         <PageHeader
           title="Contract Console Error"
           breadcrumbs={[
@@ -143,7 +143,7 @@ export default function AdminSowPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-24 w-full animate-content-fade">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade print:p-0 print:m-0 print:max-w-none print:pb-0 print:animate-none">
       {/* ── Page Header (hidden in print) ── */}
       <div className="print:hidden">
         <PageHeader
