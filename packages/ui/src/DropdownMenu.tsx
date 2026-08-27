@@ -1,10 +1,183 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { IconDotsVertical } from "@tabler/icons-react";
+import * as React from "react";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import { IconCheck, IconChevronRight, IconCircle, IconDotsVertical } from "@tabler/icons-react";
+import { cn } from "./utils";
 
-export interface DropdownMenuItem {
+export const DropdownMenuRoot = DropdownMenuPrimitive.Root;
+export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+
+export const DropdownMenuSubTrigger = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
+    inset?: boolean;
+  }
+>(({ className, inset, children, ...props }, ref) => (
+  <DropdownMenuPrimitive.SubTrigger
+    ref={ref}
+    className={cn(
+      "flex cursor-default select-none items-center rounded-[1px] px-2 py-1.5 text-xs outline-none focus:bg-[#CC6600]/20 data-[state=open]:bg-[#CC6600]/20",
+      inset && "pl-8",
+      className
+    )}
+    {...props}
+  >
+    {children}
+    <IconChevronRight size={14} stroke={1.5} className="ml-auto" />
+  </DropdownMenuPrimitive.SubTrigger>
+));
+DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
+
+export const DropdownMenuSubContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
+>(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.SubContent
+    ref={ref}
+    className={cn(
+      "z-50 min-w-[8rem] overflow-hidden rounded-[2px] border border-white/15 bg-[#01142B] p-1 text-white shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    )}
+    {...props}
+  />
+));
+DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
+
+export const DropdownMenuContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Content
+      ref={ref}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 min-w-[8rem] overflow-hidden rounded-[2px] border border-white/15 bg-[#01142B]/95 p-1 text-white shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        className
+      )}
+      {...props}
+    />
+  </DropdownMenuPrimitive.Portal>
+));
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
+
+export const DropdownMenuItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
+    inset?: boolean;
+    variant?: "default" | "destructive";
+  }
+>(({ className, inset, variant = "default", ...props }, ref) => (
+  <DropdownMenuPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex cursor-pointer select-none items-center rounded-[1px] px-2 py-1.5 text-xs outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      variant === "destructive"
+        ? "text-[#F87171] focus:bg-[#EF4444]/20 focus:text-white"
+        : "text-white/90 focus:bg-[#CC6600]/20 focus:text-white",
+      inset && "pl-8",
+      className
+    )}
+    {...props}
+  />
+));
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
+
+export const DropdownMenuCheckboxItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
+>(({ className, children, checked, ...props }, ref) => (
+  <DropdownMenuPrimitive.CheckboxItem
+    ref={ref}
+    className={cn(
+      "relative flex cursor-pointer select-none items-center rounded-[1px] py-1.5 pl-8 pr-2 text-xs outline-none transition-colors focus:bg-[#CC6600]/20 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    )}
+    checked={checked}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <DropdownMenuPrimitive.ItemIndicator>
+        <IconCheck size={14} stroke={2.5} className="text-[#CC6600]" />
+      </DropdownMenuPrimitive.ItemIndicator>
+    </span>
+    {children}
+  </DropdownMenuPrimitive.CheckboxItem>
+));
+DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
+
+export const DropdownMenuRadioItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
+>(({ className, children, ...props }, ref) => (
+  <DropdownMenuPrimitive.RadioItem
+    ref={ref}
+    className={cn(
+      "relative flex cursor-pointer select-none items-center rounded-[1px] py-1.5 pl-8 pr-2 text-xs outline-none transition-colors focus:bg-[#CC6600]/20 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    )}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <DropdownMenuPrimitive.ItemIndicator>
+        <IconCircle size={8} className="fill-current text-[#CC6600]" />
+      </DropdownMenuPrimitive.ItemIndicator>
+    </span>
+    {children}
+  </DropdownMenuPrimitive.RadioItem>
+));
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
+
+export const DropdownMenuLabel = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
+    inset?: boolean;
+  }
+>(({ className, inset, ...props }, ref) => (
+  <DropdownMenuPrimitive.Label
+    ref={ref}
+    className={cn(
+      "px-2 py-1.5 text-[0.688rem] font-mono uppercase tracking-wider text-white/50",
+      inset && "pl-8",
+      className
+    )}
+    {...props}
+  />
+));
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
+
+export const DropdownMenuSeparator = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.Separator
+    ref={ref}
+    className={cn("-mx-1 my-1 h-px bg-white/10", className)}
+    {...props}
+  />
+));
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
+
+export const DropdownMenuShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => {
+  return (
+    <span
+      className={cn("ml-auto text-[0.625rem] tracking-widest text-white/40", className)}
+      {...props}
+    />
+  );
+};
+DropdownMenuShortcut.displayName = "DropdownMenuShortcut";
+
+// Backward-compatible High-Level Facade Component
+export interface DropdownMenuItemConfig {
   key?: string;
   label: string;
   subtitle?: string;
@@ -17,9 +190,9 @@ export interface DropdownMenuItem {
 }
 
 export interface DropdownMenuProps {
-  items: DropdownMenuItem[];
+  items: DropdownMenuItemConfig[];
   trigger?: React.ReactNode;
-  align?: "left" | "right";
+  align?: "start" | "end" | "left" | "right";
   width?: string;
   className?: string;
   isOpen?: boolean;
@@ -29,254 +202,59 @@ export interface DropdownMenuProps {
 export function DropdownMenu({
   items,
   trigger,
-  align = "right",
-  width = "230px",
+  align = "end",
+  width,
   className = "",
-  isOpen: controlledIsOpen,
+  isOpen,
   onOpenChange,
 }: DropdownMenuProps) {
-  const [internalIsOpen, setInternalIsOpen] = useState<boolean>(false);
-  const isControlled = controlledIsOpen !== undefined;
-  const open = isControlled ? controlledIsOpen : internalIsOpen;
-
-  const [coords, setCoords] = useState<{
-    top: number;
-    left: number;
-    placement: "top" | "bottom";
-  } | null>(null);
-  const [mounted, setMounted] = useState<boolean>(false);
-
-  const triggerRef = useRef<HTMLDivElement | HTMLButtonElement | null>(null);
-  const menuPortalRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const setOpen = useCallback(
-    (value: boolean) => {
-      if (!isControlled) {
-        setInternalIsOpen(value);
-      }
-      onOpenChange?.(value);
-    },
-    [isControlled, onOpenChange]
-  );
-
-  // Calculate fixed floating coordinates relative to viewport
-  const updateCoords = useCallback(() => {
-    if (!triggerRef.current) return;
-    const rect = triggerRef.current.getBoundingClientRect();
-    const menuWidthNum = parseInt(width, 10) || 230;
-    const estimatedMenuHeight = items.length * 46 + 20;
-
-    // Check if space below trigger is constrained (< estimated height)
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const shouldOpenTop =
-      spaceBelow < estimatedMenuHeight && rect.top > estimatedMenuHeight;
-
-    const top = shouldOpenTop ? rect.top - 6 : rect.bottom + 6;
-    let left = align === "right" ? rect.right - menuWidthNum : rect.left;
-
-    // Viewport edge collision guards
-    if (left < 10) left = 10;
-    if (left + menuWidthNum > window.innerWidth - 10) {
-      left = window.innerWidth - menuWidthNum - 10;
-    }
-
-    setCoords({
-      top,
-      left,
-      placement: shouldOpenTop ? "top" : "bottom",
-    });
-  }, [align, width, items.length]);
-
-  useEffect(() => {
-    if (open) {
-      updateCoords();
-    }
-  }, [open, updateCoords]);
-
-  // Click outside, Escape key, and scroll listener
-  useEffect(() => {
-    if (!open) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (triggerRef.current && triggerRef.current.contains(target)) {
-        return;
-      }
-      if (menuPortalRef.current && menuPortalRef.current.contains(target)) {
-        return;
-      }
-      setOpen(false);
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    };
-
-    const handleScrollOrResize = (event: Event) => {
-      // Ignore scroll inside the menu itself
-      if (
-        menuPortalRef.current &&
-        menuPortalRef.current.contains(event.target as Node)
-      ) {
-        return;
-      }
-      setOpen(false);
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("scroll", handleScrollOrResize, true);
-    window.addEventListener("resize", handleScrollOrResize);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("scroll", handleScrollOrResize, true);
-      window.removeEventListener("resize", handleScrollOrResize);
-    };
-  }, [open, setOpen]);
-
-  const getVariantStyles = (variant: DropdownMenuItem["variant"] = "default") => {
-    switch (variant) {
-      case "warning":
-        return "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10";
-      case "danger":
-        return "text-red-400 hover:text-red-300 hover:bg-red-500/10";
-      case "success":
-        return "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10";
-      default:
-        return "text-slate-200 hover:text-white hover:bg-white/[0.08]";
-    }
-  };
-
-  const getIconColor = (variant: DropdownMenuItem["variant"] = "default") => {
-    switch (variant) {
-      case "warning":
-        return "text-amber-400/80 group-hover:text-amber-400";
-      case "danger":
-        return "text-red-400/80 group-hover:text-red-400";
-      case "success":
-        return "text-emerald-400/80 group-hover:text-emerald-400";
-      default:
-        return "text-slate-400 group-hover:text-slate-200";
-    }
-  };
+  const normalizedAlign = align === "left" ? "start" : align === "right" ? "end" : align;
 
   return (
-    <div className={`relative inline-flex items-center ${className}`}>
-      {trigger ? (
-        <div
-          ref={triggerRef as React.RefObject<HTMLDivElement>}
-          onClick={() => setOpen(!open)}
-          className="cursor-pointer"
-        >
-          {trigger}
-        </div>
-      ) : (
-        <button
-          ref={triggerRef as React.RefObject<HTMLButtonElement>}
-          type="button"
-          onClick={() => setOpen(!open)}
-          className={`w-8 h-8 rounded-[2px] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.06] border border-white/[0.08] transition-colors cursor-pointer text-sm font-bold select-none ${
-            open ? "bg-white/[0.08] text-white border-white/20" : ""
-          }`}
-          title="More actions"
-          aria-haspopup="true"
-          aria-expanded={open}
-        >
-          <IconDotsVertical size={16} stroke={1.5} />
-        </button>
-      )}
-
-      {/* Floating Portal Menu — Zero DOM layout shift inside table */}
-      {open &&
-        mounted &&
-        coords &&
-        createPortal(
-          <div
-            ref={menuPortalRef}
-            role="menu"
-            className="rounded-[3px] bg-[#01142B] border border-white/20 flex flex-col font-sans backdrop-blur-md animate-content-fade"
-            style={{
-              position: "fixed",
-              top: coords.placement === "top" ? undefined : coords.top,
-              bottom:
-                coords.placement === "top"
-                  ? window.innerHeight - coords.top
-                  : undefined,
-              left: coords.left,
-              padding: "0.5rem", // 8px card padding
-              minWidth: width || "230px",
-              boxShadow: "0 20px 48px -4px rgba(0, 0, 0, 0.95)",
-              zIndex: 9999,
-            }}
+    <DropdownMenuPrimitive.Root open={isOpen} onOpenChange={onOpenChange}>
+      <DropdownMenuPrimitive.Trigger asChild>
+        {trigger ? (
+          <div>{trigger}</div>
+        ) : (
+          <button
+            type="button"
+            className="flex h-8 w-8 items-center justify-center rounded-[2px] border border-white/15 bg-white/5 text-white/70 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white"
           >
-            {items.map((item, idx) => (
-              <React.Fragment key={item.key ?? idx}>
-                {item.dividerBefore && (
-                  <div
-                    className="bg-white/[0.08]"
-                    style={{ height: "1px", margin: "0.375rem 0.25rem" }}
-                  />
-                )}
-                <button
-                  type="button"
-                  role="menuitem"
-                  disabled={item.disabled}
-                  onClick={() => {
-                    if (item.disabled) return;
-                    item.onClick();
-                    setOpen(false);
-                  }}
-                  style={{
-                    padding: "0.55rem 0.75rem", // 9px vertical, 12px horizontal item padding
-                    margin: "0.075rem 0",
-                  }}
-                  className={`w-full text-left rounded-[2px] flex items-center gap-3 cursor-pointer transition-colors group text-xs ${getVariantStyles(
-                    item.variant
-                  )} ${item.disabled ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}`}
-                >
-                  {item.icon && (
-                    <span
-                      className={`flex-shrink-0 ${getIconColor(item.variant)}`}
-                    >
-                      {item.icon}
-                    </span>
-                  )}
-                  <div className="flex flex-col text-left flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium truncate">{item.label}</span>
-                      {item.badge && (
-                        <span
-                          style={{ padding: "0.125rem 0.35rem" }}
-                          className={`text-[0.5625rem] font-mono rounded-[2px] uppercase ${
-                            item.variant === "danger"
-                              ? "bg-red-950/90 text-red-300 border border-red-800/50"
-                              : "bg-white/10 text-white/80 border border-white/15"
-                          }`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                    {item.subtitle && (
-                      <span className="text-[0.6875rem] text-white/40 font-mono truncate mt-0.5">
-                        {item.subtitle}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              </React.Fragment>
-            ))}
-          </div>,
-          document.body
+            <IconDotsVertical size={16} stroke={1.5} />
+          </button>
         )}
-    </div>
+      </DropdownMenuPrimitive.Trigger>
+
+      <DropdownMenuContent
+        align={normalizedAlign}
+        className={cn("p-1", className)}
+        style={{ width: width ?? undefined }}
+      >
+        {items.map((item, index) => (
+          <React.Fragment key={item.key ?? index}>
+            {item.dividerBefore && <DropdownMenuSeparator />}
+            <DropdownMenuItem
+              disabled={item.disabled}
+              variant={item.variant === "danger" ? "destructive" : "default"}
+              onClick={item.onClick}
+              className="flex items-center gap-2 px-2.5 py-1.5"
+            >
+              {item.icon && <span className="shrink-0">{item.icon}</span>}
+              <div className="flex flex-col flex-1">
+                <span className="font-medium text-xs">{item.label}</span>
+                {item.subtitle && (
+                  <span className="text-[0.625rem] text-white/50">{item.subtitle}</span>
+                )}
+              </div>
+              {item.badge && (
+                <span className="ml-auto rounded-[2px] bg-white/10 px-1.5 py-0.5 text-[0.563rem] font-mono uppercase text-white/70">
+                  {item.badge}
+                </span>
+              )}
+            </DropdownMenuItem>
+          </React.Fragment>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenuPrimitive.Root>
   );
 }

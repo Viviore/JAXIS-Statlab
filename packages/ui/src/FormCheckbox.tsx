@@ -32,7 +32,7 @@ export const FormCheckbox = React.forwardRef<HTMLInputElement, FormCheckboxProps
 
     return (
       <div
-        className={`flex flex-col gap-1.5 ${containerClassName}`}
+        className={`flex flex-col gap-1.5 ${containerClassName} ${className}`.trim()}
         style={{ boxSizing: "border-box" }}
       >
         <label

@@ -1,11 +1,10 @@
-import React from "react";
+import * as React from "react";
+import { cn } from "./utils";
 
 export type CardVariant = "default" | "kpi" | "glass" | "bordered";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant;
-  children: React.ReactNode;
-  className?: string;
   header?: React.ReactNode;
   footer?: React.ReactNode;
   contentClassName?: string;
@@ -13,25 +12,35 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = "default", children, className = "", header, footer, contentClassName = "", contentStyle, style, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "default",
+      header,
+      footer,
+      contentClassName = "",
+      contentStyle,
+      style,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const isKpi = variant === "kpi";
-    const hasZeroPadding = className.includes("p-0");
+    const hasZeroPadding = className?.includes("p-0");
 
     return (
       <div
         ref={ref}
-        className={`relative overflow-hidden rounded-[2px] border border-white/[0.09] hover:border-white/[0.18] transition-colors duration-150 backdrop-blur-md ${className}`}
-        style={{
-          borderRadius: "2px",
-          border: "1px solid rgba(255, 255, 255, 0.09)",
-          backgroundColor: isKpi ? "rgba(1, 22, 46, 0.85)" : "rgba(1, 22, 46, 0.75)",
-          padding: hasZeroPadding ? 0 : isKpi ? "1.25rem 1.5rem" : "1.5rem 1.75rem",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: isKpi ? "space-between" : "flex-start",
-          boxSizing: "border-box",
-          ...style,
-        }}
+        className={cn(
+          "relative overflow-hidden rounded-[2px] border border-white/[0.09] hover:border-white/[0.18] transition-colors duration-150 backdrop-blur-md flex flex-col box-border",
+          isKpi
+            ? "bg-[#01162E]/90 justify-between"
+            : "bg-[#01142B]/80 justify-start",
+          hasZeroPadding ? "" : isKpi ? "p-4 sm:p-5" : "p-4 sm:p-6",
+          className
+        )}
+        style={style}
         {...props}
       >
         {/* Subtle top edge specular highlight */}
@@ -40,43 +49,28 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           aria-hidden="true"
         />
 
+        {/* Legacy header support */}
         {header && (
-          <div
-            className="border-b border-white/[0.08] pb-3 mb-4"
-            style={{
-              borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-              paddingBottom: "0.875rem",
-              marginBottom: "1rem",
-              width: "100%",
-            }}
-          >
+          <div className="border-b border-white/[0.08] pb-3 mb-4 w-full">
             {header}
           </div>
         )}
-        <div
-          className={`flex-1 w-full flex flex-col ${contentClassName}`}
-          style={{
-            flex: 1,
-            width: "100%",
-            boxSizing: "border-box",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.5rem",
-            ...contentStyle,
-          }}
-        >
-          {children}
-        </div>
-        {footer && (
+
+        {/* If legacy header/footer props are used, wrap children with contentClassName */}
+        {header || footer ? (
           <div
-            className="border-t border-white/[0.08] pt-3 mt-4"
-            style={{
-              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-              paddingTop: "0.875rem",
-              marginTop: "1rem",
-              width: "100%",
-            }}
+            className={cn("flex-1 w-full flex flex-col", contentClassName)}
+            style={contentStyle}
           >
+            {children}
+          </div>
+        ) : (
+          children
+        )}
+
+        {/* Legacy footer support */}
+        {footer && (
+          <div className="border-t border-white/[0.08] pt-3 mt-4 w-full">
             {footer}
           </div>
         )}
@@ -84,5 +78,63 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     );
   }
 );
-
 Card.displayName = "Card";
+
+export const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 pb-3 border-b border-white/[0.06] mb-4 w-full", className)}
+    {...props}
+  />
+));
+CardHeader.displayName = "CardHeader";
+
+export const CardTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      "font-mono text-sm sm:text-base font-bold text-white tracking-wide uppercase",
+      className
+    )}
+    {...props}
+  />
+));
+CardTitle.displayName = "CardTitle";
+
+export const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-xs text-white/60 leading-relaxed font-sans", className)}
+    {...props}
+  />
+));
+CardDescription.displayName = "CardDescription";
+
+export const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("flex-1 w-full flex flex-col", className)} {...props} />
+));
+CardContent.displayName = "CardContent";
+
+export const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center pt-3 border-t border-white/[0.06] mt-4 w-full", className)}
+    {...props}
+  />
+));
+CardFooter.displayName = "CardFooter";

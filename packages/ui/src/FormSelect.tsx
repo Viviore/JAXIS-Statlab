@@ -2,6 +2,8 @@
 
 import React from "react";
 import { IconChevronDown, IconAlertTriangle } from "@tabler/icons-react";
+import { Label } from "./Label";
+import { cn } from "./utils";
 
 export interface SelectOption {
   value: string;
@@ -39,23 +41,16 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
     const selectId = id ?? (label ? label.toLowerCase().replace(/[^a-z0-9]/g, "-") : undefined);
 
     return (
-      <div className={`flex flex-col w-full ${containerClassName}`}>
+      <div className={cn("flex flex-col w-full", containerClassName)}>
         {label && (
-          <div
-            className="flex items-center justify-between px-0.5"
-            style={{ marginBottom: "0.5rem" }}
-          >
-            <label
+          <div className="flex items-center justify-between px-0.5 mb-2">
+            <Label
               htmlFor={selectId}
-              className={`text-xs select-none ${
-                monoLabel
-                  ? "font-mono uppercase tracking-wider font-semibold text-slate-200"
-                  : "font-sans text-white/80 font-medium"
-              }`}
-              style={{ fontSize: "0.75rem", fontWeight: 600, color: monoLabel ? "#E2E8F0" : undefined }}
+              variant={monoLabel ? "mono" : "default"}
+              required={required}
             >
-              {label}{required && <> <span style={{ color: "#CC6600" }}>*</span></>}
-            </label>
+              {label}
+            </Label>
           </div>
         )}
 
@@ -64,18 +59,11 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
             ref={ref}
             id={selectId}
             required={required}
-            className={`w-full h-12 px-4 pl-4 pr-10 text-sm rounded-[2px] text-white bg-[#011C38] border ${
-              error ? "!border-[#EF4444] focus:!border-[#EF4444]" : "border-white/12 focus:border-[#CC6600]"
-            } focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border appearance-none ${className}`}
-            style={{
-              height: "3rem",
-              paddingLeft: "1rem",
-              paddingRight: "2.75rem",
-              boxSizing: "border-box",
-              outline: "none",
-              boxShadow: "none",
-              ...props.style,
-            }}
+            className={cn(
+              "w-full h-11 sm:h-12 px-3.5 sm:px-4 pr-10 text-sm rounded-[2px] text-white bg-[#011C38] border border-white/12 hover:border-white/20 focus:border-[#38BDF8] focus:outline-none focus:ring-1 focus:ring-[#38BDF8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border appearance-none cursor-pointer",
+              error && "!border-[#EF4444] focus:!border-[#EF4444] focus:!ring-[#EF4444]",
+              className
+            )}
             {...props}
           >
             {placeholder && (
@@ -102,23 +90,14 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
         </div>
 
         {error ? (
-          <div
-            className="flex items-center gap-1.5 px-0.5"
-            style={{ marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
-          >
-            <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" style={{ color: "#EF4444", flexShrink: 0 }} />
-            <span
-              className="text-xs text-[#EF4444] font-mono leading-relaxed"
-              style={{ fontSize: "0.75rem", color: "#EF4444" }}
-            >
+          <div className="flex items-center gap-1.5 px-0.5 mt-1.5">
+            <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" />
+            <span className="text-xs text-[#EF4444] font-mono leading-relaxed">
               {error}
             </span>
           </div>
         ) : helper ? (
-          <span
-            className="text-xs text-white/45 font-sans leading-relaxed px-0.5"
-            style={{ marginTop: "0.375rem", display: "block" }}
-          >
+          <span className="text-xs text-white/45 font-sans leading-relaxed px-0.5 mt-1.5 block">
             {helper}
           </span>
         ) : null}
@@ -126,5 +105,4 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
     );
   }
 );
-
 FormSelect.displayName = "FormSelect";

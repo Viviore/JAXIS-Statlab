@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface BreadcrumbItem {
+export interface PageHeaderBreadcrumb {
   label: string;
   href?: string;
 }
@@ -8,7 +8,7 @@ export interface BreadcrumbItem {
 export interface PageHeaderProps {
   title: string;
   description?: string;
-  breadcrumbs?: BreadcrumbItem[];
+  breadcrumbs?: PageHeaderBreadcrumb[];
   actions?: React.ReactNode;
   badge?: React.ReactNode;
   className?: string;

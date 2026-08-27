@@ -1,189 +1,145 @@
 "use client";
 
-import React from "react";
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import {
-  IconX,
   IconAlertOctagon,
   IconAlertTriangle,
   IconCircleCheck,
   IconInfoCircle,
+  IconX,
 } from "@tabler/icons-react";
+import { cn } from "./utils";
 
-export type AlertVariant = "info" | "success" | "warning" | "danger";
+export const alertVariants = cva(
+  "relative w-full rounded-[2px] border p-4 backdrop-blur-md transition-colors leading-relaxed",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-[#01142B]/90 border-white/15 text-white/90 [&>svg]:text-white/60",
+        info: "bg-[#0284C7]/10 border-[#38BDF8]/30 border-l-4 border-l-[#38BDF8] text-white/90 [&>svg]:text-[#38BDF8]",
+        success:
+          "bg-[#10B981]/10 border-[#10B981]/30 border-l-4 border-l-[#10B981] text-white/90 [&>svg]:text-[#10B981]",
+        warning:
+          "bg-[#F59E0B]/10 border-[#F59E0B]/30 border-l-4 border-l-[#F59E0B] text-white/90 [&>svg]:text-[#F59E0B]",
+        destructive:
+          "bg-[#EF4444]/10 border-[#EF4444]/30 border-l-4 border-l-[#EF4444] text-white/90 [&>svg]:text-[#EF4444]",
+        danger:
+          "bg-[#EF4444]/10 border-[#EF4444]/30 border-l-4 border-l-[#EF4444] text-white/90 [&>svg]:text-[#EF4444]",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
 
-export interface AlertProps {
-  variant?: AlertVariant;
+const defaultIcons = {
+  default: IconInfoCircle,
+  info: IconInfoCircle,
+  success: IconCircleCheck,
+  warning: IconAlertTriangle,
+  destructive: IconAlertOctagon,
+  danger: IconAlertOctagon,
+};
+
+export type AlertVariant = "default" | "info" | "success" | "warning" | "destructive" | "danger";
+
+export interface AlertProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof alertVariants> {
   title?: string;
   badgeText?: string;
-  children: React.ReactNode;
-  className?: string;
-  onClose?: () => void;
-  style?: React.CSSProperties;
   showIcon?: boolean;
+  onClose?: () => void;
 }
 
-const variantConfig = {
-  danger: {
-    defaultBadge: "Error",
-    icon: IconAlertOctagon,
-    iconColor: "#EF4444",
-    iconBg: "rgba(239, 68, 68, 0.15)",
-    iconBorder: "rgba(239, 68, 68, 0.3)",
-    containerBg: "rgba(239, 68, 68, 0.08)",
-    containerBorder: "rgba(239, 68, 68, 0.3)",
-    borderLeft: "3px solid #EF4444",
-    titleColor: "#FCA5A5",
-    textColor: "rgba(255, 255, 255, 0.9)",
-  },
-  warning: {
-    defaultBadge: "Warning",
-    icon: IconAlertTriangle,
-    iconColor: "#F59E0B",
-    iconBg: "rgba(245, 158, 11, 0.15)",
-    iconBorder: "rgba(245, 158, 11, 0.3)",
-    containerBg: "rgba(245, 158, 11, 0.08)",
-    containerBorder: "rgba(245, 158, 11, 0.3)",
-    borderLeft: "3px solid #F59E0B",
-    titleColor: "#FDE68A",
-    textColor: "rgba(255, 255, 255, 0.9)",
-  },
-  success: {
-    defaultBadge: "Success",
-    icon: IconCircleCheck,
-    iconColor: "#10B981",
-    iconBg: "rgba(16, 185, 129, 0.15)",
-    iconBorder: "rgba(16, 185, 129, 0.3)",
-    containerBg: "rgba(16, 185, 129, 0.08)",
-    containerBorder: "rgba(16, 185, 129, 0.3)",
-    borderLeft: "3px solid #10B981",
-    titleColor: "#A7F3D0",
-    textColor: "rgba(255, 255, 255, 0.9)",
-  },
-  info: {
-    defaultBadge: "Notice",
-    icon: IconInfoCircle,
-    iconColor: "#38BDF8",
-    iconBg: "rgba(56, 189, 248, 0.15)",
-    iconBorder: "rgba(56, 189, 248, 0.3)",
-    containerBg: "rgba(56, 189, 248, 0.08)",
-    containerBorder: "rgba(56, 189, 248, 0.3)",
-    borderLeft: "3px solid #38BDF8",
-    titleColor: "#BAE6FD",
-    textColor: "rgba(255, 255, 255, 0.9)",
-  },
-};
+export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+  (
+    {
+      className,
+      variant = "default",
+      title,
+      badgeText,
+      showIcon = true,
+      onClose,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const Icon = defaultIcons[variant ?? "default"];
 
-export const Alert: React.FC<AlertProps> = ({
-  variant = "info",
-  title,
-  badgeText,
-  children,
-  className = "",
-  onClose,
-  style,
-  showIcon = true,
-}) => {
-  const cfg = variantConfig[variant];
-  const IconComponent = cfg.icon;
-  const headerText = title || badgeText || cfg.defaultBadge;
-
-  return (
-    <div
-      role="alert"
-      className={`relative w-full rounded-[2px] transition-all flex items-start gap-3.5 backdrop-blur-sm ${className}`}
-      style={{
-        backgroundColor: cfg.containerBg,
-        border: `1px solid ${cfg.containerBorder}`,
-        borderLeft: cfg.borderLeft,
-        padding: "0.875rem 1.125rem",
-        borderRadius: "2px",
-        display: "flex",
-        alignItems: "flex-start",
-        gap: "0.875rem",
-        boxSizing: "border-box",
-        width: "100%",
-        ...style,
-      }}
-    >
-      {showIcon && (
-        <div
-          className="flex-shrink-0 flex items-center justify-center rounded-[2px] mt-0.5"
-          style={{
-            width: "1.875rem",
-            height: "1.875rem",
-            backgroundColor: cfg.iconBg,
-            border: `1px solid ${cfg.iconBorder}`,
-            color: cfg.iconColor,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "2px",
-            flexShrink: 0,
-          }}
-        >
-          <IconComponent size={16} stroke={2} />
-        </div>
-      )}
-
+    return (
       <div
-        className="flex-1 min-w-0 flex flex-col gap-0.5"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.125rem",
-          flex: 1,
-          minWidth: 0,
-        }}
+        ref={ref}
+        role="alert"
+        className={cn(alertVariants({ variant }), className)}
+        {...props}
       >
-        {headerText && (
-          <h5
-            className="font-sans text-xs font-bold uppercase tracking-wider select-none"
-            style={{
-              color: cfg.titleColor,
-              margin: 0,
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-            }}
-          >
-            {headerText}
-          </h5>
-        )}
-        <div
-          className="font-sans text-xs sm:text-sm leading-relaxed"
-          style={{
-            color: cfg.textColor,
-            fontSize: "0.8125rem",
-            lineHeight: 1.5,
-            wordBreak: "break-word",
-          }}
-        >
-          {children}
+        <div className="flex items-start gap-3">
+          {showIcon && Icon && (
+            <div className="shrink-0 mt-0.5">
+              <Icon size={18} stroke={2} />
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            {(title || badgeText) && (
+              <div className="flex items-center gap-2 mb-1">
+                {badgeText && (
+                  <span className="font-mono text-[0.625rem] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-[1px] bg-white/10 text-white/80">
+                    {badgeText}
+                  </span>
+                )}
+                {title && <AlertTitle>{title}</AlertTitle>}
+              </div>
+            )}
+            {typeof children === "string" ? (
+              <AlertDescription>{children}</AlertDescription>
+            ) : (
+              children
+            )}
+          </div>
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 rounded-[2px] p-1 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <IconX size={14} stroke={2} />
+              <span className="sr-only">Dismiss</span>
+            </button>
+          )}
         </div>
       </div>
+    );
+  }
+);
+Alert.displayName = "Alert";
 
-      {onClose && (
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-shrink-0 text-white/40 hover:text-white transition-colors p-1 rounded-[2px] hover:bg-white/10 cursor-pointer"
-          style={{
-            flexShrink: 0,
-            background: "none",
-            border: "none",
-            padding: "0.25rem",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "2px",
-          }}
-          aria-label="Close alert"
-        >
-          <IconX size={15} stroke={2} />
-        </button>
-      )}
-    </div>
-  );
-};
+export const AlertTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h5
+    ref={ref}
+    className={cn("font-mono text-xs font-bold uppercase tracking-wide leading-none", className)}
+    {...props}
+  />
+));
+AlertTitle.displayName = "AlertTitle";
 
+export const AlertDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("text-xs leading-relaxed font-sans text-white/80", className)}
+    {...props}
+  />
+));
+AlertDescription.displayName = "AlertDescription";

@@ -2,8 +2,11 @@
 
 import React from "react";
 import { IconAlertTriangle } from "@tabler/icons-react";
+import { Label } from "./Label";
+import { Textarea, type TextareaProps } from "./Textarea";
+import { cn } from "./utils";
 
-export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface FormTextareaProps extends Omit<TextareaProps, "error"> {
   label?: string;
   error?: string;
   helper?: string;
@@ -30,51 +33,35 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
     const textareaId = id ?? (label ? label.toLowerCase().replace(/[^a-z0-9]/g, "-") : undefined);
 
     return (
-      <div className={`flex flex-col gap-2 w-full ${containerClassName}`}>
+      <div className={cn("flex flex-col gap-2 w-full", containerClassName)}>
         {label && (
-          <label
+          <Label
             htmlFor={textareaId}
-            className={`text-xs select-none px-0.5 ${
-              monoLabel
-                ? "font-mono uppercase tracking-wider font-semibold text-slate-200"
-                : "font-sans text-white/80 font-medium"
-            }`}
-            style={{ fontSize: "0.75rem", fontWeight: 600, color: monoLabel ? "#E2E8F0" : undefined }}
+            variant={monoLabel ? "mono" : "default"}
+            required={required}
+            className="px-0.5"
           >
-            {label}{required && <> <span style={{ color: "#CC6600" }}>*</span></>}
-          </label>
+            {label}
+          </Label>
         )}
-        <textarea
+        <Textarea
           ref={ref}
           id={textareaId}
           required={required}
           rows={rows}
-          className={`w-full bg-[#011C38] border ${
-            error ? "border-[#EF4444] focus:border-[#EF4444]" : "border-white/12 focus:border-[#CC6600]"
-          } rounded-[2px] px-5 py-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-y ${className}`}
-          style={{
-            padding: "1rem 1.25rem",
-            boxSizing: "border-box",
-            lineHeight: "1.6",
-            fontSize: "0.875rem",
-            outline: "none",
-            boxShadow: "none",
-            ...props.style,
-          }}
+          error={Boolean(error)}
+          className={className}
           {...props}
         />
         {error ? (
-          <div
-            className="flex items-center gap-1.5 px-0.5"
-            style={{ marginTop: "0.25rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
-          >
-            <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" style={{ color: "#EF4444", flexShrink: 0 }} />
-            <span className="text-xs text-[#EF4444] font-mono leading-relaxed" style={{ fontSize: "0.75rem", color: "#EF4444" }}>
+          <div className="flex items-center gap-1.5 px-0.5 mt-0.5">
+            <IconAlertTriangle size={13} stroke={2} className="text-[#EF4444] shrink-0" />
+            <span className="text-xs text-[#EF4444] font-mono leading-relaxed">
               {error}
             </span>
           </div>
         ) : helper ? (
-          <span className="text-xs text-white/45 font-sans leading-relaxed mt-1 px-0.5" style={{ fontSize: "0.75rem" }}>
+          <span className="text-xs text-white/45 font-sans leading-relaxed px-0.5 mt-0.5 block">
             {helper}
           </span>
         ) : null}
@@ -82,5 +69,4 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
     );
   }
 );
-
 FormTextarea.displayName = "FormTextarea";

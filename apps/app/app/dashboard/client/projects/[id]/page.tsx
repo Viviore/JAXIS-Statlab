@@ -10,6 +10,8 @@ import {
   Alert,
   Modal,
   Toast,
+  ConfirmDialog,
+  CopyButton,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -18,7 +20,6 @@ import {
   IconFileText,
   IconDatabase,
   IconClipboardList,
-  IconCopy,
   IconReceipt,
 } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
@@ -163,16 +164,6 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
     }
     loadProject();
   }, [projectId]);
-
-  const handleCopyId = () => {
-    if (!project) return;
-    navigator.clipboard.writeText(project.intakeId);
-    setToastMessage({
-      message: "Copied to Clipboard",
-      description: `Study ID "${project.intakeId}" has been copied to your clipboard.`,
-      variant: "info",
-    });
-  };
 
   const handleDeleteFile = () => {
     if (!fileToDelete || !project) return;
@@ -454,15 +445,11 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
                 label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
                 pulse={project.masterStatus === "IN_PROGRESS" || project.masterStatus === "FOR_QA"}
               />
-              <button
-                type="button"
-                onClick={handleCopyId}
-                title="Click to copy Study ID"
-                className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 hover:bg-[#CC6600]/25 border border-[#CC6600]/30 hover:border-[#CC6600] px-2 py-0.5 rounded-[2px] whitespace-nowrap cursor-pointer transition-all inline-flex items-center gap-1 group/btn ml-1"
-              >
-                <span>{project.intakeId}</span>
-                <IconCopy size={11} stroke={1.5} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
-              </button>
+              <CopyButton
+                value={project.intakeId}
+                label={project.intakeId}
+                className="ml-1 text-[#FF9433] bg-[#CC6600]/15 border-[#CC6600]/30 hover:border-[#CC6600] hover:bg-[#CC6600]/25"
+              />
             </div>
           </div>
 
@@ -744,39 +731,16 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
       {/* Delete Confirmation Modal */}
       {fileToDelete && (
-        <Modal
+        <ConfirmDialog
           open={Boolean(fileToDelete)}
-          onClose={() => setFileToDelete(null)}
+          onCancel={() => setFileToDelete(null)}
           title="Remove Attached Document"
-          size="sm"
-          footer={
-            <div className="flex items-center justify-end gap-3 w-full">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setFileToDelete(null)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleDeleteFile}
-                loading={isDeleting}
-              >
-                Confirm Delete
-              </Button>
-            </div>
-          }
-        >
-          <div className="flex flex-col gap-4">
-            <p className="text-xs text-white/80 leading-relaxed font-sans">
-              Are you sure you want to remove{" "}
-              <strong className="text-white font-mono">{fileToDelete.fileName}</strong> from this study?
-            </p>
-          </div>
-        </Modal>
+          description={`Are you sure you want to remove ${fileToDelete.fileName} from this study?`}
+          confirmLabel="Confirm Delete"
+          confirmVariant="destructive"
+          loading={isDeleting}
+          onConfirm={handleDeleteFile}
+        />
       )}
 
       {/* File Upload Modal (Tactical Ingestion Console) */}

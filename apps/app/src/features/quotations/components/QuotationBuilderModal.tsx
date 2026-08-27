@@ -5,7 +5,6 @@ import { Modal, ModalFooter, Button, Toast } from "@repo/ui";
 import {
   IconSend,
   IconAlertTriangle,
-  IconShieldCheck,
   IconSchool,
   IconBolt,
   IconFlame,

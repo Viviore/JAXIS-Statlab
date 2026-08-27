@@ -1,12 +1,38 @@
 "use client";
 
-import React, { useState } from "react";
+import * as React from "react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { cn } from "./utils";
 
+export const TooltipProvider = TooltipPrimitive.Provider;
+export const TooltipRoot = TooltipPrimitive.Root;
+export const TooltipTrigger = TooltipPrimitive.Trigger;
+
+export const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Content
+      ref={ref}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 overflow-hidden rounded-[2px] border border-white/20 bg-[#01142B] px-3 py-2 text-xs text-white shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 max-w-sm",
+        className
+      )}
+      {...props}
+    />
+  </TooltipPrimitive.Portal>
+));
+TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+
+// Backward-compatible high-level component
 export interface TooltipProps {
   content: React.ReactNode;
   children: React.ReactNode;
   position?: "top" | "bottom" | "left" | "right";
   className?: string;
+  delayDuration?: number;
 }
 
 export function Tooltip({
@@ -14,47 +40,20 @@ export function Tooltip({
   children,
   position = "top",
   className = "",
+  delayDuration = 150,
 }: TooltipProps) {
-  const [isVisible, setIsVisible] = useState(false);
-
-  const positionClasses = {
-    top: "bottom-full left-1/2 -translate-x-1/2 mb-3",
-    bottom: "top-full left-1/2 -translate-x-1/2 mt-3",
-    left: "right-full top-1/2 -translate-y-1/2 mr-3",
-    right: "left-full top-1/2 -translate-y-1/2 ml-3",
-  };
-
   return (
-    <div
-      className={`relative inline-flex items-center ${className}`}
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onFocus={() => setIsVisible(true)}
-      onBlur={() => setIsVisible(false)}
-    >
-      {children}
-      {isVisible && (
-        <div
-          role="tooltip"
-          className={`absolute z-[100] pointer-events-none rounded-[3px] bg-[#01142B] border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-md animate-content-fade ${positionClasses[position]}`}
-          style={{
-            padding: "0.875rem 1.125rem", // 14px vertical, 18px horizontal guaranteed padding
-            boxShadow: "0 16px 40px -4px rgba(0, 0, 0, 0.85)",
-            minWidth: "220px",
-            maxWidth: "360px",
-          }}
-        >
+    <TooltipPrimitive.Provider delayDuration={delayDuration}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>
+          <span className="inline-flex items-center cursor-default">{children}</span>
+        </TooltipPrimitive.Trigger>
+        <TooltipContent side={position} className={className}>
           {content}
-          {/* Subtle Pointer Arrow */}
-          {position === "top" && (
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-[#01142B] border-r border-b border-white/20" />
-          )}
-          {position === "bottom" && (
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-[#01142B] border-l border-t border-white/20" />
-          )}
-        </div>
-      )}
-    </div>
+          <TooltipPrimitive.Arrow className="fill-[#01142B]" />
+        </TooltipContent>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
   );
 }
 
@@ -86,7 +85,7 @@ export function TagsOverflow({
   const remainingTags = tags.slice(limit);
 
   return (
-    <div className={`flex items-center gap-1.5 whitespace-nowrap ${className}`}>
+    <div className={cn("flex items-center gap-1.5 whitespace-nowrap", className)}>
       {visibleTags.map((tag) => (
         <span
           key={tag}

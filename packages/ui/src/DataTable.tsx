@@ -1,7 +1,16 @@
 "use client";
 
 import React from "react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "./Table";
 import { LoadingState } from "./LoadingState";
+import { cn } from "./utils";
 
 export interface Column<T> {
   key: string;
@@ -29,76 +38,90 @@ export function DataTable<T extends object = Record<string, unknown>>({
   className = "",
 }: DataTableProps<T>): React.ReactElement {
   return (
-    <div className={`w-full overflow-x-auto border border-white/10 rounded-[2px] bg-[#010D1F] ${className}`}>
-      <table className="data-table">
-        <thead>
-          <tr>
+    <div
+      className={cn(
+        "w-full overflow-hidden border border-white/10 rounded-[2px] bg-[#010D1F]",
+        className
+      )}
+    >
+      <Table>
+        <TableHeader>
+          <TableRow className="border-white/10 hover:bg-transparent">
             {columns.map((col) => (
-              <th
+              <TableHead
                 key={col.key}
                 style={{ width: col.width }}
-                className={`py-4 px-6 text-xs font-mono font-semibold text-white/60 tracking-wider uppercase select-none whitespace-nowrap ${
+                className={cn(
                   col.align === "center"
                     ? "text-center"
                     : col.align === "right"
                     ? "text-right"
                     : "text-left"
-                }`}
+                )}
               >
                 {col.header}
-              </th>
+              </TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/[0.06] text-sm text-white/90">
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
           {loading ? (
-            <tr>
-              <td colSpan={columns.length} className="py-14 px-6 text-center">
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columns.length} className="py-14 px-6 text-center">
                 <LoadingState variant="table" label="Loading data..." />
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : rows.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length} className="py-16 px-6 text-center text-white/40 font-mono text-xs">
+            <TableRow className="hover:bg-transparent">
+              <TableCell
+                colSpan={columns.length}
+                className="py-16 px-6 text-center text-white/40 font-mono text-xs"
+              >
                 {emptyState ?? (
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <p className="text-sm font-medium">No records found</p>
-                    <p className="text-xs text-white/40 font-sans">There is no data to display at this time.</p>
+                    <p className="text-sm font-medium text-white/70">No records found</p>
+                    <p className="text-xs text-white/40 font-sans">
+                      There is no data to display at this time.
+                    </p>
                   </div>
                 )}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : (
             rows.map((row, rIdx) => (
-              <tr
+              <TableRow
                 key={((row as { id?: string }).id) ?? rIdx}
                 onClick={() => onRowClick?.(row)}
-                className={`transition-colors hover:bg-white/[0.03] group ${
-                  onRowClick ? "cursor-pointer" : ""
-                }`}
+                className={cn(
+                  "transition-colors hover:bg-white/[0.03] group",
+                  onRowClick && "cursor-pointer"
+                )}
               >
                 {columns.map((col) => {
-                  const content = col.render ? col.render(row) : ((row as Record<string, unknown>)[col.key] as React.ReactNode);
+                  const content = col.render
+                    ? col.render(row)
+                    : ((row as Record<string, unknown>)[col.key] as React.ReactNode);
                   return (
-                    <td
+                    <TableCell
                       key={col.key}
-                      className={`py-5 px-6 align-middle ${
+                      className={cn(
                         col.align === "center"
                           ? "text-center"
                           : col.align === "right"
                           ? "text-right"
                           : "text-left"
-                      }`}
+                      )}
                     >
                       {content}
-                    </td>
+                    </TableCell>
                   );
                 })}
-              </tr>
+              </TableRow>
             ))
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

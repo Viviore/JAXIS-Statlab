@@ -3,7 +3,7 @@ import { PackageName, AddOnName, ProjectStatus, RoleName } from "@prisma/client"
 /**
  * JAXIS StatLab — Commercial Pricing & Quotation Engine Rules
  * Codifies pricing guardrails, package definitions, downpayment requirements,
- * and role permissions according to JAXIS_05-quotation.md.
+ * and role permissions according to 05-quotation.md.
  */
 
 export interface PackageDefinition {

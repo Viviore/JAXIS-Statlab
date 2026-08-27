@@ -4,7 +4,7 @@ import React, { useState, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Alert, Button, LoadingState, FormInput, EyeIcon, EyeOffIcon } from "@repo/ui";
+import { Alert, Button, LoadingState, FormInput, EyeIcon, EyeOffIcon, DividerWithText } from "@repo/ui";
 import { IconChevronDown } from "@tabler/icons-react";
 
 const DEV_PRESETS = [
@@ -136,14 +136,7 @@ function LoginForm() {
       </div>
 
       {/* Clean Divider */}
-      <div className="relative flex items-center justify-center -my-1">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/[0.12]" />
-        </div>
-        <span className="relative px-3.5 bg-[#010B18] text-[0.688rem] text-slate-400 font-mono uppercase tracking-wider">
-          or authenticate via email
-        </span>
-      </div>
+      <DividerWithText className="-my-1">or authenticate via email</DividerWithText>
 
       {/* Main Login Form */}
       <form

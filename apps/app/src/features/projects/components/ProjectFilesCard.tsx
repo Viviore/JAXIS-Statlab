@@ -1,16 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, Button, Toast } from "@repo/ui";
+import { Card, Button, Toast, FileTypeIcon } from "@repo/ui";
 import {
-  IconFileTypeDocx,
-  IconFileTypePdf,
-  IconFileTypeCsv,
-  IconFileTypeXls,
-  IconFileZip,
-  IconFileCode,
-  IconPhoto,
-  IconFileText,
   IconDownload,
   IconCheck,
   IconEye,
@@ -20,7 +12,6 @@ import {
   getFileMeta,
   formatFileCategory,
   triggerFileDownload,
-  type FileMetadata,
 } from "@/lib/file-utils";
 import type { ProjectFileItem } from "@/features/projects/schemas";
 import { DocumentViewerLightbox } from "./DocumentViewerLightbox";
@@ -31,28 +22,6 @@ export interface ProjectFilesCardProps {
   className?: string;
   canDelete?: boolean;
   onDeleteFile?: (file: ProjectFileItem) => void;
-}
-
-// ── Tabler File Icons ──
-function FileTypeIcon({ type, className = "w-5 h-5" }: { type: FileMetadata["iconType"]; className?: string }) {
-  switch (type) {
-    case "pdf":
-      return <IconFileTypePdf size={20} stroke={1.5} className={className} />;
-    case "doc":
-      return <IconFileTypeDocx size={20} stroke={1.5} className={className} />;
-    case "sheet":
-      return <IconFileTypeXls size={20} stroke={1.5} className={className} />;
-    case "data":
-      return <IconFileTypeCsv size={20} stroke={1.5} className={className} />;
-    case "code":
-      return <IconFileCode size={20} stroke={1.5} className={className} />;
-    case "archive":
-      return <IconFileZip size={20} stroke={1.5} className={className} />;
-    case "image":
-      return <IconPhoto size={20} stroke={1.5} className={className} />;
-    default:
-      return <IconFileText size={20} stroke={1.5} className={className} />;
-  }
 }
 
 export function ProjectFilesCard({
