@@ -18,7 +18,6 @@ import {
   IconPlus,
   IconTrash,
   IconLoader2,
-  IconCheck,
   IconQrcode,
   IconDeviceFloppy,
   IconAlertCircle,
