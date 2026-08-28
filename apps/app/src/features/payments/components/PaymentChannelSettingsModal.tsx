@@ -18,10 +18,12 @@ import {
   IconPlus,
   IconTrash,
   IconLoader2,
+  IconCheck,
   IconQrcode,
   IconDeviceFloppy,
   IconAlertCircle,
 } from "@tabler/icons-react";
+import { formatEWalletNumber, formatBankAccountNumber } from "@/lib/formatters";
 import { uploadFileToR2 } from "@/lib/storage-client";
 import { getPaymentChannels, updatePaymentChannels } from "../actions";
 import type { PaymentChannelDetails } from "@/lib/payment-rules";
@@ -234,7 +236,8 @@ export function PaymentChannelSettingsModal({
                 <FormInput
                   label="GCash Mobile Number"
                   value={gcashChannel.accountNumber}
-                  onChange={(e) => handleUpdateGcash("accountNumber", e.target.value)}
+                  maxLength={13}
+                  onChange={(e) => handleUpdateGcash("accountNumber", formatEWalletNumber(e.target.value))}
                   placeholder="e.g. 0917-882-5294"
                   required
                 />
@@ -449,7 +452,8 @@ export function PaymentChannelSettingsModal({
                       <FormInput
                         label="Account Number"
                         value={bank.accountNumber}
-                        onChange={(e) => handleUpdateBank(index, "accountNumber", e.target.value)}
+                        maxLength={19}
+                        onChange={(e) => handleUpdateBank(index, "accountNumber", formatBankAccountNumber(e.target.value))}
                       />
                     </div>
 

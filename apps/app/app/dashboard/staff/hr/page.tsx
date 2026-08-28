@@ -33,6 +33,7 @@ import { getMyOfficialPayslip, getMyPayoutDetails, updateMyPayoutDetails } from 
 import type { StaffPayslipDTO, StaffPayoutDetailsDTO, PayoutChannel } from "@/features/payroll/schemas";
 import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
 import type { HrPortalData, DailyAttendanceEvent } from "@/features/attendance/schemas";
+import { formatSettlementAccountNumber } from "@/lib/formatters";
 
 type ActiveHrTab = "TIMESHEETS" | "CALENDAR" | "LEAVES" | "OVERTIME" | "PAYSLIP" | "PAYOUT";
 
@@ -1305,7 +1306,15 @@ export default function StaffHrPortalPage() {
                       <button
                         key={ch.id}
                         type="button"
-                        onClick={() => setPayoutChannel(ch.id as PayoutChannel)}
+                        onClick={() => {
+                          const nextChannel = ch.id as PayoutChannel;
+                          setPayoutChannel(nextChannel);
+                          if (nextChannel === "CASH" && !accountNumber.trim()) {
+                            setAccountNumber("HQ Manila Treasury Settlement Desk");
+                          } else if (accountNumber.trim()) {
+                            setAccountNumber(formatSettlementAccountNumber(nextChannel, accountNumber));
+                          }
+                        }}
                         className={`p-3 rounded-[2px] border text-left transition-all cursor-pointer flex flex-col gap-1.5 ${
                           isSelected
                             ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-lg"
@@ -1371,21 +1380,47 @@ export default function StaffHrPortalPage() {
                   type="text"
                   required
                   value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
+                  maxLength={
+                    payoutChannel === "GCASH" || payoutChannel === "MAYA"
+                      ? 13
+                      : payoutChannel === "BANK_TRANSFER"
+                      ? 19
+                      : 60
+                  }
+                  onChange={(e) =>
+                    setAccountNumber(formatSettlementAccountNumber(payoutChannel, e.target.value))
+                  }
                   placeholder={
                     payoutChannel === "GCASH"
-                      ? "e.g. 0917-123-4567"
+                      ? "0917-123-4567"
                       : payoutChannel === "MAYA"
-                      ? "e.g. 0918-223-9901"
+                      ? "0918-223-9901"
                       : payoutChannel === "BANK_TRANSFER"
-                      ? "e.g. 1092-3847-1920"
+                      ? "1092-3847-1920"
                       : "e.g. JAX-STAFF-001 (HQ Manila Window)"
                   }
-                  className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white font-mono placeholder-white/30 outline-none"
+                  className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white font-mono placeholder-white/30 outline-none transition-colors"
                 />
-                <span className="text-xs text-white/40">
-                  Double check your number. All milestone disbursements are routed directly to this destination.
-                </span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-white/40 font-sans">
+                    {payoutChannel === "GCASH" || payoutChannel === "MAYA"
+                      ? "Philippine 11-digit mobile e-wallet format (09XX-XXX-XXXX)."
+                      : payoutChannel === "BANK_TRANSFER"
+                      ? "Standard bank account number formatted in 4-digit groups."
+                      : "All milestone disbursements are routed directly to this destination."}
+                  </span>
+                  {(payoutChannel === "GCASH" || payoutChannel === "MAYA") && (
+                    <span
+                      className={`font-mono text-[0.688rem] ${
+                        accountNumber.replace(/\D/g, "").length === 11
+                          ? "text-emerald-400 font-semibold"
+                          : "text-white/40"
+                      }`}
+                    >
+                      {accountNumber.replace(/\D/g, "").length} / 11 digits
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Account Holder KYC Name */}

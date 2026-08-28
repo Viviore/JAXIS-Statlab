@@ -66,3 +66,71 @@ export function formatPhilippinePhoneNumber(value: string): string {
   }
   return `${capped.slice(0, 4)} ${capped.slice(4, 7)} ${capped.slice(7)}`;
 }
+
+/**
+ * Real-time formatter for GCash and Maya mobile e-wallet numbers.
+ * Formats 11-digit Philippine mobile numbers as 09XX-XXX-XXXX.
+ * Strictly limits raw input to 11 digits to prevent overflow like 099999999999999999.
+ */
+export function formatEWalletNumber(value: string): string {
+  if (!value) return "";
+
+  // Strip all non-digit characters
+  const digits = value.replace(/\D/g, "");
+
+  // Normalize if started with 639 or 9
+  let normalized = digits;
+  if (normalized.startsWith("639")) {
+    normalized = "0" + normalized.slice(2);
+  } else if (normalized.startsWith("9") && normalized.length <= 10) {
+    normalized = "0" + normalized;
+  }
+
+  // Strictly cap at 11 digits
+  const capped = normalized.slice(0, 11);
+
+  if (capped.length <= 4) {
+    return capped;
+  }
+  if (capped.length <= 7) {
+    return `${capped.slice(0, 4)}-${capped.slice(4)}`;
+  }
+  return `${capped.slice(0, 4)}-${capped.slice(4, 7)}-${capped.slice(7)}`;
+}
+
+/**
+ * Real-time formatter for Philippine commercial bank account numbers.
+ * Chunks digits into 4-digit hyphenated groups (e.g. 1092-8821-4401 or 0012-3456-78).
+ * Limits input to 16 digits max.
+ */
+export function formatBankAccountNumber(value: string): string {
+  if (!value) return "";
+
+  // Strip all non-digit characters
+  const digits = value.replace(/\D/g, "").slice(0, 16);
+  if (!digits) return "";
+
+  const chunks = digits.match(/.{1,4}/g);
+  return chunks ? chunks.join("-") : digits;
+}
+
+/**
+ * Unified settlement account number formatter based on payout channel.
+ */
+export function formatSettlementAccountNumber(
+  channel: "GCASH" | "MAYA" | "BANK_TRANSFER" | "CASH" | string,
+  value: string
+): string {
+  if (!value) return "";
+
+  if (channel === "GCASH" || channel === "MAYA") {
+    return formatEWalletNumber(value);
+  }
+
+  if (channel === "BANK_TRANSFER") {
+    return formatBankAccountNumber(value);
+  }
+
+  // CASH or fallback
+  return value.slice(0, 60);
+}
