@@ -133,6 +133,34 @@ export default function CeoPayrollPolicyPage() {
     setFormConfig({ ...role });
   };
 
+  const handleSelectRoleModel = (modelId: CompensationType) => {
+    setFormConfig((prev) => {
+      if (!prev) return null;
+      const next = { ...prev, compensationType: modelId };
+      if (modelId === "PERCENTAGE_PER_STUDY") {
+        next.baseSalaryMonthly = 0;
+        next.hourlyDutyRate = 0;
+        if (!next.commissionPercentagePerStudy) next.commissionPercentagePerStudy = 50;
+      } else if (modelId === "FIXED_SALARY") {
+        next.commissionPercentagePerStudy = 0;
+        next.hourlyDutyRate = 0;
+        next.fixedPerStudyBonus = 0;
+        if (!next.baseSalaryMonthly) next.baseSalaryMonthly = 35000;
+      } else if (modelId === "HOURLY_DUTY") {
+        next.baseSalaryMonthly = 0;
+        next.commissionPercentagePerStudy = 0;
+        next.fixedPerStudyBonus = 0;
+        if (!next.hourlyDutyRate) next.hourlyDutyRate = 450;
+      } else if (modelId === "HYBRID") {
+        next.hourlyDutyRate = 0;
+        next.fixedPerStudyBonus = 0;
+        if (!next.baseSalaryMonthly) next.baseSalaryMonthly = 12000;
+        if (!next.commissionPercentagePerStudy) next.commissionPercentagePerStudy = 10;
+      }
+      return next;
+    });
+  };
+
   const handleSaveSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!scheduleForm) return;
@@ -672,157 +700,286 @@ export default function CeoPayrollPolicyPage() {
 
                     {/* Content View / Form */}
                     {isEditing && formConfig ? (
-                      <form onSubmit={handleSaveRole} className="flex flex-col gap-4 text-xs">
+                      <form onSubmit={handleSaveRole} className="flex flex-col gap-5 text-xs">
                         {/* Compensation Model Selector */}
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-2">
                           <label className="text-[0.688rem] uppercase font-mono text-white/60 font-semibold">
                             Select Compensation Model
                           </label>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             {[
-                              { id: "PERCENTAGE_PER_STUDY", label: "Study % Commission" },
-                              { id: "FIXED_SALARY", label: "Fixed Monthly Base" },
-                              { id: "HOURLY_DUTY", label: "Hourly Duty Wage" },
-                              { id: "HYBRID", label: "Hybrid (Base + %)" },
-                            ].map((m) => (
-                              <button
-                                key={m.id}
-                                type="button"
-                                onClick={() =>
-                                  setFormConfig((prev) =>
-                                    prev ? { ...prev, compensationType: m.id as CompensationType } : null
-                                  )
-                                }
-                                className={`p-2 rounded-[2px] border text-left text-xs font-sans transition-colors cursor-pointer ${
-                                  formConfig.compensationType === m.id
-                                    ? "bg-[#CC6600]/20 border-[#CC6600] text-white font-bold"
-                                    : "bg-[#010D1F] border-white/10 text-white/60 hover:text-white"
-                                }`}
-                              >
-                                {m.label}
-                              </button>
-                            ))}
+                              {
+                                id: "PERCENTAGE_PER_STUDY",
+                                title: "Study % Commission",
+                                subtitle: "Earn percentage per completed study",
+                              },
+                              {
+                                id: "FIXED_SALARY",
+                                title: "Fixed Monthly Base",
+                                subtitle: "Guaranteed monthly or 15-day salary",
+                              },
+                              {
+                                id: "HOURLY_DUTY",
+                                title: "Hourly Duty Wage",
+                                subtitle: "Paid per verified attendance hour",
+                              },
+                              {
+                                id: "HYBRID",
+                                title: "Hybrid (Base + %)",
+                                subtitle: "Base monthly pay + Study % commission",
+                              },
+                            ].map((m) => {
+                              const isSelected = formConfig.compensationType === m.id;
+                              return (
+                                <button
+                                  key={m.id}
+                                  type="button"
+                                  onClick={() => handleSelectRoleModel(m.id as CompensationType)}
+                                  className={`p-3 rounded-[2px] border text-left font-sans transition-all cursor-pointer ${
+                                    isSelected
+                                      ? "bg-[#CC6600]/20 border-[#CC6600] text-white ring-1 ring-[#CC6600]"
+                                      : "bg-[#010D1F] border-white/10 text-white/70 hover:text-white hover:border-white/20"
+                                  }`}
+                                >
+                                  <div className="font-semibold text-xs text-white mb-0.5">{m.title}</div>
+                                  <div className="text-[0.688rem] text-white/50">{m.subtitle}</div>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
 
-                        {/* Numeric Fields */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {(formConfig.compensationType === "FIXED_SALARY" ||
-                            formConfig.compensationType === "HYBRID") && (
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[0.688rem] uppercase font-mono text-white/60 font-semibold">
+                        {/* Focused Inputs - Show ONLY what is needed for the active model */}
+                        <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col gap-4">
+                          {formConfig.compensationType === "PERCENTAGE_PER_STUDY" && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
+                                  Commission % Per Study
+                                </label>
+                                <div className="relative flex items-center">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={formConfig.commissionPercentagePerStudy}
+                                    onChange={(e) =>
+                                      setFormConfig((p) =>
+                                        p ? { ...p, commissionPercentagePerStudy: Number(e.target.value) } : null
+                                      )
+                                    }
+                                    className="w-full bg-[#01142B] border border-white/15 rounded-[2px] px-3 py-2 text-sm text-white font-mono outline-none focus:border-[#CC6600]"
+                                  />
+                                  <span className="absolute right-3 text-xs font-mono text-white/50">
+                                    % of study fee
+                                  </span>
+                                </div>
+                                <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
+                                  Specialist receives this percentage of the project contract value upon completion.
+                                </span>
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
+                                  Optional Deliverable Bonus (₱)
+                                </label>
+                                <div className="relative flex items-center">
+                                  <span className="absolute left-3 text-xs font-mono text-white/50">₱</span>
+                                  <input
+                                    type="number"
+                                    step={100}
+                                    min={0}
+                                    value={formConfig.fixedPerStudyBonus}
+                                    onChange={(e) =>
+                                      setFormConfig((p) =>
+                                        p ? { ...p, fixedPerStudyBonus: Number(e.target.value) } : null
+                                      )
+                                    }
+                                    className="w-full bg-[#01142B] border border-white/15 rounded-[2px] pl-7 pr-3 py-2 text-sm text-white font-mono outline-none focus:border-[#CC6600]"
+                                    placeholder="0"
+                                  />
+                                </div>
+                                <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
+                                  Extra fixed incentive credited on each delivered study.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {formConfig.compensationType === "FIXED_SALARY" && (
+                            <div>
+                              <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
                                 Monthly Base Salary (₱)
                               </label>
-                              <input
-                                type="number"
-                                step="500"
-                                min="0"
-                                value={formConfig.baseSalaryMonthly}
-                                onChange={(e) =>
-                                  setFormConfig((p) =>
-                                    p ? { ...p, baseSalaryMonthly: Number(e.target.value) } : null
-                                  )
-                                }
-                                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                              />
+                              <div className="relative flex items-center max-w-md">
+                                <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                                <input
+                                  type="number"
+                                  step={500}
+                                  min={0}
+                                  value={formConfig.baseSalaryMonthly}
+                                  onChange={(e) =>
+                                    setFormConfig((p) =>
+                                      p ? { ...p, baseSalaryMonthly: Number(e.target.value) } : null
+                                    )
+                                  }
+                                  className="w-full bg-[#01142B] border border-white/15 rounded-[2px] pl-8 pr-3 py-2 text-sm text-white font-mono outline-none focus:border-[#CC6600]"
+                                />
+                              </div>
+                              <span className="text-[0.688rem] text-white/40 font-sans mt-1.5 block">
+                                In a semi-monthly schedule, this pays ₱{(formConfig.baseSalaryMonthly / 2).toLocaleString()} every 15-day cut-off.
+                              </span>
                             </div>
                           )}
 
-                          {(formConfig.compensationType === "PERCENTAGE_PER_STUDY" ||
-                            formConfig.compensationType === "HYBRID") && (
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[0.688rem] uppercase font-mono text-white/60 font-semibold">
-                                Commission % Per Study
+                          {formConfig.compensationType === "HOURLY_DUTY" && (
+                            <div>
+                              <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
+                                Hourly Duty Rate (₱ / hour)
                               </label>
-                              <input
-                                type="number"
-                                step="1"
-                                min="0"
-                                max="100"
-                                value={formConfig.commissionPercentagePerStudy}
-                                onChange={(e) =>
-                                  setFormConfig((p) =>
-                                    p ? { ...p, commissionPercentagePerStudy: Number(e.target.value) } : null
-                                  )
-                                }
-                                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                              />
+                              <div className="relative flex items-center max-w-md">
+                                <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                                <input
+                                  type="number"
+                                  step={25}
+                                  min={0}
+                                  value={formConfig.hourlyDutyRate}
+                                  onChange={(e) =>
+                                    setFormConfig((p) =>
+                                      p ? { ...p, hourlyDutyRate: Number(e.target.value) } : null
+                                    )
+                                  }
+                                  className="w-full bg-[#01142B] border border-white/15 rounded-[2px] pl-8 pr-16 py-2 text-sm text-white font-mono outline-none focus:border-[#CC6600]"
+                                />
+                                <span className="absolute right-3 text-xs font-mono text-white/50">/ hour</span>
+                              </div>
+                              <span className="text-[0.688rem] text-white/40 font-sans mt-1.5 block">
+                                Calculated automatically from verified clock-in/out attendance logs in Module 18.
+                              </span>
                             </div>
                           )}
 
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[0.688rem] uppercase font-mono text-white/60 font-semibold">
-                              Hourly Duty Rate (₱ / hr)
-                            </label>
-                            <input
-                              type="number"
-                              step="25"
-                              min="0"
-                              value={formConfig.hourlyDutyRate}
-                              onChange={(e) =>
-                                setFormConfig((p) =>
-                                  p ? { ...p, hourlyDutyRate: Number(e.target.value) } : null
-                                )
-                              }
-                              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                            />
-                          </div>
+                          {formConfig.compensationType === "HYBRID" && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
+                                  Monthly Base Retainer (₱)
+                                </label>
+                                <div className="relative flex items-center">
+                                  <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                                  <input
+                                    type="number"
+                                    step={500}
+                                    min={0}
+                                    value={formConfig.baseSalaryMonthly}
+                                    onChange={(e) =>
+                                      setFormConfig((p) =>
+                                        p ? { ...p, baseSalaryMonthly: Number(e.target.value) } : null
+                                      )
+                                    }
+                                    className="w-full bg-[#01142B] border border-white/15 rounded-[2px] pl-8 pr-3 py-2 text-sm text-white font-mono outline-none focus:border-[#CC6600]"
+                                  />
+                                </div>
+                                <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
+                                  Guaranteed baseline pay (₱{(formConfig.baseSalaryMonthly / 2).toLocaleString()} per 15-day cut-off).
+                                </span>
+                              </div>
 
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[0.688rem] uppercase font-mono text-white/60 font-semibold">
-                              Per-Study Bonus (₱)
-                            </label>
-                            <input
-                              type="number"
-                              step="100"
-                              min="0"
-                              value={formConfig.fixedPerStudyBonus}
-                              onChange={(e) =>
-                                setFormConfig((p) =>
-                                  p ? { ...p, fixedPerStudyBonus: Number(e.target.value) } : null
-                                )
-                              }
-                              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                            />
-                          </div>
+                              <div>
+                                <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
+                                  Commission % Per Study
+                                </label>
+                                <div className="relative flex items-center">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={formConfig.commissionPercentagePerStudy}
+                                    onChange={(e) =>
+                                      setFormConfig((p) =>
+                                        p ? { ...p, commissionPercentagePerStudy: Number(e.target.value) } : null
+                                      )
+                                    }
+                                    className="w-full bg-[#01142B] border border-white/15 rounded-[2px] px-3 py-2 text-sm text-white font-mono outline-none focus:border-[#CC6600]"
+                                  />
+                                  <span className="absolute right-3 text-xs font-mono text-white/50">
+                                    % of study fee
+                                  </span>
+                                </div>
+                                <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
+                                  Commission added on top of base pay for each completed study.
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
-                          <div className="flex flex-col gap-1 sm:col-span-2">
-                            <label className="text-[0.688rem] uppercase font-mono text-white/60 font-semibold">
-                              Monthly Allowances (₱)
-                            </label>
-                            <input
-                              type="number"
-                              step="250"
-                              min="0"
-                              value={formConfig.allowancesMonthly}
-                              onChange={(e) =>
-                                setFormConfig((p) =>
-                                  p ? { ...p, allowancesMonthly: Number(e.target.value) } : null
-                                )
-                              }
-                              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                            />
+                          {/* Monthly Allowance - Compact Optional Row */}
+                          <div className="pt-3 border-t border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <label className="text-xs font-mono text-white/80 font-semibold block">
+                                Monthly Allowance / Stipend (Optional)
+                              </label>
+                              <span className="text-[0.688rem] text-white/40 font-sans">
+                                Fixed connectivity, compute, or research allowance added each month.
+                              </span>
+                            </div>
+                            <div className="relative flex items-center w-full sm:w-44 shrink-0">
+                              <span className="absolute left-3 text-xs font-mono text-white/50">₱</span>
+                              <input
+                                type="number"
+                                step={250}
+                                min={0}
+                                value={formConfig.allowancesMonthly}
+                                onChange={(e) =>
+                                  setFormConfig((p) =>
+                                    p ? { ...p, allowancesMonthly: Number(e.target.value) } : null
+                                  )
+                                }
+                                className="w-full bg-[#01142B] border border-white/15 rounded-[2px] pl-7 pr-3 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
+                                placeholder="0"
+                              />
+                            </div>
                           </div>
                         </div>
 
-                        {/* Formula Preview Box */}
-                        <div className="p-3 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col gap-1">
-                          <span className="text-[0.625rem] uppercase font-mono text-white/40">
-                            Effective Formula Preview
-                          </span>
-                          <span className="font-mono text-emerald-400 text-xs">
-                            Take-Home ={" "}
-                            {formConfig.baseSalaryMonthly > 0 ? `₱${formConfig.baseSalaryMonthly.toLocaleString()} Base + ` : ""}
-                            {formConfig.commissionPercentagePerStudy > 0
-                              ? `(${formConfig.commissionPercentagePerStudy}% × Total Study Value) + `
-                              : ""}
-                            {formConfig.hourlyDutyRate > 0 ? `(Duty Hours × ₱${formConfig.hourlyDutyRate}/h) + ` : ""}
-                            ₱{formConfig.allowancesMonthly.toLocaleString()} Allowances
-                          </span>
+                        {/* Conversational Rule Preview Box */}
+                        <div className="p-3.5 bg-[#010D1F] border border-emerald-500/20 rounded-[2px] flex items-start gap-3">
+                          <div className="p-1 bg-emerald-950/60 border border-emerald-500/30 rounded-[2px] text-emerald-400 shrink-0 mt-0.5">
+                            <IconSparkles size={14} stroke={1.5} />
+                          </div>
+                          <div className="text-xs font-sans text-white/90 leading-relaxed">
+                            <span className="font-bold text-emerald-400 mr-1.5">How this role gets paid:</span>
+                            {formConfig.compensationType === "PERCENTAGE_PER_STUDY" && (
+                              <span>
+                                Specialist earns <strong>{formConfig.commissionPercentagePerStudy}%</strong> of the project fee for every completed study
+                                {formConfig.fixedPerStudyBonus > 0 ? ` + ₱${formConfig.fixedPerStudyBonus.toLocaleString()} bonus` : ""}
+                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} monthly allowance` : ""}.
+                              </span>
+                            )}
+                            {formConfig.compensationType === "FIXED_SALARY" && (
+                              <span>
+                                Fixed salary of <strong>₱{formConfig.baseSalaryMonthly.toLocaleString()} / month</strong>
+                                {" "}(paid as ₱{(formConfig.baseSalaryMonthly / 2).toLocaleString()} every 15 days)
+                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} monthly allowance` : ""}.
+                              </span>
+                            )}
+                            {formConfig.compensationType === "HOURLY_DUTY" && (
+                              <span>
+                                Paid <strong>₱{formConfig.hourlyDutyRate.toLocaleString()} / hour</strong> based on verified duty attendance
+                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} monthly allowance` : ""}.
+                              </span>
+                            )}
+                            {formConfig.compensationType === "HYBRID" && (
+                              <span>
+                                Base salary of <strong>₱{formConfig.baseSalaryMonthly.toLocaleString()} / month</strong> + <strong>{formConfig.commissionPercentagePerStudy}%</strong> per completed study
+                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} allowance` : ""}.
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-end gap-2 pt-2">
+                        <div className="flex items-center justify-end gap-2 pt-1">
                           <Button
                             variant="secondary"
                             size="sm"
@@ -851,30 +1008,49 @@ export default function CeoPayrollPolicyPage() {
                     ) : (
                       /* Readonly Display */
                       <div className="flex flex-col gap-4">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-[#010D1F] border border-white/10 rounded-[2px]">
+                        <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
-                            <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Base Salary</span>
-                            <span className="font-mono text-white font-bold text-xs">
-                              {role.baseSalaryMonthly > 0 ? `₱${role.baseSalaryMonthly.toLocaleString()}` : "N/A"}
+                            <span className="text-[0.625rem] uppercase font-mono text-white/40 block mb-1">
+                              Primary Compensation Model
                             </span>
+                            <div className="font-sans font-bold text-sm text-white flex items-center gap-2">
+                              {role.compensationType === "PERCENTAGE_PER_STUDY" && (
+                                <span className="text-emerald-400 font-mono text-base">
+                                  {role.commissionPercentagePerStudy}% Commission per Study
+                                </span>
+                              )}
+                              {role.compensationType === "FIXED_SALARY" && (
+                                <span className="text-white font-mono text-base">
+                                  ₱{role.baseSalaryMonthly.toLocaleString()} / month
+                                  <span className="text-xs text-white/50 font-sans font-normal ml-1.5">
+                                    (₱{(role.baseSalaryMonthly / 2).toLocaleString()} every 15 days)
+                                  </span>
+                                </span>
+                              )}
+                              {role.compensationType === "HOURLY_DUTY" && (
+                                <span className="text-purple-300 font-mono text-base">
+                                  ₱{role.hourlyDutyRate.toFixed(2)} / hour
+                                </span>
+                              )}
+                              {role.compensationType === "HYBRID" && (
+                                <span className="text-sky-400 font-mono text-sm">
+                                  ₱{role.baseSalaryMonthly.toLocaleString()} Base + {role.commissionPercentagePerStudy}% Commission
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Commission</span>
-                            <span className="font-mono text-emerald-400 font-bold text-xs">
-                              {role.commissionPercentagePerStudy > 0 ? `${role.commissionPercentagePerStudy}% / study` : "None"}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Duty Wage</span>
-                            <span className="font-mono text-white font-bold text-xs">
-                              ₱{role.hourlyDutyRate.toFixed(2)}/h
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Allowances</span>
-                            <span className="font-mono text-white font-bold text-xs">
-                              ₱{role.allowancesMonthly.toLocaleString()}
-                            </span>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            {role.fixedPerStudyBonus > 0 && (
+                              <span className="px-2 py-1 bg-amber-950/40 border border-amber-500/30 text-amber-300 rounded-[2px] text-xs font-mono">
+                                +₱{role.fixedPerStudyBonus.toLocaleString()} Bonus
+                              </span>
+                            )}
+                            {role.allowancesMonthly > 0 && (
+                              <span className="px-2 py-1 bg-sky-950/40 border border-sky-500/30 text-sky-300 rounded-[2px] text-xs font-mono">
+                                +₱{role.allowancesMonthly.toLocaleString()} Allowance
+                              </span>
+                            )}
                           </div>
                         </div>
 

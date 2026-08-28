@@ -2,15 +2,15 @@
   "roleConfigs": {
     "STATISTICIAN": {
       "roleName": "STATISTICIAN",
-      "compensationType": "PERCENTAGE_PER_STUDY",
-      "baseSalaryMonthly": 0,
-      "commissionPercentagePerStudy": 50,
-      "hourlyDutyRate": 450,
-      "fixedPerStudyBonus": 1000,
+      "compensationType": "FIXED_SALARY",
+      "baseSalaryMonthly": 35000,
+      "commissionPercentagePerStudy": 0,
+      "hourlyDutyRate": 0,
+      "fixedPerStudyBonus": 0,
       "allowancesMonthly": 2500,
       "isActive": true,
       "notes": "50% commission of total research study contract value + ₱450/hr compute duty + ₱1,000 completion bonus.",
-      "updatedAt": "2026-08-28T20:03:29.191Z",
+      "updatedAt": "2026-08-28T20:38:12.319Z",
       "updatedBy": "CEO Owner"
     },
     "SENIOR_QA_LEAD": {
