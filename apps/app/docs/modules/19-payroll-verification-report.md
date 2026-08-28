@@ -53,10 +53,14 @@ Module 19 provides institutional payroll governance, executive compensation conf
 7. **Staff HR Portal Integration (`/dashboard/staff/hr`)**:
    - Dynamic integration with `getMyHrPortalData` and `getMyOfficialPayslip`.
    - Displays official statement document number, status badge (`Disbursed / Paid` vs `Draft`), and exact figures calculated by the payroll engine.
-8. **Historical Payslips Ledger & Past Month Selector (`/dashboard/staff/hr`)**:
-   - Past settlement period dropdown selector allowing employees to switch between historical months and 15-day cut-off cycles.
-   - Comprehensive Historical Payslips Ledger table listing statement document IDs, pay periods, cut-off tags, gross pay, net take-home, and verified disbursement methods (GCash / Bank Wire references).
-   - Embedded `PayslipStatementModal` allowing staff to view and print official statements for any historical period.
+9. **Employee Self-Service E-Wallets & Bank Details (`/dashboard/staff/hr` - TAB 6)**:
+   - Dedicated 6th navigation tab allowing specialists to configure preferred settlement accounts: GCash, Maya, Philippine Banks (BDO, BPI, Metrobank, UnionBank, etc.), or Cash Window.
+   - Real-time Live Treasury Verification card previewing exact details visible to Finance and CEO.
+   - 1-click clipboard copy with immediate visual feedback.
+10. **Treasury Disbursement Auto-Routing & 1-Click Copy (`DisbursePayslipModal`)**:
+    - Disburse modal automatically identifies employee's registered payout method, displays registered details banner, and auto-selects payment channel.
+11. **Monorepo KPI Typography & Component Standardization (`@repo/ui/src/KpiCard.tsx`)**:
+    - Standardized all KPI metric cards across Overview, Finance Payroll, CEO Payroll, and Staff HR portals to canonical uppercase mono header, bold mono value, unit suffixes, and solid substrates.
 
 ---
 
@@ -66,7 +70,7 @@ Module 19 provides institutional payroll governance, executive compensation conf
 |---|---|---|---|
 | **TypeScript Typecheck** | `npm run check-types` | ✅ PASSED | 0 errors across monorepo |
 | **ESLint Quality** | `npm run lint` | ✅ PASSED | 0 warnings, 0 errors across monorepo |
-| **End-to-End Browser Flow** | `browser_subagent` | ✅ PASSED | CEO login, rate configuration, specialist override, Finance payroll run, statement modal, and disbursement modal verified |
+| **End-to-End Browser Flow** | Chrome DevTools / Subagent | ✅ PASSED | CEO login, rate configuration, specialist override, Finance payroll run, statement modal, staff payout account configuration, and disbursement modal verified |
 | **Monorepo Dev Server** | Turborepo Pipeline | ✅ PASSED | Clean execution on Next.js 16 |
 
 ---
@@ -75,12 +79,12 @@ Module 19 provides institutional payroll governance, executive compensation conf
 
 | Component / Route | Location | Description |
 |---|---|---|
-| CEO Executive Payroll Desk | `apps/app/app/dashboard/ceo/payroll/page.tsx` | Role compensation matrix, specialist overrides, batch audit |
-| Finance Payroll & Payslips Desk | `apps/app/app/dashboard/finance/payroll/page.tsx` | Active CEO policy banner, batch payroll generator, disbursement queue |
-| Official Payslip Statement Modal | `apps/app/src/features/payroll/components/PayslipStatementModal.tsx` | High-fidelity itemized payslip voucher with print support |
-| Treasury Disbursement Modal | `apps/app/src/features/payroll/components/DisbursePayslipModal.tsx` | Channel selection (GCash/Bank) and reference number logging |
-| Specialist Override Modal | `apps/app/src/features/payroll/components/SpecialistOverrideModal.tsx` | Bespoke specialist compensation terms editor |
-| Payroll Server Actions | `apps/app/src/features/payroll/actions.ts` | Complete CRUD, calculation, batch generation, and disbursement logic |
+| CEO Executive Payroll Desk | `apps/app/app/dashboard/ceo/payroll/page.tsx` | Role compensation matrix, specialist overrides, batch audit, settlement tags |
+| Finance Payroll & Payslips Desk | `apps/app/app/dashboard/finance/payroll/page.tsx` | Active CEO policy banner, batch payroll generator, disbursement queue, payout badges |
+| Staff HR & People Operations Portal | `apps/app/app/dashboard/staff/hr/page.tsx` | Payout & Banking Methods tab (Tab 6), historical cycle ledger, duty earnings |
+| Official Payslip Statement Modal | `apps/app/src/features/payroll/components/PayslipStatementModal.tsx` | Itemized payslip voucher with payout particulars & disbursement cleared stamp |
+| Treasury Disbursement Modal | `apps/app/src/features/payroll/components/DisbursePayslipModal.tsx` | Registered payout banner, 1-click copy, and auto-channel selection |
+| Specialist Override Modal | `apps/app/src/features/payroll/components/SpecialistOverrideModal.tsx` | Bespoke compensation terms editor with registered payout reflection |
+| Standardized KPI Card Component | `packages/ui/src/KpiCard.tsx` | Shared enterprise metric card with uppercase mono labels & bold mono values |
+| Payroll Server Actions | `apps/app/src/features/payroll/actions.ts` | Complete CRUD, calculation, batch generation, payout accounts, and disbursement logic |
 | Payroll Schemas & Types | `apps/app/src/features/payroll/schemas.ts` | Zod validators and TypeScript interfaces |
-| Staff HR Portal Payslip Tab | `apps/app/app/dashboard/staff/hr/page.tsx` | Statement of Duty Earnings connected to active payroll engine |
-| Sidebar Navigation | `apps/app/app/components/layout/Sidebar.tsx` | Added routes to CEO and Finance navigation trees |

@@ -37,9 +37,11 @@
 | `FIN-F15` | **CEO executive oversight & audit vault** — Tamper-proof audit trail for all adjustments and disbursements with CEO override clearance |
 | `FIN-F16` | **CEO Role Compensation Policy Matrix** — Executive desk at `/dashboard/ceo/payroll` to configure compensation structures by role (`FIXED_SALARY`, `PERCENTAGE_PER_STUDY`, `HOURLY_DUTY`, `HYBRID`) and rates |
 | `FIN-F17` | **Specialist Bespoke Compensation Overrides** — Ability for the CEO to define custom terms for individual senior specialists without altering default role rates |
-| `FIN-F18` | **Finance Batch Payroll & Calculation Engine** — Dynamic payroll execution at `/dashboard/finance/payroll` calculating base pay, study percentage commissions, duty wages, overtime, and allowances |
-| `FIN-F19` | **Official JAXIS Payslip Statement** — Itemized statement modal with deliverable breakdowns, verified duty hours, and withholding tax |
-| `FIN-F20` | **Multi-Channel Payout Disbursement** — Finance records GCash, Bank Transfer, or Cash references with audit stamps |
+| `FIN-F18` | **Corporate Settlement Cadence & Semi-Monthly Controls** — Company-wide settlement frequency configuration: Semi-Monthly (Days 1–15 and Days 16–End) with automatic 50% base salary and allowance division |
+| `FIN-F19` | **Finance Batch Payroll & Calculation Engine** — Dynamic payroll execution at `/dashboard/finance/payroll` calculating base pay, study percentage commissions, duty wages, overtime, and allowances |
+| `FIN-F20` | **Staff Registered Payout Routing & 1-Click Copy** — Finance disbursement modal displays employee's registered GCash, Maya, or Bank Transfer particulars with 1-click clipboard copy and auto-selected disbursement channel |
+| `FIN-F21` | **Official JAXIS Payslip Statement** — Itemized statement modal with deliverable breakdowns, verified duty hours, registered settlement account details, and withholding tax |
+| `FIN-F22` | **Multi-Channel Payout Disbursement** — Finance records GCash, Maya, Bank Transfer, or Cash references with audit stamps |
 
 ### ❌ Explicitly Out of Scope
 

@@ -533,6 +533,44 @@ Layer 0 (Foundation)
 
 ---
 
+### Module 18: Staff Attendance, Duty Tracking & Payroll Adjustments
+
+- **Domain:** People Operations / Duty Governance
+- **Dependencies:** `01-auth`, `02-staff`, `14-finance`
+- **Key Features:**
+  - Topbar live clock widget with 1-click Clock-In / Clock-Out and elapsed active timer
+  - Tamper-proof server timestamps, IP capture, device telemetry, and mobile punch detection
+  - Automated 14-hour runaway shift auto-capping (`AUTO_CLOSED`) and automatic meal break deductions
+  - Missed punch and overtime correction filing with structured justification
+  - Strict Segregation of Duties (SoD) anti-fraud approval matrix preventing self-approvals
+  - Interactive Monthly Duty Calendar with day inspector and leave balance integration at `/dashboard/staff/hr`
+  - CEO Executive Labor Governance Console (`/dashboard/ceo/attendance`) with dynamic weekend/holiday work controls, core shift hours, and wage rate configuration
+
+**Gate:** Shift tracking is tamper-proof. SoD anti-fraud strictly blocks self-approvals. Automated capping and meal deductions calculate accurately. CEO executive policy toggles apply system-wide.
+
+---
+
+### Module 19: Corporate Payroll Policies, Specialist Compensation & Multi-Channel Settlement Engine
+
+- **Domain:** People Operations / Treasury Settlement
+- **Dependencies:** `01-auth`, `02-staff`, `08-assignment`, `14-finance`, `18-attendance`
+- **Key Features:**
+  - Dual-mandate segregation: CEO defines compensation models and rates; Finance executes batch payroll and disburses funds
+  - CEO Role Compensation Matrix (`/dashboard/ceo/payroll`) with support for `FIXED_SALARY`, `PERCENTAGE_PER_STUDY`, `HOURLY_DUTY`, and `HYBRID` models
+  - Corporate Settlement Cadence: Semi-Monthly (Days 1–15 and Days 16–End) vs Monthly vs Bi-Weekly with 50% base salary and allowance division
+  - Bespoke Specialist Overrides allowing the CEO to tailor individual senior specialist contracts
+  - Finance Batch Payroll Engine (`/dashboard/finance/payroll`) dynamically integrating Module 18 attendance hours and completed study milestones
+  - Specialist Self-Service Settlement Accounts (`/dashboard/staff/hr` - Tab 6): GCash, Maya, Philippine Commercial Banks, and Cash Window with KYC verification
+  - Live Treasury Verification preview card with 1-click clipboard copy
+  - Treasury Disbursement Modal with auto-selected preferred payout channel and reference logging
+  - High-precision official itemized Payslip Statement voucher (`PayslipStatementModal`) with audit stamp
+  - Historical Payslips Ledger allowing staff to inspect, audit, and print statements across past cycles
+  - Monorepo-wide KPI card typography and geometry standardization (`@repo/ui/src/KpiCard.tsx`)
+
+**Gate:** CEO rate policies apply deterministically. Batch generator computes accurate gross/net wages across all models. Employee e-wallet/bank details sync in real time across Finance and CEO desks. Statement voucher renders complete itemized breakdown.
+
+---
+
 ## Revised Summary Table
 
 | # | Module | Domain | Key Dependency | Change from v1 |

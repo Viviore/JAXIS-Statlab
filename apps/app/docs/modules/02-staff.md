@@ -34,8 +34,9 @@
 | `STF-F12` | **Suspension lift** — Admin can lift a suspension; SuspensionLog `lifted_at` set |
 | `STF-F13` | **Specialist leave submission** — Statistician / QA Lead submits structured leave request with reason dropdown, justification paragraph, and date window (`LEAVE_PENDING`) |
 | `STF-F14` | **HR leave authorization & roster** — Finance & HR Officer (`FINANCE_OFFICER`) or Admin reviews submissions and authorizes leave (`ON_LEAVE`), excluding specialist from new Module 08 assignments |
-| `STF-F15` | **Calendar anti-overlap & past date guardrails** — Strict validation blocking past start dates, inverted return dates, and overlapping leave windows |
 | `STF-F16` | **Staff HR & People Operations Portal** — Centralized self-service portal at `/dashboard/staff/hr` across all internal roles (`STATISTICIAN`, `SENIOR_QA_LEAD`, `FINANCE_OFFICER`, `ADMIN`, `CEO`) featuring interactive shift calendar, leave center, overtime adjustments, and monthly duty payslips |
+| `STF-F17` | **Self-Service Settlement & Banking Methods (Tab 6)** — Internal staff members can configure and manage their preferred Philippine settlement destination (GCash, Maya, Philippine Banks, or Cash Window) with Live Treasury Verification preview and 1-click clipboard copy |
+| `STF-F18` | **Historical Payslips Ledger & Past Cycle Inspection** — Full chronological duty earnings ledger allowing staff to browse, audit, and print official statements across historical cut-off periods |
 
 ### ❌ Explicitly Out of Scope
 
