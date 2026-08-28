@@ -53,6 +53,10 @@ Module 19 provides institutional payroll governance, executive compensation conf
 7. **Staff HR Portal Integration (`/dashboard/staff/hr`)**:
    - Dynamic integration with `getMyHrPortalData` and `getMyOfficialPayslip`.
    - Displays official statement document number, status badge (`Disbursed / Paid` vs `Draft`), and exact figures calculated by the payroll engine.
+8. **Historical Payslips Ledger & Past Month Selector (`/dashboard/staff/hr`)**:
+   - Past settlement period dropdown selector allowing employees to switch between historical months and 15-day cut-off cycles.
+   - Comprehensive Historical Payslips Ledger table listing statement document IDs, pay periods, cut-off tags, gross pay, net take-home, and verified disbursement methods (GCash / Bank Wire references).
+   - Embedded `PayslipStatementModal` allowing staff to view and print official statements for any historical period.
 
 ---
 
