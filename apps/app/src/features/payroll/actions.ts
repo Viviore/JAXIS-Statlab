@@ -12,10 +12,12 @@ import {
   CorporatePayrollScheduleConfigSchema,
   GeneratePayrollBatchSchema,
   DisbursePayslipSchema,
+  StaffPayoutDetailsSchema,
   type RoleCompensationConfigDTO,
   type StaffCompensationOverrideDTO,
   type CorporatePayrollScheduleConfigDTO,
   type StaffPayslipDTO,
+  type StaffPayoutDetailsDTO,
   type PayrollKpiSummary,
   type PayslipItemizedStudy,
 } from "./schemas";
@@ -24,6 +26,7 @@ import { getDevUsers } from "@/lib/mock-data/users.data";
 const DEV_DATA_DIR = path.join(process.cwd(), "dev_data");
 const CONFIGS_FILE = path.join(DEV_DATA_DIR, "payroll_configs.json");
 const PAYSLIPS_FILE = path.join(DEV_DATA_DIR, "payslips.json");
+const PAYOUT_DETAILS_FILE = path.join(DEV_DATA_DIR, "payout_details.json");
 
 function ensureDevDataDir() {
   if (!fs.existsSync(DEV_DATA_DIR)) {
@@ -152,6 +155,50 @@ function writePayslipsStorage(data: StaffPayslipDTO[]): void {
   }
 }
 
+function readPayoutDetailsStorage(): Record<string, StaffPayoutDetailsDTO> {
+  ensureDevDataDir();
+  try {
+    if (fs.existsSync(PAYOUT_DETAILS_FILE)) {
+      const data = fs.readFileSync(PAYOUT_DETAILS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.warn("[readPayoutDetailsStorage] Failed to read payout details file", err);
+  }
+  return {};
+}
+
+function writePayoutDetailsStorage(data: Record<string, StaffPayoutDetailsDTO>): void {
+  ensureDevDataDir();
+  try {
+    fs.writeFileSync(PAYOUT_DETAILS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[writePayoutDetailsStorage] Failed to write payout details", err);
+  }
+}
+
+function findPayoutDetailsForStaff(
+  storage: Record<string, StaffPayoutDetailsDTO>,
+  userId: string,
+  staffName?: string,
+  staffEmail?: string
+): StaffPayoutDetailsDTO | null {
+  if (storage[userId]) return storage[userId]!;
+  const all = Object.values(storage);
+  const byUser = all.find((d) => d.userId === userId);
+  if (byUser) return byUser;
+  if (staffName) {
+    const sNameLower = staffName.toLowerCase();
+    const byName = all.find(
+      (d) =>
+        d.accountName.toLowerCase().includes(sNameLower) ||
+        sNameLower.includes(d.accountName.toLowerCase())
+    );
+    if (byName) return byName;
+  }
+  return null;
+}
+
 export interface InternalStaffMember {
   id: string;
   fullName: string;
@@ -160,6 +207,7 @@ export interface InternalStaffMember {
   status: string;
   overrideConfig?: StaffCompensationOverrideDTO | null;
   effectiveConfig: RoleCompensationConfigDTO | StaffCompensationOverrideDTO;
+  payoutDetails?: StaffPayoutDetailsDTO | null;
 }
 
 /**
@@ -174,6 +222,7 @@ export async function getPayrollConfigurations(): Promise<{
 }> {
   await requireRole("CEO", "FINANCE_OFFICER", "ADMIN");
   const storage = readPayrollStorage();
+  const payoutStorage = readPayoutDetailsStorage();
 
   // Load internal staff users
   const staffMembers: InternalStaffMember[] = [];
@@ -218,6 +267,7 @@ export async function getPayrollConfigurations(): Promise<{
       status: u.status,
       overrideConfig: override,
       effectiveConfig: override || roleConfig,
+      payoutDetails: findPayoutDetailsForStaff(payoutStorage, u.id, u.fullName, u.email),
     });
   }
 
@@ -236,6 +286,7 @@ export async function getPayrollConfigurations(): Promise<{
         status: du.status,
         overrideConfig: override,
         effectiveConfig: override || roleConfig,
+        payoutDetails: findPayoutDetailsForStaff(payoutStorage, du.id, du.fullName, du.email),
       });
     }
   }
@@ -663,8 +714,14 @@ export async function getCompanyPayslips(filters?: {
   const totalStudiesRewarded = filtered.reduce((sum, p) => sum + p.completedStudiesCount, 0);
   const activeStaffCount = new Set(filtered.map((p) => p.userId)).size;
 
+  const payoutStorage = readPayoutDetailsStorage();
+  const enhancedPayslips = filtered.map((p) => ({
+    ...p,
+    payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName, p.staffEmail) || p.payoutDetails || null,
+  }));
+
   return {
-    payslips: filtered,
+    payslips: enhancedPayslips,
     kpis: {
       totalInstitutionalPayroll,
       totalDisbursed,
@@ -684,7 +741,7 @@ export async function getCompanyPayslips(filters?: {
 export async function disbursePayslip(
   input: unknown
 ): Promise<{ success: boolean; data?: StaffPayslipDTO; error?: { message: string } }> {
-  const session = await requireRole("FINANCE_OFFICER", "CEO");
+  const session = await requireRole("FINANCE_OFFICER", "CEO", "ADMIN");
   const parsed = DisbursePayslipSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -727,7 +784,7 @@ export async function disbursePayslip(
 export async function approvePayslip(
   payslipId: string
 ): Promise<{ success: boolean; error?: { message: string } }> {
-  await requireRole("FINANCE_OFFICER", "CEO");
+  await requireRole("FINANCE_OFFICER", "CEO", "ADMIN");
   const payslips = readPayslipsStorage();
   const target = payslips.find((p) => p.id === payslipId);
 
@@ -781,6 +838,12 @@ export async function getMyOfficialPayslip(
   // Sort descending so newest is first
   myPayslips.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+  const payoutStorage = readPayoutDetailsStorage();
+  myPayslips = myPayslips.map((p) => ({
+    ...p,
+    payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName, p.staffEmail) || p.payoutDetails || null,
+  }));
+
   let targetPayslip = null;
   if (payPeriodMonthOrId) {
     targetPayslip =
@@ -799,4 +862,65 @@ export async function getMyOfficialPayslip(
     payslip: targetPayslip,
     allMyPayslips: myPayslips,
   };
+}
+
+/**
+ * 10. Get logged-in staff member's registered payout details.
+ */
+export async function getMyPayoutDetails(): Promise<{ success: boolean; data: StaffPayoutDetailsDTO | null }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, data: null };
+  }
+
+  const storage = readPayoutDetailsStorage();
+  const details = storage[session.user.id] || null;
+
+  return {
+    success: true,
+    data: details,
+  };
+}
+
+/**
+ * 11. Update logged-in staff member's payout details.
+ */
+export async function updateMyPayoutDetails(
+  input: Omit<StaffPayoutDetailsDTO, "userId" | "updatedAt">
+): Promise<{ success: boolean; data?: StaffPayoutDetailsDTO; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Authentication required." };
+  }
+
+  const validation = StaffPayoutDetailsSchema.safeParse({
+    ...input,
+    userId: session.user.id,
+    updatedAt: new Date().toISOString(),
+  });
+
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0]?.message || "Invalid payout details input." };
+  }
+
+  const storage = readPayoutDetailsStorage();
+  storage[session.user.id] = validation.data;
+  writePayoutDetailsStorage(storage);
+
+  revalidatePath("/dashboard/staff/hr");
+  revalidatePath("/dashboard/finance/payroll");
+  revalidatePath("/dashboard/ceo/payroll");
+
+  return {
+    success: true,
+    data: validation.data,
+  };
+}
+
+/**
+ * 12. Get payout details for any staff member (for Finance / CEO).
+ */
+export async function getStaffPayoutDetails(userId: string): Promise<StaffPayoutDetailsDTO | null> {
+  const storage = readPayoutDetailsStorage();
+  return storage[userId] || null;
 }

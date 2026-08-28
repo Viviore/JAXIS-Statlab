@@ -1050,7 +1050,17 @@ export default function CeoPayrollPolicyPage() {
                         <td className="py-3 px-3">
                           <div className="flex flex-col">
                             <span className="font-semibold text-white">{staff.fullName}</span>
-                            <span className="text-[0.688rem] font-mono text-white/40">{staff.email}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[0.688rem] font-mono text-white/40">{staff.email}</span>
+                              {staff.payoutDetails && (
+                                <span
+                                  className="text-[0.562rem] font-mono px-1.5 py-0.2 rounded-[2px] bg-orange-500/15 text-[#FFA040] border border-[#FFA040]/30"
+                                  title={`${staff.payoutDetails.payoutChannel}: ${staff.payoutDetails.accountNumber} (${staff.payoutDetails.accountName})`}
+                                >
+                                  {staff.payoutDetails.payoutChannel.replace(/_/g, " ")}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="py-3 px-3 font-mono text-[0.688rem] text-white/70">

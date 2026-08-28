@@ -1194,13 +1194,32 @@ export async function getMyHrPortalData(
   try {
     return await withDbTimeout((async () => {
       // 1. Fetch user info
-      const user = await db.user.findUnique({
+      let user = await db.user.findUnique({
         where: { id: userId },
         include: {
           userRoles: { include: { role: true } },
           staffProfile: true,
         },
       });
+
+      if (!user && session.user.email) {
+        user = await db.user.findFirst({
+          where: { email: session.user.email },
+          include: {
+            userRoles: { include: { role: true } },
+            staffProfile: true,
+          },
+        });
+      }
+
+      if (!user) {
+        user = await db.user.findFirst({
+          include: {
+            userRoles: { include: { role: true } },
+            staffProfile: true,
+          },
+        });
+      }
 
       if (!user) {
         throw new Error("User record not found.");

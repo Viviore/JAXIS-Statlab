@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button } from "@repo/ui";
-import { IconLoader2, IconCheck } from "@tabler/icons-react";
+import { Modal, Button, Badge } from "@repo/ui";
+import { IconLoader2, IconCheck, IconBuildingBank, IconDeviceMobile } from "@tabler/icons-react";
 import { saveStaffCompensationOverride, deleteStaffCompensationOverride } from "../actions";
 import type { InternalStaffMember } from "../actions";
 import type { CompensationType } from "../schemas";
@@ -164,6 +164,44 @@ export function SpecialistOverrideModal({
             {errorMsg}
           </div>
         )}
+
+        {/* Specialist Payout Settlement Badge */}
+        <div className="p-3 bg-[#010D1F] border border-white/10 rounded-[2px] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {staff.payoutDetails?.payoutChannel === "BANK_TRANSFER" ? (
+              <IconBuildingBank size={16} stroke={1.5} className="text-[#FFA040]" />
+            ) : (
+              <IconDeviceMobile size={16} stroke={1.5} className="text-[#FFA040]" />
+            )}
+            <div className="flex flex-col">
+              <span className="text-[0.625rem] uppercase font-mono text-white/50">
+                Registered Settlement Destination
+              </span>
+              {staff.payoutDetails ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Badge variant="amber" className="text-[0.562rem] font-mono">
+                    {staff.payoutDetails.payoutChannel.replace(/_/g, " ")}
+                  </Badge>
+                  <span className="font-mono text-xs font-bold text-white">
+                    {staff.payoutDetails.accountNumber}
+                  </span>
+                  {staff.payoutDetails.bankName && (
+                    <span className="text-xs text-sky-400 font-sans">
+                      ({staff.payoutDetails.bankName})
+                    </span>
+                  )}
+                  <span className="text-xs text-white/60 font-sans">
+                    &bull; {staff.payoutDetails.accountName}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-xs text-amber-400 font-sans">
+                  No e-wallet / bank account registered yet.
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Model Selector */}
         <div className="flex flex-col gap-2">

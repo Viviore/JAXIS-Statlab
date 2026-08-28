@@ -78,8 +78,23 @@ export type StaffCompensationOverrideDTO = z.infer<typeof StaffCompensationOverr
 export const PayslipStatusEnum = z.enum(["DRAFT", "APPROVED", "DISBURSED"]);
 export type PayslipStatus = z.infer<typeof PayslipStatusEnum>;
 
-export const DisbursementMethodEnum = z.enum(["GCASH", "BANK_TRANSFER", "CASH"]);
+export const DisbursementMethodEnum = z.enum(["GCASH", "MAYA", "BANK_TRANSFER", "CASH"]);
 export type DisbursementMethod = z.infer<typeof DisbursementMethodEnum>;
+
+export const PayoutChannelEnum = z.enum(["GCASH", "MAYA", "BANK_TRANSFER", "CASH"]);
+export type PayoutChannel = z.infer<typeof PayoutChannelEnum>;
+
+export const StaffPayoutDetailsSchema = z.object({
+  userId: z.string().min(1, "Staff member ID is required."),
+  payoutChannel: PayoutChannelEnum.default("GCASH"),
+  accountNumber: z.string().trim().min(3, "Account or Mobile number is required.").max(60),
+  accountName: z.string().trim().min(2, "Account holder name is required.").max(100),
+  bankName: z.string().optional().default(""),
+  notes: z.string().optional().default(""),
+  updatedAt: z.string().optional(),
+});
+
+export type StaffPayoutDetailsDTO = z.infer<typeof StaffPayoutDetailsSchema>;
 
 export interface PayslipItemizedStudy {
   projectId: string;
@@ -125,6 +140,7 @@ export interface StaffPayslipDTO {
   disbursedAt?: string | null;
   disbursedBy?: string | null;
   disbursedByName?: string | null;
+  payoutDetails?: StaffPayoutDetailsDTO | null;
   generatedBy: string;
   notes?: string | null;
   createdAt: string;

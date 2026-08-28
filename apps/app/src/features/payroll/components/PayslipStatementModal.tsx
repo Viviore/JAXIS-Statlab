@@ -85,7 +85,7 @@ export function PayslipStatementModal({
         </div>
 
         {/* Employee Particulars */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-[#01142B] border border-white/10 rounded-[2px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 p-4 bg-[#01142B] border border-white/10 rounded-[2px]">
           <div>
             <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Staff Specialist</span>
             <span className="font-semibold text-white text-xs">{payslip.staffName}</span>
@@ -97,6 +97,16 @@ export function PayslipStatementModal({
           <div>
             <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Staff Email</span>
             <span className="font-mono text-white/70 text-xs truncate block">{payslip.staffEmail}</span>
+          </div>
+          <div>
+            <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Payout Destination</span>
+            {payslip.payoutDetails ? (
+              <span className="font-mono text-white/90 text-xs truncate block">
+                {payslip.payoutDetails.payoutChannel} &bull; {payslip.payoutDetails.accountNumber}
+              </span>
+            ) : (
+              <span className="text-white/40 text-xs font-mono">Standard Treasury</span>
+            )}
           </div>
           <div>
             <span className="text-[0.625rem] uppercase font-mono text-white/40 block">Settlement Status</span>
@@ -255,7 +265,10 @@ export function PayslipStatementModal({
               <IconShieldCheck size={18} className="text-sky-400" />
               <div>
                 <span className="font-bold text-white block">Treasury Disbursement Cleared</span>
-                <span>Ref: <strong className="text-sky-300">{payslip.disbursementReference}</strong> ({payslip.disbursementMethod})</span>
+                <span>
+                  Ref: <strong className="text-sky-300">{payslip.disbursementReference}</strong> ({payslip.disbursementMethod}
+                  {payslip.payoutDetails?.accountNumber ? ` · ${payslip.payoutDetails.accountNumber}` : ""})
+                </span>
               </div>
             </div>
             <div className="text-right text-[0.688rem] text-white/50">

@@ -21,16 +21,20 @@ import {
   IconBolt,
   IconHistory,
   IconFileText,
+  IconWallet,
+  IconCoins,
+  IconCopy,
+  IconEdit,
 } from "@tabler/icons-react";
 import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
 import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
 import { requestLeave } from "@/features/staff/actions";
-import { getMyOfficialPayslip } from "@/features/payroll/actions";
-import type { StaffPayslipDTO } from "@/features/payroll/schemas";
+import { getMyOfficialPayslip, getMyPayoutDetails, updateMyPayoutDetails } from "@/features/payroll/actions";
+import type { StaffPayslipDTO, StaffPayoutDetailsDTO, PayoutChannel } from "@/features/payroll/schemas";
 import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
 import type { HrPortalData, DailyAttendanceEvent } from "@/features/attendance/schemas";
 
-type ActiveHrTab = "TIMESHEETS" | "CALENDAR" | "LEAVES" | "OVERTIME" | "PAYSLIP";
+type ActiveHrTab = "TIMESHEETS" | "CALENDAR" | "LEAVES" | "OVERTIME" | "PAYSLIP" | "PAYOUT";
 
 export default function StaffHrPortalPage() {
   const [activeTab, setActiveTab] = useState<ActiveHrTab>("TIMESHEETS");
@@ -68,20 +72,39 @@ export default function StaffHrPortalPage() {
   const [selectedPayslip, setSelectedPayslip] = useState<StaffPayslipDTO | null>(null);
   const [selectedPayslipForModal, setSelectedPayslipForModal] = useState<StaffPayslipDTO | null>(null);
 
+  // Payout & Banking Details
+  const [payoutDetails, setPayoutDetails] = useState<StaffPayoutDetailsDTO | null>(null);
+  const [isSavingPayout, setIsSavingPayout] = useState<boolean>(false);
+  const [payoutChannel, setPayoutChannel] = useState<PayoutChannel>("GCASH");
+  const [accountNumber, setAccountNumber] = useState<string>("");
+  const [accountName, setAccountName] = useState<string>("");
+  const [bankName, setBankName] = useState<string>("BDO Unibank");
+  const [payoutNotes, setPayoutNotes] = useState<string>("");
+  const [copiedAccount, setCopiedAccount] = useState<boolean>(false);
+
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
 
   // Load Data
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [res, payslipRes] = await Promise.all([
+      const [res, payslipRes, payoutRes] = await Promise.all([
         getMyHrPortalData(currentYear, currentMonth),
         getMyOfficialPayslip(),
+        getMyPayoutDetails(),
       ]);
       setPortalData(res);
       setAllMyPayslips(payslipRes.allMyPayslips);
       if (payslipRes.allMyPayslips.length > 0) {
         setSelectedPayslip((prev) => prev || payslipRes.payslip || payslipRes.allMyPayslips[0] || null);
+      }
+      if (payoutRes?.data) {
+        setPayoutDetails(payoutRes.data);
+        setPayoutChannel(payoutRes.data.payoutChannel);
+        setAccountNumber(payoutRes.data.accountNumber);
+        setAccountName(payoutRes.data.accountName);
+        setBankName(payoutRes.data.bankName || "BDO Unibank");
+        setPayoutNotes(payoutRes.data.notes || "");
       }
       // Default selected day to today if in current month
       const todayEvt = res.currentMonthEvents.find((e) => e.isToday) || res.currentMonthEvents[0] || null;
@@ -208,6 +231,64 @@ export default function StaffHrPortalPage() {
     }
   };
 
+  const handleCopyAccount = (text: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedAccount(true);
+    setTimeout(() => setCopiedAccount(false), 2000);
+    setToast({
+      variant: "info",
+      message: "Copied to Clipboard",
+      description: "Account / Mobile number copied to clipboard.",
+    });
+  };
+
+  const handleSavePayoutDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!accountNumber.trim() || !accountName.trim()) {
+      setToast({
+        variant: "warning",
+        message: "Incomplete Details",
+        description: "Please provide both account/mobile number and account holder name.",
+      });
+      return;
+    }
+
+    setIsSavingPayout(true);
+    try {
+      const res = await updateMyPayoutDetails({
+        payoutChannel,
+        accountNumber: accountNumber.trim(),
+        accountName: accountName.trim(),
+        bankName: payoutChannel === "BANK_TRANSFER" ? bankName : "",
+        notes: payoutNotes.trim(),
+      });
+
+      if (res.success && res.data) {
+        setPayoutDetails(res.data);
+        setToast({
+          variant: "success",
+          message: "Settlement Method Saved",
+          description: "Your payout details have been synchronized with the Finance Treasury desk.",
+        });
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Save Failed",
+          description: res.error || "Unable to save payout details.",
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Network Error",
+        description: "Unable to contact treasury services.",
+      });
+    } finally {
+      setIsSavingPayout(false);
+    }
+  };
+
   if (isLoading || !portalData) {
     return (
       <div className="flex-1 w-full flex items-center justify-center animate-content-fade my-auto">
@@ -280,6 +361,7 @@ export default function StaffHrPortalPage() {
           { id: "LEAVES", label: "Leave Center & Balances", icon: IconCalendarOff },
           { id: "OVERTIME", label: "Overtimes & Adjustments", icon: IconClockPlay },
           { id: "PAYSLIP", label: "Monthly Payslips & Earnings", icon: IconReceipt },
+          { id: "PAYOUT", label: "Payout & Banking Methods", icon: IconBuildingBank },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1014,6 +1096,52 @@ export default function StaffHrPortalPage() {
               </div>
             </div>
 
+            {/* Registered Disbursement Destination Banner */}
+            <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#CC6600]/15 border border-[#CC6600]/30 text-[#FFA040] rounded-[2px]">
+                  <IconBuildingBank size={18} stroke={1.5} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase font-mono font-semibold text-white/50">
+                    Disbursement Payout Destination
+                  </span>
+                  {payoutDetails ? (
+                    <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                      <Badge variant="amber" className="text-[0.625rem] font-mono">
+                        {payoutDetails.payoutChannel.replace(/_/g, " ")}
+                      </Badge>
+                      <span className="font-mono text-xs font-bold text-white">
+                        {payoutDetails.accountNumber}
+                      </span>
+                      {payoutDetails.bankName && (
+                        <span className="text-xs text-sky-400 font-sans">
+                          ({payoutDetails.bankName})
+                        </span>
+                      )}
+                      <span className="text-xs text-white/60 font-sans">
+                        &bull; {payoutDetails.accountName}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-amber-400 font-sans mt-0.5">
+                      No verified payout account registered yet.
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab("PAYOUT")}
+                className="cursor-pointer text-xs flex items-center gap-1.5 rounded-[2px] shrink-0"
+              >
+                <IconEdit size={14} stroke={1.5} />
+                <span>{payoutDetails ? "Update Payout Details" : "Configure Settlement Account"}</span>
+              </Button>
+            </div>
+
             {/* Historical Payslips Audit Ledger */}
             <div className="mt-6 flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
@@ -1134,6 +1262,270 @@ export default function StaffHrPortalPage() {
               )}
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* TAB 5: DISBURSEMENT & PAYOUT DETAILS */}
+      {activeTab === "PAYOUT" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Main Configuration Card (8 Cols) */}
+          <Card className="lg:col-span-8 p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-[#CC6600]/15 border border-[#CC6600]/30 text-[#FFA040] rounded-[2px]">
+                  <IconBuildingBank size={20} stroke={1.5} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white font-sans">
+                    Disbursement &amp; Payout Account Configuration
+                  </h2>
+                  <span className="text-xs text-white/50 font-sans">
+                    Configure your verified Philippine e-wallet or local bank account for direct milestone payments and salary releases.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSavePayoutDetails} className="flex flex-col gap-5">
+              {/* Channel Selector Grid */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-mono uppercase text-white/70 font-semibold">
+                  Preferred Disbursement Channel *
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {[
+                    { id: "GCASH", label: "GCash", desc: "Mobile E-Wallet", icon: IconDeviceMobile },
+                    { id: "MAYA", label: "Maya", desc: "Digital Wallet", icon: IconWallet },
+                    { id: "BANK_TRANSFER", label: "Bank Wire", desc: "Philippine Bank", icon: IconBuildingBank },
+                    { id: "CASH", label: "Cash Window", desc: "In-Person Collection", icon: IconCoins },
+                  ].map((ch) => {
+                    const Icon = ch.icon;
+                    const isSelected = payoutChannel === ch.id;
+                    return (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        onClick={() => setPayoutChannel(ch.id as PayoutChannel)}
+                        className={`p-3 rounded-[2px] border text-left transition-all cursor-pointer flex flex-col gap-1.5 ${
+                          isSelected
+                            ? "bg-[#CC6600]/15 border-[#CC6600] text-white shadow-lg"
+                            : "bg-[#010D1F] border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <Icon size={18} stroke={1.5} className={isSelected ? "text-[#FFA040]" : "text-white/40"} />
+                          {isSelected && <IconCheck size={14} stroke={2.5} className="text-[#FFA040]" />}
+                        </div>
+                        <div>
+                          <span className={`text-xs font-bold font-sans block ${isSelected ? "text-white" : "text-white/80"}`}>
+                            {ch.label}
+                          </span>
+                          <span className="text-[0.625rem] text-white/40 font-mono">
+                            {ch.desc}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bank Name Dropdown (Conditional) */}
+              {payoutChannel === "BANK_TRANSFER" && (
+                <div className="flex flex-col gap-1.5 animate-content-fade">
+                  <label className="text-xs font-mono uppercase text-white/70 font-semibold">
+                    Philippine Bank Name *
+                  </label>
+                  <select
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer font-sans"
+                    required
+                  >
+                    <option value="BDO Unibank">BDO Unibank (Banco de Oro)</option>
+                    <option value="Bank of the Philippine Islands (BPI)">Bank of the Philippine Islands (BPI)</option>
+                    <option value="Metrobank">Metropolitan Bank & Trust Co. (Metrobank)</option>
+                    <option value="UnionBank of the Philippines">UnionBank of the Philippines</option>
+                    <option value="Security Bank">Security Bank Corporation</option>
+                    <option value="RCBC">Rizal Commercial Banking Corporation (RCBC)</option>
+                    <option value="Landbank">Land Bank of the Philippines</option>
+                    <option value="GoTyme Bank">GoTyme Bank</option>
+                    <option value="Maya Bank">Maya Bank</option>
+                    <option value="Philippine National Bank (PNB)">Philippine National Bank (PNB)</option>
+                    <option value="China Banking Corporation">China Banking Corporation (China Bank)</option>
+                    <option value="Other Philippine Bank">Other Philippine Commercial Bank</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Account Number / Mobile Number */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-mono uppercase text-white/70 font-semibold">
+                  {payoutChannel === "GCASH" || payoutChannel === "MAYA"
+                    ? "Registered Mobile / Account Number *"
+                    : payoutChannel === "BANK_TRANSFER"
+                    ? "Bank Account Number *"
+                    : "Office Reference / ID Number *"}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder={
+                    payoutChannel === "GCASH"
+                      ? "e.g. 0917-123-4567"
+                      : payoutChannel === "MAYA"
+                      ? "e.g. 0918-223-9901"
+                      : payoutChannel === "BANK_TRANSFER"
+                      ? "e.g. 1092-3847-1920"
+                      : "e.g. JAX-STAFF-001 (HQ Manila Window)"
+                  }
+                  className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white font-mono placeholder-white/30 outline-none"
+                />
+                <span className="text-xs text-white/40">
+                  Double check your number. All milestone disbursements are routed directly to this destination.
+                </span>
+              </div>
+
+              {/* Account Holder KYC Name */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-mono uppercase text-white/70 font-semibold">
+                  Registered Account Holder Name (KYC Verified) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  placeholder="e.g. Prof. Sofia Benitez or Dr. Juan Reyes"
+                  className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white font-sans placeholder-white/30 outline-none"
+                />
+                <span className="text-xs text-white/40">
+                  Must match the exact name registered on your bank or e-wallet account to prevent payment rejections.
+                </span>
+              </div>
+
+              {/* Special Instructions / Notes */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-mono uppercase text-white/70 font-semibold">
+                  Disbursement Notes / Branch Info (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={payoutNotes}
+                  onChange={(e) => setPayoutNotes(e.target.value)}
+                  placeholder="e.g. BDO Makati Avenue Branch or GCash merchant verified"
+                  className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white font-sans placeholder-white/30 outline-none"
+                />
+              </div>
+
+              {/* Form Action Buttons */}
+              <div className="flex items-center justify-between pt-3 border-t border-white/10 mt-2">
+                <div className="text-xs text-white/50">
+                  Updates take effect immediately on your upcoming cut-off payout.
+                </div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={isSavingPayout || !accountNumber.trim() || !accountName.trim()}
+                  className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold rounded-[2px] px-5 py-2"
+                >
+                  {isSavingPayout ? (
+                    <>
+                      <IconLoader2 size={16} stroke={2.5} className="animate-spin text-white/90" />
+                      <span>Saving Settlement...</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconCheck size={16} stroke={2} />
+                      <span>Save Settlement Method</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Card>
+
+          {/* Right Column: Live Treasury & Finance View (4 Cols) */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <Card className="p-6 bg-[#01142B] border-white/10 flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/60">
+                  Live Treasury Verification
+                </span>
+                <span className="text-[0.625rem] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] border border-emerald-500/20">
+                  Verified Active
+                </span>
+              </div>
+
+              <p className="text-xs text-white/60 font-sans leading-relaxed">
+                This is how the **Finance Officer** and **CEO** see your payout account when releasing salary disbursements:
+              </p>
+
+              <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase text-white/40">Channel</span>
+                  <Badge variant="amber" className="text-xs font-mono">
+                    {payoutChannel.replace(/_/g, " ")}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase text-white/40">Account No.</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-xs font-bold text-white">
+                      {accountNumber || "—"}
+                    </span>
+                    {accountNumber && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopyAccount(accountNumber)}
+                        className="text-white/40 hover:text-white transition-colors cursor-pointer"
+                        title="Copy Account"
+                      >
+                        {copiedAccount ? (
+                          <IconCheck size={12} stroke={2} className="text-emerald-400" />
+                        ) : (
+                          <IconCopy size={12} stroke={1.5} />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {payoutChannel === "BANK_TRANSFER" && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono uppercase text-white/40">Bank Name</span>
+                    <span className="text-xs font-sans text-sky-300 font-medium truncate max-w-[160px]">
+                      {bankName}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase text-white/40">Holder</span>
+                  <span className="text-xs font-sans text-white font-medium">
+                    {accountName || "—"}
+                  </span>
+                </div>
+
+                {payoutNotes && (
+                  <div className="pt-2 border-t border-white/5 text-[0.688rem] text-white/40 font-sans italic">
+                    Note: &ldquo;{payoutNotes}&rdquo;
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-white/[0.02] border border-white/5 rounded-[2px] flex items-start gap-2 text-xs text-white/50 font-sans">
+                <IconShieldCheck size={16} stroke={1.5} className="text-emerald-400 shrink-0 mt-0.5" />
+                <span>
+                  All banking records are encrypted and restricted to authorized JAXIS Treasury signatories.
+                </span>
+              </div>
+            </Card>
+          </div>
         </div>
       )}
 
