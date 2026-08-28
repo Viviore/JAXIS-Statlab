@@ -13,6 +13,7 @@ import {
   Toast,
   LoadingState,
   EmptyState,
+  Pagination,
 } from "@repo/ui";
 import { IconDownload, IconCopy, IconFolderOff, IconFileSearch, IconPlus, IconArrowRight } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
@@ -31,6 +32,8 @@ export default function ClientProjectsListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [selectedStudyForInspect, setSelectedStudyForInspect] = useState<ProjectDetailItem | null>(null);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -112,6 +115,13 @@ export default function ClientProjectsListPage() {
       return p.masterStatus === statusFilter;
     });
   }, [projects, statusFilter]);
+
+  const paginatedProjects = useMemo(() => {
+    return filteredProjects.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredProjects, currentPage, pageSize]);
 
   const awaitingInfoList = useMemo(() => {
     return projects.filter((p) => p.masterStatus === "AWAITING_INFORMATION");
@@ -275,7 +285,7 @@ export default function ClientProjectsListPage() {
         {/* Filter Toolbar */}
         <FilterToolbar
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={(q) => { setSearchQuery(q); setCurrentPage(1); }}
           searchPlaceholder="Search study title, JAXIS ID, or objectives..."
           filters={[
             {
@@ -293,11 +303,15 @@ export default function ClientProjectsListPage() {
             },
           ]}
           onFilterChange={(key, value) => {
-            if (key === "status") setStatusFilter(value);
+            if (key === "status") {
+              setStatusFilter(value);
+              setCurrentPage(1);
+            }
           }}
           onClear={() => {
             setStatusFilter("ALL");
             setSearchQuery("");
+            setCurrentPage(1);
           }}
         />
 
@@ -344,7 +358,7 @@ export default function ClientProjectsListPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProjects.map((p) => {
+                  paginatedProjects.map((p) => {
                     const isAwaiting = p.masterStatus === "AWAITING_INFORMATION";
 
                     return (
@@ -465,6 +479,17 @@ export default function ClientProjectsListPage() {
             </table>
           </div>
         </div>
+
+        {filteredProjects.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredProjects.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="studies"
+          />
+        )}
       </Card>
 
       {/* ── Quick View Modal ── */}

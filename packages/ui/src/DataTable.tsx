@@ -10,6 +10,7 @@ import {
   TableCell,
 } from "./Table";
 import { LoadingState } from "./LoadingState";
+import { Pagination } from "./Pagination";
 import { cn } from "./utils";
 
 export interface Column<T> {
@@ -27,6 +28,8 @@ export interface DataTableProps<T> {
   emptyState?: React.ReactNode;
   onRowClick?: (row: T) => void;
   className?: string;
+  pageSize?: number;
+  showPagination?: boolean;
 }
 
 export function DataTable<T extends object = Record<string, unknown>>({
@@ -36,7 +39,17 @@ export function DataTable<T extends object = Record<string, unknown>>({
   emptyState,
   onRowClick,
   className = "",
+  pageSize: initialPageSize = 10,
+  showPagination = false,
 }: DataTableProps<T>): React.ReactElement {
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(initialPageSize);
+
+  const displayedRows = React.useMemo(() => {
+    if (!showPagination) return rows;
+    const start = (currentPage - 1) * pageSize;
+    return rows.slice(start, start + pageSize);
+  }, [rows, showPagination, currentPage, pageSize]);
   return (
     <div
       className={cn(
@@ -89,7 +102,7 @@ export function DataTable<T extends object = Record<string, unknown>>({
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((row, rIdx) => (
+            displayedRows.map((row, rIdx) => (
               <TableRow
                 key={((row as { id?: string }).id) ?? rIdx}
                 onClick={() => onRowClick?.(row)}
@@ -122,6 +135,16 @@ export function DataTable<T extends object = Record<string, unknown>>({
           )}
         </TableBody>
       </Table>
+
+      {showPagination && rows.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalItems={rows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
+      )}
     </div>
   );
 }

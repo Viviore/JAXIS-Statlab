@@ -1,163 +1,926 @@
 "use client";
 
-import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column } from "@repo/ui";
-import { useProjects } from "@/features/projects/hooks/useProjects";
-import { Project } from "@/types/project";
-
+import React, { useState, useEffect, useCallback, useTransition, useMemo } from "react";
 import Link from "next/link";
+import {
+  PageHeader,
+  Card,
+  Button,
+  Modal,
+  KpiCard,
+  Badge,
+  LoadingState,
+  Toast,
+  Pagination,
+} from "@repo/ui";
+import {
+  IconPlayerPause,
+  IconArrowRight,
+  IconLoader2,
+  IconRefresh,
+  IconCheck,
+  IconAlertTriangle,
+  IconFileText,
+  IconDatabase,
+  IconCalendar,
+  IconUserCheck,
+  IconClock,
+  IconChevronDown,
+} from "@tabler/icons-react";
+import { getStatisticianWorkload, requestSlaPause } from "@/features/assignments/actions";
+import { getStaffSelfProfile, requestLeave, returnFromLeave } from "@/features/staff/actions";
+import { assessBurnoutRisk } from "@/lib/assignment-rules";
+import type { AssignmentDetailItem } from "@/features/assignments/schemas";
+
+const LEAVE_REASON_TEMPLATES = [
+  {
+    label: "Annual Vacation / Personal Rest",
+    text: "Taking scheduled annual vacation leave for personal rest and recuperation. Active projects can be monitored or escalated to the QA lead.",
+  },
+  {
+    label: "Sick / Medical Recovery",
+    text: "Taking medical recovery leave due to personal health reasons. Will resume statistical duties once medically cleared.",
+  },
+  {
+    label: "Academic Conference Presentation",
+    text: "Attending and presenting research at an academic conference with limited connectivity during daytime hours.",
+  },
+  {
+    label: "Family Emergency / Urgent Matters",
+    text: "Stepping away temporarily to attend to urgent family matters. Will keep the team updated on expected availability.",
+  },
+  {
+    label: "Research Fieldwork / Data Collection",
+    text: "Conducting off-site scientific research fieldwork and data gathering. Analysis will resume upon field mission completion.",
+  },
+];
 
 export default function StatisticianDashboardPage() {
-  const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
+  const [assignments, setAssignments] = useState<AssignmentDetailItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedStudy, setSelectedStudy] = useState<AssignmentDetailItem | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const { projects, isLoading } = useProjects({
-    initialLoading: false,
-  });
+  // Pause Request Modal
+  const [pauseTarget, setPauseTarget] = useState<AssignmentDetailItem | null>(null);
+  const [pauseReason, setPauseReason] = useState("");
+  const [pauseError, setPauseError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const columns: Column<Project>[] = [
-    {
-      key: "id",
-      header: "Study ID",
-      width: "120px",
-      render: (study) => (
-        <span className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
-          {study.id}
-        </span>
-      ),
-    },
-    {
-      key: "title",
-      header: "Project Title",
-      render: (study) => (
-        <span className="text-white font-medium text-sm line-clamp-1 group-hover:text-[#CC6600] transition-colors" title={study.title}>
-          {study.title}
-        </span>
-      ),
-    },
-    {
-      key: "method",
-      header: "Methodology",
-      width: "200px",
-      render: (study) => (
-        <span className="text-slate-300 font-sans text-xs whitespace-nowrap truncate max-w-[200px] block" title={study.method}>
-          {study.method}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      width: "170px",
-      render: (study) => <StatusBadge status={study.status} />,
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      width: "150px",
-      align: "right",
-      render: (study) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSelectedStudy(study)}
-          className="px-3.5 py-1 font-mono text-xs whitespace-nowrap tracking-wider"
-        >
-          OPEN WORKBENCH
-        </Button>
-      ),
-    },
-  ];
+  // Leave Management State
+  const [profileStatus, setProfileStatus] = useState<string>("ACTIVE");
+  const [leaveData, setLeaveData] = useState<{ reason?: string | null; until?: string | null } | null>(null);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [leaveReasonInput, setLeaveReasonInput] = useState("");
+  const [leaveFromInput, setLeaveFromInput] = useState("");
+  const [leaveUntilInput, setLeaveUntilInput] = useState("");
+  const [leaveError, setLeaveError] = useState<string | null>(null);
+
+  // Toast
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description?: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
+
+  const loadWorkload = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [res, profileRes] = await Promise.all([
+        getStatisticianWorkload(),
+        getStaffSelfProfile(),
+      ]);
+      if (res.success && res.data) {
+        setAssignments(res.data);
+      }
+      if (profileRes.success && profileRes.data) {
+        setProfileStatus(profileRes.data.status);
+        setLeaveData({
+          reason: (profileRes.data as { leaveReason?: string | null }).leaveReason,
+          until: (profileRes.data as { leaveUntil?: string | null }).leaveUntil,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load workload:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadWorkload();
+  }, [loadWorkload]);
+
+  const handleRequestPause = () => {
+    if (!pauseTarget) return;
+    if (!pauseReason || pauseReason.trim().length < 5) {
+      setPauseError("Please specify a reason for the pause request (at least 5 characters).");
+      return;
+    }
+
+    setPauseError(null);
+    startTransition(async () => {
+      const res = await requestSlaPause({
+        projectId: pauseTarget.projectId,
+        reason: pauseReason.trim(),
+      });
+      if (res.success) {
+        setPauseTarget(null);
+        setPauseReason("");
+        loadWorkload();
+        setToastMessage({
+          message: "Pause Request Submitted",
+          description: "Administrative governance team will review your SLA freeze request.",
+          variant: "info",
+        });
+      } else {
+        setPauseError(res.error?.message || "Failed to submit pause request.");
+      }
+    });
+  };
+
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const isReturnBeforeStart = useMemo(() => {
+    if (!leaveFromInput || !leaveUntilInput) return false;
+    return leaveUntilInput < leaveFromInput;
+  }, [leaveFromInput, leaveUntilInput]);
+
+  const isStartInPast = useMemo(() => {
+    if (!leaveFromInput) return false;
+    return leaveFromInput < todayStr;
+  }, [leaveFromInput, todayStr]);
+
+  const calculatedDays = useMemo(() => {
+    if (!leaveFromInput || !leaveUntilInput || isReturnBeforeStart) return null;
+    const start = new Date(leaveFromInput);
+    const end = new Date(leaveUntilInput);
+    const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(1, diff);
+  }, [leaveFromInput, leaveUntilInput, isReturnBeforeStart]);
+
+  const handleLeaveFromChange = (val: string) => {
+    setLeaveFromInput(val);
+    setLeaveError(null);
+    // Auto-advance return date if it falls behind new start date
+    if (leaveUntilInput && leaveUntilInput < val) {
+      const nextDay = new Date(val);
+      nextDay.setDate(nextDay.getDate() + 1);
+      setLeaveUntilInput(nextDay.toISOString().split("T")[0]!);
+    }
+  };
+
+  const handleLeaveUntilChange = (val: string) => {
+    setLeaveUntilInput(val);
+    setLeaveError(null);
+  };
+
+  const openLeaveModal = () => {
+    setLeaveError(null);
+    setLeaveReasonInput("");
+    setLeaveFromInput(todayStr);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setLeaveUntilInput(tomorrow.toISOString().split("T")[0]!);
+    setIsLeaveModalOpen(true);
+  };
+
+  const handleRequestLeave = () => {
+    if (!leaveReasonInput || leaveReasonInput.trim().length < 3) {
+      setLeaveError("Please specify a reason for your leave (at least 3 characters).");
+      return;
+    }
+    if (isStartInPast) {
+      setLeaveError("Leave start date cannot be in the past.");
+      return;
+    }
+    if (isReturnBeforeStart) {
+      setLeaveError("Expected return date cannot be earlier than leave start date.");
+      return;
+    }
+    setLeaveError(null);
+    startTransition(async () => {
+      const res = await requestLeave({
+        reason: leaveReasonInput.trim(),
+        leaveFrom: leaveFromInput ? new Date(leaveFromInput).toISOString() : undefined,
+        leaveUntil: leaveUntilInput ? new Date(leaveUntilInput).toISOString() : undefined,
+      });
+      if (res.success) {
+        setIsLeaveModalOpen(false);
+        setLeaveReasonInput("");
+        setLeaveUntilInput("");
+        loadWorkload();
+        setToastMessage({
+          message: "Leave Request Submitted",
+          description: "Your request is queued for Finance Officer (HR) / Administrator review.",
+          variant: "info",
+        });
+      } else {
+        setLeaveError(res.error?.message || "Failed to submit leave request.");
+      }
+    });
+  };
+
+  const handleReturnFromLeave = () => {
+    startTransition(async () => {
+      const res = await returnFromLeave();
+      if (res.success) {
+        loadWorkload();
+        setToastMessage({
+          message: profileStatus === "LEAVE_PENDING" ? "Leave Request Withdrawn" : "Welcome Back to Active Duty",
+          description: profileStatus === "LEAVE_PENDING" ? "Your pending leave request has been cancelled." : "Your availability is restored in the specialist assignment directory.",
+          variant: "success",
+        });
+      } else {
+        setToastMessage({
+          message: "Action Failed",
+          description: res.error?.message || "Could not update availability status.",
+          variant: "danger",
+        });
+      }
+    });
+  };
+
+  const urgentCount = assignments.filter((a) => a.isUrgent || a.isOverdue).length;
+  const pausedCount = assignments.filter((a) => a.isPaused).length;
+  const burnoutRisk = assessBurnoutRisk(assignments);
 
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
+      {/* Page Header */}
       <PageHeader
         title="Statistician Computational Workbench"
         description="Dataset intake processing, statistical code execution (R / Python / SPSS), and draft deliverable submission to QA Lead review."
         breadcrumbs={[
-          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Dashboard", href: "/dashboard" },
           { label: "Statistician Workbench" },
         ]}
         actions={
-          <Link href="/dashboard/statistician/profile">
-            <Button variant="outline" size="sm">
-              SPECIALIZATION PROFILE
+          <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={loadWorkload}
+              className="gap-2 font-sans font-semibold rounded-[2px]"
+            >
+              <IconRefresh size={15} stroke={2} />
+              <span>Refresh</span>
             </Button>
-          </Link>
+            {profileStatus === "ON_LEAVE" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReturnFromLeave}
+                disabled={isPending}
+                className="font-sans text-xs font-semibold rounded-[2px] bg-emerald-600/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-600/30 gap-1.5 cursor-pointer"
+              >
+                <IconUserCheck size={14} stroke={2} />
+                <span>Return to Active Duty</span>
+              </Button>
+            ) : profileStatus === "LEAVE_PENDING" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReturnFromLeave}
+                disabled={isPending}
+                className="font-sans text-xs font-semibold rounded-[2px] bg-amber-600/20 text-amber-300 border-amber-500/40 hover:bg-amber-600/30 gap-1.5 cursor-pointer"
+              >
+                <IconClock size={14} stroke={2} />
+                <span>Withdraw Leave Request</span>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openLeaveModal}
+                className="font-sans text-xs font-semibold rounded-[2px] gap-1.5 text-white/70 hover:text-white cursor-pointer"
+              >
+                <IconCalendar size={14} stroke={2} />
+                <span>Request Leave</span>
+              </Button>
+            )}
+            <Link href="/dashboard/statistician/profile">
+              <Button variant="outline" size="sm" className="font-sans text-xs font-semibold rounded-[2px] cursor-pointer">
+                Specialization Profile
+              </Button>
+            </Link>
+          </div>
         }
       />
+
+      {/* Leave Request Pending HR Approval Banner */}
+      {profileStatus === "LEAVE_PENDING" && (
+        <div className="p-4 bg-amber-950/40 border border-amber-500/40 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-amber-200">
+          <div className="flex items-start gap-3">
+            <IconClock size={18} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-amber-300 block text-sm">Leave Request Pending HR Approval</span>
+                <Badge variant="amber" className="text-[0.625rem] py-0 px-1 font-mono">Awaiting Review</Badge>
+              </div>
+              <p className="text-white/80 mt-1 leading-relaxed">
+                {leaveData?.reason ? `Reason: "${leaveData.reason}". ` : ""}
+                {leaveData?.until
+                  ? `Scheduled return: ${new Date(leaveData.until).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}. `
+                  : ""}
+                Your leave request has been submitted and is awaiting formal acknowledgment from the Finance Officer (HR) / Admin. You remain active until HR approval is granted.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReturnFromLeave}
+            disabled={isPending}
+            className="font-sans text-xs font-semibold rounded-[2px] shrink-0 text-amber-300 border-amber-500/40 hover:bg-amber-500/10 cursor-pointer"
+          >
+            Cancel / Withdraw Request
+          </Button>
+        </div>
+      )}
+
+      {/* On Leave Status Banner */}
+      {profileStatus === "ON_LEAVE" && (
+        <div className="p-4 bg-purple-950/40 border border-purple-500/40 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-purple-200">
+          <div className="flex items-start gap-3">
+            <IconClock size={18} stroke={2} className="text-purple-400 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-semibold text-purple-300 block text-sm">Specialist On Leave Status Active</span>
+              <p className="text-white/80 mt-0.5 leading-relaxed">
+                {leaveData?.reason ? `Reason: "${leaveData.reason}". ` : ""}
+                {leaveData?.until
+                  ? `Scheduled return: ${new Date(leaveData.until).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}. `
+                  : ""}
+                New study assignments are paused and you are hidden from the assignment directory.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleReturnFromLeave}
+            disabled={isPending}
+            className="font-sans text-xs font-semibold rounded-[2px] shrink-0 cursor-pointer"
+          >
+            End Leave Now
+          </Button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
         <KpiCard
           label="Assigned Analyses"
-          value={3}
+          value={assignments.length}
           variant="sky"
           description="Active computation pipelines"
         />
 
         <KpiCard
-          label="Pending QA Feedback"
-          value={2}
-          variant="amber"
-          description="Under peer verification"
+          label="Pre-Deadline Alerts"
+          value={urgentCount}
+          variant={urgentCount > 0 ? "amber" : "default"}
+          description={urgentCount > 0 ? "Due within 24 hours or overdue" : "All deliverables on schedule"}
         />
 
         <KpiCard
-          label="Approved Deliverables"
-          value={18}
-          variant="emerald"
-          description="100% Defense Pass Rate"
+          label="SLA Paused Pipelines"
+          value={pausedCount}
+          variant={pausedCount > 0 ? "amber" : "emerald"}
+          description={pausedCount > 0 ? "Awaiting client clarification" : "Zero delays flagged"}
         />
       </div>
 
-      {/* Assigned Workbench Projects */}
-      <Card className="p-0 overflow-hidden">
-        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-white">Assigned Statistical Runs</h2>
-            <p className="text-xs text-white/50">Execute analytical models and upload verified syntax / notebooks</p>
+      {/* Burnout & Workload Alert Banner */}
+      {burnoutRisk.isAtRisk && (
+        <div className="p-4 bg-amber-950/30 border border-amber-500/30 rounded-[2px] flex items-start gap-3 text-xs text-amber-200">
+          <IconAlertTriangle size={18} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold text-amber-300">Workload &amp; Burnout Protection Active</span>
+            <span className="text-white/80 leading-relaxed">
+              {burnoutRisk.reasons.join(". ")}. Your wellbeing is protected under JAXIS workload policies. If client clarifications or missing datasets are slowing you down, use the &ldquo;Request Pause&rdquo; button to freeze your SLA countdown timer without penalty.
+            </span>
           </div>
         </div>
+      )}
 
-        <DataTable<Project>
-          columns={columns}
-          rows={projects.slice(0, 4)}
-          loading={isLoading}
-          className="border-0 rounded-none bg-transparent"
-        />
+      {/* Assigned Workbench Projects */}
+      <Card className="p-0 overflow-hidden border border-white/10 bg-[#01142B]/90 rounded-[2px]">
+        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white font-sans">
+              Assigned Statistical Runs &amp; Computations
+            </h2>
+            <p className="text-sm text-white/60 mt-1 font-sans">
+              Execute analytical models, track contractual turnaround timers, and upload verified syntax
+            </p>
+          </div>
+          <span className="text-xs font-mono text-white/50">{assignments.length} Active Studies</span>
+        </div>
+
+        {isLoading ? (
+          <LoadingState
+            variant="table"
+            label="Loading computational workbench..."
+            description="Retrieving assigned models, datasets, and SLA telemetry."
+          />
+        ) : assignments.length === 0 ? (
+          <div className="p-12 text-center text-white/50 text-sm font-sans flex flex-col items-center justify-center gap-2">
+            <IconCheck size={32} stroke={1.5} className="text-[#10B981]" />
+            <span className="font-semibold text-white">No Pending Runs Assigned</span>
+            <span className="text-xs text-white/40">New projects assigned by the Administration will appear here with live SLA countdowns.</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 text-xs uppercase tracking-wider font-semibold">
+                  <th className="py-3.5 px-6">Study ID</th>
+                  <th className="py-3.5 px-6">Research Title &amp; Field</th>
+                  <th className="py-3.5 px-6">Methodology</th>
+                  <th className="py-3.5 px-6">SLA Countdown</th>
+                  <th className="py-3.5 px-6">QA Lead</th>
+                  <th className="py-3.5 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-sm">
+                {assignments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((item) => (
+                  <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-4 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+                      {item.projectIntakeId}
+                    </td>
+                    <td className="py-4 px-6 max-w-xs">
+                      <p className="font-semibold text-white text-sm line-clamp-1">
+                        {item.projectTitle}
+                      </p>
+                      <p className="text-xs text-white/50 mt-0.5 truncate">
+                        {item.projectField || "Empirical Research"}
+                      </p>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-xs text-white/80 font-sans">
+                        {item.projectMethod || "Statistical Analysis"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            item.isPaused
+                              ? "amber"
+                              : item.isOverdue
+                              ? "danger"
+                              : item.isUrgent
+                              ? "amber"
+                              : "emerald"
+                          }
+                          className="font-mono text-xs py-0.5 px-2"
+                        >
+                          {item.slaLabel}
+                        </Badge>
+                        <span className="text-[0.688rem] text-white/40 font-mono">
+                          Due: {new Date(item.slaDueAt).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <span className="text-xs text-white/70 font-sans">
+                        {item.qaLead.fullName}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        {!item.isPaused && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setPauseTarget(item)}
+                            className="font-sans text-xs rounded-[2px] text-amber-300 border-amber-500/30 hover:bg-amber-500/10 gap-1"
+                          >
+                            <IconPlayerPause size={13} stroke={2} />
+                            <span>Request Pause</span>
+                          </Button>
+                        )}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setSelectedStudy(item)}
+                          className="font-sans text-xs font-semibold rounded-[2px] gap-1"
+                        >
+                          <span>Open Desk</span>
+                          <IconArrowRight size={13} stroke={2} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {assignments.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={assignments.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="assignments"
+          />
+        )}
       </Card>
 
-      {/* Modal */}
+      {/* ── Statistical Computational Desk Modal ── */}
       {selectedStudy && (
         <Modal
           open={!!selectedStudy}
           onClose={() => setSelectedStudy(null)}
-          title={`Computational Workbench: ${selectedStudy.id}`}
-          description={selectedStudy.title}
+          title={`Statistical Analysis Desk: ${selectedStudy.projectIntakeId}`}
+          description={selectedStudy.projectTitle}
+          size="lg"
+          footer={
+            <div className="flex items-center justify-between w-full">
+              {!selectedStudy.isPaused ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setPauseTarget(selectedStudy);
+                    setSelectedStudy(null);
+                  }}
+                  className="font-sans text-xs rounded-[2px] text-amber-300 border-amber-500/30 hover:bg-amber-500/10 gap-1.5"
+                >
+                  <IconPlayerPause size={14} stroke={2} />
+                  <span>Request SLA Freeze</span>
+                </Button>
+              ) : (
+                <span className="text-xs font-mono text-amber-400">SLA Timer Currently Frozen</span>
+              )}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setSelectedStudy(null)}
+                className="font-sans text-xs font-semibold rounded-[2px]"
+              >
+                Close Desk
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-6 text-sm font-sans text-white/90">
+            {/* Status & SLA Bar */}
+            <div className="p-4 rounded-[2px] bg-white/[0.02] border border-white/10 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Badge variant="sky" className="font-mono text-xs">
+                  {selectedStudy.masterStatus}
+                </Badge>
+                <Badge
+                  variant={
+                    selectedStudy.isPaused
+                      ? "amber"
+                      : selectedStudy.isOverdue
+                      ? "danger"
+                      : selectedStudy.isUrgent
+                      ? "amber"
+                      : "emerald"
+                  }
+                  className="font-mono text-xs"
+                >
+                  {selectedStudy.slaLabel}
+                </Badge>
+              </div>
+
+              <div className="text-right">
+                <span className="text-[0.688rem] text-white/50 block font-mono">Contractual Deadline</span>
+                <span className="text-xs font-mono font-semibold text-white">
+                  {new Date(selectedStudy.slaDueAt).toLocaleDateString("en-PH", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+            </div>
+
+            {/* Specialist Assignments Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-3.5 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-1">
+                <span className="text-[0.688rem] font-mono uppercase text-white/40 font-semibold">Assigned QA Lead</span>
+                <span className="text-xs font-semibold text-white">{selectedStudy.qaLead.fullName}</span>
+                <span className="text-[0.688rem] text-white/50">{selectedStudy.qaLead.email}</span>
+              </div>
+              <div className="p-3.5 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-1">
+                <span className="text-[0.688rem] font-mono uppercase text-white/40 font-semibold">Selected Package</span>
+                <span className="text-xs font-semibold text-[#CC6600]">
+                  {selectedStudy.projectMethod || "Empirical Statistical Analysis"}
+                </span>
+                <span className="text-[0.688rem] text-white/50">{selectedStudy.projectField || "Academic Research"}</span>
+              </div>
+            </div>
+
+            {/* Research Objectives & Questions */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono font-semibold uppercase text-white/50 tracking-wider flex items-center gap-1.5">
+                <IconFileText size={15} stroke={2} className="text-[#38BDF8]" />
+                <span>Research Scope &amp; Objectives</span>
+              </span>
+              <div className="p-4 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-3 text-xs leading-relaxed text-slate-200">
+                <div>
+                  <span className="font-semibold text-white/80 block mb-0.5 font-mono text-[0.688rem]">Research Questions:</span>
+                  <p>{selectedStudy.researchQuestions || "1. What is the primary statistical effect? 2. Are variances homogeneous across comparison cohorts?"}</p>
+                </div>
+                {selectedStudy.hypotheses && (
+                  <div>
+                    <span className="font-semibold text-white/80 block mb-0.5 font-mono text-[0.688rem]">Stated Hypotheses:</span>
+                    <p>{selectedStudy.hypotheses}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="font-semibold text-white/80 block mb-0.5 font-mono text-[0.688rem]">Analytical Objective:</span>
+                  <p>{selectedStudy.researchObjectives || "Establish empirical significance at alpha = 0.05 with validated normality and homoscedasticity diagnostics."}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Datasets & Artifacts */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-mono font-semibold uppercase text-white/50 tracking-wider flex items-center gap-1.5">
+                <IconDatabase size={15} stroke={2} className="text-[#10B981]" />
+                <span>Verified Client Datasets &amp; Documentation</span>
+              </span>
+              {selectedStudy.files && selectedStudy.files.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedStudy.files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="p-3 bg-[#01142B] border border-white/10 rounded-[2px] flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <IconDatabase size={16} stroke={1.5} className="text-sky-400 shrink-0" />
+                        <span className="font-medium text-white truncate">{file.fileName}</span>
+                      </div>
+                      <Badge variant="sky" className="font-mono text-[0.625rem]">
+                        {file.fileCategory}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 bg-[#01142B] border border-white/10 rounded-[2px] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <IconDatabase size={16} stroke={1.5} className="text-sky-400" />
+                    <span>Raw_Dataset_Verified.xlsx (2.4 MB)</span>
+                  </div>
+                  <Badge variant="emerald" className="font-mono text-[0.625rem]">
+                    VERIFIED INPUT
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Request SLA Pause Modal */}
+      {pauseTarget && (
+        <Modal
+          open={!!pauseTarget}
+          onClose={() => setPauseTarget(null)}
+          title="Request SLA Timer Freeze"
+          description={`Study: ${pauseTarget.projectTitle}`}
           size="md"
           footer={
-            <Button variant="secondary" onClick={() => setSelectedStudy(null)}>
-              CLOSE
-            </Button>
+            <div className="flex items-center justify-end gap-3 w-full">
+              <Button variant="secondary" size="sm" onClick={() => setPauseTarget(null)} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleRequestPause}
+                disabled={isPending}
+                className="font-sans text-xs font-semibold rounded-[2px]"
+              >
+                {isPending ? (
+                  <IconLoader2 size={15} className="animate-spin" />
+                ) : (
+                  <span>Submit Freeze Request</span>
+                )}
+              </Button>
+            </div>
           }
         >
           <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
-            <div className="p-4 sm:p-5 rounded-[2px] bg-white/[0.03] border border-white/[0.08] flex flex-col gap-3.5">
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Dataset Package:</span>
-                <p className="text-sm font-semibold text-white">{selectedStudy.datasetName || "Dataset_Archived.csv"} ({selectedStudy.datasetSize || "2.4 MB"})</p>
+            {pauseError && (
+              <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-[2px] text-red-200">
+                {pauseError}
               </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Syntax &amp; Model Script:</span>
-                <p className="text-sm text-slate-200">{selectedStudy.syntaxName || "Syntax_Analysis_Script.R"}</p>
+            )}
+
+            <div className="p-3 bg-amber-950/20 border border-amber-500/30 rounded-[2px] flex items-start gap-2.5 text-amber-200">
+              <IconAlertTriangle size={16} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+              <span>
+                SLA pauses freeze the contractual delivery timer while awaiting critical researcher responses, dataset corrections, or survey clarifications.
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">
+                Reason for Pause Request (Mandatory)
+              </label>
+              <textarea
+                value={pauseReason}
+                onChange={(e) => setPauseReason(e.target.value)}
+                placeholder="Detail the exact missing data or clarification required from the Lead Researcher..."
+                className="w-full bg-[#01142B] border border-white/10 rounded-[2px] p-3 text-xs text-white placeholder-white/40 focus:border-[#CC6600] outline-none resize-none h-24 font-sans"
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Request Leave Modal */}
+      {isLeaveModalOpen && (
+        <Modal
+          open={isLeaveModalOpen}
+          onClose={() => setIsLeaveModalOpen(false)}
+          title="Schedule Specialist Leave"
+          description="Pause assignment intake and declare your unavailable period."
+          size="md"
+          footer={
+            <div className="flex items-center justify-end gap-3 w-full">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsLeaveModalOpen(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleRequestLeave}
+                disabled={isPending}
+                className="font-sans text-xs font-semibold rounded-[2px]"
+              >
+                {isPending ? (
+                  <IconLoader2 size={15} className="animate-spin" />
+                ) : (
+                  <IconCheck size={15} stroke={2} />
+                )}
+                <span>Submit Leave Request</span>
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
+            {leaveError && (
+              <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-[2px] text-red-200">
+                {leaveError}
               </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono text-[0.6875rem] text-white/40 uppercase tracking-wider">Methodology:</span>
-                <p className="text-sm text-slate-200">{selectedStudy.method}</p>
+            )}
+
+            <div className="p-3 bg-amber-950/20 border border-amber-500/30 rounded-[2px] flex items-start gap-2.5 text-amber-200">
+              <IconClock size={16} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+              <span>
+                Submitting this request will queue your leave for Finance Officer (HR) and Administrator approval. Once acknowledged and approved, your leave status will be activated and you will be hidden from new study assignments.
+              </span>
+            </div>
+
+            {/* Reason for Leave with Dropdown Selector */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold text-white/90">
+                  Reason for Leave (Mandatory)
+                </label>
+                <span className="text-[0.625rem] text-purple-300/60 font-mono">
+                  Select template or enter custom note
+                </span>
+              </div>
+
+              {/* Template Dropdown */}
+              <div className="relative">
+                <select
+                  value={LEAVE_REASON_TEMPLATES.find((t) => t.text === leaveReasonInput)?.text || ""}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setLeaveReasonInput(e.target.value);
+                    }
+                  }}
+                  className="w-full bg-[#01142B] border border-white/15 rounded-[2px] px-3 py-2 text-xs text-white/90 focus:border-[#CC6600] focus:ring-0 outline-none cursor-pointer appearance-none pr-8 transition-colors font-sans hover:border-white/30"
+                >
+                  <option value="" className="bg-[#01142B] text-white/50">
+                    Select standard reason template...
+                  </option>
+                  {LEAVE_REASON_TEMPLATES.map((tmpl) => (
+                    <option
+                      key={tmpl.label}
+                      value={tmpl.text}
+                      className="bg-[#01142B] text-white py-1"
+                    >
+                      {tmpl.label}
+                    </option>
+                  ))}
+                </select>
+                <IconChevronDown
+                  size={14}
+                  stroke={2}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none"
+                />
+              </div>
+
+              <textarea
+                value={leaveReasonInput}
+                onChange={(e) => setLeaveReasonInput(e.target.value)}
+                placeholder="e.g. Annual vacation, medical recovery, academic conference presentation..."
+                className="w-full bg-[#01142B] border border-white/10 rounded-[2px] p-2.5 text-xs text-white placeholder-white/40 focus:border-[#CC6600] outline-none resize-none h-16 font-sans leading-relaxed"
+              />
+            </div>
+
+            {/* Leave Duration & Date Range (Day or Days) */}
+            <div className="flex flex-col gap-2 p-3 bg-black/40 border border-white/10 rounded-[2px]">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold text-white/90">
+                  Leave Duration (Day or Days)
+                </label>
+                {isReturnBeforeStart ? (
+                  <span className="text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-[2px] border border-rose-500/30">
+                    Invalid: Return Before Start
+                  </span>
+                ) : isStartInPast ? (
+                  <span className="text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-[2px] border border-rose-500/30">
+                    Invalid: Past Start Date
+                  </span>
+                ) : calculatedDays !== null ? (
+                  <span className="text-xs font-mono font-semibold text-[#FF9433] bg-[#CC6600]/15 px-2 py-0.5 rounded-[2px] border border-[#CC6600]/30">
+                    {calculatedDays} {calculatedDays === 1 ? "Day" : "Days"} Scheduled
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Start Date & Return Date inputs side-by-side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.688rem] uppercase font-mono text-white/50">
+                    Leave Start Date
+                  </span>
+                  <input
+                    type="date"
+                    min={todayStr}
+                    value={leaveFromInput}
+                    onChange={(e) => handleLeaveFromChange(e.target.value)}
+                    className={`w-full bg-[#01142B] border rounded-[2px] p-2 text-xs text-white focus:border-[#CC6600] outline-none font-mono cursor-pointer transition-colors ${
+                      isStartInPast ? "border-rose-500/60 bg-rose-950/10" : "border-white/10 hover:border-white/20"
+                    }`}
+                  />
+                  {isStartInPast && (
+                    <span className="text-[0.688rem] text-rose-400 font-sans">
+                      Start date cannot be in the past.
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.688rem] uppercase font-mono text-white/50">
+                    Expected Return Date
+                  </span>
+                  <input
+                    type="date"
+                    min={leaveFromInput || todayStr}
+                    value={leaveUntilInput}
+                    onChange={(e) => handleLeaveUntilChange(e.target.value)}
+                    className={`w-full bg-[#01142B] border rounded-[2px] p-2 text-xs text-white focus:border-[#CC6600] outline-none font-mono cursor-pointer transition-colors ${
+                      isReturnBeforeStart ? "border-rose-500/60 bg-rose-950/10" : "border-white/10 hover:border-white/20"
+                    }`}
+                  />
+                  {isReturnBeforeStart && (
+                    <span className="text-[0.688rem] text-rose-400 font-sans">
+                      Return date cannot be earlier than start date.
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
       )}
     </div>
   );

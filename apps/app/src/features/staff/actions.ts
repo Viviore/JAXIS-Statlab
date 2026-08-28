@@ -1,17 +1,21 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { db, withDbTimeout } from "@/lib/db";
-import { requireRole } from "@/lib/auth";
+import { requireRole, auth } from "@/lib/auth";
 import {
   ProvisionStaffSchema,
   SuspendStaffSchema,
   TerminateStaffSchema,
   UpdateStaffProfileSchema,
   StaffFilterSchema,
+  RequestLeaveSchema,
   type StaffListItem,
   type StaffDetailItem,
+  type PendingLeaveItem,
+  type SpecialistLeaveOverviewData,
   type StaffActionResult,
 } from "./schemas";
 import {
@@ -210,6 +214,9 @@ export async function getStaffRoster(
           fullName: true,
           email: true,
           status: true,
+          leaveReason: true,
+          leaveFrom: true,
+          leaveUntil: true,
           createdAt: true,
           userRoles: {
             select: {
@@ -242,6 +249,9 @@ export async function getStaffRoster(
         bio: u.staffProfile?.bio || null,
         activeProjectsCount: 0, // Computed in Module 08
         joinedAt: u.staffProfile?.joinedAt || u.createdAt,
+        leaveReason: u.leaveReason,
+        leaveFrom: u.leaveFrom,
+        leaveUntil: u.leaveUntil,
       };
     });
 
@@ -273,6 +283,8 @@ export async function getStaffRoster(
     return { success: true, data: roster };
   }
 }
+
+export const getStaffDirectory = getStaffRoster;
 
 /**
  * 3. Retrieve detailed staff profile with full suspension audit history.
@@ -758,6 +770,9 @@ export async function getOwnProfile(): Promise<
     specializations: string[];
     joinedAt: Date | string;
     updatedAt: Date | string;
+    leaveReason?: string | null;
+    leaveFrom?: string | null;
+    leaveUntil?: string | null;
   }>
 > {
   const session = await requireRole("STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER", "ADMIN", "CEO");
@@ -788,6 +803,9 @@ export async function getOwnProfile(): Promise<
           specializations: user.staffProfile?.specializations || [],
           joinedAt: user.staffProfile?.joinedAt || user.createdAt,
           updatedAt: user.staffProfile?.updatedAt || user.updatedAt,
+          leaveReason: user.leaveReason,
+          leaveFrom: user.leaveFrom?.toISOString() || null,
+          leaveUntil: user.leaveUntil?.toISOString() || null,
         },
       };
     }
@@ -818,4 +836,468 @@ export async function getOwnProfile(): Promise<
     success: false,
     error: { code: "NOT_FOUND", message: "User profile not found." },
   };
+}
+
+export const getStaffSelfProfile = getOwnProfile;
+
+/**
+ * 9. Request or set a specialist on leave.
+ * Accessible to the specialist themselves or to ADMIN/CEO.
+ */
+export async function requestLeave(
+  input: unknown
+): Promise<StaffActionResult<{ id: string; status: UserStatus; leaveUntil?: string | null }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
+  }
+
+  const parsed = RequestLeaveSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: "VALIDATION_ERROR", message: "Invalid leave parameters.", fieldErrors: parsed.error.flatten().fieldErrors },
+    };
+  }
+
+  const { userId, reason, leaveFrom, leaveUntil } = parsed.data;
+  const targetUserId = userId || session.user.id;
+
+  // Authorization check: self, or management (ADMIN, CEO, FINANCE_OFFICER / HR)
+  const isManager =
+    session.user.role === "ADMIN" ||
+    session.user.role === "CEO" ||
+    session.user.role === "FINANCE_OFFICER";
+  if (targetUserId !== session.user.id && !isManager) {
+    return { success: false, error: { code: "FORBIDDEN", message: "You cannot manage leave for other staff members." } };
+  }
+
+  // Formal 2-Step Flow:
+  // - Direct Admin/HR placement on someone else: immediate ON_LEAVE
+  // - Specialist requesting leave for themselves: LEAVE_PENDING awaiting HR/Finance acknowledgement
+  const isDirectManagerAction = isManager && Boolean(userId && userId !== session.user.id);
+  const targetStatus: UserStatus = isDirectManagerAction ? "ON_LEAVE" : "LEAVE_PENDING";
+
+  try {
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const fromDate = leaveFrom ? new Date(leaveFrom) : new Date();
+    const untilDate = leaveUntil ? new Date(leaveUntil) : null;
+
+    // Prevent past start dates (allow today)
+    const fromMidnight = new Date(fromDate);
+    fromMidnight.setHours(0, 0, 0, 0);
+    if (fromMidnight.getTime() < todayMidnight.getTime()) {
+      return {
+        success: false,
+        error: { code: "VALIDATION_ERROR", message: "Leave start date cannot be in the past." },
+      };
+    }
+
+    // Prevent return date earlier than start date
+    if (untilDate) {
+      const untilMidnight = new Date(untilDate);
+      untilMidnight.setHours(0, 0, 0, 0);
+      if (untilMidnight.getTime() < fromMidnight.getTime()) {
+        return {
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Expected return date cannot be earlier than leave start date." },
+        };
+      }
+    }
+
+    // Prevent overlapping leave requests if staff is already pending or on leave
+    const existingLeave = await db.user.findFirst({
+      where: {
+        id: targetUserId,
+        status: { in: ["LEAVE_PENDING", "ON_LEAVE"] },
+      },
+      select: {
+        status: true,
+        leaveFrom: true,
+        leaveUntil: true,
+      },
+    });
+
+    if (existingLeave && !isDirectManagerAction) {
+      const statusLabel = existingLeave.status === "LEAVE_PENDING" ? "a pending leave request" : "an active leave";
+      return {
+        success: false,
+        error: {
+          code: "CONFLICT",
+          message: `You already have ${statusLabel} on file. Please withdraw or conclude it before scheduling a new leave.`,
+        },
+      };
+    }
+
+    const updated = await db.user.update({
+      where: { id: targetUserId },
+      data: {
+        status: targetStatus,
+        leaveReason: reason,
+        leaveFrom: fromDate,
+        leaveUntil: untilDate,
+      },
+    });
+
+    revalidatePath("/dashboard/finance");
+    revalidatePath("/dashboard/finance/leaves");
+    revalidatePath("/dashboard/admin/staff");
+    revalidatePath("/dashboard/admin/assignments");
+    revalidatePath("/dashboard/statistician");
+    revalidatePath("/dashboard/qa");
+
+    return {
+      success: true,
+      data: {
+        id: updated.id,
+        status: updated.status,
+        leaveUntil: updated.leaveUntil?.toISOString() || null,
+      },
+    };
+  } catch (err: unknown) {
+    console.error("[requestLeave] Error:", err);
+    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+  }
+}
+
+/**
+ * 10. Return a specialist from leave or withdraw a pending leave request back to ACTIVE duty.
+ * Accessible to the specialist themselves or to ADMIN/CEO/FINANCE_OFFICER.
+ */
+export async function returnFromLeave(
+  userId?: string
+): Promise<StaffActionResult<{ id: string; status: UserStatus }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
+  }
+
+  const targetUserId = userId || session.user.id;
+  const isManager =
+    session.user.role === "ADMIN" ||
+    session.user.role === "CEO" ||
+    session.user.role === "FINANCE_OFFICER";
+
+  if (targetUserId !== session.user.id && !isManager) {
+    return { success: false, error: { code: "FORBIDDEN", message: "You cannot manage leave for other staff members." } };
+  }
+
+  try {
+    const updated = await db.user.update({
+      where: { id: targetUserId },
+      data: {
+        status: "ACTIVE",
+        leaveReason: null,
+        leaveFrom: null,
+        leaveUntil: null,
+      },
+    });
+
+    revalidatePath("/dashboard/finance");
+    revalidatePath("/dashboard/finance/leaves");
+    revalidatePath("/dashboard/admin/staff");
+    revalidatePath("/dashboard/admin/assignments");
+    revalidatePath("/dashboard/statistician");
+    revalidatePath("/dashboard/qa");
+
+    return {
+      success: true,
+      data: { id: updated.id, status: updated.status },
+    };
+  } catch (err: unknown) {
+    console.error("[returnFromLeave] Error:", err);
+    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+  }
+}
+
+/**
+ * 11. Retrieve all pending leave requests for Finance Officer (HR) and Admin review.
+ */
+export async function getPendingLeaves(): Promise<StaffActionResult<PendingLeaveItem[]>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
+  }
+
+  const isManager =
+    session.user.role === "ADMIN" ||
+    session.user.role === "CEO" ||
+    session.user.role === "FINANCE_OFFICER";
+
+  if (!isManager) {
+    return { success: false, error: { code: "FORBIDDEN", message: "Only Finance Officer (HR) and Administrators can review pending leaves." } };
+  }
+
+  try {
+    const pendingUsers = await db.user.findMany({
+      where: { status: "LEAVE_PENDING" },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        leaveReason: true,
+        leaveFrom: true,
+        leaveUntil: true,
+        updatedAt: true,
+        userRoles: {
+          select: {
+            role: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    const items: PendingLeaveItem[] = pendingUsers.map((u) => {
+      const role = (u.userRoles[0]?.role.name as RoleName) || "STATISTICIAN";
+      return {
+        id: u.id,
+        fullName: u.fullName,
+        email: u.email,
+        role,
+        leaveReason: u.leaveReason,
+        leaveFrom: u.leaveFrom,
+        leaveUntil: u.leaveUntil,
+        updatedAt: u.updatedAt,
+      };
+    });
+
+    return { success: true, data: items };
+  } catch (err: unknown) {
+    console.error("[getPendingLeaves] Error:", err);
+    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+  }
+}
+
+/**
+ * 12. Acknowledge and approve a specialist's pending leave request.
+ * Authorized for Finance Officer (HR), Admin, and CEO.
+ * Sets status to ON_LEAVE and hides specialist from Module 08 assignment intake.
+ */
+export async function approveLeave(
+  userId: string
+): Promise<StaffActionResult<{ id: string; status: UserStatus }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
+  }
+
+  const isManager =
+    session.user.role === "ADMIN" ||
+    session.user.role === "CEO" ||
+    session.user.role === "FINANCE_OFFICER";
+
+  if (!isManager) {
+    return { success: false, error: { code: "FORBIDDEN", message: "Only Finance Officer (HR) and Administrators can approve leaves." } };
+  }
+
+  try {
+    const updated = await db.user.update({
+      where: { id: userId },
+      data: {
+        status: "ON_LEAVE",
+      },
+    });
+
+    revalidatePath("/dashboard/finance");
+    revalidatePath("/dashboard/finance/leaves");
+    revalidatePath("/dashboard/admin/staff");
+    revalidatePath("/dashboard/admin/assignments");
+    revalidatePath("/dashboard/statistician");
+    revalidatePath("/dashboard/qa");
+
+    return {
+      success: true,
+      data: { id: updated.id, status: updated.status },
+    };
+  } catch (err: unknown) {
+    console.error("[approveLeave] Error:", err);
+    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+  }
+}
+
+/**
+ * 13. Decline/reject a specialist's pending leave request.
+ * Reverts status back to ACTIVE and clears leave attributes.
+ */
+export async function rejectLeave(
+  userId: string
+): Promise<StaffActionResult<{ id: string; status: UserStatus }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
+  }
+
+  const isManager =
+    session.user.role === "ADMIN" ||
+    session.user.role === "CEO" ||
+    session.user.role === "FINANCE_OFFICER";
+
+  if (!isManager) {
+    return { success: false, error: { code: "FORBIDDEN", message: "Only Finance Officer (HR) and Administrators can reject leaves." } };
+  }
+
+  try {
+    const updated = await db.user.update({
+      where: { id: userId },
+      data: {
+        status: "ACTIVE",
+        leaveReason: null,
+        leaveFrom: null,
+        leaveUntil: null,
+      },
+    });
+
+    revalidatePath("/dashboard/finance");
+    revalidatePath("/dashboard/finance/leaves");
+    revalidatePath("/dashboard/admin/staff");
+    revalidatePath("/dashboard/admin/assignments");
+    revalidatePath("/dashboard/statistician");
+    revalidatePath("/dashboard/qa");
+
+    return {
+      success: true,
+      data: { id: updated.id, status: updated.status },
+    };
+  } catch (err: unknown) {
+    console.error("[rejectLeave] Error:", err);
+    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+  }
+}
+
+/**
+ * 14. Retrieve comprehensive specialist leave overview data for Finance HR and Operations.
+ * Accessible to FINANCE_OFFICER, ADMIN, and CEO.
+ */
+export async function getSpecialistLeaveOverview(): Promise<StaffActionResult<SpecialistLeaveOverviewData>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
+  }
+
+  const isManager =
+    session.user.role === "ADMIN" ||
+    session.user.role === "CEO" ||
+    session.user.role === "FINANCE_OFFICER";
+
+  if (!isManager) {
+    return { success: false, error: { code: "FORBIDDEN", message: "Only Finance Officer (HR) and Administrators can view specialist leave data." } };
+  }
+
+  try {
+    const specialists = await db.user.findMany({
+      where: {
+        userRoles: {
+          some: {
+            role: {
+              name: { in: ["STATISTICIAN", "SENIOR_QA_LEAD"] },
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        status: true,
+        leaveReason: true,
+        leaveFrom: true,
+        leaveUntil: true,
+        createdAt: true,
+        updatedAt: true,
+        userRoles: {
+          select: {
+            role: {
+              select: { name: true },
+            },
+          },
+        },
+        staffProfile: {
+          select: {
+            specializations: true,
+            bio: true,
+            joinedAt: true,
+          },
+        },
+        statisticianAssignments: {
+          where: { isActive: true },
+          select: { id: true },
+        },
+        qaAssignments: {
+          where: { isActive: true },
+          select: { id: true },
+        },
+      },
+      orderBy: [
+        { status: "asc" },
+        { fullName: "asc" },
+      ],
+    });
+
+    const pendingLeaves: PendingLeaveItem[] = [];
+    const specialistList: StaffListItem[] = [];
+
+    let activeCount = 0;
+    let pendingCount = 0;
+    let onLeaveCount = 0;
+
+    for (const u of specialists) {
+      const role = (u.userRoles[0]?.role.name as RoleName) || "STATISTICIAN";
+      const isStat = role === "STATISTICIAN";
+      const activeAssignments = isStat ? u.statisticianAssignments.length : u.qaAssignments.length;
+
+      if (u.status === "ACTIVE") activeCount++;
+      else if (u.status === "LEAVE_PENDING") pendingCount++;
+      else if (u.status === "ON_LEAVE") onLeaveCount++;
+
+      if (u.status === "LEAVE_PENDING") {
+        pendingLeaves.push({
+          id: u.id,
+          fullName: u.fullName,
+          email: u.email,
+          role,
+          leaveReason: u.leaveReason,
+          leaveFrom: u.leaveFrom,
+          leaveUntil: u.leaveUntil,
+          updatedAt: u.updatedAt,
+        });
+      }
+
+      specialistList.push({
+        id: u.id,
+        fullName: u.fullName,
+        email: u.email,
+        role,
+        status: u.status,
+        specializations: u.staffProfile?.specializations || [],
+        bio: u.staffProfile?.bio || null,
+        activeProjectsCount: activeAssignments,
+        joinedAt: u.staffProfile?.joinedAt || u.createdAt,
+        leaveReason: u.leaveReason,
+        leaveFrom: u.leaveFrom,
+        leaveUntil: u.leaveUntil,
+      });
+    }
+
+    return {
+      success: true,
+      data: {
+        kpis: {
+          totalSpecialists: specialists.length,
+          activeCount,
+          pendingCount,
+          onLeaveCount,
+        },
+        pendingLeaves,
+        specialists: specialistList,
+      },
+    };
+  } catch (err: unknown) {
+    console.error("[getSpecialistLeaveOverview] Error:", err);
+    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+  }
 }

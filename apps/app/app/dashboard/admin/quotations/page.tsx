@@ -13,6 +13,7 @@ import {
   Toast,
   LoadingState,
   EmptyState,
+  Pagination,
 } from "@repo/ui";
 import {
   IconCopy,
@@ -42,6 +43,8 @@ export default function AdminQuotationsPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [toastMessage, setToastMessage] = useState<{
     message: string;
     description?: string;
@@ -123,6 +126,13 @@ export default function AdminQuotationsPage() {
       return true;
     });
   }, [quotations, selectedStatus, searchQuery]);
+
+  const paginatedQuotations = useMemo(() => {
+    return filteredQuotations.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredQuotations, currentPage, pageSize]);
 
   const handleEditQuote = (quote: QuotationDetailItem) => {
     setActiveModalQuote(quote);
@@ -226,7 +236,7 @@ export default function AdminQuotationsPage() {
         {/* Filter Toolbar */}
         <FilterToolbar
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={(q) => { setSearchQuery(q); setCurrentPage(1); }}
           searchPlaceholder="Search study title, client, or JAXIS ID..."
           filters={[
             {
@@ -245,11 +255,12 @@ export default function AdminQuotationsPage() {
             },
           ]}
           onFilterChange={(key, value) => {
-            if (key === "status") setSelectedStatus(value);
+            if (key === "status") { setSelectedStatus(value); setCurrentPage(1); }
           }}
           onClear={() => {
             setSelectedStatus("ALL");
             setSearchQuery("");
+            setCurrentPage(1);
           }}
         />
 
@@ -284,7 +295,7 @@ export default function AdminQuotationsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredQuotations.map((quote) => {
+                  paginatedQuotations.map((quote) => {
                     const pkgInfo = getPackageBadgeInfo(quote.packageName);
                     const isExpired = quote.isExpired || quote.status === "QUOTE_EXPIRED";
                     const hasAddOns = quote.lineItems.some((li) => li.itemType === "ADDON");
@@ -439,6 +450,17 @@ export default function AdminQuotationsPage() {
             </table>
           </div>
         </div>
+
+        {filteredQuotations.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredQuotations.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="proposals"
+          />
+        )}
       </Card>
 
       {/* ── Commercial Quotation Builder Modal ── */}

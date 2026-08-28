@@ -12,6 +12,7 @@ import {
   Toast,
   ConfirmDialog,
   CopyButton,
+  LoadingState,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -366,15 +367,12 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
-        <div className="flex items-center gap-2 text-xs font-mono text-white/40">
-          <Link href="/dashboard/client/projects" className="hover:text-white transition-colors">← Back to My Studies</Link>
-        </div>
-        <Card className="p-8 animate-pulse flex flex-col gap-4 bg-[#01142B]/90 border-white/[0.08]">
-          <div className="h-4 bg-white/10 w-1/4 rounded-[2px]" />
-          <div className="h-8 bg-white/10 w-2/3 rounded-[2px]" />
-          <div className="h-20 bg-white/10 w-full rounded-[2px]" />
-        </Card>
+      <div className="flex-1 min-h-[50vh] w-full flex items-center justify-center animate-content-fade my-auto">
+        <LoadingState
+          variant="page"
+          label="Loading Study Inspection Desk..."
+          description="Retrieving analytical scope, datasets, and milestone progress."
+        />
       </div>
     );
   }

@@ -77,7 +77,7 @@ export default function ClientProjectPaymentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
+      <div className="flex-1 min-h-[50vh] w-full flex items-center justify-center animate-content-fade my-auto">
         <LoadingState
           variant="page"
           label="Loading project financial ledger..."

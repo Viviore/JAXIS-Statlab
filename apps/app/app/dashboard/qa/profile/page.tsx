@@ -116,7 +116,7 @@ export default function QAProfilePage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-16 w-full">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {toastMessage && (
         <Toast
           message={toastMessage.message}
@@ -129,14 +129,14 @@ export default function QAProfilePage() {
         title="Senior QA Review Lead Profile"
         description="Configure your methodology audit domains, peer review credentials, and dual-blind verification standards."
         breadcrumbs={[
-          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Dashboard", href: "/dashboard" },
           { label: "QA Review Desk", href: "/dashboard/qa" },
           { label: "Profile Settings" },
         ]}
         actions={
           <Link href="/dashboard/qa">
-            <Button variant="outline" size="sm">
-              BACK TO QA DESK
+            <Button variant="outline" size="sm" className="rounded-[2px]">
+              Back to QA Desk
             </Button>
           </Link>
         }

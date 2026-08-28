@@ -112,10 +112,12 @@ export default function AdminSowPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
-        <div className="py-24 text-center">
-          <LoadingState variant="page" label="Loading contract console..." description="Retrieving study specification and quotation basis" />
-        </div>
+      <div className="flex-1 min-h-[50vh] w-full flex items-center justify-center animate-content-fade my-auto">
+        <LoadingState
+          variant="page"
+          label="Loading contract console..."
+          description="Retrieving study specification and quotation basis"
+        />
       </div>
     );
   }

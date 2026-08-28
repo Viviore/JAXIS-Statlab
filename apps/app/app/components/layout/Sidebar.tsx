@@ -25,6 +25,7 @@ import {
   IconShieldLock,
   IconActivity,
   IconClock,
+  IconCalendarTime,
   IconX,
 } from "@tabler/icons-react";
 
@@ -75,6 +76,7 @@ const Icons = {
   Audit: <IconShieldLock size={16} stroke={1.5} className="flex-shrink-0" />,
   Activity: <IconActivity size={16} stroke={1.5} className="flex-shrink-0" />,
   Clock: <IconClock size={16} stroke={1.5} className="flex-shrink-0" />,
+  LeaveDesk: <IconCalendarTime size={16} stroke={1.5} className="flex-shrink-0" />,
 };
 
 // ─── Role-Specific Navigation Definitions ─────────────────────────────────────
@@ -199,15 +201,14 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "COMMUNICATION & ACCOUNT",
+      groupTitle: "HR & PEOPLE OPERATIONS",
       items: [
         {
-          label: "Research Direct Messaging",
-          href: "/dashboard/statistician/messages",
-          icon: Icons.Feedback,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          label: "HR & Staff Portal",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "HR",
+          badgeColor: "orange",
         },
         {
           label: "Statistician Profile",
@@ -246,8 +247,15 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "ACCOUNT & SETTINGS",
+      groupTitle: "HR & PEOPLE OPERATIONS",
       items: [
+        {
+          label: "HR & Staff Portal",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "HR",
+          badgeColor: "orange",
+        },
         {
           label: "QA Specialist Profile",
           href: "/dashboard/qa/profile",
@@ -311,9 +319,35 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Finance Officer Profile",
+          label: "Finance & HR Officer Profile",
           href: "/dashboard/finance/profile",
           icon: Icons.Users,
+        },
+      ],
+    },
+    {
+      groupTitle: "HR & SPECIALIST GOVERNANCE",
+      items: [
+        {
+          label: "My HR & Staff Portal",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "PORTAL",
+          badgeColor: "orange",
+        },
+        {
+          label: "Specialist Leave Approvals",
+          href: "/dashboard/finance/leaves",
+          icon: Icons.LeaveDesk,
+          badge: "HR",
+          badgeColor: "orange",
+        },
+        {
+          label: "Staff Attendance Audit",
+          href: "/dashboard/finance/attendance",
+          icon: Icons.Clock,
+          badge: "HR",
+          badgeColor: "orange",
         },
       ],
     },
@@ -357,6 +391,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "MACRO GOVERNANCE",
       items: [
         {
+          label: "My HR & Staff Portal",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "PORTAL",
+          badgeColor: "orange",
+        },
+        {
           label: "Escrow Vault Telemetry",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
@@ -365,6 +406,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "QA Verification Index",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
+        },
+        {
+          label: "Attendance Audit Vault",
+          href: "/dashboard/ceo/attendance",
+          icon: Icons.Clock,
+          badge: "AUDIT",
+          badgeColor: "orange",
         },
         {
           label: "Executive Analytics",
@@ -413,9 +461,8 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Expert Assignment Desk",
           href: "/dashboard/admin/assignments",
           icon: Icons.KeyRelease,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          badge: "ASSIGN",
+          badgeColor: "orange",
         },
       ],
     },
@@ -423,9 +470,23 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "OPERATIONS & COMPLIANCE",
       items: [
         {
-          label: "Staff & Expert Roster",
+          label: "My HR & Staff Portal",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "PORTAL",
+          badgeColor: "orange",
+        },
+        {
+          label: "Staff & Expert Directory",
           href: "/dashboard/admin/staff",
           icon: Icons.Users,
+        },
+        {
+          label: "Staff Attendance Audit",
+          href: "/dashboard/finance/attendance",
+          icon: Icons.Clock,
+          badge: "HR",
+          badgeColor: "orange",
         },
         {
           label: "Communication Firewall",

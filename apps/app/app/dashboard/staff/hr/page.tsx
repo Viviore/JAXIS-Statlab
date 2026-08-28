@@ -1,0 +1,1220 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  IconCalendar,
+  IconClock,
+  IconCalendarOff,
+  IconReceipt,
+  IconShieldCheck,
+  IconChevronLeft,
+  IconChevronRight,
+  IconPlus,
+  IconLoader2,
+  IconClockPlay,
+  IconCheck,
+  IconBuildingBank,
+  IconPrinter,
+  IconDeviceMobile,
+  IconDeviceDesktop,
+  IconAlertTriangle,
+  IconBolt,
+} from "@tabler/icons-react";
+import { Button, Card, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
+import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
+import { requestLeave } from "@/features/staff/actions";
+import type { HrPortalData, DailyAttendanceEvent } from "@/features/attendance/schemas";
+
+type ActiveHrTab = "TIMESHEETS" | "CALENDAR" | "LEAVES" | "OVERTIME" | "PAYSLIP";
+
+export default function StaffHrPortalPage() {
+  const [activeTab, setActiveTab] = useState<ActiveHrTab>("TIMESHEETS");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [portalData, setPortalData] = useState<HrPortalData | null>(null);
+
+  // Month navigation
+  const now = new Date();
+  const [currentYear, setCurrentYear] = useState<number>(now.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState<number>(now.getMonth() + 1); // 1-12
+
+  // Selected Day Drawer / Inspector
+  const [selectedDayEvent, setSelectedDayEvent] = useState<DailyAttendanceEvent | null>(null);
+
+  // Leave Request Modal
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
+  const [isSubmittingLeave, setIsSubmittingLeave] = useState<boolean>(false);
+  const [leaveReason, setLeaveReason] = useState<string>("Annual Paid Specialist Leave");
+  const [leaveFrom, setLeaveFrom] = useState<string>(new Date().toISOString().split("T")[0]!);
+  const [leaveUntil, setLeaveUntil] = useState<string>(new Date(Date.now() + 86400000 * 3).toISOString().split("T")[0]!);
+
+  // Adjustment / Overtime Filing Modal
+  const [isAdjModalOpen, setIsAdjModalOpen] = useState<boolean>(false);
+  const [isSubmittingAdj, setIsSubmittingAdj] = useState<boolean>(false);
+  const [adjType, setAdjType] = useState<"OVERTIME_CLAIM" | "MISSED_CLOCK_IN" | "MISSED_CLOCK_OUT" | "MISSED_FULL_SHIFT">("OVERTIME_CLAIM");
+  const [adjDate, setAdjDate] = useState<string>(new Date().toISOString().split("T")[0]!);
+  const [adjInTime, setAdjInTime] = useState<string>("09:00");
+  const [adjOutTime, setAdjOutTime] = useState<string>("19:30");
+  const [adjBreakMins, setAdjBreakMins] = useState<number>(60);
+  const [adjReason, setAdjReason] = useState<string>("");
+  const [adjDeliverables, setAdjDeliverables] = useState<string>("");
+
+  const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
+
+  // Load Data
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await getMyHrPortalData(currentYear, currentMonth);
+      setPortalData(res);
+      // Default selected day to today if in current month
+      const todayEvt = res.currentMonthEvents.find((e) => e.isToday) || res.currentMonthEvents[0] || null;
+      setSelectedDayEvent(todayEvt);
+    } catch (err) {
+      console.error("Failed to load HR portal data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentYear, currentMonth]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Next / Prev Month Navigation
+  const handlePrevMonth = () => {
+    if (currentMonth === 1) {
+      setCurrentMonth(12);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth((m) => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 12) {
+      setCurrentMonth(1);
+      setCurrentYear((y) => y + 1);
+    } else {
+      setCurrentMonth((m) => m + 1);
+    }
+  };
+
+  // Submit Leave Request
+  const handleSubmitLeave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingLeave(true);
+    try {
+      const res = await requestLeave({
+        reason: leaveReason,
+        leaveFrom,
+        leaveUntil,
+      });
+
+      if (res.success) {
+        setToast({
+          variant: "success",
+          message: "Leave Request Submitted",
+          description: "Your specialist leave request has been submitted for HR authorization.",
+        });
+        setIsLeaveModalOpen(false);
+        await loadData();
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Leave Submission Failed",
+          description: res.error.message,
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Network Error",
+        description: "Failed to submit leave request.",
+      });
+    } finally {
+      setIsSubmittingLeave(false);
+    }
+  };
+
+  // Submit Overtime / Adjustment
+  const handleSubmitAdj = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adjReason.trim()) {
+      setToast({
+        variant: "warning",
+        message: "Justification Required",
+        description: "Please state the reason for this overtime claim or attendance adjustment.",
+      });
+      return;
+    }
+
+    setIsSubmittingAdj(true);
+    try {
+      const res = await fileAttendanceCorrection({
+        correctionType: adjType,
+        targetDate: adjDate,
+        claimedClockInTime: adjInTime,
+        claimedClockOutTime: adjOutTime,
+        claimedBreakMins: adjBreakMins,
+        reason: adjReason.trim(),
+        tasksDelivered: adjDeliverables.trim() || "Regular research computational delivery",
+      });
+
+      if (res.success) {
+        setToast({
+          variant: "success",
+          message: "Overtime / Adjustment Claim Submitted",
+          description: "Filing transmitted to HR & Administration queue for verification.",
+        });
+        setIsAdjModalOpen(false);
+        setAdjReason("");
+        setAdjDeliverables("");
+        await loadData();
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Submission Error",
+          description: res.error.message,
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Network Error",
+        description: "Unable to transmit filing.",
+      });
+    } finally {
+      setIsSubmittingAdj(false);
+    }
+  };
+
+  if (isLoading || !portalData) {
+    return (
+      <div className="flex-1 w-full flex items-center justify-center animate-content-fade my-auto">
+        <LoadingState variant="page" label="Loading HR & Staff Portal..." description="Please wait while we load your research workspace" />
+      </div>
+    );
+  }
+
+  const monthTitle = new Date(currentYear, currentMonth - 1).toLocaleDateString("en-PH", {
+    month: "long",
+    year: "numeric",
+  });
+
+  return (
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
+      {/* Standardized PageHeader Component */}
+      <PageHeader
+        title="HR & People Operations Portal"
+        description="Manage your daily attendance calendar, leave entitlements, overtime filings, and monthly compensation payslips."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "HR & Staff Portal" },
+        ]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsLeaveModalOpen(true)}
+              className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold rounded-[2px]"
+            >
+              <IconCalendarOff size={14} stroke={2} />
+              <span>Request Leave</span>
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setAdjDate(selectedDayEvent?.date || new Date().toISOString().split("T")[0]!);
+                setIsAdjModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold rounded-[2px]"
+            >
+              <IconPlus size={14} stroke={2.5} />
+              <span>File Overtime / Correction</span>
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Leave Status Alert Banner if on leave */}
+      {portalData.user.isOnLeave && (
+        <div className="p-4 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-start gap-3">
+          <IconCalendarOff size={20} stroke={1.5} className="text-purple-300 shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-0.5 text-xs text-white/90 font-sans">
+            <span className="font-bold text-purple-200">Currently on Authorized Specialist Leave</span>
+            <span className="text-white/70">
+              Reason: &ldquo;{portalData.user.leaveReason}&rdquo; &bull; Expected Return Date:{" "}
+              {portalData.user.leaveUntil ? new Date(portalData.user.leaveUntil).toLocaleDateString("en-PH") : "Open"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Tab Bar */}
+      <div className="flex items-center border-b border-white/10 gap-2 overflow-x-auto pb-1">
+        {[
+          { id: "TIMESHEETS", label: "Duty Timesheets & History", icon: IconClock },
+          { id: "CALENDAR", label: "Duty Calendar & Shifts", icon: IconCalendar },
+          { id: "LEAVES", label: "Leave Center & Balances", icon: IconCalendarOff },
+          { id: "OVERTIME", label: "Overtimes & Adjustments", icon: IconClockPlay },
+          { id: "PAYSLIP", label: "Monthly Payslips & Earnings", icon: IconReceipt },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as ActiveHrTab)}
+              className={`flex items-center gap-2 py-2.5 px-4 text-xs font-sans font-semibold rounded-t-[2px] transition-colors cursor-pointer border-b-2 whitespace-nowrap ${
+                isActive
+                  ? "border-[#CC6600] text-white bg-[#01142B]"
+                  : "border-transparent text-white/60 hover:text-white hover:bg-white/[0.03]"
+              }`}
+            >
+              <Icon size={16} stroke={isActive ? 2 : 1.5} className={isActive ? "text-[#CC6600]" : "text-white/50"} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* TAB 0: DUTY TIMESHEETS & HISTORY */}
+      {activeTab === "TIMESHEETS" && (
+        <Card className="p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-black/40 border border-white/10 rounded-[2px] text-white">
+                <IconClock size={18} stroke={1.5} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white font-sans">Duty Timesheets &amp; Workstation History</h2>
+                <span className="text-[0.688rem] text-white/50 font-mono">
+                  {portalData.recentLogs.length} shifts recorded in {monthTitle}
+                </span>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAdjModalOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <IconPlus size={14} stroke={2} />
+              <span>File Missed Punch / Adjustment</span>
+            </Button>
+          </div>
+
+          {portalData.recentLogs.length === 0 ? (
+            <div className="py-12 text-center text-xs text-white/40 italic font-sans flex flex-col items-center gap-2">
+              <IconClock size={24} stroke={1.5} className="text-white/20" />
+              <span>No recorded duty shifts found for this billing period.</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem]">
+                    <th className="py-3 px-3">Date</th>
+                    <th className="py-3 px-3">Clock In</th>
+                    <th className="py-3 px-3">Clock Out</th>
+                    <th className="py-3 px-3">Break Deducted</th>
+                    <th className="py-3 px-3">Net Payable Hours</th>
+                    <th className="py-3 px-3">Device &amp; Telemetry</th>
+                    <th className="py-3 px-3">Duty Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {portalData.recentLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3 px-3 font-mono font-semibold text-white">
+                        {new Date(log.clockInAt).toLocaleDateString("en-PH", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-3 px-3 font-mono text-white/80">
+                        {new Date(log.clockInAt).toLocaleTimeString("en-PH", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td className="py-3 px-3 font-mono text-white/80">
+                        {log.clockOutAt
+                          ? new Date(log.clockOutAt).toLocaleTimeString("en-PH", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "--"}
+                      </td>
+                      <td className="py-3 px-3 font-mono text-white/60">
+                        {log.breakMinutes} min
+                      </td>
+                      <td className="py-3 px-3 font-mono font-bold text-white">
+                        {log.netHoursFormatted}
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            {log.isMobile ? (
+                              <span className="text-[0.625rem] font-mono px-1.5 py-0.5 rounded-[2px] bg-amber-950/50 text-amber-300 border border-amber-500/30 font-semibold flex items-center gap-1">
+                                <IconDeviceMobile size={11} stroke={2} />
+                                <span>Mobile Punch</span>
+                              </span>
+                            ) : (
+                              <span className="text-[0.688rem] font-mono text-white/70 flex items-center gap-1.5">
+                                <IconDeviceDesktop size={13} stroke={1.5} className="text-white/40" />
+                                <span>{log.deviceLabel}</span>
+                              </span>
+                            )}
+                          </div>
+                          {log.isZeroActivity ? (
+                            <span className="text-[0.625rem] font-mono text-amber-400/90 font-medium flex items-center gap-1">
+                              <IconAlertTriangle size={11} stroke={2} className="text-amber-400" />
+                              <span>0 Study Actions Logged</span>
+                            </span>
+                          ) : log.studyActionsCount > 0 ? (
+                            <span className="text-[0.625rem] font-mono text-emerald-400/80 flex items-center gap-1">
+                              <IconBolt size={12} stroke={2} />
+                              <span>{log.studyActionsCount} Study Events Verified</span>
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="py-3 px-3">
+                        {log.status === "IN_PROGRESS" && (
+                          <span className="text-[0.688rem] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 w-fit">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>In Progress</span>
+                          </span>
+                        )}
+                        {log.status === "COMPLETED" && (
+                          <span className="text-[0.688rem] font-mono px-2 py-0.5 rounded-[2px] bg-sky-950/40 text-sky-300 border border-sky-500/30">
+                            {log.isAdjusted ? "Adjusted" : "Completed"}
+                          </span>
+                        )}
+                        {log.status === "ADJUSTED" && (
+                          <span className="text-[0.688rem] font-mono px-2 py-0.5 rounded-[2px] bg-purple-950/40 text-purple-300 border border-purple-500/30">
+                            HR Adjusted
+                          </span>
+                        )}
+                        {log.status === "AUTO_CLOSED" && (
+                          <span className="text-[0.688rem] font-mono px-2 py-0.5 rounded-[2px] bg-amber-950/40 text-amber-300 border border-amber-500/30">
+                            Auto-Capped (14h)
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* TAB 1: MONTHLY CALENDAR & DAY INSPECTOR */}
+      {activeTab === "CALENDAR" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Calendar Grid (8 Cols) */}
+          <Card className="lg:col-span-8 p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+            {/* Month Header & Controls */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-black/40 border border-white/10 rounded-[2px] text-white">
+                  <IconCalendar size={18} stroke={1.5} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white font-sans">{monthTitle}</h2>
+                  <span className="text-[0.688rem] text-white/50 font-mono">
+                    {portalData.payslip.totalDutyHours} verified duty hours recorded this cycle
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 bg-black/40 p-1 border border-white/10 rounded-[2px]">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
+                  title="Previous Month"
+                >
+                  <IconChevronLeft size={16} stroke={2} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
+                  title="Next Month"
+                >
+                  <IconChevronRight size={16} stroke={2} />
+                </button>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-4 text-[0.688rem] font-mono text-white/60">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Present / Clocked
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-[#38BDF8]" /> Overtime Shift
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-purple-500" /> Authorized Leave
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-amber-500" /> Missed Punch
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-white/20" /> Rest Day / Holiday
+              </span>
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-2">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <div key={day} className="text-center text-[0.688rem] font-mono uppercase text-white/40 py-1 font-semibold">
+                  {day}
+                </div>
+              ))}
+
+              {portalData.currentMonthEvents.map((evt) => {
+                const isSelected = selectedDayEvent?.date === evt.date;
+
+                const bgStyle =
+                  evt.status === "PRESENT"
+                    ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-300"
+                    : evt.status === "OVERTIME"
+                    ? "bg-sky-950/30 border-sky-500/30 text-sky-300"
+                    : evt.status === "ON_LEAVE"
+                    ? "bg-purple-950/30 border-purple-500/30 text-purple-300"
+                    : evt.status === "IN_PROGRESS"
+                    ? "bg-emerald-950/60 border-emerald-400 text-emerald-200 animate-pulse"
+                    : evt.status === "MISSED_PUNCH"
+                    ? "bg-amber-950/20 border-amber-500/20 text-amber-300"
+                    : "bg-[#010D1F] border-white/5 text-white/50";
+
+                return (
+                  <button
+                    key={evt.date}
+                    type="button"
+                    onClick={() => setSelectedDayEvent(evt)}
+                    className={`min-h-[72px] p-2 rounded-[2px] border text-left transition-all cursor-pointer flex flex-col justify-between ${bgStyle} ${
+                      isSelected ? "ring-2 ring-[#CC6600] border-transparent shadow-lg scale-[1.02]" : "hover:border-white/20"
+                    } ${evt.isToday ? "border-t-2 border-t-[#CC6600]" : ""}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-mono font-bold ${evt.isToday ? "text-[#CC6600]" : "text-white"}`}>
+                        {evt.dayOfMonth}
+                      </span>
+                      {evt.isHoliday && (
+                        <span className="text-[0.562rem] font-mono uppercase px-1 py-0.2 rounded-[2px] bg-white/10 text-white/80">
+                          Holiday
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-[0.625rem] font-mono leading-tight truncate">
+                      {evt.status === "PRESENT" && (
+                        <span>{evt.totalHours}</span>
+                      )}
+                      {evt.status === "OVERTIME" && (
+                        <span className="text-sky-300 font-bold">{evt.totalHours} (OT)</span>
+                      )}
+                      {evt.status === "ON_LEAVE" && (
+                        <span className="text-purple-300 truncate">Leave</span>
+                      )}
+                      {evt.status === "IN_PROGRESS" && (
+                        <span className="text-emerald-300 font-bold">On Duty</span>
+                      )}
+                      {evt.status === "MISSED_PUNCH" && (
+                        <span className="text-amber-400">No Punch</span>
+                      )}
+                      {evt.status === "REST_DAY" && !evt.isHoliday && (
+                        <span className="text-white/30">Rest</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Right Column: Selected Day Duty Inspector (4 Cols) */}
+          <Card className="lg:col-span-4 p-6 bg-[#01142B] border-white/10 flex flex-col gap-5">
+            <div className="border-b border-white/10 pb-3 flex items-center justify-between">
+              <div>
+                <span className="text-[0.688rem] uppercase font-mono tracking-wider text-white/50 block">
+                  Day Duty Audit
+                </span>
+                <h3 className="text-base font-bold text-white font-sans">
+                  {selectedDayEvent
+                    ? new Date(selectedDayEvent.date).toLocaleDateString("en-PH", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Select a Date"}
+                </h3>
+              </div>
+              {selectedDayEvent?.isToday && (
+                <Badge variant="accent" className="text-[0.625rem] font-mono">
+                  Today
+                </Badge>
+              )}
+            </div>
+
+            {selectedDayEvent ? (
+              <div className="flex flex-col gap-4 text-xs font-sans">
+                {/* Status Box */}
+                <div className="p-3 bg-[#010D1F] border border-white/10 rounded-[2px] flex items-center justify-between">
+                  <span className="text-white/60">Shift Classification:</span>
+                  <span className="font-mono font-bold text-white">
+                    {selectedDayEvent.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+
+                {/* Clock In / Out Times */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-[#010D1F] border border-white/5 rounded-[2px]">
+                    <span className="text-[0.625rem] font-mono uppercase text-white/40 block">Clock In</span>
+                    <span className="text-sm font-mono font-bold text-white">
+                      {selectedDayEvent.clockInTime || "--:--"}
+                    </span>
+                  </div>
+                  <div className="p-3 bg-[#010D1F] border border-white/5 rounded-[2px]">
+                    <span className="text-[0.625rem] font-mono uppercase text-white/40 block">Clock Out</span>
+                    <span className="text-sm font-mono font-bold text-white">
+                      {selectedDayEvent.clockOutTime || "--:--"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Total Working Minutes & Deductions */}
+                {selectedDayEvent.totalHours && (
+                  <div className="p-3 bg-black/40 border border-white/10 rounded-[2px] flex items-center justify-between">
+                    <span className="text-white/70">Net Verified Duty:</span>
+                    <span className="text-base font-mono font-extrabold text-emerald-400">
+                      {selectedDayEvent.totalHours}
+                    </span>
+                  </div>
+                )}
+
+                {/* Holiday or Leave Note */}
+                {selectedDayEvent.holidayName && (
+                  <div className="p-3 bg-sky-950/30 border border-sky-500/30 rounded-[2px] text-sky-200">
+                    <span className="font-semibold block text-sky-300">Philippine Holiday</span>
+                    {selectedDayEvent.holidayName}
+                  </div>
+                )}
+
+                {selectedDayEvent.leaveReason && (
+                  <div className="p-3 bg-purple-950/30 border border-purple-500/30 rounded-[2px] text-purple-200">
+                    <span className="font-semibold block text-purple-300">Authorized Leave</span>
+                    &ldquo;{selectedDayEvent.leaveReason}&rdquo;
+                  </div>
+                )}
+
+                {/* Quick Action to File Correction */}
+                <div className="pt-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setAdjDate(selectedDayEvent.date);
+                      setIsAdjModalOpen(true);
+                    }}
+                    className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer"
+                  >
+                    <IconPlus size={14} stroke={2} />
+                    <span>File Correction for this Date</span>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="py-12 text-center text-xs text-white/40 italic">
+                Click any day on the calendar to inspect duty logs.
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 2: LEAVE CENTER & BALANCES */}
+      {activeTab === "LEAVES" && (
+        <div className="flex flex-col gap-6">
+          {/* Leave Balances Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
+                    Annual Vacation Leave
+                  </span>
+                  <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
+                    <IconCalendarOff size={16} stroke={1.5} />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
+                    {portalData.user.annualLeaveBalance}
+                  </span>
+                  <span className="text-xs font-mono text-white/40">days remaining</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
+                <span>Annual Entitlement</span>
+                <span className="text-emerald-400 font-semibold">Available</span>
+              </div>
+            </Card>
+
+            <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
+                    Medical & Sick Recovery
+                  </span>
+                  <div className="p-2 bg-sky-950/50 border border-sky-500/30 text-sky-400 rounded-[2px]">
+                    <IconShieldCheck size={16} stroke={1.5} />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
+                    {portalData.user.medicalLeaveBalance}
+                  </span>
+                  <span className="text-xs font-mono text-white/40">days remaining</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
+                <span>Health Protection</span>
+                <span className="text-[#38BDF8] font-semibold">Active</span>
+              </div>
+            </Card>
+
+            <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
+                    Active Leave Status
+                  </span>
+                  <Badge variant={portalData.user.isOnLeave ? "amber" : "emerald"} className="text-[0.625rem] font-mono">
+                    {portalData.user.isOnLeave ? "On Leave" : "Active Duty"}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="text-xl font-bold font-sans text-white tracking-tight block truncate">
+                    {portalData.user.isOnLeave ? `On Leave until ${portalData.user.leaveUntil?.split("T")[0] || ""}` : "Active on Specialist Pool"}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between">
+                <span className="text-[0.688rem] font-mono text-white/50">Module 08 Capacity</span>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsLeaveModalOpen(true)}
+                  className="cursor-pointer text-[0.688rem] py-1 px-2.5"
+                >
+                  + Request Leave
+                </Button>
+              </div>
+            </Card>
+          </div>
+
+          {/* Past Leaves Record Table */}
+          <Card className="p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+            <div className="border-b border-white/10 pb-4">
+              <h2 className="text-base font-bold text-white font-sans">
+                Leave Records & Authorized Windows
+              </h2>
+              <p className="text-xs text-white/50 font-sans mt-0.5">
+                History of authorized specialist leaves and exclusion windows from Module 08 study assignments.
+              </p>
+            </div>
+
+            {portalData.leaveHistory.length === 0 ? (
+              <div className="py-8 text-center text-xs text-white/40 italic font-sans">
+                Zero previous leave records on file.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem]">
+                      <th className="py-3 px-3">Start Date</th>
+                      <th className="py-3 px-3">Return Date</th>
+                      <th className="py-3 px-3">Duration</th>
+                      <th className="py-3 px-3">Stated Reason</th>
+                      <th className="py-3 px-3">HR Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {portalData.leaveHistory.map((leave, idx) => (
+                      <tr key={idx} className="hover:bg-white/[0.02]">
+                        <td className="py-3 px-3 font-mono font-semibold text-white">{leave.leaveFrom}</td>
+                        <td className="py-3 px-3 font-mono text-white/80">{leave.leaveUntil}</td>
+                        <td className="py-3 px-3 font-mono font-bold text-white">{leave.totalDays} days</td>
+                        <td className="py-3 px-3 font-sans text-white/80">&ldquo;{leave.reason}&rdquo;</td>
+                        <td className="py-3 px-3">
+                          {leave.status === "ACTIVE_LEAVE" ? (
+                            <span className="px-2 py-0.5 rounded-[2px] bg-purple-950/50 text-purple-300 border border-purple-500/30 font-mono text-[0.688rem]">
+                              Active on Leave
+                            </span>
+                          ) : (
+                            <Badge variant="emerald" className="font-mono text-[0.688rem]">
+                              Completed
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 3: OVERTIMES & ADJUSTMENTS */}
+      {activeTab === "OVERTIME" && (
+        <div className="flex flex-col gap-6">
+          <Card className="p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-white font-sans">
+                  Filed Overtime Claims & Missed-Punch Corrections
+                </h2>
+                <p className="text-xs text-white/50 font-sans mt-0.5">
+                  Track the verification status of extra compute runs and time adjustments.
+                </p>
+              </div>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsAdjModalOpen(true)}
+                className="flex items-center gap-1.5 cursor-pointer text-xs"
+              >
+                <IconPlus size={14} stroke={2.5} />
+                <span>File New Overtime / Adjustment</span>
+              </Button>
+            </div>
+
+            {portalData.corrections.length === 0 ? (
+              <div className="py-8 text-center text-xs text-white/40 italic font-sans">
+                Zero overtime or adjustment filings recorded.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {portalData.corrections.map((c) => (
+                  <div key={c.id} className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-white">Date: {c.targetDate}</span>
+                        <Badge variant="sky" className="text-[0.625rem] font-mono">
+                          {c.correctionType.replace(/_/g, " ")}
+                        </Badge>
+                        <span className="text-xs font-mono text-emerald-400 font-bold">
+                          {c.claimedNetHours} hrs (Break: {c.claimedBreakMins}m)
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/80 font-sans">&ldquo;{c.reason}&rdquo;</p>
+                      {c.tasksDelivered && (
+                        <p className="text-[0.688rem] text-white/50 font-sans">
+                          Deliverables: {c.tasksDelivered}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="shrink-0">
+                      {c.status === "PENDING" && (
+                        <Badge variant="amber" className="font-mono text-xs">
+                          Pending HR Review
+                        </Badge>
+                      )}
+                      {c.status === "APPROVED" && (
+                        <Badge variant="emerald" className="font-mono text-xs flex items-center gap-1">
+                          <IconCheck size={12} stroke={2.5} />
+                          <span>Credited to Payroll</span>
+                        </Badge>
+                      )}
+                      {c.status === "REJECTED" && (
+                        <Badge variant="danger" className="font-mono text-xs">
+                          Declined
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 4: PAYSLIP & MONTHLY EARNINGS */}
+      {activeTab === "PAYSLIP" && (
+        <div className="flex flex-col gap-6">
+          <Card className="p-6 sm:p-10 bg-[#01142B] border-white/10 flex flex-col gap-6">
+            {/* Header / Pay Period */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="emerald" className="text-xs font-mono">
+                    Official Compensation Summary
+                  </Badge>
+                </div>
+                <h2 className="text-2xl font-extrabold text-white font-sans">
+                  Statement of Duty Earnings — {portalData.payslip.payPeriod}
+                </h2>
+                <span className="text-xs text-white/50 font-sans">
+                  Employee: <strong className="text-white">{portalData.user.fullName}</strong> ({portalData.user.role})
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 cursor-pointer text-xs"
+                >
+                  <IconPrinter size={14} stroke={1.5} />
+                  <span>Print Statement</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Compensation Breakdown Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
+                      Verified Duty Hours
+                    </span>
+                    <div className="p-1.5 bg-white/5 border border-white/10 rounded-[2px] text-white/70">
+                      <IconClock size={14} stroke={1.5} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-mono font-bold text-white">
+                      {portalData.payslip.totalDutyHours}
+                    </span>
+                    <span className="text-xs text-white/40 font-mono">hrs</span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-white/40 font-mono flex items-center gap-1">
+                  <span>@</span> <Peso /><span>450.00 / hour standard</span>
+                </div>
+              </Card>
+
+              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
+                      Hourly Duty Earnings
+                    </span>
+                    <div className="p-1.5 bg-emerald-950/50 border border-emerald-500/30 rounded-[2px] text-emerald-400">
+                      <IconReceipt size={14} stroke={1.5} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <Peso className="text-xl text-white/80" />
+                    <span className="text-2xl font-mono font-bold text-white">
+                      {portalData.payslip.dutyHourlyEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-emerald-400/80 font-mono">
+                  From verified punches
+                </div>
+              </Card>
+
+              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
+                      Project Milestones
+                    </span>
+                    <div className="p-1.5 bg-emerald-950/50 border border-emerald-500/30 rounded-[2px] text-[#10B981]">
+                      <IconBuildingBank size={14} stroke={1.5} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <Peso className="text-xl text-[#10B981]/80" />
+                    <span className="text-2xl font-mono font-bold text-[#10B981]">
+                      {portalData.payslip.projectMilestoneEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-white/40 font-mono">
+                  From delivered studies
+                </div>
+              </Card>
+
+              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
+                      Allowances & Bonuses
+                    </span>
+                    <div className="p-1.5 bg-sky-950/50 border border-sky-500/30 rounded-[2px] text-[#38BDF8]">
+                      <IconShieldCheck size={14} stroke={1.5} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <Peso className="text-xl text-[#38BDF8]/80" />
+                    <span className="text-2xl font-mono font-bold text-[#38BDF8]">
+                      {(portalData.payslip.allowances + portalData.payslip.overtimeEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-sky-400/80 font-mono">
+                  Overtime + Tech stipend
+                </div>
+              </Card>
+            </div>
+
+            {/* Total Net Take-Home */}
+            <div className="p-6 bg-[#011B38] border border-[#10B981]/40 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-[2px]">
+                  <IconBuildingBank size={24} stroke={1.5} />
+                </div>
+                <div>
+                  <span className="text-[0.688rem] uppercase font-mono text-white/50 block">
+                    Estimated Net Disbursement (This Pay Cycle)
+                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <Peso className="text-2xl text-white/80 font-normal" />
+                    <span className="text-3xl font-mono font-extrabold text-white">
+                      {portalData.payslip.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <Badge variant="emerald" className="font-mono text-xs px-3 py-1">
+                Disbursement Ready
+              </Badge>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* LEAVE REQUEST MODAL */}
+      <Modal
+        isOpen={isLeaveModalOpen}
+        onClose={() => !isSubmittingLeave && setIsLeaveModalOpen(false)}
+        title="Submit Specialist Leave Request"
+        size="md"
+        footer={
+          <div className="flex items-center justify-end gap-2.5 w-full">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={isSubmittingLeave}
+              onClick={() => setIsLeaveModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={isSubmittingLeave}
+              onClick={handleSubmitLeave}
+            >
+              {isSubmittingLeave ? (
+                <div className="flex items-center gap-1.5">
+                  <IconLoader2 size={14} stroke={2.5} className="animate-spin text-white" />
+                  <span>Submitting...</span>
+                </div>
+              ) : (
+                <span>Submit Leave Request</span>
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleSubmitLeave} className="flex flex-col gap-4 text-xs font-sans text-white/90">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-white/90">Leave Category / Purpose</label>
+            <select
+              value={leaveReason}
+              onChange={(e) => setLeaveReason(e.target.value)}
+              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer"
+            >
+              <option value="Annual Paid Specialist Leave">Annual Paid Specialist Vacation Leave</option>
+              <option value="Medical & Health Recovery">Medical & Health Recovery (Doctor&apos;s Note Attached)</option>
+              <option value="Academic Conference & Defense Panel">Academic Defense / University Conference</option>
+              <option value="Emergency Family Leave">Family Emergency Leave</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">Start Date</label>
+              <input
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+                value={leaveFrom}
+                onChange={(e) => setLeaveFrom(e.target.value)}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">Expected Return Date</label>
+              <input
+                type="date"
+                min={leaveFrom}
+                value={leaveUntil}
+                onChange={(e) => setLeaveUntil(e.target.value)}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+                required
+              />
+            </div>
+          </div>
+
+          <p className="text-[0.688rem] text-white/50">
+            Once authorized by the Finance & HR Officer, your specialist capacity in Module 08 study assignments will be marked as greyed-out and unavailable until your return date.
+          </p>
+        </form>
+      </Modal>
+
+      {/* OVERTIME / ADJUSTMENT MODAL */}
+      <Modal
+        isOpen={isAdjModalOpen}
+        onClose={() => !isSubmittingAdj && setIsAdjModalOpen(false)}
+        title="File Overtime Claim or Time Adjustment"
+        size="lg"
+        footer={
+          <div className="flex items-center justify-end gap-2.5 w-full">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={isSubmittingAdj}
+              onClick={() => setIsAdjModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={isSubmittingAdj}
+              onClick={handleSubmitAdj}
+            >
+              {isSubmittingAdj ? (
+                <div className="flex items-center gap-1.5">
+                  <IconLoader2 size={14} stroke={2.5} className="animate-spin text-white" />
+                  <span>Submitting Filing...</span>
+                </div>
+              ) : (
+                <span>Submit for HR Authorization</span>
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleSubmitAdj} className="flex flex-col gap-4 text-xs font-sans text-white/90">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-white/90">Filing Classification</label>
+            <select
+              value={adjType}
+              onChange={(e) =>
+                setAdjType(
+                  e.target.value as "OVERTIME_CLAIM" | "MISSED_CLOCK_IN" | "MISSED_CLOCK_OUT" | "MISSED_FULL_SHIFT"
+                )
+              }
+              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer"
+            >
+              <option value="OVERTIME_CLAIM">Approved Overtime / Emergency Compute Run</option>
+              <option value="MISSED_CLOCK_IN">Forgot to Clock In (Worked on time)</option>
+              <option value="MISSED_CLOCK_OUT">Forgot to Clock Out (Shift ran open)</option>
+              <option value="MISSED_FULL_SHIFT">Missed Full Shift (Worked full shift without punch)</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">Target Date</label>
+              <input
+                type="date"
+                value={adjDate}
+                onChange={(e) => setAdjDate(e.target.value)}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">Time In</label>
+              <input
+                type="time"
+                value={adjInTime}
+                onChange={(e) => setAdjInTime(e.target.value)}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">Time Out</label>
+              <input
+                type="time"
+                value={adjOutTime}
+                onChange={(e) => setAdjOutTime(e.target.value)}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-semibold text-white/90">Break Deduction</label>
+              <select
+                value={adjBreakMins}
+                onChange={(e) => setAdjBreakMins(Number(e.target.value))}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+              >
+                <option value={0}>0 mins (No break)</option>
+                <option value={30}>30 mins</option>
+                <option value={60}>60 mins (Standard 1h)</option>
+                <option value={90}>90 mins</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="font-semibold text-white/90">Stated Justification</label>
+            <textarea
+              rows={3}
+              value={adjReason}
+              onChange={(e) => setAdjReason(e.target.value)}
+              placeholder="e.g. Executed urgent statistical compute runs for Study #JX-2026-0001..."
+              className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white placeholder-white/30 outline-none resize-none font-sans"
+              required
+            />
+          </div>
+        </form>
+      </Modal>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          description={toast.description}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  );
+}

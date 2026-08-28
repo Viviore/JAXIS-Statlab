@@ -64,10 +64,10 @@ export function DashboardShell({
 
         {/* Content Area with Guaranteed Consistent Responsive Padding */}
         <main
-          className="flex-1 min-w-0 h-full max-h-full bg-[#010114] overflow-y-auto overflow-x-hidden p-[clamp(2rem,4vw,3.5rem)] print:p-0 print:h-auto print:max-h-none print:overflow-visible print:bg-white"
+          className="flex-1 min-w-0 h-full max-h-full bg-[#010114] overflow-y-auto overflow-x-hidden p-[clamp(2rem,4vw,3.5rem)] flex flex-col print:p-0 print:h-auto print:max-h-none print:overflow-visible print:bg-white"
         >
           <div
-            className="w-full max-w-7xl mx-auto print:max-w-none print:w-full print:m-0"
+            className="w-full max-w-7xl mx-auto flex-1 min-h-full flex flex-col print:max-w-none print:w-full print:m-0"
           >
             {children}
           </div>

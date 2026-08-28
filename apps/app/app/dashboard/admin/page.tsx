@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState, Pagination } from "@repo/ui";
 import { IconPlus } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { projectService } from "@/features/projects/services/project.service";
@@ -17,6 +17,8 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMethod, setSelectedMethod] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const {
     projects,
@@ -174,11 +176,13 @@ export default function AdminDashboardPage() {
           onFilterChange={(key, value) => {
             if (key === "method") setSelectedMethod(value);
             if (key === "status") setSelectedStatus(value);
+            setCurrentPage(1);
           }}
           onClear={() => {
             setSelectedMethod("ALL");
             setSelectedStatus("ALL");
             setSearchQuery("");
+            setCurrentPage(1);
           }}
         />
 
@@ -204,7 +208,7 @@ export default function AdminDashboardPage() {
                     </td>
                   </tr>
                 ) : (
-                  projects.map((study) => (
+                  projects.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((study) => (
                     <tr key={study.id} className="group">
                       <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
                         {study.id}
@@ -240,6 +244,17 @@ export default function AdminDashboardPage() {
             </table>
           </div>
         </div>
+
+        {projects.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={projects.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="studies"
+          />
+        )}
       </Card>
 
       {/* ── Inspection Modal ── */}

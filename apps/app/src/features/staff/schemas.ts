@@ -91,13 +91,47 @@ export const UpdateStaffProfileSchema = z.object({
 
 export type UpdateStaffProfileInput = z.infer<typeof UpdateStaffProfileSchema>;
 
+export const RequestLeaveSchema = z.object({
+  userId: z.string().optional(),
+  reason: z
+    .string()
+    .min(3, "Please specify a reason for leave (at least 3 characters)")
+    .max(500, "Reason cannot exceed 500 characters"),
+  leaveFrom: z.string().optional(),
+  leaveUntil: z.string().optional(),
+});
+
+export type RequestLeaveInput = z.infer<typeof RequestLeaveSchema>;
+
 export const StaffFilterSchema = z.object({
   role: z.enum(["ALL", ...STAFF_ROLES]).optional().default("ALL"),
-  status: z.enum(["ALL", "ACTIVE", "SUSPENDED", "TERMINATED"]).optional().default("ALL"),
+  status: z.enum(["ALL", "ACTIVE", "SUSPENDED", "TERMINATED", "ON_LEAVE", "LEAVE_PENDING"]).optional().default("ALL"),
   search: z.string().optional(),
 });
 
 export type StaffFilterInput = z.infer<typeof StaffFilterSchema>;
+
+export interface PendingLeaveItem {
+  id: string;
+  fullName: string;
+  email: string;
+  role: RoleName;
+  leaveReason: string | null;
+  leaveFrom: Date | string | null;
+  leaveUntil: Date | string | null;
+  updatedAt: Date | string;
+}
+
+export interface SpecialistLeaveOverviewData {
+  kpis: {
+    totalSpecialists: number;
+    activeCount: number;
+    pendingCount: number;
+    onLeaveCount: number;
+  };
+  pendingLeaves: PendingLeaveItem[];
+  specialists: StaffListItem[];
+}
 
 export interface StaffListItem {
   id: string;
@@ -109,6 +143,9 @@ export interface StaffListItem {
   bio: string | null;
   activeProjectsCount: number;
   joinedAt: Date | string;
+  leaveReason?: string | null;
+  leaveFrom?: Date | string | null;
+  leaveUntil?: Date | string | null;
 }
 
 export interface StaffDetailItem extends StaffListItem {

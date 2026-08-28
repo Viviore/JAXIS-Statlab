@@ -11,6 +11,7 @@ import {
   LoadingState,
   EmptyState,
   Badge,
+  Pagination,
 } from "@repo/ui";
 import {
   IconSettings,
@@ -18,9 +19,11 @@ import {
   IconShieldCheck,
   IconArrowRight,
   IconCheck,
+  IconCalendarTime,
 } from "@tabler/icons-react";
 import { getFinanceReceivablesSummary } from "@/features/payments/actions";
 import { PaymentChannelSettingsModal } from "@/features/payments/components/PaymentChannelSettingsModal";
+import { PendingLeaveQueue } from "@/features/staff/components/PendingLeaveQueue";
 import type { FinanceOverviewData } from "@/features/payments/schemas";
 
 export default function FinanceDashboardPage() {
@@ -28,6 +31,8 @@ export default function FinanceDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"ALL" | "DOWNPAYMENT_CLEARED" | "OUTSTANDING" | "FULLY_PAID">("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -64,17 +69,32 @@ export default function FinanceDashboardPage() {
     return true;
   });
 
+  const paginatedReceivables = filteredReceivables.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       <PageHeader
-        title="Finance Receivables & Escrow Vault"
-        description="Monitor institutional study revenue, track downpayment clearances, reconcile remaining receivable balances, and audit cleared client proofs."
+        title="Finance & HR Operations: Receivables & Escrow Vault"
+        description="Monitor institutional study revenue, track downpayment clearances, manage specialist leave authorizations, and audit cleared client proofs."
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Finance Console" },
+          { label: "Finance & HR Console" },
         ]}
         actions={
           <div className="flex items-center gap-2.5">
+            <Link href="/dashboard/finance/leaves">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 font-sans rounded-[2px] cursor-pointer"
+              >
+                <IconCalendarTime size={15} stroke={1.5} />
+                <span>Specialist Leaves</span>
+              </Button>
+            </Link>
             <Button
               variant="outline"
               size="sm"
@@ -121,6 +141,9 @@ export default function FinanceDashboardPage() {
         />
       </div>
 
+      {/* ── HR Personnel & Specialist Leave Queue (Finance HR Authority) ── */}
+      <PendingLeaveQueue onStatusChange={loadData} />
+
       {/* ── Receivables & Ledger Table ── */}
       <Card className="p-0 overflow-hidden border-white/10 bg-[#01142B]/90">
         <div className="p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -136,7 +159,7 @@ export default function FinanceDashboardPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setFilterStatus("ALL")}
+              onClick={() => { setFilterStatus("ALL"); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                 filterStatus === "ALL"
                   ? "bg-[#CC6600] text-white shadow-sm"
@@ -147,7 +170,7 @@ export default function FinanceDashboardPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFilterStatus("DOWNPAYMENT_CLEARED")}
+              onClick={() => { setFilterStatus("DOWNPAYMENT_CLEARED"); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                 filterStatus === "DOWNPAYMENT_CLEARED"
                   ? "bg-[#CC6600] text-white shadow-sm"
@@ -158,7 +181,7 @@ export default function FinanceDashboardPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFilterStatus("OUTSTANDING")}
+              onClick={() => { setFilterStatus("OUTSTANDING"); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                 filterStatus === "OUTSTANDING"
                   ? "bg-[#CC6600] text-white shadow-sm"
@@ -169,7 +192,7 @@ export default function FinanceDashboardPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFilterStatus("FULLY_PAID")}
+              onClick={() => { setFilterStatus("FULLY_PAID"); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                 filterStatus === "FULLY_PAID"
                   ? "bg-[#CC6600] text-white shadow-sm"
@@ -212,7 +235,7 @@ export default function FinanceDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.06] text-white/80">
-                {filteredReceivables.map((study) => (
+                {paginatedReceivables.map((study) => (
                   <tr key={study.id} className="hover:bg-white/[0.02] transition-colors">
                     {/* Study & Title */}
                     <td className="py-4 px-5 whitespace-nowrap">
@@ -331,6 +354,17 @@ export default function FinanceDashboardPage() {
               </tbody>
             </table>
           </div>
+        )}
+
+        {!isLoading && filteredReceivables.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredReceivables.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="studies"
+          />
         )}
       </Card>
 

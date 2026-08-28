@@ -1,8 +1,8 @@
 # JAXIS — Task List
 
-**Active Module:** `06-sow` — SOW Generation & Signing\
+**Active Module:** `08-assignment` — Expert Assignment & Workload\
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5\
-**Spec Reference:** [`docs/modules/06-sow.md`](./docs/modules/06-sow.md)\
+**Spec Reference:** [`docs/modules/08-assignment.md`](./docs/modules/08-assignment.md)\
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing this module.
 
 ---
@@ -477,18 +477,18 @@
 
 ---
 
-### Task 5 — Admin Staff Roster & Provisioning Views
+### Task 5 — Admin Staff Directory & Provisioning Views
 
 **Objective:** Build high-precision UI for Admin staff management.
 
 **Steps:**
-1. Build `/dashboard/admin/staff` — responsive staff roster table with role badges, status, specializations, and action menus
+1. Build `/dashboard/admin/staff` — responsive staff directory table with role badges, status, specializations, and action menus
 2. Build `/dashboard/admin/staff/new` — staff provisioning form with role selection and specialization tags
 3. Build suspend/terminate modal dialogs with reason tracking
 
 **Acceptance:** Admin can view, provision, suspend, and manage staff members from the UI.
 
-- [x] Staff Roster page rendered with search and role/status filters
+- [x] Staff Directory page rendered with search and role/status filters
 - [x] Provision staff form with temporary password generation dialog
 - [x] Suspend and terminate modals with audit reasons
 - [x] Fully responsive on mobile, tablet, and desktop
@@ -778,6 +778,52 @@
 
 ---
 
+## Module 08 — Expert Assignment & Workload (Completed)
+
+### Task 1 — Database Models & Holiday Registry
+**Objective:** Establish assignment, reassignment history, and statutory holiday data layer.
+- [x] Create `Assignment` model in `schema.prisma` linking `Project`, `statisticianId`, `qaLeadId`, and SLA tracking fields
+- [x] Create `AssignmentHistory` model for reassignment audit trail with `payoutVoided` flag
+- [x] Create `PhilippineHoliday` model and `HolidayType` enum
+- [x] Sync schema to Supabase PostgreSQL via `npx prisma db push`
+- [x] Seed 17 Philippine statutory holidays for 2026 via `prisma/seed.ts`
+
+### Task 2 — SLA Engine & Business Rules
+**Objective:** Implement contractual turnaround computation skipping weekends and holidays.
+- [x] Create `src/lib/sla-calculator.ts` with `computeSlaDueDate`
+- [x] Implement `calculateSlaRemaining` (calculating hours, days, overdue, and 24h pre-deadline alerts)
+- [x] Implement `computeResumeDueDate` (adjusting due date by exact pause duration)
+- [x] Create `src/lib/assignment-rules.ts` with role guards and `calculateSpecializationScore`
+
+### Task 3 — Server Actions & Schemas
+**Objective:** Implement atomic assignment mutations and workload queries.
+- [x] Create Zod schemas in `src/features/assignments/schemas.ts`
+- [x] Implement `assignExperts` action with atomic transaction and `EXPERT_ASSIGNED` transition
+- [x] Implement `reassignExperts` action with history archiving and payout void flag
+- [x] Implement `requestSlaPause`, `approveSlaPause`, and `resumeSla` actions
+- [x] Implement `getStaffCapacity` aggregating specialist workloads and specialization affinity
+- [x] Implement `getStatisticianWorkload` and `getQaWorkload`
+- [x] Implement `getProjectAssignment`
+
+### Task 4 — UI Components & Assignment Desks
+**Objective:** Build high-precision assignment modals and workbench views.
+- [x] Create `AssignmentModal.tsx` with specialist directory, capacity counts, and specialization badges
+- [x] Create `ProjectAssignmentCard.tsx` for project inspection desks with live SLA badge, pause/resume controls, and reassign modal trigger
+- [x] Build `/dashboard/admin/assignments` dedicated Expert Assignment & Workload Desk
+- [x] Update `/dashboard/admin/projects/[id]` with primary `+ Assign Specialists` button and embedded assignment card
+- [x] Update `/dashboard/statistician` connecting to live database assignments with SLA countdown timers and pause request modal
+- [x] Update `/dashboard/qa` connecting to live database assignments with SLA countdown
+- [x] Enable "Expert Assignment Desk" in `Sidebar.tsx` for Admin and CEO
+
+### Task 5 — Quality Gate & Verification
+**Objective:** Run monorepo validation scripts and generate verification report.
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings
+- [x] Generate `docs/modules/08-verification-report.md`
+- [x] Mark Module 08 completed
+
+---
+
 ## Upcoming Modules (Roadmap v2)
 
 | #    | Module                                                | Status                           |
@@ -790,8 +836,8 @@
 | `05` | `05-quotation` — Quotation & Pricing                  | ✅ Completed                     |
 | `06` | `06-sow` — SOW Generation & Signing                   | ✅ Completed                     |
 | `07` | `07-payments` — Payment & Installments                | ✅ Completed                     |
-| `08` | `08-assignment` — Expert Assignment & Workload        | ⏳ Ready to Start                |
-| `09` | `09-messaging` — Messaging & Communication Firewall   | ⏳ Blocked — awaiting `04`, `08` |
+| `08` | `08-assignment` — Expert Assignment & Workload        | ✅ Completed                     |
+| `09` | `09-messaging` — Messaging & Communication Firewall   | ⏳ Ready to Start                |
 | `10` | `10-analysis` — Analysis Workbench                    | ⏳ Blocked — awaiting `08`, `09` |
 | `11` | `11-qa` — Quality Assurance                           | ⏳ Blocked — awaiting `10`       |
 | `12` | `12-deliverables` — Deliverables, Release & Revisions | ⏳ Blocked — awaiting `11`       |

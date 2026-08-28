@@ -17,6 +17,7 @@ import {
   Toast,
   LoadingState,
   EmptyState,
+  Pagination,
 } from "@repo/ui";
 import {
   IconDownload,
@@ -61,6 +62,8 @@ export default function AdminIntakeTriagePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   // Modals state
   const [selectedStudyForInspect, setSelectedStudyForInspect] =
@@ -143,6 +146,13 @@ export default function AdminIntakeTriagePage() {
       return true;
     });
   }, [projects, selectedStatus, searchQuery]);
+
+  const paginatedProjects = useMemo(() => {
+    return filteredProjects.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredProjects, currentPage, pageSize]);
 
   // Comprehensive Master Status & KPI calculations
   const kpis = useMemo(() => {
@@ -304,7 +314,7 @@ export default function AdminIntakeTriagePage() {
         {/* Filter Toolbar */}
         <FilterToolbar
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={(q) => { setSearchQuery(q); setCurrentPage(1); }}
           searchPlaceholder="Search study title, client, or JAXIS ID..."
           filters={[
             {
@@ -322,11 +332,15 @@ export default function AdminIntakeTriagePage() {
             },
           ]}
           onFilterChange={(key, value) => {
-            if (key === "status") setSelectedStatus(value);
+            if (key === "status") {
+              setSelectedStatus(value);
+              setCurrentPage(1);
+            }
           }}
           onClear={() => {
             setSelectedStatus("ALL");
             setSearchQuery("");
+            setCurrentPage(1);
           }}
         />
 
@@ -361,7 +375,7 @@ export default function AdminIntakeTriagePage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProjects.map((p) => {
+                  paginatedProjects.map((p) => {
                     return (
                       <tr key={p.id} className="group">
                         {/* Research Study & Intake */}
@@ -418,89 +432,98 @@ export default function AdminIntakeTriagePage() {
                             <span className="font-semibold text-white group-hover:text-[#CC6600] transition-colors whitespace-nowrap truncate text-[0.8125rem]">
                               {p.client.fullName}
                             </span>
-                            <span className="text-[0.6875rem] text-white/40 font-mono whitespace-nowrap truncate max-w-[200px]">
+                            <span className="text-[0.6875rem] text-white/40 font-mono truncate">
                               {p.client.clientProfile?.institutionSchool ||
                                 p.client.email}
                             </span>
+                            {p.client.clientProfile?.contactNumber && (
+                              <span className="text-[0.6875rem] text-white/30 font-mono">
+                                {p.client.clientProfile.contactNumber}
+                              </span>
+                            )}
                           </div>
                         </td>
 
                         {/* Target Deadline */}
-                        <td className="whitespace-nowrap">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-mono text-amber-400 font-bold">
-                              {new Date(p.deadlineRequested).toLocaleDateString(
-                                "en-US",
-                                { month: "short", day: "numeric", year: "numeric" }
-                              )}
-                            </span>
-                            <span className="text-[0.6875rem] text-white/40 font-mono">
-                              Requested
-                            </span>
+                        <td>
+                          <div className="flex flex-col gap-0.5 whitespace-nowrap font-mono text-xs">
+                            {(p as any).targetCompletionDate ? (
+                              <>
+                                <span className="text-white font-medium">
+                                  {new Date(
+                                    (p as any).targetCompletionDate
+                                  ).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                                <span className="text-[0.6875rem] text-white/40">
+                                  Target Delivery
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-white/30 italic font-sans text-xs">
+                                Open Timeline
+                              </span>
+                            )}
                           </div>
                         </td>
 
                         {/* Status */}
-                        <td className="whitespace-nowrap">
-                          <StatusBadge
-                            status={p.masterStatus}
-                            label={
-                              PROJECT_STATUS_LABELS[p.masterStatus] ||
-                              p.masterStatus
-                            }
-                          />
+                        <td>
+                          <div className="flex flex-col gap-1 items-start whitespace-nowrap">
+                            <StatusBadge
+                              status={p.masterStatus}
+                              label={
+                                PROJECT_STATUS_LABELS[p.masterStatus] ||
+                                p.masterStatus
+                              }
+                            />
+                            {(p as any).serviceType && (
+                              <span className="text-[0.6875rem] text-white/40 font-mono">
+                                {(p as any).serviceType.replace(/_/g, " ")}
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* Actions */}
                         <td className="text-right whitespace-nowrap">
-                          <div className="relative inline-flex items-center justify-end gap-2">
-                            {p.masterStatus === "NEW_REQUEST" ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link href={`/dashboard/admin/projects/${p.id}`}>
                               <Button
-                                variant="primary"
+                                variant="secondary"
                                 size="sm"
-                                onClick={() =>
-                                  handleMarkComplete(p.id, p.intakeId)
-                                }
-                                disabled={isPending}
-                                className="whitespace-nowrap font-mono text-xs tracking-wider"
+                                className="font-sans text-xs font-semibold py-1 px-2.5 rounded-[2px]"
                               >
-                                APPROVE →
+                                <span>Inspect</span>
                               </Button>
-                            ) : p.masterStatus === "UNDER_EVALUATION" ? (
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedStudyForQuote(p);
-                                  setIsQuoteModalOpen(true);
-                                }}
-                                className="whitespace-nowrap font-mono text-xs tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300]"
-                              >
-                                BUILD QUOTE →
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedStudyForInspect(p)}
-                                className="whitespace-nowrap font-mono text-xs tracking-wider"
-                              >
-                                DETAILS
-                              </Button>
-                            )}
+                            </Link>
 
                             <DropdownMenu
+                              trigger={
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 rounded-[2px] border-white/10"
+                                >
+                                  ···
+                                </Button>
+                              }
                               items={[
                                 {
-                                  label: "Quick Overview",
-                                  subtitle: "Inspect study scope & files",
-                                  icon: <IconEye size={16} stroke={1.5} />,
-                                  onClick: () => setSelectedStudyForInspect(p),
+                                  label: "Open Inspection Desk",
+                                  subtitle: "Full study workspace & telemetry",
+                                  icon: <IconExternalLink size={16} stroke={1.5} />,
+                                  onClick: () => {
+                                    window.location.href = `/dashboard/admin/projects/${p.id}`;
+                                  },
                                 },
                                 {
-                                  label: "Commercial Proposal Builder",
-                                  subtitle: "Configure package & issue quote",
-                                  variant: "warning" as const,
+                                  label: "Prepare Commercial Proposal",
+                                  subtitle: "Launch proposal builder",
+                                  variant: "default" as const,
                                   icon: <IconCalculator size={16} stroke={1.5} />,
                                   onClick: () => {
                                     setSelectedStudyForQuote(p);
@@ -508,17 +531,9 @@ export default function AdminIntakeTriagePage() {
                                   },
                                 },
                                 {
-                                  label: "Full Desk Inspector",
-                                  subtitle: "Navigate to dedicated project desk",
-                                  icon: <IconExternalLink size={16} stroke={1.5} />,
-                                  onClick: () => {
-                                    window.location.href = `/dashboard/admin/projects/${p.id}`;
-                                  },
-                                },
-                                {
-                                  label: "Request Missing Info",
-                                  subtitle: "Solicit artifacts or clarifications",
-                                  variant: "warning",
+                                  label: "Request Missing Artifacts",
+                                  subtitle: "Prompt client for clarifications",
+                                  variant: "warning" as const,
                                   icon: <IconHelpCircle size={16} stroke={1.5} />,
                                   onClick: () => {
                                     setSelectedForMissingInfo(p);
@@ -558,6 +573,17 @@ export default function AdminIntakeTriagePage() {
             </table>
           </div>
         </div>
+
+        {filteredProjects.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredProjects.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="intakes"
+          />
+        )}
       </Card>
 
       {/* ── 1. Quick Study Overview Modal ── */}

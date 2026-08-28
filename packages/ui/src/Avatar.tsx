@@ -108,7 +108,11 @@ export function UserAvatar({
       case "DATA_ANALYST":
         return "bg-[#0284C7]/20 text-[#38BDF8] border-[#38BDF8]/40";
       case "QA_SPECIALIST":
+      case "SENIOR_QA_LEAD":
         return "bg-[#10B981]/20 text-[#10B981] border-[#10B981]/40";
+      case "FINANCE_OFFICER":
+      case "FINANCE":
+        return "bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B]/40";
       case "CLIENT":
       default:
         return "bg-[#02254B] text-[#38BDF8] border-white/20";

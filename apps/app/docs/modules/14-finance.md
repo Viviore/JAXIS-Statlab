@@ -9,8 +9,8 @@
 
 ## 1. Module Identity
 
-- **Primary Objective:** Finance Officer manages the revenue ledger and processes Expert payout disbursements. RULE_PAY_01 strictly gates all disbursements: project must be DELIVERED/ARCHIVED + FULLY_PAID + no active disputes + no pending refunds. Expert payout rates are applied by package tier from a seeded config table.
-- **Core Responsibilities:** `FinancialLedger`, `Payout`, `PayoutRateConfig` models; payout eligibility enforcement; disbursement workflow; ledger views for Finance and CEO.
+- **Primary Objective:** Finance & HR Officer (`FINANCE_OFFICER`) exercises a dual operational mandate: (1) managing institutional treasury, escrow release gates, and expert milestone disbursements under `RULE_PAY_01`, and (2) serving as Human Resources governance lead, reviewing specialist leave submissions and managing staff duty records.
+- **Core Responsibilities:** `FinancialLedger`, `Payout`, `PayoutRateConfig` models; payout eligibility enforcement; disbursement workflow; revenue & margin ledger; specialist leave authorization desk (`/dashboard/finance/leaves`); anti-fraud segregation-of-duties compliance.
 
 ---
 
@@ -21,7 +21,7 @@
 | Feature ID | Feature |
 |---|---|
 | `FIN-F01` | **Revenue ledger** — Per-project financial record: gross revenue, platform fee, Expert share, net margin |
-| `FIN-F02` | **Payout rate config** — Seeded rate table by package; Finance can update rates (CEO approval in future; MVP = seeded) |
+| `FIN-F02` | **Payout rate config** — Seeded rate table by package; Finance can update rates |
 | `FIN-F03` | **Payout calculation** — Compute Statistician and QA Lead payout from approved rate for package |
 | `FIN-F04` | **Payout eligibility check (RULE_PAY_01)** — Project must be DELIVERED or ARCHIVED, FULLY_PAID, no active dispute, no pending refund |
 | `FIN-F05` | **Payout disbursement** — Finance Officer marks payout as disbursed after sending via GCash/bank |
@@ -32,13 +32,16 @@
 | `FIN-F10` | **Finance disbursement queue** — Finance sees all `PENDING`/`APPROVED` payouts awaiting disbursement |
 | `FIN-F11` | **CEO financial overview** — Full ledger + payout override authority |
 | `FIN-F12` | **DefenseLab revenue** — DefenseLab session revenue recorded at 80% payout rate to Expert |
+| `FIN-F13` | **Specialist leave governance desk** — Dedicated HR console at `/dashboard/finance/leaves` for reviewing absence justifications and authorizing leave windows |
+| `FIN-F14` | **Segregation of duties (SoD) anti-fraud protocol** — Finance Officer is strictly prohibited from approving their own leaves or attendance adjustments; approvals for Finance must be conducted by Admin or CEO |
+| `FIN-F15` | **CEO executive oversight & audit vault** — Tamper-proof audit trail for all adjustments and disbursements with CEO override clearance |
 
 ### ❌ Explicitly Out of Scope
 
 | Feature | Reason |
 |---|---|
-| Automated bank/GCash transfer via API | Manual disbursement with Finance recording the action |
-| Payroll schedule (bi-monthly, monthly) | Payouts are per-project, not payroll-based |
+| Automated bank/GCash transfer via API | Manual disbursement with Finance recording reference number |
+| Base salary / recurring payroll disbursements | Handled via Module 18 duty logs; Module 14 governs per-project milestone payouts |
 | Tax withholding computation | Future feature |
 | Multi-currency | PHP only |
 | Partial refund processing | Module 15; full refunds only per policy |
@@ -178,8 +181,11 @@ export async function assertPayoutEligible(projectId: string): Promise<void> {
 
 | Page | Route | Role | Description |
 |---|---|---|---|
-| Disbursement Queue | `/dashboard/finance/payouts` | Finance, CEO | Pending/Approved payouts with disburse action and eligibility status |
-| Ledger | `/dashboard/finance/ledger` | Finance, CEO | Full ledger table with margin breakdown per project |
+| Finance & HR Control Center | `/dashboard/finance` | Finance & HR Officer | Receivables overview, downpayment clearances, and escrow vault status |
+| Specialist Leave Approvals | `/dashboard/finance/leaves` | Finance & HR Officer, Admin | Review leave requests, inspect justification paragraphs, approve/decline leave windows |
+| Deposit Verification Queue | `/dashboard/finance/payments` | Finance & HR Officer, Admin | Queue of pending client GCash / Bank Transfer payment proofs |
+| Disbursement Queue | `/dashboard/finance/payouts` | Finance & HR Officer, CEO | Pending/Approved payouts with disburse action and eligibility status |
+| Ledger | `/dashboard/finance/ledger` | Finance & HR Officer, CEO | Full ledger table with margin breakdown per project |
 | CEO Finance | `/dashboard/ceo/finance` | CEO | Executive summary + ledger + payout override |
 | Statistician Payouts | `/dashboard/statistician/payouts` | Statistician | Own payout history: project, amount, rate, status |
 

@@ -37,7 +37,7 @@ All 5 core tasks and all acceptance criteria from the specification are satisfie
 ## 3. Detailed Verification Breakdown
 
 ### 3.1 Architecture Adjustments (Server Actions vs API Routes)
-- ⚠️ **Deviation Note:** The blueprint specified creating REST endpoints (`/api/v1/client/profile`). However, in alignment with Next.js App Router best practices, I leveraged **Server Actions** (`upsertClientProfile`) for data mutation and form handling. This removes unnecessary client-side fetch boilerplate, improves type safety, and is more secure. 
+- **Deviation Note:** The blueprint specified creating REST endpoints (`/api/v1/client/profile`). However, in alignment with Next.js App Router best practices, I leveraged **Server Actions** (`upsertClientProfile`) for data mutation and form handling. This removes unnecessary client-side fetch boilerplate, improves type safety, and is more secure. 
 - *This architectural choice fulfills all business and acceptance criteria perfectly without breaking scope.*
 
 ### 3.2 Offline Fault Tolerance (Development Resiliency)

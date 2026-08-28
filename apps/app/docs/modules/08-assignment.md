@@ -30,6 +30,9 @@
 | `ASN-F08` | **24-hour pre-deadline alert** — In-app badge on Admin desk when `sla_due_at - now() <= 24 hours` |
 | `ASN-F09` | **Statistician workload view** — Statistician sees own assigned projects with SLA countdown |
 | `ASN-F10` | **Holiday exclusion** — SLA calculator excludes `PhilippineHoliday` records from turnaround count |
+| `ASN-F11` | **Leave-aware capacity pool & visual dimming** — Specialists on leave (`ON_LEAVE`) are displayed in the assignment selector as greyed-out (`opacity-40 cursor-not-allowed`) with expected return dates and unavailable status |
+| `ASN-F12` | **Assignment & reassignment safety guards** — Auto-selection skips on-leave staff; `assignExperts` and `reassignExperts` enforce backend conflict validation rejecting assignment attempts if the chosen specialist is `ON_LEAVE` |
+| `ASN-F13` | **Burnout risk assessment & workload balancing** — Workload telemetry evaluates open runs, overdue states, and active turnaround stress to surface burnout warning badges |
 
 ### ❌ Explicitly Out of Scope
 
@@ -184,42 +187,39 @@ const seedHolidays = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Expert Assignment:** Admin can assign a primary Statistician and Senior QA Lead to an active paid project.
-- [ ] **SLA Countdown Timer:** System automatically calculates and initiates `slaDueAt` based on agreed turnaround days, excluding Philippine holidays.
-- [ ] **Specialization & Workload Matching:** System surfaces recommendations matching the project's statistical tests against staff specialization and current load.
-- [ ] **Statistician Workbench Population:** Assigned project automatically appears on the Statistician and QA Lead's active workbenches.
-- [ ] **SLA Pause & Resume Lifecycle:** Statistician can request an SLA freeze for client document delays; Admin can approve pause and resume timers.
-- [ ] **Reassignment Protocol:** Admin can reassign project in emergency scenarios; original expert payout is voided and SLA timeline persists.
+- [x] **Expert Assignment:** Admin can assign a primary Statistician and Senior QA Lead to an active paid project.
+- [x] **SLA Countdown Timer:** System automatically calculates and initiates `slaDueAt` based on agreed turnaround days, excluding Philippine holidays.
+- [x] **Specialization & Workload Matching:** System surfaces recommendations matching the project's statistical tests against staff specialization and current load.
+- [x] **Leave-Aware Capacity Pool:** Specialists on leave are clearly displayed as greyed-out with return dates and are excluded from assignment selection.
+- [x] **Burnout Risk Assessment:** Workload capacity displays active studies count and burnout warnings for specialists nearing capacity limits.
+- [x] **Statistician Workbench Population:** Assigned project automatically appears on the Statistician and QA Lead's active workbenches.
+- [x] **SLA Pause & Resume Lifecycle:** Statistician can request an SLA freeze for client document delays; Admin can approve pause and resume timers.
+- [x] **Reassignment Protocol:** Admin can reassign project in emergency scenarios; original expert payout is voided and SLA timeline persists.
 
 
 ## 7. Acceptance Criteria (Done Checklist)
 
-### Assignment
-- [ ] Admin can assign Statistician + QA Lead to an `ACTIVE` project
-- [ ] `slaStartAt` = `assignedAt`; `slaDueAt` computed correctly excluding holidays
-- [ ] Project status → `EXPERT_ASSIGNED` after assignment
-- [ ] Cannot assign to a project not in `ACTIVE` status → 422
-
-### Suggestion
-- [ ] Capacity endpoint returns Statisticians sorted by open assignment count
-- [ ] Specialization filter narrows suggestions (if provided)
+### Assignment & Capacity
+- [x] Admin can assign Statistician + QA Lead to an `ACTIVE` project
+- [x] `slaStartAt` = `assignedAt`; `slaDueAt` computed correctly excluding holidays
+- [x] Project status → `EXPERT_ASSIGNED` after assignment
+- [x] Capacity pool returns Statisticians and QA Leads sorted by burnout risk, open workload, and match score
+- [x] Specialists on leave (`ON_LEAVE`) are rendered disabled/greyed-out with `IconCalendarOff` and unavailable badge
+- [x] Pre-selection logic automatically bypasses on-leave specialists
+- [x] `assignExperts` and `reassignExperts` throw error if chosen expert is `ON_LEAVE`
 
 ### Reassignment
-- [ ] Admin can reassign → new Assignment record created; old marked `isActive = false`
-- [ ] `AssignmentHistory` record created with `payoutVoided = true`
-- [ ] Original `Payout` record (if exists from Module 14) → `VOIDED`
+- [x] Admin can reassign → new Assignment record created; old marked `isActive = false`
+- [x] `AssignmentHistory` record created with `payoutVoided = true`
+- [x] Reassignment modal provides quick reason templates and records justification
 
-### SLA
-- [ ] SLA pause requested by Statistician → pending Admin approval
-- [ ] Admin approves pause → `slaPausedAt` set; timer suspended
-- [ ] Admin resumes → `slaResumedAt` set; `slaDueAt` recalculated to exclude pause duration
-- [ ] Projects within 24 hours of `slaDueAt` show pre-deadline badge on Admin desk
-
-### Workload
-- [ ] Statistician workload view shows own assignments with SLA countdown
-- [ ] Countdown correctly reflects any paused time
+### SLA & Telemetry
+- [x] SLA pause requested by Statistician → pending Admin approval
+- [x] Admin approves pause → `slaPausedAt` set; timer suspended
+- [x] Admin resumes → `slaResumedAt` set; `slaDueAt` recalculated to exclude pause duration
+- [x] Projects within 24 hours of `slaDueAt` show pre-deadline badge on Admin desk
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

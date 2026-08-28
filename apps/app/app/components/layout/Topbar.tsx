@@ -18,6 +18,7 @@ import {
   IconLogout,
   IconMenu2,
 } from "@tabler/icons-react";
+import { DutyClockWidget } from "@/features/attendance/components/DutyClockWidget";
 
 export interface TopbarProps {
   userFullName?: string;
@@ -83,8 +84,11 @@ export const Topbar: React.FC<TopbarProps> = ({
         </Link>
       </div>
 
-      {/* Right Controls: User Profile + Mobile Hamburger */}
+      {/* Right Controls: Duty Clock Widget + User Profile + Mobile Hamburger */}
       <div className="flex items-center gap-3 sm:gap-4">
+        {/* Topbar Duty Clock Widget for internal staff */}
+        <DutyClockWidget userRole={userRole} />
+
         {/* Radix / Shadcn Dropdown Menu */}
         <DropdownMenuRoot>
           <DropdownMenuTrigger asChild>

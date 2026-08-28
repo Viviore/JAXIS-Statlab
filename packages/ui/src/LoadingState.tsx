@@ -81,14 +81,14 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   if (variant === "page") {
     return (
       <div
-        className={`min-h-[50vh] w-full flex flex-col items-center justify-center gap-4 py-16 px-6 text-center select-none animate-content-fade ${className}`}
+        className={`flex-1 min-h-[50vh] h-full w-full flex flex-col items-center justify-center gap-4 py-8 px-4 text-center select-none animate-content-fade my-auto mx-auto ${className}`}
       >
         <OrbitalSpinner size="lg" />
-        <div className="flex flex-col items-center gap-1.5 max-w-md">
+        <div className="flex flex-col items-center justify-center gap-1.5 max-w-md mx-auto text-center">
           <h3 className="text-base sm:text-lg font-semibold text-white font-sans tracking-tight">
             {label || "Loading workspace..."}
           </h3>
-          <p className="text-xs sm:text-sm text-white/50 font-sans leading-relaxed max-w-sm">
+          <p className="text-xs sm:text-sm text-white/50 font-sans leading-relaxed max-w-sm text-center">
             {description || "Please wait while we load your research workspace"}
           </p>
         </div>

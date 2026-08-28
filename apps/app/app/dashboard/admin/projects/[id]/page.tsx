@@ -13,6 +13,7 @@ import {
   ModalFooter,
   Alert,
   Toast,
+  LoadingState,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -38,6 +39,11 @@ import {
   MISSING_INFO_TEMPLATES,
 } from "@/lib/project-rules";
 import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
+import { getProjectAssignment } from "@/features/assignments/actions";
+import { AssignmentModal } from "@/features/assignments/components/AssignmentModal";
+import { ProjectAssignmentCard } from "@/features/assignments/components/ProjectAssignmentCard";
+import type { AssignmentDetailItem } from "@/features/assignments/schemas";
+import { IconUserCheck } from "@tabler/icons-react";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 import type { QuotationDetailItem } from "@/features/quotations/schemas";
 import type { ProjectStatus } from "@prisma/client";
@@ -66,6 +72,8 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
   const [statusModalError, setStatusModalError] = useState<string | null>(null);
 
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
+  const [assignment, setAssignment] = useState<AssignmentDetailItem | null>(null);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
 
   const [toastMessage, setToastMessage] = useState<{
     message: string;
@@ -89,9 +97,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const [projectRes, quoteRes] = await Promise.all([
+      const [projectRes, quoteRes, assignRes] = await Promise.all([
         getProjectById(projectId),
         getQuotationByProject(projectId),
+        getProjectAssignment(projectId),
       ]);
 
       if (projectRes.success) {
@@ -101,6 +110,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
       }
 
       setQuotation(quoteRes);
+
+      if (assignRes.success) {
+        setAssignment(assignRes.data);
+      }
     } catch (e) {
       console.error(e);
       setError("Failed to load project details.");
@@ -200,21 +213,12 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
-        <PageHeader
-          title="Loading Project Inspection Desk..."
-          breadcrumbs={[
-            { label: "WORKSPACE", href: "/dashboard" },
-            { label: "Admin Command", href: "/dashboard/admin" },
-            { label: "Intake Triage", href: "/dashboard/admin/intake" },
-            { label: "Inspection Desk" },
-          ]}
+      <div className="flex-1 min-h-[50vh] w-full flex items-center justify-center animate-content-fade my-auto">
+        <LoadingState
+          variant="page"
+          label="Loading Project Inspection Desk..."
+          description="Retrieving analytical milestones, deliverables, and communication logs."
         />
-        <Card className="p-8 animate-pulse flex flex-col gap-4">
-          <div className="h-6 bg-white/10 w-1/3 rounded-[2px]" />
-          <div className="h-8 bg-white/10 w-2/3 rounded-[2px]" />
-          <div className="h-32 bg-white/10 w-full rounded-[2px]" />
-        </Card>
       </div>
     );
   }
@@ -346,6 +350,18 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               </Link>
             )}
 
+            {project.masterStatus === "ACTIVE" && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsAssignmentModalOpen(true)}
+                className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300] rounded-[2px]"
+              >
+                <IconUserCheck size={14} stroke={2} />
+                <span>+ Assign Specialists</span>
+              </Button>
+            )}
+
             {(project.masterStatus === "NEW_REQUEST" ||
               project.masterStatus === "AWAITING_INFORMATION") && (
               <Button
@@ -403,6 +419,16 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
             &ldquo;{project.missingInfoReason}&rdquo;
           </p>
         </Card>
+      )}
+
+      {/* ── Specialist Assignment & SLA Tracking (Module 08) ── */}
+      {assignment && (
+        <ProjectAssignmentCard
+          assignment={assignment}
+          onRefresh={loadProject}
+          onReassign={() => setIsAssignmentModalOpen(true)}
+          canManage={true}
+        />
       )}
 
       {/* ── Main Inspection Layout ── */}
@@ -827,6 +853,26 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
           clientName={project.client.fullName}
           existingQuotation={quotation}
           onSuccess={loadProject}
+        />
+      )}
+
+      {/* Specialist Assignment Modal (Module 08) */}
+      {project && (
+        <AssignmentModal
+          isOpen={isAssignmentModalOpen}
+          onClose={() => setIsAssignmentModalOpen(false)}
+          projectId={project.id}
+          projectTitle={project.researchTitle}
+          projectMethod={project.packageName?.replace(/_/g, " ")}
+          existingAssignment={assignment}
+          onSuccess={() => {
+            loadProject();
+            setToastMessage({
+              message: assignment ? "Specialist Reassigned" : "Specialists Assigned",
+              description: `Study ${project.intakeId} has been successfully staffed. SLA countdown active.`,
+              variant: "success",
+            });
+          }}
         />
       )}
 

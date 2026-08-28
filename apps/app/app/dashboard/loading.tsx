@@ -3,7 +3,7 @@ import { LoadingState } from "@repo/ui";
 
 export default function DashboardLoading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto py-16 animate-content-fade">
+    <div className="flex-1 w-full flex items-center justify-center animate-content-fade my-auto">
       <LoadingState
         variant="page"
         label="Loading workspace..."

@@ -622,6 +622,7 @@ export default function NewProjectIntakePage() {
                   <FormInput
                     label="Target Completion / Defense Deadline"
                     type="date"
+                    min={new Date().toISOString().split("T")[0]}
                     required
                     value={deadlineRequested}
                     onChange={(e) => setDeadlineRequested(e.target.value)}

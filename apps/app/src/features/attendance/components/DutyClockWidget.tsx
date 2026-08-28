@@ -1,0 +1,315 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconClock,
+  IconLoader2,
+  IconCoffee,
+  IconCalendarOff,
+  IconAlertTriangle,
+  IconCheck,
+} from "@tabler/icons-react";
+import { Button, Modal, Toast } from "@repo/ui";
+import { clockIn, clockOut, getActiveShift } from "../actions";
+import type { ActiveShiftStatus } from "../schemas";
+
+interface DutyClockWidgetProps {
+  userRole?: string;
+}
+
+export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CLIENT" }) => {
+  // Only render for internal staff roles
+  const isInternal = ["STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER", "ADMIN", "CEO"].includes(userRole);
+
+  const [shiftStatus, setShiftStatus] = useState<ActiveShiftStatus | null>(null);
+  const [seconds, setSeconds] = useState<number>(0);
+  const [isPunching, setIsPunching] = useState<boolean>(false);
+  const [isClockOutModalOpen, setIsClockOutModalOpen] = useState<boolean>(false);
+  const [shiftNotes, setShiftNotes] = useState<string>("");
+  const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
+
+  // 1. Fetch initial status
+  const refreshStatus = useCallback(async () => {
+    if (!isInternal) return;
+    try {
+      const status = await getActiveShift();
+      setShiftStatus(status);
+      if (status.isOnDuty) {
+        setSeconds(status.elapsedSeconds);
+      } else {
+        setSeconds(0);
+      }
+    } catch (err) {
+      console.error("Failed to load active shift status:", err);
+    }
+  }, [isInternal]);
+
+  useEffect(() => {
+    refreshStatus();
+  }, [refreshStatus]);
+
+  // 2. Running Live Timer Tick
+  useEffect(() => {
+    if (!shiftStatus?.isOnDuty) return;
+
+    const interval = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [shiftStatus?.isOnDuty]);
+
+  if (!isInternal) return null;
+
+  // Format seconds -> HH:MM:SS
+  const formatTimer = (totalSecs: number) => {
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Clock In Action
+  const handleClockIn = async () => {
+    setIsPunching(true);
+    try {
+      const res = await clockIn();
+      if (res.success) {
+        setToast({
+          variant: "success",
+          message: "Duty Clock-In Recorded",
+          description: "Active shift session has commenced. Server timestamp verified.",
+        });
+        await refreshStatus();
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Clock-In Failed",
+          description: res.error.message,
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Network Error",
+        description: "Unable to contact duty logging service.",
+      });
+    } finally {
+      setIsPunching(false);
+    }
+  };
+
+  // Clock Out Action
+  const handleClockOut = async () => {
+    setIsPunching(true);
+    try {
+      const res = await clockOut({
+        notes: shiftNotes.trim() || undefined,
+      });
+
+      if (res.success) {
+        setToast({
+          variant: "success",
+          message: "Shift Concluded & Saved",
+          description: `Total Net Payable Hours: ${res.data.netHoursFormatted}.`,
+        });
+        setIsClockOutModalOpen(false);
+        setShiftNotes("");
+        await refreshStatus();
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Clock-Out Failed",
+          description: res.error.message,
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Network Error",
+        description: "Unable to record shift conclusion.",
+      });
+    } finally {
+      setIsPunching(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {/* On Leave Indicator */}
+        {shiftStatus?.isOnLeave ? (
+          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-semibold rounded-[2px] bg-purple-950/50 text-purple-300 border border-purple-500/30 whitespace-nowrap">
+            <IconCalendarOff size={13} stroke={2} />
+            <span>On Leave</span>
+          </span>
+        ) : shiftStatus?.isOnDuty ? (
+          /* Active Duty Live Timer Pill */
+          <div className="flex items-center bg-[#01142B] border border-emerald-500/40 rounded-[2px] p-1 gap-2 shadow-sm">
+            <div className="flex items-center gap-1.5 px-2 py-0.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-xs font-mono font-bold text-emerald-300 tracking-wider">
+                {formatTimer(seconds)}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              disabled={isPunching}
+              onClick={() => setIsClockOutModalOpen(true)}
+              className="px-2.5 py-1 text-[0.688rem] font-sans font-semibold rounded-[2px] bg-red-950/60 hover:bg-red-900/80 text-red-300 border border-red-500/30 hover:border-red-500/50 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
+            >
+              <IconPlayerStop size={12} stroke={2} />
+              <span>Conclude Shift</span>
+            </button>
+          </div>
+        ) : (
+          /* Off Duty - Clock In Button */
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={isPunching}
+            onClick={handleClockIn}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/50 rounded-[2px] transition-colors cursor-pointer whitespace-nowrap"
+          >
+            {isPunching ? (
+              <IconLoader2 size={14} stroke={2.5} className="animate-spin text-emerald-300" />
+            ) : (
+              <IconPlayerPlay size={13} stroke={2} />
+            )}
+            <span>Clock In</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Clock Out Confirmation Modal */}
+      <Modal
+        isOpen={isClockOutModalOpen}
+        onClose={() => !isPunching && setIsClockOutModalOpen(false)}
+        title="Clock Out & End Shift"
+        size="md"
+        footer={
+          <div className="flex items-center justify-end gap-2.5 w-full">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={isPunching}
+              onClick={() => setIsClockOutModalOpen(false)}
+              className="cursor-pointer font-sans"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={isPunching}
+              onClick={handleClockOut}
+              className="cursor-pointer font-sans"
+            >
+              {isPunching ? (
+                <div className="flex items-center gap-1.5">
+                  <IconLoader2 size={14} stroke={2.5} className="animate-spin text-white" />
+                  <span>Clocking out...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <IconCheck size={14} stroke={2.5} />
+                  <span>Clock Out</span>
+                </div>
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-4 text-xs font-sans text-white/90">
+          {/* Simple Duration Summary */}
+          <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-[2px] bg-emerald-950/50 border border-emerald-500/30 text-emerald-400">
+                <IconClock size={20} stroke={1.5} />
+              </div>
+              <div>
+                <span className="text-[0.688rem] text-white/50 uppercase font-mono tracking-wider block">
+                  Total Shift Duration
+                </span>
+                <span className="text-xl font-mono font-extrabold text-white">
+                  {formatTimer(seconds)}
+                </span>
+              </div>
+            </div>
+            <div className="text-right font-mono text-[0.688rem] text-white/50">
+              <span>Clock In: </span>
+              <span className="text-white">
+                {shiftStatus?.clockInAt
+                  ? new Date(shiftStatus.clockInAt).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" })
+                  : "--:--"}
+              </span>
+            </div>
+          </div>
+
+          {/* Automatic Meal Break Notice */}
+          <div className="p-3 bg-[#010D1F] border border-white/10 rounded-[2px] flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-[2px] bg-[#CC6600]/10 border border-[#CC6600]/30 text-[#CC6600]">
+                <IconCoffee size={15} stroke={1.5} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-semibold font-sans">Lunch Break Deduction</span>
+                <span className="text-[0.688rem] text-white/50 font-sans">
+                  {seconds >= 5 * 3600
+                    ? "Full shift (5+ hours) — 1 hour lunch break automatically applied"
+                    : "Shift under 5 hours — no deduction"}
+                </span>
+              </div>
+            </div>
+            <span className={`font-mono text-xs font-bold ${seconds >= 5 * 3600 ? "text-amber-400" : "text-emerald-400"}`}>
+              {seconds >= 5 * 3600 ? "-1 hr break" : "0 min deduction"}
+            </span>
+          </div>
+
+          {/* Overtime / Overnight Alert if shift > 10h */}
+          {seconds >= 10 * 3600 && (
+            <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-[2px] flex items-start gap-2.5 text-xs text-amber-200">
+              <IconAlertTriangle size={16} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold text-amber-300 block">Extended Shift Detected ({Math.floor(seconds / 3600)}h+)</span>
+                <p className="text-white/70 text-[0.688rem] mt-0.5 leading-relaxed">
+                  If you forgot to clock out yesterday, you can conclude this shift now and submit an <strong>Attendance Correction</strong> in your HR Portal to log your exact departure time.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Optional Note */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-white/60">
+              Shift note / task accomplished (optional)
+            </label>
+            <input
+              type="text"
+              value={shiftNotes}
+              onChange={(e) => setShiftNotes(e.target.value)}
+              placeholder="e.g. Statistical analysis on Study #202608-0001"
+              className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white placeholder-white/30 outline-none font-sans"
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Standard Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          description={toast.description}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </>
+  );
+};

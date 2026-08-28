@@ -12,6 +12,7 @@ import {
   Toast,
   LoadingState,
   EmptyState,
+  Pagination,
 } from "@repo/ui";
 import {
   IconCopy,
@@ -37,6 +38,8 @@ export default function ClientQuotationsPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [toastMessage, setToastMessage] = useState<{
     message: string;
     description?: string;
@@ -113,6 +116,13 @@ export default function ClientQuotationsPage() {
       return true;
     });
   }, [entries, selectedStatus, searchQuery]);
+
+  const paginatedEntries = useMemo(() => {
+    return filteredEntries.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredEntries, currentPage, pageSize]);
 
   const getPackageBadgeInfo = (pkgName?: string) => {
     if (!pkgName) return null;
@@ -193,7 +203,7 @@ export default function ClientQuotationsPage() {
         {/* Filter Toolbar */}
         <FilterToolbar
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={(q) => { setSearchQuery(q); setCurrentPage(1); }}
           searchPlaceholder="Search study title or JAXIS ID..."
           filters={[
             {
@@ -210,11 +220,12 @@ export default function ClientQuotationsPage() {
             },
           ]}
           onFilterChange={(key, value) => {
-            if (key === "status") setSelectedStatus(value);
+            if (key === "status") { setSelectedStatus(value); setCurrentPage(1); }
           }}
           onClear={() => {
             setSelectedStatus("ALL");
             setSearchQuery("");
+            setCurrentPage(1);
           }}
         />
 
@@ -249,7 +260,7 @@ export default function ClientQuotationsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredEntries.map(({ project, quotation }) => {
+                  paginatedEntries.map(({ project, quotation }) => {
                     const isPending = quotation?.status === "QUOTE_SENT";
                     const isApproved = quotation?.status === "CLIENT_APPROVED";
                     const pkgInfo = quotation ? getPackageBadgeInfo(quotation.packageName) : null;
@@ -408,6 +419,17 @@ export default function ClientQuotationsPage() {
             </table>
           </div>
         </div>
+
+        {filteredEntries.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredEntries.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="proposals"
+          />
+        )}
       </Card>
 
       {/* ── Global Portaled Toast ── */}

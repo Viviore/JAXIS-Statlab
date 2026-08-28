@@ -48,4 +48,5 @@ export * from "./ProgressBar";
 export * from "./BarList";
 export * from "./CategoryBar";
 export * from "./AreaChart";
+export * from "./Pagination";
 export * from "./utils";

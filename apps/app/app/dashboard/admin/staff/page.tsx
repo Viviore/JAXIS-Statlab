@@ -22,6 +22,7 @@ import {
   TagsOverflow,
   DropdownMenu,
   Toast,
+  Pagination,
 } from "@repo/ui";
 import {
   IconEye,
@@ -31,6 +32,9 @@ import {
   IconKey,
   IconCheck,
   IconCopy,
+  IconCalendar,
+  IconChevronDown,
+  IconX,
 } from "@tabler/icons-react";
 import {
   getStaffRoster,
@@ -39,7 +43,12 @@ import {
   suspendStaff,
   liftSuspension,
   terminateStaff,
+  requestLeave,
+  returnFromLeave,
+  approveLeave,
+  rejectLeave,
 } from "@/features/staff/actions";
+import { PendingLeaveQueue } from "@/features/staff/components/PendingLeaveQueue";
 import {
   STANDARD_SPECIALIZATIONS,
   type StaffRole,
@@ -70,7 +79,30 @@ const PROVISION_ROLE_OPTIONS = [
   },
   {
     value: "FINANCE_OFFICER",
-    label: "Finance Officer (Escrow Vault & Ledger)",
+    label: "Finance & HR Officer (Treasury, Escrow & People Operations)",
+  },
+];
+
+const LEAVE_REASON_TEMPLATES = [
+  {
+    label: "Approved Medical / Sick Leave",
+    text: "Staff member approved for medical/sick recovery leave following verified health notice.",
+  },
+  {
+    label: "Annual Vacation / Sabbatical",
+    text: "Approved scheduled annual vacation or academic sabbatical leave.",
+  },
+  {
+    label: "Academic Conference Attendance",
+    text: "Official authorization for off-site academic conference attendance and scholarly presentations.",
+  },
+  {
+    label: "Family Emergency / Urgent Matters",
+    text: "Special compassionate leave granted for urgent family matters.",
+  },
+  {
+    label: "Administrative Temporary Hold",
+    text: "Placed on administrative leave and temporarily removed from the active study assignment pool.",
   },
 ];
 
@@ -81,6 +113,8 @@ export default function StaffRosterPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isPending, startTransition] = useTransition();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modals state
   const [selectedStaff, setSelectedStaff] = useState<StaffListItem | null>(
@@ -90,6 +124,10 @@ export default function StaffRosterPage() {
   const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false);
   const [isSuspendOpen, setIsSuspendOpen] = useState<boolean>(false);
   const [isTerminateOpen, setIsTerminateOpen] = useState<boolean>(false);
+  const [isAdminLeaveOpen, setIsAdminLeaveOpen] = useState<boolean>(false);
+  const [adminLeaveReason, setAdminLeaveReason] = useState<string>("");
+  const [adminLeaveFrom, setAdminLeaveFrom] = useState<string>("");
+  const [adminLeaveUntil, setAdminLeaveUntil] = useState<string>("");
 
   // Provision modal states
   const [isProvisionOpen, setIsProvisionOpen] = useState<boolean>(false);
@@ -162,11 +200,12 @@ export default function StaffRosterPage() {
       (s) => s.role === "FINANCE_OFFICER",
     ).length;
     const active = staffList.filter((s) => s.status === "ACTIVE").length;
+    const onLeave = staffList.filter((s) => s.status === "ON_LEAVE").length;
     const suspended = staffList.filter((s) => s.status === "SUSPENDED").length;
     const terminated = staffList.filter(
       (s) => s.status === "TERMINATED",
     ).length;
-    return { total, stats, qa, finance, active, suspended, terminated };
+    return { total, stats, qa, finance, active, onLeave, suspended, terminated };
   }, [staffList]);
 
   // View details
@@ -326,6 +365,169 @@ export default function StaffRosterPage() {
     });
   };
 
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const isAdminReturnBeforeStart = useMemo(() => {
+    if (!adminLeaveFrom || !adminLeaveUntil) return false;
+    return adminLeaveUntil < adminLeaveFrom;
+  }, [adminLeaveFrom, adminLeaveUntil]);
+
+  const isAdminStartInPast = useMemo(() => {
+    if (!adminLeaveFrom) return false;
+    return adminLeaveFrom < todayStr;
+  }, [adminLeaveFrom, todayStr]);
+
+  const adminCalculatedDays = useMemo(() => {
+    if (!adminLeaveFrom || !adminLeaveUntil || isAdminReturnBeforeStart) return null;
+    const start = new Date(adminLeaveFrom);
+    const end = new Date(adminLeaveUntil);
+    const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(1, diff);
+  }, [adminLeaveFrom, adminLeaveUntil, isAdminReturnBeforeStart]);
+
+  const handleAdminLeaveFromChange = (val: string) => {
+    setAdminLeaveFrom(val);
+    setActionError(null);
+    if (adminLeaveUntil && adminLeaveUntil < val) {
+      const nextDay = new Date(val);
+      nextDay.setDate(nextDay.getDate() + 1);
+      setAdminLeaveUntil(nextDay.toISOString().split("T")[0]!);
+    }
+  };
+
+  const handleAdminLeaveUntilChange = (val: string) => {
+    setAdminLeaveUntil(val);
+    setActionError(null);
+  };
+
+  const openAdminLeaveModal = (staff: StaffListItem) => {
+    setSelectedStaff(staff);
+    setAdminLeaveReason("");
+    setAdminLeaveFrom(todayStr);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setAdminLeaveUntil(tomorrow.toISOString().split("T")[0]!);
+    setActionError(null);
+    setIsAdminLeaveOpen(true);
+  };
+
+  // Admin Place on Leave
+  const handleAdminPlaceOnLeaveSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaff) return;
+    if (!adminLeaveReason || adminLeaveReason.trim().length < 3) {
+      setActionError("Please provide a reason for the leave (at least 3 characters).");
+      return;
+    }
+    if (isAdminStartInPast) {
+      setActionError("Leave start date cannot be in the past.");
+      return;
+    }
+    if (isAdminReturnBeforeStart) {
+      setActionError("Expected return date cannot be earlier than leave start date.");
+      return;
+    }
+    setActionError(null);
+
+    startTransition(async () => {
+      const res = await requestLeave({
+        userId: selectedStaff.id,
+        reason: adminLeaveReason.trim(),
+        leaveFrom: adminLeaveFrom ? new Date(adminLeaveFrom).toISOString() : undefined,
+        leaveUntil: adminLeaveUntil ? new Date(adminLeaveUntil).toISOString() : undefined,
+      });
+
+      if (!res.success) {
+        setActionError(res.error.message);
+        setToastMessage({
+          message: "Leave Action Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
+        return;
+      }
+
+      setIsAdminLeaveOpen(false);
+      setAdminLeaveReason("");
+      setAdminLeaveUntil("");
+      setToastMessage({
+        message: "Staff Placed On Leave",
+        description: `${selectedStaff.fullName} is now On Leave and paused from study assignments.`,
+        variant: "warning",
+      });
+      loadRoster();
+    });
+  };
+
+  // Admin End Leave
+  const handleAdminEndLeave = async (staff: StaffListItem) => {
+    startTransition(async () => {
+      const res = await returnFromLeave(staff.id);
+      if (!res.success) {
+        setToastMessage({
+          message: "Failed to End Leave",
+          description: res.error.message,
+          variant: "danger",
+        });
+        return;
+      }
+      setToastMessage({
+        message: "Leave Concluded",
+        description: `${staff.fullName} has returned to Active status and is available for assignments.`,
+        variant: "success",
+      });
+      loadRoster();
+    });
+  };
+
+  // Admin Approve Leave Request
+  const handleAdminApproveLeave = async (staff: StaffListItem) => {
+    startTransition(async () => {
+      const res = await approveLeave(staff.id);
+      if (!res.success) {
+        setToastMessage({
+          message: "Approval Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
+        return;
+      }
+      setToastMessage({
+        message: "Leave Request Approved",
+        description: `${staff.fullName} is now marked On Leave and hidden from Module 08 assignments.`,
+        variant: "success",
+      });
+      loadRoster();
+    });
+  };
+
+  // Admin Decline Leave Request
+  const handleAdminDeclineLeave = async (staff: StaffListItem) => {
+    startTransition(async () => {
+      const res = await rejectLeave(staff.id);
+      if (!res.success) {
+        setToastMessage({
+          message: "Action Failed",
+          description: res.error.message,
+          variant: "danger",
+        });
+        return;
+      }
+      setToastMessage({
+        message: "Leave Request Declined",
+        description: `${staff.fullName} has been restored to Active duty.`,
+        variant: "warning",
+      });
+      loadRoster();
+    });
+  };
+
   // Terminate action (CEO Authority)
   const handleTerminateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -411,6 +613,20 @@ export default function StaffRosterPage() {
             Active
           </span>
         );
+      case "LEAVE_PENDING":
+        return (
+          <span className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-amber-400 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0 animate-pulse" />
+            Leave Pending
+          </span>
+        );
+      case "ON_LEAVE":
+        return (
+          <span className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-purple-400 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0" />
+            On Leave
+          </span>
+        );
       case "SUSPENDED":
         return (
           <span className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-amber-400 whitespace-nowrap">
@@ -451,7 +667,7 @@ export default function StaffRosterPage() {
               onClick={loadRoster}
               loading={isLoading}
             >
-              REFRESH ROSTER
+              REFRESH DIRECTORY
             </Button>
             <Button
               variant="primary"
@@ -474,7 +690,7 @@ export default function StaffRosterPage() {
           label="Total Staff Directory"
           value={kpis.total}
           variant="default"
-          description={`${kpis.active} active accounts`}
+          description={`${kpis.active} active • ${kpis.onLeave} on leave`}
         />
 
         <KpiCard
@@ -499,7 +715,14 @@ export default function StaffRosterPage() {
         />
       </div>
 
-      {/* ── Staff Roster Card ── */}
+      {/* ── Pending Specialist Leave Requests (HR / Admin Review Queue) ── */}
+      <PendingLeaveQueue
+        onStatusChange={loadRoster}
+        title="Pending Specialist Leave Requests"
+        subtitle="Review and acknowledge specialist absence requests before activating leave status."
+      />
+
+      {/* ── Staff Directory Card ── */}
       <Card
         className="p-0 overflow-hidden border border-white/[0.08] bg-[#010D1F]"
         style={{ padding: 0 }}
@@ -511,7 +734,7 @@ export default function StaffRosterPage() {
         >
           <div>
             <h2 className="text-base font-bold text-white tracking-wide font-sans">
-              Staff Roster Directory
+              Staff Directory
             </h2>
             <p className="text-xs text-white/50 mt-1.5 font-sans leading-relaxed">
               Active domain experts, verified specializations, and disciplinary
@@ -553,6 +776,8 @@ export default function StaffRosterPage() {
               options: [
                 { value: "ALL", label: "All" },
                 { value: "ACTIVE", label: "Active" },
+                { value: "LEAVE_PENDING", label: "Leave Pending" },
+                { value: "ON_LEAVE", label: "On Leave" },
                 { value: "SUSPENDED", label: "Suspended" },
                 { value: "TERMINATED", label: "Terminated" },
               ],
@@ -561,11 +786,13 @@ export default function StaffRosterPage() {
           onFilterChange={(key, value) => {
             if (key === "role") setSelectedRole(value);
             if (key === "status") setSelectedStatus(value);
+            setCurrentPage(1);
           }}
           onClear={() => {
             setSelectedRole("ALL");
             setSelectedStatus("ALL");
             setSearchQuery("");
+            setCurrentPage(1);
           }}
         />
 
@@ -612,7 +839,7 @@ export default function StaffRosterPage() {
                     </td>
                   </tr>
                 ) : (
-                staffList.map((staff) => (
+                staffList.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((staff) => (
                   <tr
                     key={staff.id}
                     className="group"
@@ -672,6 +899,13 @@ export default function StaffRosterPage() {
                               ? [
                                   {
                                     dividerBefore: true,
+                                    label: "Place on Leave",
+                                    subtitle: "Pause study assignments",
+                                    icon: <IconCalendar size={16} stroke={1.5} />,
+                                    onClick: () => openAdminLeaveModal(staff),
+                                  },
+                                  {
+                                    dividerBefore: false,
                                     label: "Suspend Account",
                                     subtitle: "Temporarily halt access",
                                     variant: "warning" as const,
@@ -680,6 +914,38 @@ export default function StaffRosterPage() {
                                       setSelectedStaff(staff);
                                       setIsSuspendOpen(true);
                                     },
+                                  },
+                                ]
+                              : []),
+                            ...(staff.status === "LEAVE_PENDING"
+                              ? [
+                                  {
+                                    dividerBefore: true,
+                                    label: "Acknowledge & Approve",
+                                    subtitle: "Authorize leave & pause assignments",
+                                    variant: "success" as const,
+                                    icon: <IconCheck size={16} stroke={1.5} />,
+                                    onClick: () => handleAdminApproveLeave(staff),
+                                  },
+                                  {
+                                    dividerBefore: false,
+                                    label: "Decline Request",
+                                    subtitle: "Restore to active duty",
+                                    variant: "warning" as const,
+                                    icon: <IconX size={16} stroke={1.5} />,
+                                    onClick: () => handleAdminDeclineLeave(staff),
+                                  },
+                                ]
+                              : []),
+                            ...(staff.status === "ON_LEAVE"
+                              ? [
+                                  {
+                                    dividerBefore: true,
+                                    label: "End Leave",
+                                    subtitle: "Return to active duty",
+                                    variant: "success" as const,
+                                    icon: <IconPlayerPlay size={16} stroke={1.5} />,
+                                    onClick: () => handleAdminEndLeave(staff),
                                   },
                                 ]
                               : []),
@@ -722,6 +988,17 @@ export default function StaffRosterPage() {
           </table>
         </div>
         </div>
+
+        {staffList.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={staffList.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="staff"
+          />
+        )}
       </Card>
 
       {/* ── 1. Staff Detail Modal ── */}
@@ -1259,6 +1536,160 @@ export default function StaffRosterPage() {
                 disabled={terminateReason.trim().length < 10}
               >
                 EXECUTE PERMANENT TERMINATION
+              </Button>
+            </FormFooter>
+          </form>
+        </Modal>
+      )}
+
+      {/* ── 6. Admin Place On Leave Modal ── */}
+      {selectedStaff && (
+        <Modal
+          open={isAdminLeaveOpen}
+          onClose={() => setIsAdminLeaveOpen(false)}
+          title={`Place on Leave: ${selectedStaff.fullName}`}
+          size="md"
+        >
+          <form
+            onSubmit={handleAdminPlaceOnLeaveSubmit}
+            className="flex flex-col gap-4 font-sans"
+          >
+            <Alert variant="info">
+              Placing this staff member on leave will immediately hide them from the Module 08 specialist assignment pool. They will retain login access to their workbench.
+            </Alert>
+
+            {actionError && <Alert variant="danger">{actionError}</Alert>}
+
+            {/* Reason for Leave with Dropdown Selector */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-white/90">
+                  Reason for Leave (Mandatory)
+                </label>
+                <span className="text-[0.625rem] text-white/50 font-mono">
+                  Select template or enter custom note
+                </span>
+              </div>
+
+              {/* Template Dropdown */}
+              <div className="relative">
+                <select
+                  value={LEAVE_REASON_TEMPLATES.find((t) => t.text === adminLeaveReason)?.text || ""}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setAdminLeaveReason(e.target.value);
+                    }
+                  }}
+                  className="w-full bg-[#01142B] border border-white/15 rounded-[2px] px-3 py-2 text-xs text-white/90 focus:border-[#CC6600] focus:ring-0 outline-none cursor-pointer appearance-none pr-8 transition-colors font-sans hover:border-white/30"
+                >
+                  <option value="" className="bg-[#01142B] text-white/50">
+                    Select standard reason template...
+                  </option>
+                  {LEAVE_REASON_TEMPLATES.map((tmpl) => (
+                    <option
+                      key={tmpl.label}
+                      value={tmpl.text}
+                      className="bg-[#01142B] text-white py-1"
+                    >
+                      {tmpl.label}
+                    </option>
+                  ))}
+                </select>
+                <IconChevronDown
+                  size={14}
+                  stroke={2}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none"
+                />
+              </div>
+
+              <textarea
+                value={adminLeaveReason}
+                onChange={(e) => setAdminLeaveReason(e.target.value)}
+                placeholder="e.g. Approved medical leave, sabbatical, conference attendance..."
+                className="w-full bg-[#01142B] border border-white/10 rounded-[2px] p-2.5 text-xs text-white placeholder-white/40 focus:border-[#CC6600] outline-none resize-none h-16 font-sans leading-relaxed"
+              />
+            </div>
+
+            {/* Leave Duration & Date Range (Day or Days) */}
+            <div className="flex flex-col gap-2 p-3 bg-black/40 border border-white/10 rounded-[2px]">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-white/90">
+                  Leave Duration (Day or Days)
+                </label>
+                {isAdminReturnBeforeStart ? (
+                  <span className="text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-[2px] border border-rose-500/30">
+                    Invalid: Return Before Start
+                  </span>
+                ) : isAdminStartInPast ? (
+                  <span className="text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-[2px] border border-rose-500/30">
+                    Invalid: Past Start Date
+                  </span>
+                ) : adminCalculatedDays !== null ? (
+                  <span className="text-xs font-mono font-semibold text-[#FF9433] bg-[#CC6600]/15 px-2 py-0.5 rounded-[2px] border border-[#CC6600]/30">
+                    {adminCalculatedDays} {adminCalculatedDays === 1 ? "Day" : "Days"} Scheduled
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Start Date & Return Date inputs side-by-side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.688rem] uppercase font-mono text-white/50">
+                    Leave Start Date
+                  </span>
+                  <input
+                    type="date"
+                    min={todayStr}
+                    value={adminLeaveFrom}
+                    onChange={(e) => handleAdminLeaveFromChange(e.target.value)}
+                    className={`w-full bg-[#01142B] border rounded-[2px] p-2 text-xs text-white focus:border-[#CC6600] outline-none font-mono cursor-pointer transition-colors ${
+                      isAdminStartInPast ? "border-rose-500/60 bg-rose-950/10" : "border-white/10 hover:border-white/20"
+                    }`}
+                  />
+                  {isAdminStartInPast && (
+                    <span className="text-[0.688rem] text-rose-400 font-sans">
+                      Start date cannot be in the past.
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.688rem] uppercase font-mono text-white/50">
+                    Expected Return Date
+                  </span>
+                  <input
+                    type="date"
+                    min={adminLeaveFrom || todayStr}
+                    value={adminLeaveUntil}
+                    onChange={(e) => handleAdminLeaveUntilChange(e.target.value)}
+                    className={`w-full bg-[#01142B] border rounded-[2px] p-2 text-xs text-white focus:border-[#CC6600] outline-none font-mono cursor-pointer transition-colors ${
+                      isAdminReturnBeforeStart ? "border-rose-500/60 bg-rose-950/10" : "border-white/10 hover:border-white/20"
+                    }`}
+                  />
+                  {isAdminReturnBeforeStart && (
+                    <span className="text-[0.688rem] text-rose-400 font-sans">
+                      Return date cannot be earlier than start date.
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <FormFooter className="mt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsAdminLeaveOpen(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={isPending}
+                disabled={adminLeaveReason.trim().length < 3}
+              >
+                CONFIRM LEAVE STATUS
               </Button>
             </FormFooter>
           </form>

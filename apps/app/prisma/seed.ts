@@ -282,6 +282,36 @@ async function main() {
   }
 
   console.log(`✅ Seeded ${packageConfigs.length} package price configuration guardrails.`);
+
+  const philippineHolidays = [
+    { date: new Date("2026-01-01T00:00:00Z"), name: "New Year's Day", type: "REGULAR" as const },
+    { date: new Date("2026-04-02T00:00:00Z"), name: "Maundy Thursday", type: "REGULAR" as const },
+    { date: new Date("2026-04-03T00:00:00Z"), name: "Good Friday", type: "REGULAR" as const },
+    { date: new Date("2026-04-04T00:00:00Z"), name: "Black Saturday", type: "SPECIAL_NON_WORKING" as const },
+    { date: new Date("2026-04-09T00:00:00Z"), name: "Araw ng Kagitingan", type: "REGULAR" as const },
+    { date: new Date("2026-05-01T00:00:00Z"), name: "Labor Day", type: "REGULAR" as const },
+    { date: new Date("2026-06-12T00:00:00Z"), name: "Independence Day", type: "REGULAR" as const },
+    { date: new Date("2026-08-21T00:00:00Z"), name: "Ninoy Aquino Day", type: "SPECIAL_NON_WORKING" as const },
+    { date: new Date("2026-08-31T00:00:00Z"), name: "National Heroes Day", type: "REGULAR" as const },
+    { date: new Date("2026-11-01T00:00:00Z"), name: "All Saints' Day", type: "SPECIAL_NON_WORKING" as const },
+    { date: new Date("2026-11-02T00:00:00Z"), name: "All Souls' Day", type: "SPECIAL_NON_WORKING" as const },
+    { date: new Date("2026-11-30T00:00:00Z"), name: "Bonifacio Day", type: "REGULAR" as const },
+    { date: new Date("2026-12-08T00:00:00Z"), name: "Feast of the Immaculate Conception", type: "SPECIAL_NON_WORKING" as const },
+    { date: new Date("2026-12-24T00:00:00Z"), name: "Christmas Eve", type: "SPECIAL_NON_WORKING" as const },
+    { date: new Date("2026-12-25T00:00:00Z"), name: "Christmas Day", type: "REGULAR" as const },
+    { date: new Date("2026-12-30T00:00:00Z"), name: "Rizal Day", type: "REGULAR" as const },
+    { date: new Date("2026-12-31T00:00:00Z"), name: "Last Day of the Year", type: "SPECIAL_NON_WORKING" as const },
+  ];
+
+  for (const holiday of philippineHolidays) {
+    await prisma.philippineHoliday.upsert({
+      where: { date: holiday.date },
+      update: { name: holiday.name, type: holiday.type },
+      create: holiday,
+    });
+  }
+
+  console.log(`✅ Seeded ${philippineHolidays.length} Philippine holidays.`);
 }
 
 main()

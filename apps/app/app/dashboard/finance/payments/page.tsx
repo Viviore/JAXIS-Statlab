@@ -13,6 +13,7 @@ import {
   TabsList,
   TabsTrigger,
   StatusBadge,
+  Pagination,
 } from "@repo/ui";
 import {
   IconChecklist,
@@ -36,6 +37,8 @@ export default function FinancePaymentsQueuePage() {
   const [activeTab, setActiveTab] = useState<"PENDING" | "VERIFIED" | "REJECTED">("PENDING");
   const [filterMethod, setFilterMethod] = useState<"ALL" | "GCASH" | "BANK_TRANSFER">("ALL");
   const [selectedPayment, setSelectedPayment] = useState<PaymentItem | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [toastMessage, setToastMessage] = useState<{
     message: string;
@@ -99,6 +102,11 @@ export default function FinancePaymentsQueuePage() {
     if (filterMethod === "ALL") return true;
     return p.paymentMethod === filterMethod;
   });
+
+  const paginatedPayments = filteredPayments.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const totalPendingAmount = pendingPayments.reduce((sum, p) => sum + p.amountSubmitted, 0);
   const totalVerifiedAmount = verifiedPayments.reduce((sum, p) => sum + p.amountSubmitted, 0);
@@ -196,6 +204,7 @@ export default function FinancePaymentsQueuePage() {
         onValueChange={(val) => {
           setActiveTab(val as "PENDING" | "VERIFIED" | "REJECTED");
           setFilterMethod("ALL");
+          setCurrentPage(1);
         }}
         className="w-full"
       >
@@ -222,7 +231,7 @@ export default function FinancePaymentsQueuePage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setFilterMethod("ALL")}
+                onClick={() => { setFilterMethod("ALL"); setCurrentPage(1); }}
                 className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                   filterMethod === "ALL"
                     ? "bg-[#CC6600] text-white shadow-sm"
@@ -233,7 +242,7 @@ export default function FinancePaymentsQueuePage() {
               </button>
               <button
                 type="button"
-                onClick={() => setFilterMethod("GCASH")}
+                onClick={() => { setFilterMethod("GCASH"); setCurrentPage(1); }}
                 className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                   filterMethod === "GCASH"
                     ? "bg-[#CC6600] text-white shadow-sm"
@@ -244,7 +253,7 @@ export default function FinancePaymentsQueuePage() {
               </button>
               <button
                 type="button"
-                onClick={() => setFilterMethod("BANK_TRANSFER")}
+                onClick={() => { setFilterMethod("BANK_TRANSFER"); setCurrentPage(1); }}
                 className={`px-3 py-1.5 rounded-[2px] font-sans text-xs font-semibold transition-all cursor-pointer ${
                   filterMethod === "BANK_TRANSFER"
                     ? "bg-[#CC6600] text-white shadow-sm"
@@ -307,7 +316,7 @@ export default function FinancePaymentsQueuePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.06] text-white/80">
-                  {filteredPayments.map((payment) => {
+                  {paginatedPayments.map((payment) => {
                     const projectId = payment.project?.id || payment.projectId;
                     return (
                       <tr key={payment.id} className="hover:bg-white/[0.02] transition-colors">
@@ -438,6 +447,17 @@ export default function FinancePaymentsQueuePage() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {!isLoading && filteredPayments.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredPayments.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="records"
+            />
           )}
         </Card>
       </Tabs>

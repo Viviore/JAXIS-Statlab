@@ -346,7 +346,7 @@ export async function createQuotation(
 
     return { success: true, data: result };
   } catch (dbError: unknown) {
-    console.warn("⚠️ Database query failed, using persisted dev store fallback:", dbError);
+    console.warn("[Quotation] Database query failed, using persisted dev store fallback:", dbError);
 
     const devQuotes = readPersistedDevQuotations();
     const newDevQuote: QuotationDetailItem = {
@@ -563,7 +563,7 @@ export async function updateQuotation(
     revalidatePath(`/dashboard/admin/quotations`);
     return { success: true, data: result };
   } catch (err: unknown) {
-    console.warn("⚠️ [updateQuotation] DB error, using dev store fallback:", err);
+    console.warn("[Quotation] [updateQuotation] DB error, using dev store fallback:", err);
     const devQuotes = readPersistedDevQuotations();
     const existing = devQuotes.find((q) => q.id === quotationId);
     if (existing) {
@@ -767,7 +767,7 @@ export async function issueQuotation(
 
     return { success: true, data: result };
   } catch (err: unknown) {
-    console.warn("⚠️ [issueQuotation] DB error, using dev store fallback:", err);
+    console.warn("[Quotation] [issueQuotation] DB error, using dev store fallback:", err);
     const devQuotes = readPersistedDevQuotations();
     const existing = devQuotes.find((q) => q.id === quotationId);
     if (existing) {
@@ -1034,7 +1034,7 @@ export async function respondQuotation(
 
     return { success: true, data: result };
   } catch (err: unknown) {
-    console.warn("⚠️ [respondQuotation] DB error, using dev store fallback:", err);
+    console.warn("[Quotation] [respondQuotation] DB error, using dev store fallback:", err);
     const devQuotes = readPersistedDevQuotations();
     const existing = devQuotes.find((q) => q.id === quotationId);
     if (existing) {
@@ -1199,7 +1199,7 @@ export async function getQuotationByProject(
       })),
     };
   } catch (err: unknown) {
-    console.warn("⚠️ getQuotationByProject db error, using dev store fallback:", err);
+    console.warn("[Quotation] getQuotationByProject db error, using dev store fallback:", err);
     const devQuotes = readPersistedDevQuotations();
     const match = devQuotes.find((q) => q.projectId === projectId);
     return match || null;
@@ -1267,7 +1267,9 @@ export async function getQuotationsRoster(): Promise<QuotationDetailItem[]> {
       })),
     }));
   } catch (err: unknown) {
-    console.warn("⚠️ getQuotationsRoster db error, using dev store fallback:", err);
+    console.warn("[Quotation] getQuotationsRoster db error, using dev store fallback:", err);
     return readPersistedDevQuotations();
   }
 }
+
+export const getQuotationsDirectory = getQuotationsRoster;

@@ -120,7 +120,7 @@ export default function StatisticianProfilePage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-16 w-full">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {toastMessage && (
         <Toast
           message={toastMessage.message}
@@ -133,14 +133,14 @@ export default function StatisticianProfilePage() {
         title="Statistician Profile & Specializations"
         description="Configure your quantitative research specialties, computational methodology domains, and institutional background."
         breadcrumbs={[
-          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Dashboard", href: "/dashboard" },
           { label: "Statistician Workbench", href: "/dashboard/statistician" },
           { label: "Profile Settings" },
         ]}
         actions={
           <Link href="/dashboard/statistician">
-            <Button variant="outline" size="sm">
-              BACK TO WORKBENCH
+            <Button variant="outline" size="sm" className="rounded-[2px]">
+              Back to Workbench
             </Button>
           </Link>
         }
