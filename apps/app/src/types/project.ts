@@ -67,4 +67,5 @@ export interface AuditTelemetryEvent {
   detail: string;
   badgeText?: string;
   badgeType?: "success" | "info" | "warning" | "danger";
+  rawDate?: Date | string;
 }

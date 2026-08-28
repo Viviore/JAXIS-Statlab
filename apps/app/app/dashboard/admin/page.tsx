@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState } from "@repo/ui";
 import { IconPlus } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
-import { Project } from "@/types/project";
+import { projectService } from "@/features/projects/services/project.service";
+import { Project, AuditTelemetryEvent } from "@/types/project";
 
 export default function AdminDashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
+  const [studyAuditLogs, setStudyAuditLogs] = useState<AuditTelemetryEvent[]>([]);
+  const [isLoadingAudit, setIsLoadingAudit] = useState(false);
   
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,10 +21,34 @@ export default function AdminDashboardPage() {
   const {
     projects,
     kpis,
-    auditStream,
   } = useProjects({
     initialLoading: false,
   });
+
+  useEffect(() => {
+    if (!selectedStudy) {
+      setStudyAuditLogs([]);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingAudit(true);
+    projectService
+      .getProjectAuditTrail(selectedStudy.rawId || selectedStudy.id)
+      .then((logs) => {
+        if (isMounted) setStudyAuditLogs(logs);
+      })
+      .catch(() => {
+        if (isMounted) setStudyAuditLogs([]);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingAudit(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedStudy]);
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
@@ -268,33 +295,66 @@ export default function AdminDashboardPage() {
 
             {/* Audit Trail Section */}
             <div className="flex flex-col gap-2.5">
-              <span className="text-xs font-sans font-semibold text-white/60 uppercase tracking-wider">
-                Audit Stream &amp; Verification Trail
-              </span>
-              {auditStream.length > 0 ? (
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                  {auditStream.slice(0, 4).map((log) => (
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-sans font-semibold text-white/60 uppercase tracking-wider">
+                  Audit Stream &amp; Verification Trail
+                </span>
+                {studyAuditLogs.length > 0 && (
+                  <span className="text-[0.688rem] font-sans text-white/40">
+                    {studyAuditLogs.length} verified event{studyAuditLogs.length === 1 ? "" : "s"}
+                  </span>
+                )}
+              </div>
+
+              {isLoadingAudit ? (
+                <div className="py-8 flex items-center justify-center">
+                  <LoadingState variant="inline" label="Loading study history..." />
+                </div>
+              ) : studyAuditLogs.length > 0 ? (
+                <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                  {studyAuditLogs.map((log) => (
                     <div
                       key={log.id}
-                      className="rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-between gap-4 hover:border-white/20 transition-colors"
-                      style={{ padding: "1rem 1.25rem", boxSizing: "border-box" }}
+                      className="rounded-[2px] bg-[#01142B] border border-white/10 flex items-start justify-between gap-4 hover:border-white/20 transition-colors p-3.5"
                     >
-                      <div className="text-xs font-sans text-white/90 leading-relaxed">
-                        <span className="font-semibold text-white">{log.action}: </span>
-                        <span className="text-white/70">{log.detail}</span>
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-xs text-white font-sans">
+                            {log.action}
+                          </span>
+                          {log.badgeText && (
+                            <Badge
+                              variant={
+                                log.badgeType === "success"
+                                  ? "emerald"
+                                  : log.badgeType === "danger"
+                                  ? "danger"
+                                  : log.badgeType === "warning"
+                                  ? "amber"
+                                  : "sky"
+                              }
+                              className="font-mono text-[0.625rem] py-0 px-1.5"
+                            >
+                              {log.badgeText}
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-xs text-white/70 font-sans leading-relaxed">
+                          {log.detail}
+                        </span>
+                        <span className="text-[0.688rem] text-white/40 font-sans">
+                          By {log.actor} ({log.actorRole.replace(/_/g, " ")})
+                        </span>
                       </div>
-                      <span className="text-xs font-sans text-white/40 whitespace-nowrap shrink-0">
+                      <span className="text-[0.688rem] font-mono text-white/40 whitespace-nowrap shrink-0 pt-0.5">
                         {log.timestamp}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div
-                  className="rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-center text-center text-xs text-white/40 font-sans"
-                  style={{ padding: "1.5rem 1rem", boxSizing: "border-box" }}
-                >
-                  No telemetry audit logs recorded yet for this study.
+                <div className="rounded-[2px] bg-[#01142B] border border-white/10 flex items-center justify-center text-center text-xs text-white/40 font-sans p-6">
+                  No activity logs recorded yet for this study.
                 </div>
               )}
             </div>

@@ -3,6 +3,7 @@ import {
   getProjects as fetchDbProjects,
   getProjectById as fetchDbProjectById,
   createProject as createDbProject,
+  getProjectAuditTrail as fetchProjectAuditTrail,
 } from "../actions";
 import type { ProjectDetailItem } from "../schemas";
 
@@ -150,6 +151,21 @@ export class ProjectService {
    * Retrieves live governance audit telemetry stream
    */
   async getAuditStream(): Promise<AuditTelemetryEvent[]> {
+    return [];
+  }
+
+  /**
+   * Retrieves chronological audit and verification trail for a specific study
+   */
+  async getProjectAuditTrail(id: string): Promise<AuditTelemetryEvent[]> {
+    try {
+      const res = await fetchProjectAuditTrail(id);
+      if (res.success && res.data) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn("[ProjectService] Failed to load study audit trail:", err);
+    }
     return [];
   }
 }

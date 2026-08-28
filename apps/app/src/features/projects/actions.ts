@@ -16,6 +16,7 @@ import {
   type ProjectFileItem,
   type ActionResponse,
 } from "./schemas";
+import type { AuditTelemetryEvent } from "@/types/project";
 import type { ProjectStatus, FileCategory } from "@prisma/client";
 
 const DEV_PROJECTS_FILE = path.join(process.cwd(), ".dev-projects.json");
@@ -1158,3 +1159,273 @@ export async function resolveMissingInfo(
     };
   }
 }
+
+/**
+ * 8. Retrieve complete audit stream and verification trail for a specific study.
+ */
+export async function getProjectAuditTrail(
+  id: string
+): Promise<ActionResponse<AuditTelemetryEvent[]>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "You must be logged in." },
+    };
+  }
+
+  try {
+    const project = await withDbTimeout(
+      db.project.findFirst({
+        where: {
+          OR: [{ id }, { intakeId: id }],
+        },
+        include: {
+          client: true,
+          files: {
+            orderBy: { uploadedAt: "asc" },
+          },
+          quotations: {
+            orderBy: { createdAt: "asc" },
+          },
+          sows: {
+            orderBy: { generatedAt: "asc" },
+          },
+          payments: {
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      })
+    );
+
+    if (!project) {
+      return { success: false, error: { code: "NOT_FOUND", message: "Project not found." } };
+    }
+
+    const events: AuditTelemetryEvent[] = [];
+
+    // 1. Project Intake creation
+    events.push({
+      id: `intake-${project.id}`,
+      timestamp: new Date(project.createdAt).toLocaleString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+      rawDate: project.createdAt,
+      actor: project.client.fullName || "Lead Researcher",
+      actorRole: "CLIENT",
+      action: "Study Intake Registered",
+      targetId: project.intakeId,
+      detail: `Study intake submitted: "${project.researchTitle}"`,
+      badgeText: "Intake",
+      badgeType: "info",
+    });
+
+    // 2. Uploaded files
+    for (const f of project.files) {
+      events.push({
+        id: `file-${f.id}`,
+        timestamp: new Date(f.uploadedAt).toLocaleString("en-PH", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        rawDate: f.uploadedAt,
+        actor: project.client.fullName || "Lead Researcher",
+        actorRole: "CLIENT",
+        action: "Document Uploaded",
+        targetId: project.intakeId,
+        detail: `${f.fileName} (${f.fileCategory.replace(/_/g, " ")})`,
+        badgeText: "Upload",
+        badgeType: "info",
+      });
+    }
+
+    // 3. Quotation milestones
+    for (const q of project.quotations) {
+      events.push({
+        id: `quote-create-${q.id}`,
+        timestamp: new Date(q.createdAt).toLocaleString("en-PH", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        rawDate: q.createdAt,
+        actor: "Admin Desk",
+        actorRole: "ADMIN",
+        action: "Quotation Generated",
+        targetId: project.intakeId,
+        detail: `Package ${q.packageName.replace(/_/g, " ")} valued at ₱${Number(q.totalAmount).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+        badgeText: "Quote",
+        badgeType: "info",
+      });
+
+      if (q.status === "CLIENT_APPROVED" && q.respondedAt) {
+        events.push({
+          id: `quote-approved-${q.id}`,
+          timestamp: new Date(q.respondedAt).toLocaleString("en-PH", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          rawDate: q.respondedAt,
+          actor: project.client.fullName || "Lead Researcher",
+          actorRole: "CLIENT",
+          action: "Quotation Approved",
+          targetId: project.intakeId,
+          detail: `Approved ₱${Number(q.totalAmount).toLocaleString("en-PH", { minimumFractionDigits: 2 })} quotation terms.`,
+          badgeText: "Approved",
+          badgeType: "success",
+        });
+      } else if (q.status === "QUOTE_DECLINED" && q.respondedAt) {
+        events.push({
+          id: `quote-declined-${q.id}`,
+          timestamp: new Date(q.respondedAt).toLocaleString("en-PH", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          rawDate: q.respondedAt,
+          actor: project.client.fullName || "Lead Researcher",
+          actorRole: "CLIENT",
+          action: "Quotation Declined",
+          targetId: project.intakeId,
+          detail: q.declineReason || "Client requested revision to quotation.",
+          badgeText: "Declined",
+          badgeType: "warning",
+        });
+      }
+    }
+
+    // 4. SOW milestones
+    for (const s of project.sows) {
+      events.push({
+        id: `sow-gen-${s.id}`,
+        timestamp: new Date(s.generatedAt).toLocaleString("en-PH", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        rawDate: s.generatedAt,
+        actor: "Admin Desk",
+        actorRole: "ADMIN",
+        action: "Scope of Work Drafted",
+        targetId: project.intakeId,
+        detail: `SOW prepared with ${s.turnaroundDays} business days turnaround.`,
+        badgeText: "SOW",
+        badgeType: "info",
+      });
+
+      if (s.isLocked && s.signedAt) {
+        events.push({
+          id: `sow-signed-${s.id}`,
+          timestamp: new Date(s.signedAt).toLocaleString("en-PH", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          rawDate: s.signedAt,
+          actor: s.signedByName || project.client.fullName,
+          actorRole: "CLIENT",
+          action: "Scope of Work Executed",
+          targetId: project.intakeId,
+          detail: `Digitally signed by ${s.signedByName || "Client"}.`,
+          badgeText: "Executed",
+          badgeType: "success",
+        });
+      }
+    }
+
+    // 5. Payment milestones
+    for (const p of project.payments) {
+      events.push({
+        id: `pay-submit-${p.id}`,
+        timestamp: new Date(p.createdAt).toLocaleString("en-PH", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        rawDate: p.createdAt,
+        actor: project.client.fullName || "Lead Researcher",
+        actorRole: "CLIENT",
+        action: "Payment Deposit Submitted",
+        targetId: project.intakeId,
+        detail: `${p.paymentType.replace(/_/g, " ")} of ₱${Number(p.amountSubmitted).toLocaleString("en-PH", { minimumFractionDigits: 2 })} via ${p.paymentMethod || "Electronic Deposit"}${p.referenceNumber ? ` (Ref: ${p.referenceNumber})` : ""}.`,
+        badgeText: "Deposit",
+        badgeType: "info",
+      });
+
+      if (p.paymentStatus === "VERIFIED" || p.paymentStatus === "FULLY_PAID") {
+        events.push({
+          id: `pay-verified-${p.id}`,
+          timestamp: new Date(p.verifiedAt || p.updatedAt).toLocaleString("en-PH", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          rawDate: p.verifiedAt || p.updatedAt,
+          actor: "Finance Officer",
+          actorRole: "FINANCE_OFFICER",
+          action: p.paymentStatus === "FULLY_PAID" ? "Full Settlement Cleared" : "Downpayment Cleared",
+          targetId: project.intakeId,
+          detail: `Cleared ₱${Number(p.amountSubmitted).toLocaleString("en-PH", { minimumFractionDigits: 2 })} into verified project escrow.`,
+          badgeText: "Cleared",
+          badgeType: "success",
+        });
+      } else if (p.paymentStatus === "REJECTED") {
+        events.push({
+          id: `pay-rejected-${p.id}`,
+          timestamp: new Date(p.updatedAt).toLocaleString("en-PH", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          rawDate: p.updatedAt,
+          actor: "Finance Officer",
+          actorRole: "FINANCE_OFFICER",
+          action: "Payment Proof Rejected",
+          targetId: project.intakeId,
+          detail: p.rejectionReason || "Receipt did not meet verification criteria.",
+          badgeText: "Rejected",
+          badgeType: "danger",
+        });
+      }
+    }
+
+    // Sort chronologically descending (newest first)
+    events.sort((a, b) => new Date(b.rawDate || 0).getTime() - new Date(a.rawDate || 0).getTime());
+
+    return {
+      success: true,
+      data: events,
+    };
+  } catch (err) {
+    console.warn("[getProjectAuditTrail] Error fetching database trail:", err);
+    return {
+      success: true,
+      data: [],
+    };
+  }
+}
+
