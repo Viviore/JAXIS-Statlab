@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column } from "@repo/ui";
+import { IconReceipt } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Project } from "@/types/project";
 
@@ -78,6 +80,16 @@ export default function CEODashboardPage() {
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "CEO Console" },
         ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/ceo/payroll">
+              <Button variant="primary" size="sm" className="gap-2 font-sans font-semibold cursor-pointer rounded-[2px]">
+                <IconReceipt size={15} stroke={1.5} />
+                <span>Executive Payroll Policy →</span>
+              </Button>
+            </Link>
+          </div>
+        }
       />
 
       {/* KPI Cards */}

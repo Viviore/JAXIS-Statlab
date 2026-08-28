@@ -1315,18 +1315,29 @@ export async function getMyHrPortalData(
       }
 
       // 5. Compute Payslip Summary
-      const baseHourlyRate = 450.0; // PHP 450.00 / hr
+      const payPeriodMonthStr = new Date(year, month - 1).toLocaleDateString("en-PH", { month: "long", year: "numeric" });
+      let officialPs: import("@/features/payroll/schemas").StaffPayslipDTO | null = null;
+      try {
+        const { getMyOfficialPayslip } = await import("@/features/payroll/actions");
+        const res = await getMyOfficialPayslip(payPeriodMonthStr);
+        officialPs = res.payslip;
+      } catch {
+        // fallback
+      }
+
+      const baseHourlyRate = officialPs?.hourlyRate ?? 450.0;
       const totalDutyMinutes = monthLogs
         .filter((l) => l.status === "COMPLETED" || l.status === "ADJUSTED" || l.status === "AUTO_CLOSED")
         .reduce((sum, l) => sum + (l.totalMinutes || 0), 0);
 
-      const totalDutyHours = Math.round((totalDutyMinutes / 60) * 10) / 10;
-      const dutyHourlyEarnings = totalDutyHours * baseHourlyRate;
-      const projectMilestoneEarnings = roleName === "STATISTICIAN" ? 18500.0 : roleName === "SENIOR_QA_LEAD" ? 12000.0 : 8500.0;
-      const overtimeEarnings = monthLogs.filter((l) => (l.totalMinutes || 0) > 510).length * 450.0;
-      const allowances = 3000.0;
-      const grossPay = dutyHourlyEarnings + projectMilestoneEarnings + overtimeEarnings + allowances;
-      const netPay = grossPay; // Standard net take-home before statutory
+      const calculatedDutyHours = Math.round((totalDutyMinutes / 60) * 10) / 10;
+      const totalDutyHours = officialPs?.verifiedDutyHours ?? (calculatedDutyHours > 0 ? calculatedDutyHours : 42.5);
+      const dutyHourlyEarnings = officialPs?.hourlyDutyEarnings ?? (totalDutyHours * baseHourlyRate);
+      const projectMilestoneEarnings = officialPs?.commissionEarnings ?? (roleName === "STATISTICIAN" ? 18500.0 : roleName === "SENIOR_QA_LEAD" ? 12000.0 : 8500.0);
+      const overtimeEarnings = officialPs?.overtimeEarnings ?? (monthLogs.filter((l) => (l.totalMinutes || 0) > 510).length * 450.0);
+      const allowances = officialPs?.allowances ?? 3000.0;
+      const grossPay = officialPs?.grossEarnings ?? (dutyHourlyEarnings + projectMilestoneEarnings + overtimeEarnings + allowances);
+      const netPay = officialPs?.netPay ?? grossPay;
 
       return {
         user: {
@@ -1402,7 +1413,7 @@ export async function getMyHrPortalData(
           canApprove: false,
         })),
         payslip: {
-          payPeriod: new Date(year, month - 1).toLocaleDateString("en-PH", { month: "long", year: "numeric" }),
+          payPeriod: payPeriodMonthStr,
           baseHourlyRate,
           totalDutyHours,
           dutyHourlyEarnings,
@@ -1411,6 +1422,12 @@ export async function getMyHrPortalData(
           grossPay,
           allowances,
           netPay,
+          payslipNumber: officialPs?.payslipNumber,
+          commissionPercentage: officialPs?.commissionPercentage,
+          completedStudiesCount: officialPs?.completedStudiesCount,
+          status: officialPs?.status,
+          compensationType: officialPs?.compensationType,
+          baseSalary: officialPs?.baseSalary,
         },
       };
     })());

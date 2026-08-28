@@ -21,7 +21,6 @@ import {
 } from "@repo/ui";
 import {
   IconDownload,
-  IconEye,
   IconExternalLink,
   IconHelpCircle,
   IconCheck,
@@ -447,11 +446,11 @@ export default function AdminIntakeTriagePage() {
                         {/* Target Deadline */}
                         <td>
                           <div className="flex flex-col gap-0.5 whitespace-nowrap font-mono text-xs">
-                            {(p as any).targetCompletionDate ? (
+                            {(p as unknown as { targetCompletionDate?: string }).targetCompletionDate ? (
                               <>
                                 <span className="text-white font-medium">
                                   {new Date(
-                                    (p as any).targetCompletionDate
+                                    (p as unknown as { targetCompletionDate?: string }).targetCompletionDate!
                                   ).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
@@ -480,9 +479,9 @@ export default function AdminIntakeTriagePage() {
                                 p.masterStatus
                               }
                             />
-                            {(p as any).serviceType && (
+                            {(p as unknown as { serviceType?: string }).serviceType && (
                               <span className="text-[0.6875rem] text-white/40 font-mono">
-                                {(p as any).serviceType.replace(/_/g, " ")}
+                                {(p as unknown as { serviceType?: string }).serviceType!.replace(/_/g, " ")}
                               </span>
                             )}
                           </div>

@@ -349,6 +349,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badge: "HR",
           badgeColor: "orange",
         },
+        {
+          label: "Staff Payroll & Payslips",
+          href: "/dashboard/finance/payroll",
+          icon: Icons.Receipt,
+          badge: "PAYROLL",
+          badgeColor: "orange",
+        },
       ],
     },
   ],
@@ -412,6 +419,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           href: "/dashboard/ceo/attendance",
           icon: Icons.Clock,
           badge: "AUDIT",
+          badgeColor: "orange",
+        },
+        {
+          label: "Executive Payroll Policy",
+          href: "/dashboard/ceo/payroll",
+          icon: Icons.Receipt,
+          badge: "POLICY",
           badgeColor: "orange",
         },
         {

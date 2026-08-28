@@ -20,8 +20,6 @@ import {
   IconRefresh,
   IconCalendar,
   IconArrowLeft,
-  IconShieldCheck,
-  IconMathFunction,
   IconUserCheck,
   IconChevronDown,
   IconLoader2,

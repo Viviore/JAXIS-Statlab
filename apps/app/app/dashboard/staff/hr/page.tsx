@@ -865,10 +865,28 @@ export default function StaffHrPortalPage() {
             {/* Header / Pay Period */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <Badge variant="emerald" className="text-xs font-mono">
                     Official Compensation Summary
                   </Badge>
+                  {portalData.payslip.payslipNumber && (
+                    <Badge variant="sky" className="text-xs font-mono">
+                      {portalData.payslip.payslipNumber}
+                    </Badge>
+                  )}
+                  {portalData.payslip.status && (
+                    <Badge
+                      variant={portalData.payslip.status === "DISBURSED" ? "emerald" : "amber"}
+                      className="text-xs font-mono"
+                    >
+                      {portalData.payslip.status === "DISBURSED" ? "Disbursed / Paid" : portalData.payslip.status}
+                    </Badge>
+                  )}
+                  {portalData.payslip.compensationType && (
+                    <span className="text-[0.688rem] font-mono text-white/50">
+                      Model: {portalData.payslip.compensationType.replace(/_/g, " ")}
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-2xl font-extrabold text-white font-sans">
                   Statement of Duty Earnings — {portalData.payslip.payPeriod}

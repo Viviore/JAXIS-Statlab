@@ -842,10 +842,13 @@
 | `11` | `11-qa` — Quality Assurance                           | ⏳ Blocked — awaiting `10`       |
 | `12` | `12-deliverables` — Deliverables, Release & Revisions | ⏳ Blocked — awaiting `11`       |
 | `13` | `13-defenselab` — DefenseLab Scheduling               | ⏳ Blocked — awaiting `07`, `08` |
-| `14` | `14-finance` — Finance, Payouts & Ledger              | ⏳ Blocked — awaiting `12`, `13` |
+| `14` | `14-finance` — Finance, Payouts & Ledger              | 🟡 In Progress / Partially Implemented |
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks       | ⏳ Blocked — awaiting `14`       |
 | `16` | `16-notifications` — Email Notifications              | ⏳ Blocked — awaiting `07–15`    |
 | `17` | `17-reporting` — Reporting, Analytics & Archive       | ⏳ Blocked — awaiting all        |
+| `18` | `18-attendance` — Staff Attendance & Duty Governance  | ✅ Completed                     |
+| `19` | `19-payroll` — Corporate Payroll & Payslip Engine     | ✅ Completed                     |
+
 
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState, Pagination } from "@repo/ui";
 import { IconPlus } from "@tabler/icons-react";

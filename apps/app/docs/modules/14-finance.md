@@ -35,14 +35,17 @@
 | `FIN-F13` | **Specialist leave governance desk** — Dedicated HR console at `/dashboard/finance/leaves` for reviewing absence justifications and authorizing leave windows |
 | `FIN-F14` | **Segregation of duties (SoD) anti-fraud protocol** — Finance Officer is strictly prohibited from approving their own leaves or attendance adjustments; approvals for Finance must be conducted by Admin or CEO |
 | `FIN-F15` | **CEO executive oversight & audit vault** — Tamper-proof audit trail for all adjustments and disbursements with CEO override clearance |
+| `FIN-F16` | **CEO Role Compensation Policy Matrix** — Executive desk at `/dashboard/ceo/payroll` to configure compensation structures by role (`FIXED_SALARY`, `PERCENTAGE_PER_STUDY`, `HOURLY_DUTY`, `HYBRID`) and rates |
+| `FIN-F17` | **Specialist Bespoke Compensation Overrides** — Ability for the CEO to define custom terms for individual senior specialists without altering default role rates |
+| `FIN-F18` | **Finance Batch Payroll & Calculation Engine** — Dynamic payroll execution at `/dashboard/finance/payroll` calculating base pay, study percentage commissions, duty wages, overtime, and allowances |
+| `FIN-F19` | **Official JAXIS Payslip Statement** — Itemized statement modal with deliverable breakdowns, verified duty hours, and withholding tax |
+| `FIN-F20` | **Multi-Channel Payout Disbursement** — Finance records GCash, Bank Transfer, or Cash references with audit stamps |
 
 ### ❌ Explicitly Out of Scope
 
 | Feature | Reason |
 |---|---|
-| Automated bank/GCash transfer via API | Manual disbursement with Finance recording reference number |
-| Base salary / recurring payroll disbursements | Handled via Module 18 duty logs; Module 14 governs per-project milestone payouts |
-| Tax withholding computation | Future feature |
+| Automated direct banking gateway API | Manual disbursement with Finance recording verified transaction reference |
 | Multi-currency | PHP only |
 | Partial refund processing | Module 15; full refunds only per policy |
 
@@ -174,6 +177,11 @@ export async function assertPayoutEligible(projectId: string): Promise<void> {
 | `PATCH` | `/api/v1/finance/payouts/:id/void` | ADMIN, CEO | Void payout with reason |
 | `GET` | `/api/v1/finance/payouts` | FINANCE_OFFICER, ADMIN, CEO | All payouts with filter by status |
 | `GET` | `/api/v1/statistician/payouts` | STATISTICIAN | Own payout history |
+| `POST` | `saveRoleCompensationConfig` | CEO | Executive configuration of pay structures and role rates |
+| `POST` | `saveStaffCompensationOverride` | CEO | Specialist-specific bespoke compensation terms |
+| `POST` | `generateBatchPayslips` | FINANCE_OFFICER, CEO | Dynamic payroll batch generator for active cut-off cycle |
+| `POST` | `disbursePayslip` | FINANCE_OFFICER, CEO | Treasury disbursement logging GCash/Bank reference numbers |
+| `GET` | `getMyOfficialPayslip` | Internal Staff | Fetches official payslip statement for Staff HR portal |
 
 ---
 
@@ -184,6 +192,8 @@ export async function assertPayoutEligible(projectId: string): Promise<void> {
 | Finance & HR Control Center | `/dashboard/finance` | Finance & HR Officer | Receivables overview, downpayment clearances, and escrow vault status |
 | Specialist Leave Approvals | `/dashboard/finance/leaves` | Finance & HR Officer, Admin | Review leave requests, inspect justification paragraphs, approve/decline leave windows |
 | Deposit Verification Queue | `/dashboard/finance/payments` | Finance & HR Officer, Admin | Queue of pending client GCash / Bank Transfer payment proofs |
+| Staff Payroll & Payslips Desk | `/dashboard/finance/payroll` | Finance & HR Officer | Run monthly payroll cycles, audit itemized payslip statements, and record disbursements |
+| CEO Executive Payroll Policy | `/dashboard/ceo/payroll` | CEO | Executive compensation desk: configure role pay models, specialist overrides, and batch audit |
 | Disbursement Queue | `/dashboard/finance/payouts` | Finance & HR Officer, CEO | Pending/Approved payouts with disburse action and eligibility status |
 | Ledger | `/dashboard/finance/ledger` | Finance & HR Officer, CEO | Full ledger table with margin breakdown per project |
 | CEO Finance | `/dashboard/ceo/finance` | CEO | Executive summary + ledger + payout override |

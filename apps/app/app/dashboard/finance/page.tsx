@@ -20,6 +20,7 @@ import {
   IconArrowRight,
   IconCheck,
   IconCalendarTime,
+  IconCoins,
 } from "@tabler/icons-react";
 import { getFinanceReceivablesSummary } from "@/features/payments/actions";
 import { PaymentChannelSettingsModal } from "@/features/payments/components/PaymentChannelSettingsModal";
@@ -93,6 +94,16 @@ export default function FinanceDashboardPage() {
               >
                 <IconCalendarTime size={15} stroke={1.5} />
                 <span>Specialist Leaves</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/finance/payroll">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 font-sans rounded-[2px] cursor-pointer"
+              >
+                <IconCoins size={15} stroke={1.5} />
+                <span>Staff Payroll</span>
               </Button>
             </Link>
             <Button

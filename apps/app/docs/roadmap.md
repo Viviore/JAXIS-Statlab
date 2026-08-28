@@ -556,3 +556,4 @@ Layer 0 (Foundation)
 | 16 | Email Notifications | Notifications | 07–15 | 🔢 Renumbered from 16 |
 | 17 | Reporting, Analytics & Archive | Reports + Archive | All | 🔀 **Merged 18 + 19** |
 | 18 | Staff Attendance, Duty Tracking & Adjustments | People Operations / Duty Governance | 01, 02, 14 | ➕ **New (Duty & Payroll Adjustments)** |
+| 19 | Corporate Payroll Policies & Payslip Engine | People Operations / Treasury Settlement | 01, 02, 14, 18 | ➕ **New (CEO Policies & Payslips)** |

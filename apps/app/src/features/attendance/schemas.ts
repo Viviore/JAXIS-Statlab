@@ -182,6 +182,12 @@ export interface PayslipSummary {
   grossPay: number;
   allowances: number;
   netPay: number;
+  payslipNumber?: string;
+  commissionPercentage?: number;
+  completedStudiesCount?: number;
+  status?: string;
+  compensationType?: string;
+  baseSalary?: number;
 }
 
 export interface HrPortalData {

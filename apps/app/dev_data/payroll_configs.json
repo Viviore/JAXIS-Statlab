@@ -1,0 +1,73 @@
+{
+  "roleConfigs": {
+    "STATISTICIAN": {
+      "roleName": "STATISTICIAN",
+      "compensationType": "PERCENTAGE_PER_STUDY",
+      "baseSalaryMonthly": 0,
+      "commissionPercentagePerStudy": 50,
+      "hourlyDutyRate": 450,
+      "fixedPerStudyBonus": 1000,
+      "allowancesMonthly": 2500,
+      "isActive": true,
+      "notes": "50% commission of total research study contract value + ₱450/hr compute duty + ₱1,000 completion bonus.",
+      "updatedAt": "2026-08-28T20:03:29.191Z",
+      "updatedBy": "CEO Owner"
+    },
+    "SENIOR_QA_LEAD": {
+      "roleName": "SENIOR_QA_LEAD",
+      "compensationType": "HYBRID",
+      "baseSalaryMonthly": 12000,
+      "commissionPercentagePerStudy": 10,
+      "hourlyDutyRate": 450,
+      "fixedPerStudyBonus": 500,
+      "allowancesMonthly": 2500,
+      "isActive": true,
+      "notes": "₱12,000 monthly retainer + 10% review commission per audited study + ₱450/hr attendance duty.",
+      "updatedAt": "2026-08-28T20:03:29.191Z",
+      "updatedBy": "CEO Owner"
+    },
+    "FINANCE_OFFICER": {
+      "roleName": "FINANCE_OFFICER",
+      "compensationType": "FIXED_SALARY",
+      "baseSalaryMonthly": 35000,
+      "commissionPercentagePerStudy": 0,
+      "hourlyDutyRate": 0,
+      "fixedPerStudyBonus": 0,
+      "allowancesMonthly": 3000,
+      "isActive": true,
+      "notes": "Institutional monthly base salary with treasury compliance allowances.",
+      "updatedAt": "2026-08-28T20:03:29.191Z",
+      "updatedBy": "CEO Owner"
+    },
+    "ADMIN": {
+      "roleName": "ADMIN",
+      "compensationType": "FIXED_SALARY",
+      "baseSalaryMonthly": 40000,
+      "commissionPercentagePerStudy": 0,
+      "hourlyDutyRate": 0,
+      "fixedPerStudyBonus": 0,
+      "allowancesMonthly": 3000,
+      "isActive": true,
+      "notes": "Operational administrative management fixed salary.",
+      "updatedAt": "2026-08-28T20:03:29.191Z",
+      "updatedBy": "CEO Owner"
+    }
+  },
+  "staffOverrides": {
+    "cmt5pluuu0004lrrk5qu5ul2t": {
+      "userId": "cmt5pluuu0004lrrk5qu5ul2t",
+      "staffName": "QA Lead Maria",
+      "staffEmail": "qa@jaxis.dev",
+      "roleName": "SENIOR_QA_LEAD",
+      "compensationType": "HYBRID",
+      "baseSalaryMonthly": 20000,
+      "commissionPercentagePerStudy": 10,
+      "hourlyDutyRate": 450,
+      "fixedPerStudyBonus": 500,
+      "allowancesMonthly": 2500,
+      "notes": "₱12,000 monthly retainer + 10% review commission per audited study + ₱450/hr attendance duty.",
+      "updatedAt": "2026-08-28T20:07:59.013Z",
+      "updatedBy": "CEO Owner"
+    }
+  }
+}
