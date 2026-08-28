@@ -19,10 +19,15 @@ import {
   IconDeviceDesktop,
   IconAlertTriangle,
   IconBolt,
+  IconHistory,
+  IconFileText,
 } from "@tabler/icons-react";
 import { Button, Card, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
 import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
 import { requestLeave } from "@/features/staff/actions";
+import { getMyOfficialPayslip } from "@/features/payroll/actions";
+import type { StaffPayslipDTO } from "@/features/payroll/schemas";
+import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
 import type { HrPortalData, DailyAttendanceEvent } from "@/features/attendance/schemas";
 
 type ActiveHrTab = "TIMESHEETS" | "CALENDAR" | "LEAVES" | "OVERTIME" | "PAYSLIP";
@@ -58,14 +63,26 @@ export default function StaffHrPortalPage() {
   const [adjReason, setAdjReason] = useState<string>("");
   const [adjDeliverables, setAdjDeliverables] = useState<string>("");
 
+  // Payslips & History
+  const [allMyPayslips, setAllMyPayslips] = useState<StaffPayslipDTO[]>([]);
+  const [selectedPayslip, setSelectedPayslip] = useState<StaffPayslipDTO | null>(null);
+  const [selectedPayslipForModal, setSelectedPayslipForModal] = useState<StaffPayslipDTO | null>(null);
+
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
 
   // Load Data
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await getMyHrPortalData(currentYear, currentMonth);
+      const [res, payslipRes] = await Promise.all([
+        getMyHrPortalData(currentYear, currentMonth),
+        getMyOfficialPayslip(),
+      ]);
       setPortalData(res);
+      setAllMyPayslips(payslipRes.allMyPayslips);
+      if (payslipRes.allMyPayslips.length > 0) {
+        setSelectedPayslip((prev) => prev || payslipRes.payslip || payslipRes.allMyPayslips[0] || null);
+      }
       // Default selected day to today if in current month
       const todayEvt = res.currentMonthEvents.find((e) => e.isToday) || res.currentMonthEvents[0] || null;
       setSelectedDayEvent(todayEvt);
@@ -79,6 +96,9 @@ export default function StaffHrPortalPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const activeDisplayPayslip: StaffPayslipDTO | null =
+    selectedPayslip ?? (allMyPayslips[0] ?? null);
 
   // Next / Prev Month Navigation
   const handlePrevMonth = () => {
@@ -859,7 +879,7 @@ export default function StaffHrPortalPage() {
       )}
 
       {/* TAB 4: PAYSLIP & MONTHLY EARNINGS */}
-      {activeTab === "PAYSLIP" && (
+      {activeTab === "PAYSLIP" && portalData && (
         <div className="flex flex-col gap-6">
           <Card className="p-6 sm:p-10 bg-[#01142B] border-white/10 flex flex-col gap-6">
             {/* Header / Pay Period */}
@@ -869,34 +889,78 @@ export default function StaffHrPortalPage() {
                   <Badge variant="emerald" className="text-xs font-mono">
                     Official Compensation Summary
                   </Badge>
-                  {portalData.payslip.payslipNumber && (
+                  {(activeDisplayPayslip?.payslipNumber || portalData.payslip.payslipNumber) && (
                     <Badge variant="sky" className="text-xs font-mono">
-                      {portalData.payslip.payslipNumber}
+                      {activeDisplayPayslip?.payslipNumber || portalData.payslip.payslipNumber}
                     </Badge>
                   )}
-                  {portalData.payslip.status && (
+                  {(activeDisplayPayslip?.status || portalData.payslip.status) && (
                     <Badge
-                      variant={portalData.payslip.status === "DISBURSED" ? "emerald" : "amber"}
+                      variant={(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED" ? "emerald" : "amber"}
                       className="text-xs font-mono"
                     >
-                      {portalData.payslip.status === "DISBURSED" ? "Disbursed / Paid" : portalData.payslip.status}
+                      {(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED"
+                        ? `Disbursed (${activeDisplayPayslip?.disbursementMethod || "Paid"})`
+                        : (activeDisplayPayslip?.status || portalData.payslip.status)}
                     </Badge>
                   )}
-                  {portalData.payslip.compensationType && (
+                  {activeDisplayPayslip?.cutOffCycle && (
+                    <Badge variant="amber" className="text-xs font-mono">
+                      {activeDisplayPayslip.cutOffCycle === "FIRST_HALF"
+                        ? "1st Cut-Off (Days 1–15)"
+                        : activeDisplayPayslip.cutOffCycle === "SECOND_HALF"
+                        ? "2nd Cut-Off (Days 16–End)"
+                        : "Full Month"}
+                    </Badge>
+                  )}
+                  {(activeDisplayPayslip?.compensationType || portalData.payslip.compensationType) && (
                     <span className="text-[0.688rem] font-mono text-white/50">
-                      Model: {portalData.payslip.compensationType.replace(/_/g, " ")}
+                      Model: {(activeDisplayPayslip?.compensationType || portalData.payslip.compensationType || "").replace(/_/g, " ")}
                     </span>
                   )}
                 </div>
                 <h2 className="text-2xl font-extrabold text-white font-sans">
-                  Statement of Duty Earnings — {portalData.payslip.payPeriod}
+                  Statement of Duty Earnings — {activeDisplayPayslip?.payPeriodMonth || portalData.payslip.payPeriod}
                 </h2>
                 <span className="text-xs text-white/50 font-sans">
-                  Employee: <strong className="text-white">{portalData.user.fullName}</strong> ({portalData.user.role})
+                  Employee: <strong className="text-white">{activeDisplayPayslip?.staffName || portalData.user.fullName}</strong> ({activeDisplayPayslip?.staffRole || portalData.user.role})
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Past Months / Cycles Dropdown Selector */}
+                {allMyPayslips.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-mono text-white/50">History:</span>
+                    <select
+                      value={activeDisplayPayslip?.id || ""}
+                      onChange={(e) => {
+                        const found = allMyPayslips.find((p) => p.id === e.target.value);
+                        if (found) setSelectedPayslip(found);
+                      }}
+                      className="bg-[#010D1F] border border-white/15 rounded-[2px] px-2.5 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer"
+                    >
+                      {allMyPayslips.map((ps) => (
+                        <option key={ps.id} value={ps.id}>
+                          {ps.payPeriodMonth} — ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })} [{ps.status}]
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {activeDisplayPayslip && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedPayslipForModal(activeDisplayPayslip)}
+                    className="flex items-center gap-1.5 cursor-pointer text-xs font-sans"
+                  >
+                    <IconFileText size={14} stroke={1.5} />
+                    <span>View Official Statement</span>
+                  </Button>
+                )}
+
                 <Button
                   variant="secondary"
                   size="sm"
@@ -923,13 +987,13 @@ export default function StaffHrPortalPage() {
                   </div>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-2xl font-mono font-bold text-white">
-                      {portalData.payslip.totalDutyHours}
+                      {activeDisplayPayslip?.verifiedDutyHours ?? portalData.payslip.totalDutyHours}
                     </span>
                     <span className="text-xs text-white/40 font-mono">hrs</span>
                   </div>
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-white/40 font-mono flex items-center gap-1">
-                  <span>@</span> <Peso /><span>450.00 / hour standard</span>
+                  <span>@</span> <Peso /><span>{(activeDisplayPayslip?.hourlyRate ?? portalData.payslip.baseHourlyRate ?? 450).toFixed(2)} / hour</span>
                 </div>
               </Card>
 
@@ -946,7 +1010,7 @@ export default function StaffHrPortalPage() {
                   <div className="flex items-baseline gap-1">
                     <Peso className="text-xl text-white/80" />
                     <span className="text-2xl font-mono font-bold text-white">
-                      {portalData.payslip.dutyHourlyEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                      {(activeDisplayPayslip?.hourlyDutyEarnings ?? portalData.payslip.dutyHourlyEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
@@ -968,12 +1032,12 @@ export default function StaffHrPortalPage() {
                   <div className="flex items-baseline gap-1">
                     <Peso className="text-xl text-[#10B981]/80" />
                     <span className="text-2xl font-mono font-bold text-[#10B981]">
-                      {portalData.payslip.projectMilestoneEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                      {(activeDisplayPayslip?.commissionEarnings ?? portalData.payslip.projectMilestoneEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-white/40 font-mono">
-                  From delivered studies
+                  {activeDisplayPayslip?.completedStudiesCount ? `From ${activeDisplayPayslip.completedStudiesCount} delivered studies` : "From delivered studies"}
                 </div>
               </Card>
 
@@ -981,7 +1045,7 @@ export default function StaffHrPortalPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
-                      Allowances & Bonuses
+                      Allowances &amp; Base Pay
                     </span>
                     <div className="p-1.5 bg-sky-950/50 border border-sky-500/30 rounded-[2px] text-[#38BDF8]">
                       <IconShieldCheck size={14} stroke={1.5} />
@@ -990,12 +1054,16 @@ export default function StaffHrPortalPage() {
                   <div className="flex items-baseline gap-1">
                     <Peso className="text-xl text-[#38BDF8]/80" />
                     <span className="text-2xl font-mono font-bold text-[#38BDF8]">
-                      {(portalData.payslip.allowances + portalData.payslip.overtimeEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                      {(
+                        (activeDisplayPayslip?.baseSalary ?? 0) +
+                        (activeDisplayPayslip?.allowances ?? portalData.payslip.allowances) +
+                        (activeDisplayPayslip?.overtimeEarnings ?? portalData.payslip.overtimeEarnings)
+                      ).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-sky-400/80 font-mono">
-                  Overtime + Tech stipend
+                  {activeDisplayPayslip?.baseSalary ? `₱${activeDisplayPayslip.baseSalary.toLocaleString()} Base + Allowances` : "Overtime + Tech stipend"}
                 </div>
               </Card>
             </div>
@@ -1008,20 +1076,147 @@ export default function StaffHrPortalPage() {
                 </div>
                 <div>
                   <span className="text-[0.688rem] uppercase font-mono text-white/50 block">
-                    Estimated Net Disbursement (This Pay Cycle)
+                    Estimated Net Disbursement ({activeDisplayPayslip?.payPeriodMonth || "This Pay Cycle"})
                   </span>
                   <div className="flex items-baseline gap-1.5">
                     <Peso className="text-2xl text-white/80 font-normal" />
                     <span className="text-3xl font-mono font-extrabold text-white">
-                      {portalData.payslip.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                      {(activeDisplayPayslip?.netPay ?? portalData.payslip.netPay).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <Badge variant="emerald" className="font-mono text-xs px-3 py-1">
-                Disbursement Ready
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED" ? "emerald" : "sky"}
+                  className="font-mono text-xs px-3 py-1"
+                >
+                  {(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED"
+                    ? `Disbursed (${activeDisplayPayslip?.disbursementMethod || "Cleared"})`
+                    : (activeDisplayPayslip?.status || "Disbursement Ready")}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Historical Payslips Audit Ledger */}
+            <div className="mt-6 flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-[#CC6600]/20 border border-[#CC6600]/40 rounded-[2px] text-[#FFA040]">
+                    <IconHistory size={16} stroke={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white font-sans">
+                      Past Months &amp; Historical Payslips Ledger ({allMyPayslips.length})
+                    </h3>
+                    <span className="text-[0.688rem] text-white/50 font-sans">
+                      Official compensation statements and corporate settlement records across all cut-off cycles.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {allMyPayslips.length === 0 ? (
+                <div className="py-8 text-center text-xs text-white/40 italic font-sans border border-white/10 rounded-[2px] bg-[#010D1F]">
+                  Zero past payslip records found.
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-white/10 rounded-[2px] bg-[#010D1F]">
+                  <table className="w-full text-left text-xs border-collapse font-sans">
+                    <thead>
+                      <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] bg-white/[0.02]">
+                        <th className="py-3 px-3.5">Doc ID</th>
+                        <th className="py-3 px-3.5">Pay Period &amp; Cut-Off</th>
+                        <th className="py-3 px-3.5">Compensation Model</th>
+                        <th className="py-3 px-3.5">Hours</th>
+                        <th className="py-3 px-3.5">Gross Pay</th>
+                        <th className="py-3 px-3.5">Net Take-Home</th>
+                        <th className="py-3 px-3.5">Settlement Status</th>
+                        <th className="py-3 px-3.5 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.06]">
+                      {allMyPayslips.map((ps) => {
+                        const isCurrent = ps.id === activeDisplayPayslip?.id;
+                        return (
+                          <tr
+                            key={ps.id}
+                            className={`hover:bg-white/[0.04] transition-colors ${
+                              isCurrent ? "bg-[#CC6600]/10 border-l-2 border-l-[#CC6600]" : ""
+                            }`}
+                          >
+                            <td className="py-3 px-3.5 font-mono text-[#38BDF8] font-semibold">
+                              {ps.payslipNumber}
+                            </td>
+                            <td className="py-3 px-3.5 text-white font-medium">
+                              <div>{ps.payPeriodMonth}</div>
+                              {ps.cutOffCycle && (
+                                <span className="text-[0.625rem] text-amber-400 font-mono block">
+                                  {ps.cutOffCycle === "FIRST_HALF"
+                                    ? "1st Cut-Off (Days 1–15)"
+                                    : ps.cutOffCycle === "SECOND_HALF"
+                                    ? "2nd Cut-Off (Days 16–End)"
+                                    : "Full Month Cycle"}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-3.5 text-white/70 font-mono text-[0.688rem]">
+                              {ps.compensationType.replace(/_/g, " ")}
+                            </td>
+                            <td className="py-3 px-3.5 font-mono text-white/70">
+                              {ps.verifiedDutyHours} hrs
+                            </td>
+                            <td className="py-3 px-3.5 font-mono text-white/80">
+                              ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3 px-3.5 font-mono font-bold text-emerald-400">
+                              ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3 px-3.5 font-mono">
+                              <Badge
+                                variant={ps.status === "DISBURSED" ? "emerald" : ps.status === "APPROVED" ? "sky" : "amber"}
+                                className="text-[0.625rem]"
+                              >
+                                {ps.status === "DISBURSED"
+                                  ? `Disbursed (${ps.disbursementMethod || "Direct"})`
+                                  : ps.status}
+                              </Badge>
+                              {ps.disbursementReference && (
+                                <span className="text-[0.625rem] text-white/40 block font-mono mt-0.5">
+                                  Ref: {ps.disbursementReference}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedPayslipForModal(ps)}
+                                  className="text-[0.688rem] px-2.5 py-1 h-7 font-sans cursor-pointer"
+                                >
+                                  <span>Statement →</span>
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPayslip(ps);
+                                  }}
+                                  className="text-[0.688rem] px-2 py-1 h-7 font-sans cursor-pointer text-white/70 hover:text-white"
+                                >
+                                  <span>Inspect</span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -1223,6 +1418,15 @@ export default function StaffHrPortalPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Statement Document Modal */}
+      {selectedPayslipForModal && (
+        <PayslipStatementModal
+          payslip={selectedPayslipForModal}
+          open={Boolean(selectedPayslipForModal)}
+          onClose={() => setSelectedPayslipForModal(null)}
+        />
+      )}
 
       {/* Toast Notification */}
       {toast && (
