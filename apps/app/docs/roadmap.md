@@ -7,6 +7,16 @@
 
 ---
 
+## 📖 Non-Technical Documentation & Operations Playbooks
+- **Master Operations Manual**: [`docs/BUSINESS_OPERATIONS_MANUAL.md`](./BUSINESS_OPERATIONS_MANUAL.md)
+- **Playbook 01 (Business Engine)**: [`docs/playbook/01-how-the-business-works.md`](./playbook/01-how-the-business-works.md)
+- **Playbook 02 (CEO & Executive Guide)**: [`docs/playbook/02-ceo-guide.md`](./playbook/02-ceo-guide.md)
+- **Playbook 03 (Finance & HR Operations)**: [`docs/playbook/03-finance-hr-guide.md`](./playbook/03-finance-hr-guide.md)
+- **Playbook 04 (Specialist & Statistician Guide)**: [`docs/playbook/04-specialist-statistician-guide.md`](./playbook/04-specialist-statistician-guide.md)
+- **Playbook 05 (Client Journey Guide)**: [`docs/playbook/05-client-journey-guide.md`](./playbook/05-client-journey-guide.md)
+
+---
+
 ## Dependency Philosophy
 
 Modules are sequenced by **data and auth dependency**. A module cannot consume another's services until that module is live. No skipping, no parallel builds across dependency layers.
