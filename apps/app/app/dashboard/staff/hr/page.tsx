@@ -22,7 +22,7 @@ import {
   IconHistory,
   IconFileText,
 } from "@tabler/icons-react";
-import { Button, Card, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
 import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
 import { requestLeave } from "@/features/staff/actions";
 import { getMyOfficialPayslip } from "@/features/payroll/actions";
@@ -670,75 +670,46 @@ export default function StaffHrPortalPage() {
         <div className="flex flex-col gap-6">
           {/* Leave Balances Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                    Annual Vacation Leave
-                  </span>
-                  <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
-                    <IconCalendarOff size={16} stroke={1.5} />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                    {portalData.user.annualLeaveBalance}
-                  </span>
-                  <span className="text-xs font-mono text-white/40">days remaining</span>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                <span>Annual Entitlement</span>
-                <span className="text-emerald-400 font-semibold">Available</span>
-              </div>
-            </Card>
+            <KpiCard
+              label="Annual Vacation Leave"
+              value={portalData.user.annualLeaveBalance}
+              unit="days remaining"
+              icon={<IconCalendarOff size={16} stroke={1.5} />}
+              description="Annual Entitlement Available"
+            />
+
+            <KpiCard
+              label="Medical & Sick Recovery"
+              value={portalData.user.medicalLeaveBalance}
+              unit="days remaining"
+              variant="sky"
+              icon={<IconShieldCheck size={16} stroke={1.5} />}
+              description="Health Protection Active"
+            />
 
             <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                    Medical & Sick Recovery
-                  </span>
-                  <div className="p-2 bg-sky-950/50 border border-sky-500/30 text-sky-400 rounded-[2px]">
-                    <IconShieldCheck size={16} stroke={1.5} />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                    {portalData.user.medicalLeaveBalance}
-                  </span>
-                  <span className="text-xs font-mono text-white/40">days remaining</span>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-                <span>Health Protection</span>
-                <span className="text-[#38BDF8] font-semibold">Active</span>
-              </div>
-            </Card>
-
-            <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-xs uppercase font-mono tracking-wider font-semibold text-white/50">
                     Active Leave Status
                   </span>
                   <Badge variant={portalData.user.isOnLeave ? "amber" : "emerald"} className="text-[0.625rem] font-mono">
                     {portalData.user.isOnLeave ? "On Leave" : "Active Duty"}
                   </Badge>
                 </div>
-                <div>
-                  <span className="text-xl font-bold font-sans text-white tracking-tight block truncate">
+                <div className="py-0.5 my-auto">
+                  <span className="text-xl sm:text-2xl font-sans font-bold text-white tracking-tight block truncate">
                     {portalData.user.isOnLeave ? `On Leave until ${portalData.user.leaveUntil?.split("T")[0] || ""}` : "Active on Specialist Pool"}
                   </span>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between">
-                <span className="text-[0.688rem] font-mono text-white/50">Module 08 Capacity</span>
+              <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                <span className="text-xs font-sans text-white/50">Capacity Status</span>
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={() => setIsLeaveModalOpen(true)}
-                  className="cursor-pointer text-[0.688rem] py-1 px-2.5"
+                  className="cursor-pointer text-xs py-1 px-2.5"
                 >
                   + Request Leave
                 </Button>
@@ -975,97 +946,41 @@ export default function StaffHrPortalPage() {
 
             {/* Compensation Breakdown Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
-                      Verified Duty Hours
-                    </span>
-                    <div className="p-1.5 bg-white/5 border border-white/10 rounded-[2px] text-white/70">
-                      <IconClock size={14} stroke={1.5} />
-                    </div>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-mono font-bold text-white">
-                      {activeDisplayPayslip?.verifiedDutyHours ?? portalData.payslip.totalDutyHours}
-                    </span>
-                    <span className="text-xs text-white/40 font-mono">hrs</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-white/40 font-mono flex items-center gap-1">
-                  <span>@</span> <Peso /><span>{(activeDisplayPayslip?.hourlyRate ?? portalData.payslip.baseHourlyRate ?? 450).toFixed(2)} / hour</span>
-                </div>
-              </Card>
+              <KpiCard
+                label="Verified Duty Hours"
+                value={activeDisplayPayslip?.verifiedDutyHours ?? portalData.payslip.totalDutyHours}
+                unit="hrs"
+                icon={<IconClock size={16} stroke={1.5} />}
+                description={`@ ₱${(activeDisplayPayslip?.hourlyRate ?? portalData.payslip.baseHourlyRate ?? 450).toFixed(2)} / hour`}
+              />
 
-              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
-                      Hourly Duty Earnings
-                    </span>
-                    <div className="p-1.5 bg-emerald-950/50 border border-emerald-500/30 rounded-[2px] text-emerald-400">
-                      <IconReceipt size={14} stroke={1.5} />
-                    </div>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <Peso className="text-xl text-white/80" />
-                    <span className="text-2xl font-mono font-bold text-white">
-                      {(activeDisplayPayslip?.hourlyDutyEarnings ?? portalData.payslip.dutyHourlyEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-emerald-400/80 font-mono">
-                  From verified punches
-                </div>
-              </Card>
+              <KpiCard
+                label="Hourly Duty Earnings"
+                value={`₱${(activeDisplayPayslip?.hourlyDutyEarnings ?? portalData.payslip.dutyHourlyEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                variant="emerald"
+                icon={<IconReceipt size={16} stroke={1.5} />}
+                description="From verified punches"
+              />
 
-              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
-                      Project Milestones
-                    </span>
-                    <div className="p-1.5 bg-emerald-950/50 border border-emerald-500/30 rounded-[2px] text-[#10B981]">
-                      <IconBuildingBank size={14} stroke={1.5} />
-                    </div>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <Peso className="text-xl text-[#10B981]/80" />
-                    <span className="text-2xl font-mono font-bold text-[#10B981]">
-                      {(activeDisplayPayslip?.commissionEarnings ?? portalData.payslip.projectMilestoneEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-white/40 font-mono">
-                  {activeDisplayPayslip?.completedStudiesCount ? `From ${activeDisplayPayslip.completedStudiesCount} delivered studies` : "From delivered studies"}
-                </div>
-              </Card>
+              <KpiCard
+                label="Project Milestones"
+                value={`₱${(activeDisplayPayslip?.commissionEarnings ?? portalData.payslip.projectMilestoneEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                variant="emerald"
+                icon={<IconBuildingBank size={16} stroke={1.5} />}
+                description={activeDisplayPayslip?.completedStudiesCount ? `From ${activeDisplayPayslip.completedStudiesCount} delivered studies` : "From delivered studies"}
+              />
 
-              <Card variant="kpi" className="group p-5 bg-[#010D1F] border-white/10 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[0.688rem] uppercase font-mono text-white/50 block font-semibold">
-                      Allowances &amp; Base Pay
-                    </span>
-                    <div className="p-1.5 bg-sky-950/50 border border-sky-500/30 rounded-[2px] text-[#38BDF8]">
-                      <IconShieldCheck size={14} stroke={1.5} />
-                    </div>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <Peso className="text-xl text-[#38BDF8]/80" />
-                    <span className="text-2xl font-mono font-bold text-[#38BDF8]">
-                      {(
-                        (activeDisplayPayslip?.baseSalary ?? 0) +
-                        (activeDisplayPayslip?.allowances ?? portalData.payslip.allowances) +
-                        (activeDisplayPayslip?.overtimeEarnings ?? portalData.payslip.overtimeEarnings)
-                      ).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[0.625rem] text-sky-400/80 font-mono">
-                  {activeDisplayPayslip?.baseSalary ? `₱${activeDisplayPayslip.baseSalary.toLocaleString()} Base + Allowances` : "Overtime + Tech stipend"}
-                </div>
-              </Card>
+              <KpiCard
+                label="Allowances & Base Pay"
+                value={`₱${(
+                  (activeDisplayPayslip?.baseSalary ?? 0) +
+                  (activeDisplayPayslip?.allowances ?? portalData.payslip.allowances) +
+                  (activeDisplayPayslip?.overtimeEarnings ?? portalData.payslip.overtimeEarnings)
+                ).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                variant="sky"
+                icon={<IconShieldCheck size={16} stroke={1.5} />}
+                description={activeDisplayPayslip?.baseSalary ? `₱${activeDisplayPayslip.baseSalary.toLocaleString()} Base + Allowances` : "Overtime + Tech stipend"}
+              />
             </div>
 
             {/* Total Net Take-Home */}

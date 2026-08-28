@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
+  KpiCard,
   Badge,
   Button,
   LoadingState,
@@ -296,99 +297,38 @@ export default function FinancePayrollOperationsPage() {
 
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Total Payroll Net
-              </span>
-              <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
-                <IconCoins size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-mono text-white/50">₱</span>
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.totalInstitutionalPayroll.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Active Specialists</span>
-            <span className="text-emerald-400 font-semibold">{kpis.activeStaffCount} Headcount</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Total Payroll Net"
+          value={`₱${kpis.totalInstitutionalPayroll.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+          variant="default"
+          icon={<IconCoins size={16} stroke={1.5} />}
+          description={`${kpis.activeStaffCount} Active Specialists`}
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Disbursed from Vault
-              </span>
-              <div className="p-2 bg-sky-950/50 border border-sky-500/30 text-sky-400 rounded-[2px]">
-                <IconBuildingBank size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-mono text-white/50">₱</span>
-              <span className="text-3xl font-extrabold font-mono text-sky-400 tracking-tight">
-                {kpis.totalDisbursed.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Treasury Status</span>
-            <span className="text-[#38BDF8] font-semibold">
-              {kpis.pendingDisbursementsCount === 0 ? "All Cleared" : `${kpis.pendingDisbursementsCount} Pending`}
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Disbursed from Vault"
+          value={`₱${kpis.totalDisbursed.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+          variant="sky"
+          icon={<IconBuildingBank size={16} stroke={1.5} />}
+          description={kpis.pendingDisbursementsCount === 0 ? "All Cleared" : `${kpis.pendingDisbursementsCount} Pending`}
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Compensated Duty Hours
-              </span>
-              <div className="p-2 bg-purple-950/50 border border-purple-500/30 text-purple-300 rounded-[2px]">
-                <IconClock size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-extrabold font-mono text-purple-300 tracking-tight">
-                {kpis.totalDutyHoursCompensated}
-              </span>
-              <span className="text-xs font-mono text-white/40">hrs total</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Verified Attendance</span>
-            <span className="text-purple-300 font-semibold">Audited Punches</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Compensated Duty Hours"
+          value={kpis.totalDutyHoursCompensated}
+          unit="hrs total"
+          icon={<IconClock size={16} stroke={1.5} />}
+          description="Verified Attendance Punches"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Study Deliverables Paid
-              </span>
-              <div className="p-2 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px]">
-                <IconSparkles size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-extrabold font-mono text-amber-400 tracking-tight">
-                {kpis.totalStudiesRewarded}
-              </span>
-              <span className="text-xs font-mono text-white/40">completed</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Study Commissions</span>
-            <span className="text-amber-400 font-semibold">Active Cycle</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Study Deliverables Paid"
+          value={kpis.totalStudiesRewarded}
+          unit="completed"
+          variant="amber"
+          icon={<IconSparkles size={16} stroke={1.5} />}
+          description="APA 7th Verified Studies"
+        />
       </div>
 
       {/* Main Payslips Ledger Card */}

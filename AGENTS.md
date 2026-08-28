@@ -13,3 +13,4 @@ All AI coding assistants and developers MUST inspect and strictly follow [.agent
 6. **Sans-Serif First**: Use `font-sans` for readable content. Reserve `font-mono` strictly for IDs and metrics.
 7. **Zero Double Slashes**: Never use `//` in copy or loading states.
 8. **Toast Notification Protocol**: Trigger standard toasts on server action mutations, 1-click clipboard copies, and file operations.
+9. **Canonical KPI Cards**: All metric and telemetry cards must exclusively use `<KpiCard />` from `@repo/ui` with uppercase mono labels (`text-xs font-mono text-white/50 tracking-wider font-semibold`), bold mono metrics (`font-mono font-bold text-2xl sm:text-3xl`), unit suffixes (`text-xs text-white/40 font-mono`), and sans-serif descriptions (`text-xs font-sans text-white/50`). Zero ad-hoc raw cards or divergent typography.

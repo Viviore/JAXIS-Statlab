@@ -48,6 +48,7 @@ All AI coding assistants and developers MUST strictly follow the design system a
 ## 4. Telemetry & Loading States (NO CLUNKY BOXES / NO PING BLOBS)
 - **Standard Component**: All data retrieval and async states must use `<LoadingState variant="page" | "table" | "card" | "inline" />` from `@repo/ui`.
 - **Orbital Loader Standard**: Uses the dual-layer calibrated orbital track with active sweep arc and glowing center micro-emitter node (`OrbitalSpinner`).
+- **Standardized KPI Metric Cards (`<KpiCard />`)**: All telemetry, financial, and operational metric cards across all roles and pages **MUST** use `<KpiCard />` from `@repo/ui`. Ad-hoc raw cards or custom div layouts for KPIs are strictly forbidden. Header labels are uppercase monospace (`font-mono text-xs text-white/50 tracking-wider font-semibold`), metric values are bold monospace (`font-mono font-bold text-2xl sm:text-3xl`), unit labels are `text-xs text-white/40 font-mono`, and descriptions are `text-xs font-sans text-white/50`.
 - **Typography**: Clean Sans-Serif title and subtitle with zero robotic double slashes.
 
 ---

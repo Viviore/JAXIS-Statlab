@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageHeader, Card, StatusBadge, Button, Modal, LoadingState, AnimateHeight } from "@repo/ui";
+import { PageHeader, Card, KpiCard, StatusBadge, Button, Modal, LoadingState, AnimateHeight } from "@repo/ui";
 import {
   IconUpload,
   IconLock,
-  IconCheck,
   IconShieldCheck,
   IconChartBar,
   IconFileTypeCsv,
@@ -84,36 +83,13 @@ export default function DashboardOverviewPage() {
         ) : (
           <div key="kpi-loaded" className="contents animate-content-fade">
             {/* KPI 1 */}
-            <Card variant="kpi" className="group">
-              <div>
-                <div className="flex items-center justify-between mb-2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-xs font-mono font-semibold text-white/50 uppercase tracking-wider" style={{ fontSize: "0.75rem" }}>Active Studies</span>
-                  <span
-                    className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[2px] border border-emerald-500/20"
-                    style={{
-                      padding: "0.2rem 0.625rem",
-                      borderRadius: "2px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      lineHeight: 1,
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(16, 185, 129, 0.15)",
-                      color: "#10B981",
-                      border: "1px solid rgba(16, 185, 129, 0.3)",
-                    }}
-                  >
-                    {kpis?.totalActiveStudiesTrend || "+12% MoM"}
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <span className="text-3xl font-bold font-mono text-white tracking-tight" style={{ fontSize: "2.25rem", lineHeight: 1.1 }}>
-                    {kpis?.totalActiveStudies ?? projects.length}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06]" style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
-                <div className="flex items-center gap-1.5 text-xs text-white/60 font-mono" style={{ fontSize: "0.75rem" }}>
+            <KpiCard
+              label="Active Studies"
+              value={kpis?.totalActiveStudies ?? projects.length}
+              badge={kpis?.totalActiveStudiesTrend || "+12% MoM"}
+              badgeColor="emerald"
+              description={
+                <span className="flex items-center gap-1.5 font-mono text-xs text-white/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
                   <span>{projects.filter((p) => p.status === "ANALYSIS_IN_PROGRESS").length} Modeling</span>
                   <span className="text-white/25">·</span>
@@ -122,120 +98,36 @@ export default function DashboardOverviewPage() {
                   <span className="text-white/25">·</span>
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   <span>{kpis?.qaReviewGateCount ?? 2} Review</span>
-                </div>
-              </div>
-            </Card>
+                </span>
+              }
+            />
 
             {/* KPI 2 */}
-            <Card variant="kpi" className="group">
-              <div>
-                <div className="flex items-center justify-between mb-2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-xs font-mono font-semibold text-white/50 uppercase tracking-wider" style={{ fontSize: "0.75rem" }}>QA Audit Queue</span>
-                  <span
-                    className="text-xs font-mono font-semibold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-[2px] border border-sky-500/20"
-                    style={{
-                      padding: "0.2rem 0.625rem",
-                      borderRadius: "2px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      lineHeight: 1,
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(56, 189, 248, 0.15)",
-                      color: "#38BDF8",
-                      border: "1px solid rgba(56, 189, 248, 0.3)",
-                    }}
-                  >
-                    Dual-Blind
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <span className="text-3xl font-bold font-mono text-white tracking-tight" style={{ fontSize: "2.25rem", lineHeight: 1.1 }}>
-                    {kpis?.qaReviewGateCount ?? 3}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06]" style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
-                <div className="flex items-center gap-1.5 text-xs text-amber-300/80 font-mono" style={{ fontSize: "0.75rem" }}>
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  <span>RULE_REL_02 QA Signoff Active</span>
-                </div>
-              </div>
-            </Card>
+            <KpiCard
+              label="QA Audit Queue"
+              value={kpis?.qaReviewGateCount ?? 3}
+              badge="Dual-Blind"
+              badgeColor="sky"
+              description="Dual-blind reviewer assignment active"
+            />
 
             {/* KPI 3 */}
-            <Card variant="kpi" className="group">
-              <div>
-                <div className="flex items-center justify-between mb-2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-xs font-mono font-semibold text-white/50 uppercase tracking-wider" style={{ fontSize: "0.75rem" }}>Payment Vault</span>
-                  <span
-                    className="text-xs font-mono font-semibold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-[2px] border border-amber-500/20"
-                    style={{
-                      padding: "0.2rem 0.625rem",
-                      borderRadius: "2px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      lineHeight: 1,
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(245, 158, 11, 0.15)",
-                      color: "#F59E0B",
-                      border: "1px solid rgba(245, 158, 11, 0.3)",
-                    }}
-                  >
-                    Escrow Locked
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <span className="text-3xl font-bold font-mono text-white tracking-tight" style={{ fontSize: "2.25rem", lineHeight: 1.1 }}>
-                    {projects.filter((p) => p.paymentStatus !== "FULLY_PAID").length}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06]" style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400/80 font-mono" style={{ fontSize: "0.75rem" }}>
-                  <IconLock size={14} stroke={1.5} className="text-emerald-400 flex-shrink-0" />
-                  <span>RULE_REL_01 Release Gate Active</span>
-                </div>
-              </div>
-            </Card>
+            <KpiCard
+              label="Payment Vault"
+              value={projects.filter((p) => p.paymentStatus !== "FULLY_PAID").length}
+              badge="Escrow Locked"
+              badgeColor="amber"
+              description="Milestone escrow release gate active"
+            />
 
             {/* KPI 4 */}
-            <Card variant="kpi" className="group">
-              <div>
-                <div className="flex items-center justify-between mb-2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-xs font-mono font-semibold text-white/50 uppercase tracking-wider" style={{ fontSize: "0.75rem" }}>Released Deliverables</span>
-                  <span
-                    className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[2px] border border-emerald-500/20"
-                    style={{
-                      padding: "0.2rem 0.625rem",
-                      borderRadius: "2px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      lineHeight: 1,
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(16, 185, 129, 0.15)",
-                      color: "#10B981",
-                      border: "1px solid rgba(16, 185, 129, 0.3)",
-                    }}
-                  >
-                    100% Defense Pass
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <span className="text-3xl font-bold font-mono text-white tracking-tight" style={{ fontSize: "2.25rem", lineHeight: 1.1 }}>
-                    {kpis?.fullyPaidReleasedCount ?? 64}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-white/[0.06]" style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
-                <div className="flex items-center gap-1.5 text-xs text-white/60 font-mono" style={{ fontSize: "0.75rem" }}>
-                  <IconCheck size={14} stroke={2.5} className="text-emerald-400 flex-shrink-0" />
-                  <span>APA 7th Verified Deliverables</span>
-                </div>
-              </div>
-            </Card>
+            <KpiCard
+              label="Released Deliverables"
+              value={kpis?.fullyPaidReleasedCount ?? 64}
+              badge="100% Defense Pass"
+              badgeColor="emerald"
+              description="APA 7th verified statistical deliverables"
+            />
           </div>
         )}
       </div>

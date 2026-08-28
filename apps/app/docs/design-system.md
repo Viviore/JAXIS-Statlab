@@ -119,20 +119,45 @@ Standardized 3-tier vertical hierarchy for all future pages:
 
 ---
 
-### 4.2. KPI Metric Cards
-Standardized telemetry cards for statistical indices and financial metrics:
+### 4.2. Standardized KPI Metric Cards (`<KpiCard />`)
+All telemetry, financial, and operational index cards across all roles and pages **MUST** use the canonical `<KpiCard />` component from `@repo/ui`. Ad-hoc raw cards or custom div layouts for KPIs are strictly forbidden to guarantee complete typography and styling consistency across the platform.
+
+#### Canonical Typography & Visual Specifications:
+1. **Header Label**: `text-xs font-mono font-semibold uppercase tracking-wider text-white/50 select-none truncate`. Never use `font-sans` or microscopic fonts for metric labels.
+2. **Metric Value**: `font-mono font-bold tracking-tight text-2xl sm:text-3xl` (scaled dynamically for large numbers). Consistent 700 bold weight across all cards; never use `font-extrabold` (800) or weak `font-normal`.
+3. **Unit Suffix**: Rendered cleanly inline as `text-xs font-mono text-white/40 select-none` (e.g. `hrs`, `specialists`, `shifts`, `completed`).
+4. **Description / Subtitle**: `text-xs font-sans text-white/50 select-none truncate` preceded by a calibrated `1.5` dot indicator.
+5. **Border & Substrate**: Solid elevated substrate `bg-[#01142B] border border-white/10 hover:border-white/20 rounded-[2px] p-5 sm:p-6 shadow-xl`.
 
 ```tsx
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-  <Card variant="kpi" className="group">
-    <div className="flex items-center justify-between mb-2">
-      <span className="text-xs font-mono font-semibold text-white/50 uppercase">Active Studies</span>
-      <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-[2px] border border-emerald-500/20">
-        +14% MoM
-      </span>
-    </div>
-    <span className="text-3xl font-bold font-mono text-white tracking-tight">24</span>
-  </Card>
+import { KpiCard } from "@repo/ui";
+import { IconClock, IconBuildingBank, IconCoins } from "@tabler/icons-react";
+
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <KpiCard
+    label="Active Studies"
+    value={24}
+    variant="emerald"
+    badge="+14% MoM"
+    badgeColor="emerald"
+    description="12 In Progress · 4 In QA Review"
+  />
+
+  <KpiCard
+    label="Verified Duty Hours"
+    value="42.5"
+    unit="hrs"
+    icon={<IconClock size={16} stroke={1.5} />}
+    description="@ ₱450.00 / hour standard"
+  />
+
+  <KpiCard
+    label="Total Escrow Vault"
+    value="₱184,500.00"
+    variant="sky"
+    icon={<IconBuildingBank size={16} stroke={1.5} />}
+    description="Secured in dual-signatory escrow"
+  />
 </div>
 ```
 

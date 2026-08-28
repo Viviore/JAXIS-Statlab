@@ -11,7 +11,7 @@ import {
   IconUserCheck,
   IconLock,
 } from "@tabler/icons-react";
-import { Button, Card, Badge, Modal, Toast, LoadingState } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState } from "@repo/ui";
 import {
   getAttendanceReviewDeskData,
   reviewAttendanceCorrection,
@@ -170,103 +170,39 @@ export default function FinanceAttendanceReviewPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Pending HR Review
-              </span>
-              <div className="p-2 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px]">
-                <IconAlertTriangle size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.pendingCorrectionsCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">requests</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Filing Queue</span>
-            {kpis.pendingCorrectionsCount > 0 ? (
-              <span className="text-amber-400 font-semibold">Action Required</span>
-            ) : (
-              <span className="text-emerald-400">Queue Clear</span>
-            )}
-          </div>
-        </Card>
+        <KpiCard
+          label="Pending HR Review"
+          value={kpis.pendingCorrectionsCount}
+          unit="requests"
+          variant={kpis.pendingCorrectionsCount > 0 ? "amber" : "emerald"}
+          icon={<IconAlertTriangle size={16} stroke={1.5} />}
+          description={kpis.pendingCorrectionsCount > 0 ? "Action Required" : "Queue Clear"}
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Total Duty Hours (Month)
-              </span>
-              <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
-                <IconClock size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.totalHoursThisMonth}
-              </span>
-              <span className="text-xs font-mono text-white/40">hrs logged</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Pay Cycle Time</span>
-            <span className="text-emerald-400 font-semibold">Verified</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Total Duty Hours (Month)"
+          value={kpis.totalHoursThisMonth}
+          unit="hrs logged"
+          icon={<IconClock size={16} stroke={1.5} />}
+          description="Verified Pay Cycle Time"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Adjusted Shifts Credited
-              </span>
-              <div className="p-2 bg-purple-950/50 border border-purple-500/30 text-purple-300 rounded-[2px]">
-                <IconShieldCheck size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.adjustedShiftsCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">shifts</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Audit History</span>
-            <span className="text-purple-300 font-semibold">SoD Verified</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Adjusted Shifts Credited"
+          value={kpis.adjustedShiftsCount}
+          unit="shifts"
+          icon={<IconShieldCheck size={16} stroke={1.5} />}
+          description="Audit SoD Verified"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Active Staff on Duty
-              </span>
-              <div className="p-2 bg-sky-950/50 border border-sky-500/30 text-sky-400 rounded-[2px]">
-                <IconUserCheck size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-[#38BDF8] tracking-tight">
-                {kpis.onDutyStaffCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">active</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Live Shift Status</span>
-            <span className={kpis.onDutyStaffCount > 0 ? "text-sky-400 font-semibold" : "text-white/40"}>
-              {kpis.onDutyStaffCount > 0 ? "Live Duty" : "Standby"}
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Active Staff on Duty"
+          value={kpis.onDutyStaffCount}
+          unit="active"
+          variant="sky"
+          icon={<IconUserCheck size={16} stroke={1.5} />}
+          description={kpis.onDutyStaffCount > 0 ? "Live Duty Active" : "Standby"}
+        />
       </div>
 
       {/* Segregation of Duties Governance Alert */}

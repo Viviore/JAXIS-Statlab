@@ -16,7 +16,7 @@ import {
   IconDeviceDesktop,
   IconBolt,
 } from "@tabler/icons-react";
-import { Button, Card, Badge, Modal, Toast, LoadingState, PageHeader } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader } from "@repo/ui";
 import { getMyAttendanceHistory, fileAttendanceCorrection } from "@/features/attendance/actions";
 import type { StaffAttendanceItem, AttendanceCorrectionItem } from "@/features/attendance/schemas";
 
@@ -173,76 +173,31 @@ export default function StaffAttendancePage() {
 
       {/* KPI Telemetry Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Verified Hours This Week
-              </span>
-              <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
-                <IconClockPlay size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.totalHoursThisWeek}
-              </span>
-              <span className="text-xs font-mono text-white/40">hrs logged</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Weekly Accrual</span>
-            <span className="text-emerald-400 font-semibold">Credited</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Verified Hours This Week"
+          value={kpis.totalHoursThisWeek}
+          unit="hrs logged"
+          icon={<IconClockPlay size={16} stroke={1.5} />}
+          description="Weekly Accrual Credited"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Completed Duty Shifts
-              </span>
-              <div className="p-2 bg-sky-950/50 border border-sky-500/30 text-sky-400 rounded-[2px]">
-                <IconCalendarEvent size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.completedShiftsCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">shifts</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Shift Delivery</span>
-            <span className="text-[#38BDF8] font-semibold">Logged</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Completed Duty Shifts"
+          value={kpis.completedShiftsCount}
+          unit="shifts"
+          variant="sky"
+          icon={<IconCalendarEvent size={16} stroke={1.5} />}
+          description="Shift Delivery Logged"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Pending Adjustments
-              </span>
-              <div className="p-2 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px]">
-                <IconAlertTriangle size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.pendingCorrectionsCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">pending</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Review Queue</span>
-            <span className={kpis.pendingCorrectionsCount > 0 ? "text-amber-400 font-semibold" : "text-white/40"}>
-              {kpis.pendingCorrectionsCount > 0 ? "Under Review" : "Clear"}
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Pending Adjustments"
+          value={kpis.pendingCorrectionsCount}
+          unit="pending"
+          variant={kpis.pendingCorrectionsCount > 0 ? "amber" : "emerald"}
+          icon={<IconAlertTriangle size={16} stroke={1.5} />}
+          description={kpis.pendingCorrectionsCount > 0 ? "Under Review" : "Queue Clear"}
+        />
       </div>
 
       {/* Section 1: Chronological Duty Timesheets */}

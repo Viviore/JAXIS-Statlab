@@ -23,6 +23,7 @@ import {
 } from "@tabler/icons-react";
 import {
   Card,
+  KpiCard,
   Badge,
   Button,
   LoadingState,
@@ -191,99 +192,39 @@ export default function CeoAttendanceAuditPage() {
 
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Total Institutional Hours
-              </span>
-              <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
-                <IconClock size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.totalHoursThisMonth}
-              </span>
-              <span className="text-xs font-mono text-white/40">hrs month</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Macro Duty Telemetry</span>
-            <span className="text-emerald-400 font-semibold">Active Cycle</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Total Institutional Hours"
+          value={kpis.totalHoursThisMonth}
+          unit="hrs month"
+          icon={<IconClock size={16} stroke={1.5} />}
+          description="Macro Duty Telemetry"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Completed Shifts
-              </span>
-              <div className="p-2 bg-sky-950/50 border border-sky-500/30 text-sky-400 rounded-[2px]">
-                <IconHistory size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-white tracking-tight">
-                {kpis.completedShiftsCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">verified</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Shift Execution Rate</span>
-            <span className="text-[#38BDF8] font-semibold">100% Audited</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Completed Shifts"
+          value={kpis.completedShiftsCount}
+          unit="verified"
+          variant="sky"
+          icon={<IconHistory size={16} stroke={1.5} />}
+          description="100% Audited Shifts"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Manual Adjustments Credited
-              </span>
-              <div className="p-2 bg-purple-950/50 border border-purple-500/30 text-purple-300 rounded-[2px]">
-                <IconFingerprint size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-purple-300 tracking-tight">
-                {kpis.adjustedShiftsCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">credited</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>HR Governance</span>
-            <span className="text-purple-300 font-semibold">SoD Integrity</span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Manual Adjustments Credited"
+          value={kpis.adjustedShiftsCount}
+          unit="credited"
+          icon={<IconFingerprint size={16} stroke={1.5} />}
+          description="HR Governance SoD Integrity"
+        />
 
-        <Card variant="kpi" className="group p-5 sm:p-6 bg-[#01142B] border-white/10 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Active Staff on Duty
-              </span>
-              <div className="p-2 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 rounded-[2px]">
-                <IconUserCheck size={16} stroke={1.5} />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold font-mono text-[#10B981] tracking-tight">
-                {kpis.onDutyStaffCount}
-              </span>
-              <span className="text-xs font-mono text-white/40">active</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Real-Time Headcount</span>
-            <span className={kpis.onDutyStaffCount > 0 ? "text-emerald-400 font-semibold" : "text-white/40"}>
-              {kpis.onDutyStaffCount > 0 ? "Live Operations" : "Standby"}
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          label="Active Staff on Duty"
+          value={kpis.onDutyStaffCount}
+          unit="active"
+          variant="emerald"
+          icon={<IconUserCheck size={16} stroke={1.5} />}
+          description={kpis.onDutyStaffCount > 0 ? "Live Operations" : "Standby"}
+        />
       </div>
 
       {/* Main Tabs Navigation */}

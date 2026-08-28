@@ -39,7 +39,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "relative overflow-hidden rounded-[4px] border border-white/10 hover:border-white/20 transition-all duration-200 backdrop-blur-md flex flex-col box-border shadow-xl",
+          "relative overflow-hidden rounded-[2px] border border-white/10 hover:border-white/20 transition-all duration-200 backdrop-blur-md flex flex-col box-border shadow-xl",
           isKpi
             ? "bg-[#01142B]/95 justify-between"
             : "bg-[#01142B]/90 justify-start",
