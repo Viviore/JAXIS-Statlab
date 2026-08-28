@@ -122,7 +122,7 @@ export function Pagination({
           onClick={() => onPageChange(1)}
           disabled={safeCurrentPage === 1}
           title="First Page"
-          className="h-7 w-7 flex items-center justify-center rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          className="h-7 w-7 flex items-center justify-center rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
         >
           <IconChevronsLeft size={13} stroke={2} />
         </button>
@@ -133,7 +133,7 @@ export function Pagination({
           onClick={() => onPageChange(Math.max(1, safeCurrentPage - 1))}
           disabled={safeCurrentPage === 1}
           title="Previous Page"
-          className="h-7 px-2 flex items-center gap-1 rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors text-xs font-sans font-medium"
+          className="h-7 px-2 flex items-center gap-1 rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors text-xs font-sans font-medium cursor-pointer"
         >
           <IconChevronLeft size={13} stroke={2} />
           <span className="hidden sm:inline">Prev</span>
@@ -160,7 +160,7 @@ export function Pagination({
                 type="button"
                 onClick={() => onPageChange(page)}
                 className={cn(
-                  "h-7 min-w-[1.75rem] px-1.5 flex items-center justify-center text-xs font-mono font-medium rounded-[2px] transition-colors",
+                  "h-7 min-w-[1.75rem] px-1.5 flex items-center justify-center text-xs font-mono font-medium rounded-[2px] transition-colors cursor-pointer",
                   isCurrent
                     ? "bg-[#CC6600] text-white font-bold border border-[#CC6600] shadow-sm"
                     : "border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.06]"
@@ -178,7 +178,7 @@ export function Pagination({
           onClick={() => onPageChange(Math.min(totalPages, safeCurrentPage + 1))}
           disabled={safeCurrentPage === totalPages}
           title="Next Page"
-          className="h-7 px-2 flex items-center gap-1 rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors text-xs font-sans font-medium"
+          className="h-7 px-2 flex items-center gap-1 rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors text-xs font-sans font-medium cursor-pointer"
         >
           <span className="hidden sm:inline">Next</span>
           <IconChevronRight size={13} stroke={2} />
@@ -190,7 +190,7 @@ export function Pagination({
           onClick={() => onPageChange(totalPages)}
           disabled={safeCurrentPage === totalPages}
           title="Last Page"
-          className="h-7 w-7 flex items-center justify-center rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          className="h-7 w-7 flex items-center justify-center rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
         >
           <IconChevronsRight size={13} stroke={2} />
         </button>
