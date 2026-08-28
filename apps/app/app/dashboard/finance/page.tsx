@@ -59,8 +59,8 @@ export default function FinanceDashboardPage() {
   const filteredReceivables = receivables.filter((item) => {
     if (filterStatus === "ALL") return true;
     if (filterStatus === "FULLY_PAID") return item.isFullyPaid;
-    if (filterStatus === "DOWNPAYMENT_CLEARED") return item.isDownpaymentCleared && !item.isFullyPaid;
-    if (filterStatus === "OUTSTANDING") return !item.isFullyPaid;
+    if (filterStatus === "DOWNPAYMENT_CLEARED") return item.isDownpaymentCleared && !item.isFullyPaid && !item.isOverpaid;
+    if (filterStatus === "OUTSTANDING") return !item.isFullyPaid && !item.isOverpaid;
     return true;
   });
 
@@ -154,7 +154,7 @@ export default function FinanceDashboardPage() {
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
-              Downpaid ({receivables.filter((r) => r.isDownpaymentCleared && !r.isFullyPaid).length})
+              Downpaid ({receivables.filter((r) => r.isDownpaymentCleared && !r.isFullyPaid && !r.isOverpaid).length})
             </button>
             <button
               type="button"
@@ -165,7 +165,7 @@ export default function FinanceDashboardPage() {
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
-              With Balance ({receivables.filter((r) => !r.isFullyPaid).length})
+              With Balance ({receivables.filter((r) => !r.isFullyPaid && !r.isOverpaid).length})
             </button>
             <button
               type="button"
@@ -247,16 +247,35 @@ export default function FinanceDashboardPage() {
                       <div className="font-mono text-xs font-bold text-emerald-400">
                         <MoneyDisplay amount={study.totalPaidAmount} />
                       </div>
-                      <div className="font-sans text-[0.688rem] text-white/40">
-                        {study.totalContractAmount > 0
-                          ? `${Math.min(100, Math.round((study.totalPaidAmount / study.totalContractAmount) * 100))}% Cleared`
-                          : "No quote"}
+                      <div className="font-sans text-[0.688rem]">
+                        {study.totalContractAmount > 0 ? (
+                          study.isOverpaid ? (
+                            <span className="text-amber-400 font-medium">
+                              Exceeds Quote (+₱{(study.overpaidAmount || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })})
+                            </span>
+                          ) : (
+                            <span className="text-white/40">
+                              {Math.min(100, Math.round((study.totalPaidAmount / study.totalContractAmount) * 100))}% Cleared
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-white/40">No quote</span>
+                        )}
                       </div>
                     </td>
 
                     {/* Remaining Balance */}
                     <td className="py-4 px-5 whitespace-nowrap">
-                      {study.remainingBalance > 0 ? (
+                      {study.isOverpaid ? (
+                        <div>
+                          <div className="font-mono text-xs font-bold text-amber-400">
+                            +₱{(study.overpaidAmount || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="font-sans text-[0.688rem] text-amber-300/70">
+                            Overpaid / Reconcile
+                          </div>
+                        </div>
+                      ) : study.remainingBalance > 0 ? (
                         <div>
                           <div className="font-mono text-xs font-bold text-amber-400">
                             <MoneyDisplay amount={study.remainingBalance} />
@@ -275,7 +294,11 @@ export default function FinanceDashboardPage() {
 
                     {/* Payment Status Badge */}
                     <td className="py-4 px-5 whitespace-nowrap">
-                      {study.isFullyPaid ? (
+                      {study.isOverpaid ? (
+                        <Badge variant="amber" className="font-mono text-[0.688rem]">
+                          OVERPAID / MISMATCH
+                        </Badge>
+                      ) : study.isFullyPaid ? (
                         <Badge variant="emerald" className="font-mono text-[0.688rem]">
                           FULLY PAID
                         </Badge>

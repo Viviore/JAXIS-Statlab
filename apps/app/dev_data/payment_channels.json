@@ -20,16 +20,5 @@
     "branchOrProvider": "Ortigas Center Business Branch",
     "notes": "Direct deposit or InstaPay/PESONet. Upload the official transaction confirmation screenshot or deposit slip PDF.",
     "isEnabled": true
-  },
-  {
-    "id": "BANK_TRANSFER",
-    "name": "BPI Corporate Account",
-    "badge": "CLEARING: 1-2 HOURS",
-    "accountName": "JAXIS STATISTICAL CONSULTING SERVICES",
-    "accountNumber": "2881-0042-99",
-    "institution": "Bank of the Philippine Islands (BPI)",
-    "branchOrProvider": "Ayala Avenue Corporate Center",
-    "notes": "Include your Study Intake ID in the transfer reference notes.",
-    "isEnabled": true
   }
 ]

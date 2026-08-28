@@ -1030,8 +1030,10 @@ export async function getFinanceReceivablesSummary(): Promise<ActionResponse<Fin
 
       const totalPaid = verifiedDbTotal + verifiedDevTotal;
       const remainingBalance = Math.max(0, totalContract - totalPaid);
+      const isOverpaid = totalContract > 0 && totalPaid > totalContract;
+      const overpaidAmount = isOverpaid ? totalPaid - totalContract : 0;
       const isDownpaymentCleared = totalPaid >= downpaymentReq && downpaymentReq > 0;
-      const isFullyPaid = totalContract > 0 ? totalPaid >= totalContract : false;
+      const isFullyPaid = totalContract > 0 ? (totalPaid >= totalContract && !isOverpaid) : false;
 
       totalVaultCleared += totalPaid;
       totalOutstandingReceivables += remainingBalance;
@@ -1053,6 +1055,8 @@ export async function getFinanceReceivablesSummary(): Promise<ActionResponse<Fin
         downpaymentRequired: downpaymentReq,
         isDownpaymentCleared,
         isFullyPaid,
+        isOverpaid,
+        overpaidAmount,
         paymentCount: p.payments.length + devPayments.filter((dp) => dp.projectId === p.id).length,
         lastPaymentAt: p.payments[0]?.createdAt.toISOString() || devPayments.find((dp) => dp.projectId === p.id)?.createdAt || null,
       });
@@ -1138,8 +1142,10 @@ export async function getFinanceReceivablesSummary(): Promise<ActionResponse<Fin
       );
       const totalPaid = projDevPayments.reduce((sum, p) => sum + p.amountSubmitted, 0);
       const remainingBalance = Math.max(0, totalContract - totalPaid);
+      const isOverpaid = totalContract > 0 && totalPaid > totalContract;
+      const overpaidAmount = isOverpaid ? totalPaid - totalContract : 0;
       const isDownpaymentCleared = totalPaid >= downpaymentReq;
-      const isFullyPaid = totalContract > 0 ? totalPaid >= totalContract : false;
+      const isFullyPaid = totalContract > 0 ? (totalPaid >= totalContract && !isOverpaid) : false;
 
       totalVaultCleared += totalPaid;
       totalOutstandingReceivables += remainingBalance;
@@ -1161,6 +1167,8 @@ export async function getFinanceReceivablesSummary(): Promise<ActionResponse<Fin
         downpaymentRequired: downpaymentReq,
         isDownpaymentCleared,
         isFullyPaid,
+        isOverpaid,
+        overpaidAmount,
         paymentCount: projDevPayments.length,
         lastPaymentAt: projDevPayments[0]?.createdAt || null,
       };

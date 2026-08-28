@@ -92,6 +92,8 @@ export interface ProjectPaymentSummary {
   remainingBalance: number;
   isDownpaymentCleared: boolean;
   isFullyPaid: boolean;
+  isOverpaid: boolean;
+  overpaidAmount: number;
   downpaymentPercentage: number;
   totalPaidPercentage: number;
 }
@@ -117,8 +119,10 @@ export function calculateProjectBalance(
   }
 
   const remainingBalance = Math.max(0, totalAmount - verifiedPaid);
+  const isOverpaid = totalAmount > 0 && verifiedPaid > totalAmount;
+  const overpaidAmount = isOverpaid ? verifiedPaid - totalAmount : 0;
   const isDownpaymentCleared = verifiedPaid >= downpaymentRequired && downpaymentRequired > 0;
-  const isFullyPaid = verifiedPaid >= totalAmount && totalAmount > 0;
+  const isFullyPaid = totalAmount > 0 && verifiedPaid >= totalAmount && !isOverpaid;
 
   const downpaymentPercentage =
     downpaymentRequired > 0
@@ -138,6 +142,8 @@ export function calculateProjectBalance(
     remainingBalance,
     isDownpaymentCleared,
     isFullyPaid,
+    isOverpaid,
+    overpaidAmount,
     downpaymentPercentage,
     totalPaidPercentage,
   };

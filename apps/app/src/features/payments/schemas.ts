@@ -139,6 +139,8 @@ export interface StudyReceivableItem {
   downpaymentRequired: number;
   isDownpaymentCleared: boolean;
   isFullyPaid: boolean;
+  isOverpaid?: boolean;
+  overpaidAmount?: number;
   paymentCount: number;
   lastPaymentAt: string | null;
 }
