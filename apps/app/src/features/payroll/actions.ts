@@ -180,8 +180,7 @@ function writePayoutDetailsStorage(data: Record<string, StaffPayoutDetailsDTO>):
 function findPayoutDetailsForStaff(
   storage: Record<string, StaffPayoutDetailsDTO>,
   userId: string,
-  staffName?: string,
-  staffEmail?: string
+  staffName?: string
 ): StaffPayoutDetailsDTO | null {
   if (storage[userId]) return storage[userId]!;
   const all = Object.values(storage);
@@ -267,7 +266,7 @@ export async function getPayrollConfigurations(): Promise<{
       status: u.status,
       overrideConfig: override,
       effectiveConfig: override || roleConfig,
-      payoutDetails: findPayoutDetailsForStaff(payoutStorage, u.id, u.fullName, u.email),
+      payoutDetails: findPayoutDetailsForStaff(payoutStorage, u.id, u.fullName),
     });
   }
 
@@ -286,7 +285,7 @@ export async function getPayrollConfigurations(): Promise<{
         status: du.status,
         overrideConfig: override,
         effectiveConfig: override || roleConfig,
-        payoutDetails: findPayoutDetailsForStaff(payoutStorage, du.id, du.fullName, du.email),
+        payoutDetails: findPayoutDetailsForStaff(payoutStorage, du.id, du.fullName),
       });
     }
   }
@@ -717,7 +716,7 @@ export async function getCompanyPayslips(filters?: {
   const payoutStorage = readPayoutDetailsStorage();
   const enhancedPayslips = filtered.map((p) => ({
     ...p,
-    payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName, p.staffEmail) || p.payoutDetails || null,
+    payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName) || p.payoutDetails || null,
   }));
 
   return {
@@ -841,7 +840,7 @@ export async function getMyOfficialPayslip(
   const payoutStorage = readPayoutDetailsStorage();
   myPayslips = myPayslips.map((p) => ({
     ...p,
-    payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName, p.staffEmail) || p.payoutDetails || null,
+    payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName) || p.payoutDetails || null,
   }));
 
   let targetPayslip = null;
