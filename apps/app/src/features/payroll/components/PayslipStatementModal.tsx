@@ -70,6 +70,11 @@ export function PayslipStatementModal({
             <span className="text-[0.688rem] font-mono text-white/50">
               Pay Period: <strong className="text-white">{payslip.payPeriodMonth}</strong>
             </span>
+            {payslip.cutOffCycle && (
+              <span className="text-[0.688rem] font-mono text-amber-400">
+                Settlement Cycle: {payslip.cutOffCycle === "FIRST_HALF" ? "First Half-Month (Days 1–15)" : payslip.cutOffCycle === "SECOND_HALF" ? "Second Half-Month (Days 16–End)" : "Full Calendar Month"}
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col sm:items-end gap-1 text-[0.688rem] font-mono text-white/60">

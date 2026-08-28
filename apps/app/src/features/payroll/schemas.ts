@@ -10,6 +10,35 @@ export const CompensationTypeEnum = z.enum([
 
 export type CompensationType = z.infer<typeof CompensationTypeEnum>;
 
+export const PayrollFrequencyEnum = z.enum([
+  "SEMI_MONTHLY", // Twice Monthly / 15-Day Cut-Off
+  "MONTHLY",      // Full Calendar Month
+  "BI_WEEKLY",    // Every 14 Days
+]);
+export type PayrollFrequency = z.infer<typeof PayrollFrequencyEnum>;
+
+export const CutOffCycleEnum = z.enum([
+  "FIRST_HALF",   // Days 1 to 15 (First Half-Month Cycle)
+  "SECOND_HALF",  // Days 16 to End of Month (Second Half-Month Cycle)
+  "FULL_MONTH",   // Full Calendar Month
+  "CUSTOM",       // Custom date range
+]);
+export type CutOffCycle = z.infer<typeof CutOffCycleEnum>;
+
+export const CorporatePayrollScheduleConfigSchema = z.object({
+  frequency: PayrollFrequencyEnum.default("SEMI_MONTHLY"),
+  firstCutoffDay: z.number().min(1).max(31).default(15),
+  secondCutoffDay: z.number().min(1).max(31).default(31),
+  prorateMonthlyBase: z.boolean().default(true),
+  disbursementGraceDays: z.number().min(0).max(15).default(3),
+  notes: z.string().optional().default(""),
+});
+
+export type CorporatePayrollScheduleConfigDTO = z.infer<typeof CorporatePayrollScheduleConfigSchema> & {
+  updatedAt?: string;
+  updatedBy?: string | null;
+};
+
 export const RoleCompensationConfigSchema = z.object({
   roleName: z.enum(["STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER", "ADMIN"]),
   compensationType: CompensationTypeEnum,
@@ -72,6 +101,7 @@ export interface StaffPayslipDTO {
   payPeriodMonth: string;
   payPeriodStart: string;
   payPeriodEnd: string;
+  cutOffCycle?: CutOffCycle | null;
   compensationType: CompensationType;
   baseSalary: number;
   verifiedDutyHours: number;
@@ -105,6 +135,7 @@ export const GeneratePayrollBatchSchema = z.object({
   payPeriodMonth: z.string().min(1, "Pay period month is required (e.g. August 2026)."),
   payPeriodStart: z.string().min(1, "Pay period start date is required."),
   payPeriodEnd: z.string().min(1, "Pay period end date is required."),
+  cutOffCycle: CutOffCycleEnum.optional().default("FIRST_HALF"),
 });
 
 export type GeneratePayrollBatchInput = z.infer<typeof GeneratePayrollBatchSchema>;

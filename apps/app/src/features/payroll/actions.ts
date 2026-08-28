@@ -9,10 +9,12 @@ import type { RoleName } from "@prisma/client";
 import {
   RoleCompensationConfigSchema,
   StaffCompensationOverrideSchema,
+  CorporatePayrollScheduleConfigSchema,
   GeneratePayrollBatchSchema,
   DisbursePayslipSchema,
   type RoleCompensationConfigDTO,
   type StaffCompensationOverrideDTO,
+  type CorporatePayrollScheduleConfigDTO,
   type StaffPayslipDTO,
   type PayrollKpiSummary,
   type PayslipItemizedStudy,
@@ -29,9 +31,21 @@ function ensureDevDataDir() {
   }
 }
 
+const DEFAULT_SCHEDULE_CONFIG: CorporatePayrollScheduleConfigDTO = {
+  frequency: "SEMI_MONTHLY",
+  firstCutoffDay: 15,
+  secondCutoffDay: 31,
+  prorateMonthlyBase: true,
+  disbursementGraceDays: 3,
+  notes: "Standard Semi-Monthly Corporate Settlement Schedule (Days 1–15 & Days 16–End)",
+  updatedAt: new Date().toISOString(),
+  updatedBy: "Executive CEO Office",
+};
+
 interface PayrollStorage {
   roleConfigs: Record<string, RoleCompensationConfigDTO>;
   staffOverrides: Record<string, StaffCompensationOverrideDTO>;
+  scheduleConfig?: CorporatePayrollScheduleConfigDTO;
 }
 
 const DEFAULT_ROLE_CONFIGS: Record<string, RoleCompensationConfigDTO> = {
@@ -156,6 +170,7 @@ export async function getPayrollConfigurations(): Promise<{
   roleConfigs: RoleCompensationConfigDTO[];
   staffOverrides: StaffCompensationOverrideDTO[];
   staffMembers: InternalStaffMember[];
+  scheduleConfig: CorporatePayrollScheduleConfigDTO;
 }> {
   await requireRole("CEO", "FINANCE_OFFICER", "ADMIN");
   const storage = readPayrollStorage();
@@ -229,7 +244,40 @@ export async function getPayrollConfigurations(): Promise<{
     roleConfigs: Object.values(storage.roleConfigs),
     staffOverrides: Object.values(storage.staffOverrides),
     staffMembers,
+    scheduleConfig: storage.scheduleConfig || DEFAULT_SCHEDULE_CONFIG,
   };
+}
+
+/**
+ * Save Corporate Payroll Schedule (CEO-only).
+ * Configures settlement frequency (Semi-Monthly / Monthly / Bi-Weekly), cutoff boundaries, and proration.
+ */
+export async function saveCompanyPayrollSchedule(
+  input: unknown
+): Promise<{ success: boolean; config?: CorporatePayrollScheduleConfigDTO; error?: { message: string } }> {
+  const session = await requireRole("CEO");
+  const parsed = CorporatePayrollScheduleConfigSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { message: parsed.error.issues[0]?.message || "Invalid schedule parameters." },
+    };
+  }
+
+  const storage = readPayrollStorage();
+  const dto: CorporatePayrollScheduleConfigDTO = {
+    ...parsed.data,
+    updatedAt: new Date().toISOString(),
+    updatedBy: session.user?.name || "CEO Executive Office",
+  };
+  storage.scheduleConfig = dto;
+  writePayrollStorage(storage);
+
+  revalidatePath("/dashboard/ceo/payroll");
+  revalidatePath("/dashboard/finance/payroll");
+  revalidatePath("/dashboard/staff/hr");
+
+  return { success: true, config: dto };
 }
 
 /**
@@ -333,10 +381,23 @@ export async function generateBatchPayslips(
     };
   }
 
-  const { payPeriodMonth, payPeriodStart, payPeriodEnd } = parsed.data;
+  const { payPeriodMonth, payPeriodStart, payPeriodEnd, cutOffCycle = "FIRST_HALF" } = parsed.data;
   const { staffMembers } = await getPayrollConfigurations();
   const startDate = new Date(payPeriodStart);
   const endDate = new Date(payPeriodEnd);
+
+  const isHalfMonth = cutOffCycle === "FIRST_HALF" || cutOffCycle === "SECOND_HALF";
+  const prorationMultiplier = isHalfMonth ? 0.5 : 1.0;
+
+  // Format formal cycle label for payslip
+  let formalPeriodLabel = payPeriodMonth;
+  if (cutOffCycle === "FIRST_HALF") {
+    formalPeriodLabel = `${payPeriodMonth} (First Half-Month Cycle: Days 1–15)`;
+  } else if (cutOffCycle === "SECOND_HALF") {
+    formalPeriodLabel = `${payPeriodMonth} (Second Half-Month Cycle: Days 16–End)`;
+  } else if (cutOffCycle === "FULL_MONTH") {
+    formalPeriodLabel = `${payPeriodMonth} (Full Month Cycle)`;
+  }
 
   // Load existing payslips
   const existingPayslips = readPayslipsStorage();
@@ -426,8 +487,11 @@ export async function generateBatchPayslips(
     // 1. Calculate verified duty hours
     const staffLogs = attendanceLogs.filter((l) => l.userId === staff.id);
     const totalMinutes = staffLogs.reduce((sum, l) => sum + (l.totalMinutes || 0), 0);
-    // If 0 logs in DB for dev demo, supply realistic baseline
-    const verifiedDutyHours = totalMinutes > 0 ? Math.round((totalMinutes / 60) * 10) / 10 : (staff.role === "STATISTICIAN" ? 42.5 : staff.role === "SENIOR_QA_LEAD" ? 36.0 : 80.0);
+    // If 0 logs in DB for dev demo, supply realistic baseline prorated for half-month
+    const defaultBaseline = staff.role === "STATISTICIAN" ? 42.5 : staff.role === "SENIOR_QA_LEAD" ? 36.0 : 80.0;
+    const verifiedDutyHours = totalMinutes > 0
+      ? Math.round((totalMinutes / 60) * 10) / 10
+      : Math.round(defaultBaseline * prorationMultiplier * 10) / 10;
     const overtimeHours = staffLogs.filter((l) => (l.totalMinutes || 0) > 510).length * 1.5;
 
     // 2. Calculate studies completed
@@ -472,23 +536,25 @@ export async function generateBatchPayslips(
     const completedStudiesGrossValue = itemizedStudies.reduce((sum, s) => sum + s.grossAmount, 0);
     const commissionEarnings = itemizedStudies.reduce((sum, s) => sum + s.commissionEarned, 0);
 
-    // 3. Compensation Math
-    const baseSalary = config.compensationType === "FIXED_SALARY" || config.compensationType === "HYBRID" ? config.baseSalaryMonthly : 0;
+    // 3. Compensation Math (with Semi-Monthly 50% Proration for Fixed Retainers & Stipends)
+    const fullMonthlyBase = config.compensationType === "FIXED_SALARY" || config.compensationType === "HYBRID" ? config.baseSalaryMonthly : 0;
+    const baseSalary = Math.round(fullMonthlyBase * prorationMultiplier * 100) / 100;
     const hourlyRate = config.hourlyDutyRate || 0;
     const hourlyDutyEarnings = (config.compensationType === "HOURLY_DUTY" || config.compensationType === "HYBRID" || config.compensationType === "PERCENTAGE_PER_STUDY")
       ? Math.round(verifiedDutyHours * hourlyRate * 100) / 100
       : 0;
 
     const overtimeEarnings = Math.round(overtimeHours * (hourlyRate > 0 ? hourlyRate * 1.25 : 550) * 100) / 100;
-    const allowances = config.allowancesMonthly || 0;
+    const allowances = Math.round((config.allowancesMonthly || 0) * prorationMultiplier * 100) / 100;
 
     const grossEarnings = Math.round((baseSalary + hourlyDutyEarnings + commissionEarnings + overtimeEarnings + allowances) * 100) / 100;
-    const withholdingTax = grossEarnings > 20833 ? Math.round((grossEarnings - 20833) * 0.15 * 100) / 100 : 0;
+    const taxThreshold = isHalfMonth ? 10416.5 : 20833.0;
+    const withholdingTax = grossEarnings > taxThreshold ? Math.round((grossEarnings - taxThreshold) * 0.15 * 100) / 100 : 0;
     const otherDeductions = 0;
     const netPay = Math.round((grossEarnings - withholdingTax - otherDeductions) * 100) / 100;
 
-    // Check if payslip already exists for this user and period
-    const existingIndex = existingPayslips.findIndex((p) => p.userId === staff.id && p.payPeriodMonth === payPeriodMonth);
+    // Check if payslip already exists for this user and formal period label
+    const existingIndex = existingPayslips.findIndex((p) => p.userId === staff.id && p.payPeriodMonth === formalPeriodLabel);
 
     const payslipNum = `JAX-PS-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(counter++).padStart(3, "0")}`;
 
@@ -499,9 +565,10 @@ export async function generateBatchPayslips(
       staffName: staff.fullName,
       staffEmail: staff.email,
       staffRole: staff.role,
-      payPeriodMonth,
+      payPeriodMonth: formalPeriodLabel,
       payPeriodStart,
       payPeriodEnd,
+      cutOffCycle,
       compensationType: config.compensationType,
       baseSalary,
       verifiedDutyHours,

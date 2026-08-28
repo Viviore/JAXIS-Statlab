@@ -45,7 +45,12 @@ Module 19 provides institutional payroll governance, executive compensation conf
    - Multi-channel disbursement: GCash, Bank Transfer, or Cash.
    - Transaction reference number validation and settlement notes.
    - Audit trail stamping `disbursedAt`, `disbursedBy`, and approver name.
-6. **Staff HR Portal Integration (`/dashboard/staff/hr`)**:
+6. **Corporate Settlement Cadence & Semi-Monthly (15-Day Cut-Off) Controls**:
+   - CEO configuration of company-wide settlement frequency: Semi-Monthly (Twice Monthly / Every 15 Days) vs Monthly vs Bi-Weekly.
+   - Cut-off boundary settings (Day 15 and Month End) with automatic 50% base salary and allowance proration.
+   - Cut-off cycle selector in both CEO and Finance desks: `First Half-Month Cycle (Days 1–15)`, `Second Half-Month Cycle (Days 16–End)`, and `Full Calendar Month`.
+   - Formal pay period labeling and settlement cycle tags on official statements.
+7. **Staff HR Portal Integration (`/dashboard/staff/hr`)**:
    - Dynamic integration with `getMyHrPortalData` and `getMyOfficialPayslip`.
    - Displays official statement document number, status badge (`Disbursed / Paid` vs `Draft`), and exact figures calculated by the payroll engine.
 

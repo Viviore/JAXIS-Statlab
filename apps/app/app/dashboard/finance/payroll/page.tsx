@@ -30,6 +30,8 @@ import type {
   StaffPayslipDTO,
   PayrollKpiSummary,
   RoleCompensationConfigDTO,
+  CorporatePayrollScheduleConfigDTO,
+  CutOffCycle,
 } from "@/features/payroll/schemas";
 import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
 import { DisbursePayslipModal } from "@/features/payroll/components/DisbursePayslipModal";
@@ -38,6 +40,8 @@ export default function FinancePayrollOperationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [payslips, setPayslips] = useState<StaffPayslipDTO[]>([]);
   const [roleConfigs, setRoleConfigs] = useState<RoleCompensationConfigDTO[]>([]);
+  const [scheduleConfig, setScheduleConfig] = useState<CorporatePayrollScheduleConfigDTO | null>(null);
+  const [selectedBatchCycle, setSelectedBatchCycle] = useState<CutOffCycle>("FIRST_HALF");
   const [availablePeriods, setAvailablePeriods] = useState<string[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("ALL");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
@@ -78,6 +82,7 @@ export default function FinancePayrollOperationsPage() {
       setKpis(payslipRes.kpis);
       setAvailablePeriods(payslipRes.availablePeriods);
       setRoleConfigs(configRes.roleConfigs);
+      setScheduleConfig(configRes.scheduleConfig);
     } catch (err) {
       console.error("Failed to load Finance payroll data:", err);
     } finally {
@@ -89,25 +94,42 @@ export default function FinancePayrollOperationsPage() {
     loadData();
   }, [loadData]);
 
-  const handleGenerateBatch = async () => {
+  const handleGenerateBatch = async (cycle: CutOffCycle = selectedBatchCycle) => {
     setIsGeneratingBatch(true);
     try {
       const currentMonthStr = new Date().toLocaleDateString("en-PH", { month: "long", year: "numeric" });
       const now = new Date();
-      const startStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+      let startStr: string;
+      let endStr: string;
+      let cycleTitle: string;
+
+      if (cycle === "FIRST_HALF") {
+        startStr = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
+        endStr = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59).toISOString();
+        cycleTitle = "First Half-Month Cycle (Days 1–15)";
+      } else if (cycle === "SECOND_HALF") {
+        startStr = new Date(now.getFullYear(), now.getMonth(), 16, 0, 0, 0).toISOString();
+        endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        cycleTitle = "Second Half-Month Cycle (Days 16–End)";
+      } else {
+        startStr = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
+        endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        cycleTitle = "Full Calendar Month Cycle";
+      }
 
       const res = await generateBatchPayslips({
         payPeriodMonth: currentMonthStr,
         payPeriodStart: startStr,
         payPeriodEnd: endStr,
+        cutOffCycle: cycle,
       });
 
       if (res.success) {
         setToast({
           variant: "success",
           message: "Payroll Calculation Completed",
-          description: `Generated payslips for ${res.count} staff members using active CEO compensation formulas.`,
+          description: `Generated payslips for ${res.count} staff members for ${cycleTitle} (${currentMonthStr}).`,
         });
         await loadData();
       } else {
@@ -194,11 +216,21 @@ export default function FinancePayrollOperationsPage() {
           { label: "Staff Payroll & Payslips" },
         ]}
         actions={
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={selectedBatchCycle}
+              onChange={(e) => setSelectedBatchCycle(e.target.value as CutOffCycle)}
+              className="bg-[#010D1F] border border-white/10 rounded-[2px] px-2.5 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
+            >
+              <option value="FIRST_HALF">First Half (Days 1–15)</option>
+              <option value="SECOND_HALF">Second Half (Days 16–End)</option>
+              <option value="FULL_MONTH">Full Calendar Month</option>
+            </select>
+
             <Button
               variant="primary"
               size="sm"
-              onClick={handleGenerateBatch}
+              onClick={() => handleGenerateBatch(selectedBatchCycle)}
               disabled={isGeneratingBatch}
               className="gap-2 font-sans font-semibold cursor-pointer rounded-[2px]"
             >
@@ -207,7 +239,7 @@ export default function FinancePayrollOperationsPage() {
               ) : (
                 <IconReceipt size={16} stroke={1.5} />
               )}
-              <span>Run Payroll Cycle</span>
+              <span>Run Selected Cycle</span>
             </Button>
           </div>
         }
@@ -220,13 +252,22 @@ export default function FinancePayrollOperationsPage() {
             <IconShieldCheck size={18} stroke={1.5} />
           </div>
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
               <span className="font-semibold text-white text-xs">
-                CEO Authorized Compensation Policy Active
+                CEO Authorized Compensation &amp; Settlement Policy Active
               </span>
               <Badge variant="emerald" className="text-[0.625rem] font-mono">
                 Verified Formula
               </Badge>
+              {scheduleConfig && (
+                <Badge variant="amber" className="text-[0.625rem] font-mono">
+                  {scheduleConfig.frequency === "SEMI_MONTHLY"
+                    ? "Schedule: Semi-Monthly (Days 1–15 & 16–End)"
+                    : scheduleConfig.frequency === "MONTHLY"
+                    ? "Schedule: Monthly (Full Calendar Month)"
+                    : "Schedule: Bi-Weekly (Every 14 Days)"}
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-white/60 font-sans">
               All payroll numbers are governed by the executive rate matrix configured by the CEO Office.

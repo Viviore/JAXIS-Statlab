@@ -69,5 +69,15 @@
       "updatedAt": "2026-08-28T20:07:59.013Z",
       "updatedBy": "CEO Owner"
     }
+  },
+  "scheduleConfig": {
+    "frequency": "SEMI_MONTHLY",
+    "firstCutoffDay": 15,
+    "secondCutoffDay": 31,
+    "prorateMonthlyBase": true,
+    "disbursementGraceDays": 3,
+    "notes": "Standard Semi-Monthly Corporate Settlement Schedule (Days 1–15 & Days 16–End)",
+    "updatedAt": "2026-08-28T20:25:15.012Z",
+    "updatedBy": "CEO Executive Office"
   }
 }

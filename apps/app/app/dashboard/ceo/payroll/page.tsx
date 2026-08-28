@@ -25,10 +25,12 @@ import {
   IconSparkles,
   IconCoins,
   IconAdjustments,
+  IconCalendarTime,
 } from "@tabler/icons-react";
 import {
   getPayrollConfigurations,
   saveRoleCompensationConfig,
+  saveCompanyPayrollSchedule,
   getCompanyPayslips,
   generateBatchPayslips,
   approvePayslip,
@@ -39,6 +41,9 @@ import type {
   StaffPayslipDTO,
   PayrollKpiSummary,
   CompensationType,
+  CorporatePayrollScheduleConfigDTO,
+  CutOffCycle,
+  PayrollFrequency,
 } from "@/features/payroll/schemas";
 import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
 import { SpecialistOverrideModal } from "@/features/payroll/components/SpecialistOverrideModal";
@@ -81,6 +86,12 @@ export default function CeoPayrollPolicyPage() {
   const [selectedStaffForOverride, setSelectedStaffForOverride] = useState<InternalStaffMember | null>(null);
   const [selectedPayslipForView, setSelectedPayslipForView] = useState<StaffPayslipDTO | null>(null);
 
+  // Corporate schedule config state
+  const [scheduleConfig, setScheduleConfig] = useState<CorporatePayrollScheduleConfigDTO | null>(null);
+  const [scheduleForm, setScheduleForm] = useState<CorporatePayrollScheduleConfigDTO | null>(null);
+  const [isSavingSchedule, setIsSavingSchedule] = useState(false);
+  const [selectedBatchCycle, setSelectedBatchCycle] = useState<CutOffCycle>("FIRST_HALF");
+
   // Editing state for roles
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [formConfig, setFormConfig] = useState<RoleCompensationConfigDTO | null>(null);
@@ -102,6 +113,8 @@ export default function CeoPayrollPolicyPage() {
       ]);
       setRoleConfigs(configData.roleConfigs);
       setStaffMembers(configData.staffMembers);
+      setScheduleConfig(configData.scheduleConfig);
+      setScheduleForm({ ...configData.scheduleConfig });
       setPayslips(payslipData.payslips);
       setPayrollKpis(payslipData.kpis);
     } catch (err) {
@@ -118,6 +131,44 @@ export default function CeoPayrollPolicyPage() {
   const handleStartEditRole = (role: RoleCompensationConfigDTO) => {
     setEditingRole(role.roleName);
     setFormConfig({ ...role });
+  };
+
+  const handleSaveSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleForm) return;
+    setIsSavingSchedule(true);
+    try {
+      const res = await saveCompanyPayrollSchedule(scheduleForm);
+      if (res.success && res.config) {
+        setScheduleConfig(res.config);
+        setToast({
+          variant: "success",
+          message: "Corporate Payroll Schedule Updated",
+          description: `Settlement cadence configured to ${
+            res.config.frequency === "SEMI_MONTHLY"
+              ? "Semi-Monthly (Twice Monthly / 15-Day Cut-Off)"
+              : res.config.frequency === "MONTHLY"
+              ? "Monthly (Full Calendar Month)"
+              : "Bi-Weekly (Every 14 Days)"
+          }.`,
+        });
+        await loadData();
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Schedule Update Failed",
+          description: res.error?.message,
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Error",
+        description: "Failed to save corporate schedule policy.",
+      });
+    } finally {
+      setIsSavingSchedule(false);
+    }
   };
 
   const handleSaveRole = async (e: React.FormEvent) => {
@@ -153,25 +204,42 @@ export default function CeoPayrollPolicyPage() {
     }
   };
 
-  const handleGenerateBatch = async () => {
+  const handleGenerateBatch = async (cycle: CutOffCycle = selectedBatchCycle) => {
     setIsGeneratingBatch(true);
     try {
       const currentMonthStr = new Date().toLocaleDateString("en-PH", { month: "long", year: "numeric" });
       const now = new Date();
-      const startStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+      let startStr: string;
+      let endStr: string;
+      let cycleTitle: string;
+
+      if (cycle === "FIRST_HALF") {
+        startStr = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
+        endStr = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59).toISOString();
+        cycleTitle = "First Half-Month Cycle (Days 1–15)";
+      } else if (cycle === "SECOND_HALF") {
+        startStr = new Date(now.getFullYear(), now.getMonth(), 16, 0, 0, 0).toISOString();
+        endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        cycleTitle = "Second Half-Month Cycle (Days 16–End)";
+      } else {
+        startStr = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
+        endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        cycleTitle = "Full Calendar Month Cycle";
+      }
 
       const res = await generateBatchPayslips({
         payPeriodMonth: currentMonthStr,
         payPeriodStart: startStr,
         payPeriodEnd: endStr,
+        cutOffCycle: cycle,
       });
 
       if (res.success) {
         setToast({
           variant: "success",
           message: "Institutional Payroll Run Generated",
-          description: `Calculated official payslips for ${res.count} active staff specialists for ${currentMonthStr}.`,
+          description: `Calculated official payslips for ${res.count} active specialists for ${cycleTitle} (${currentMonthStr}).`,
         });
         await loadData();
       } else {
@@ -246,15 +314,26 @@ export default function CeoPayrollPolicyPage() {
           { label: "Payroll & Compensation" },
         ]}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="amber" className="text-xs font-mono flex items-center gap-1">
               <IconShieldLock size={13} stroke={2} />
               <span>CEO Executive Authority</span>
             </Badge>
+
+            <select
+              value={selectedBatchCycle}
+              onChange={(e) => setSelectedBatchCycle(e.target.value as CutOffCycle)}
+              className="bg-[#010D1F] border border-white/10 rounded-[2px] px-2.5 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
+            >
+              <option value="FIRST_HALF">First Half (Days 1–15)</option>
+              <option value="SECOND_HALF">Second Half (Days 16–End)</option>
+              <option value="FULL_MONTH">Full Calendar Month</option>
+            </select>
+
             <Button
               variant="primary"
               size="sm"
-              onClick={handleGenerateBatch}
+              onClick={() => handleGenerateBatch(selectedBatchCycle)}
               disabled={isGeneratingBatch}
               className="gap-1.5 font-sans font-semibold cursor-pointer rounded-[2px]"
             >
@@ -263,7 +342,7 @@ export default function CeoPayrollPolicyPage() {
               ) : (
                 <IconReceipt size={15} stroke={2} />
               )}
-              <span>Run Payroll Cycle</span>
+              <span>Run Selected Cycle</span>
             </Button>
           </div>
         }
@@ -333,12 +412,12 @@ export default function CeoPayrollPolicyPage() {
               <span className="text-3xl font-extrabold font-mono text-purple-300 tracking-tight">
                 {payrollKpis.totalDutyHoursCompensated}
               </span>
-              <span className="text-xs font-mono text-white/40">hrs logged</span>
+              <span className="text-xs font-mono text-white/40">hours</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Module 18 Attendance</span>
-            <span className="text-purple-300 font-semibold">Verified Punches</span>
+            <span>Attendance Records</span>
+            <span className="text-purple-300 font-semibold">Verified Platform</span>
           </div>
         </Card>
 
@@ -346,7 +425,7 @@ export default function CeoPayrollPolicyPage() {
           <div>
             <div className="flex items-center justify-between gap-2 mb-3">
               <span className="text-[0.688rem] uppercase font-mono tracking-wider font-semibold text-white/50">
-                Studies Rewarded
+                Study Deliverables Paid
               </span>
               <div className="p-2 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px]">
                 <IconSparkles size={16} stroke={1.5} />
@@ -356,11 +435,11 @@ export default function CeoPayrollPolicyPage() {
               <span className="text-3xl font-extrabold font-mono text-amber-400 tracking-tight">
                 {payrollKpis.totalStudiesRewarded}
               </span>
-              <span className="text-xs font-mono text-white/40">deliverables</span>
+              <span className="text-xs font-mono text-white/40">completed</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
-            <span>Commission Deliverables</span>
+            <span>Study Commissions</span>
             <span className="text-amber-400 font-semibold">Active Cycle</span>
           </div>
         </Card>
@@ -398,6 +477,144 @@ export default function CeoPayrollPolicyPage() {
 
         {/* ── TAB 1: ROLE COMPENSATION POLICIES ── */}
         <TabsContent value="ROLES" className="mt-6 flex flex-col gap-6">
+          {/* Corporate Settlement Schedule Card */}
+          {scheduleForm && (
+            <Card className="p-6 sm:p-7 bg-[#01142B] border border-white/10 rounded-[2px]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px]">
+                    <IconCalendarTime size={20} stroke={1.5} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-white font-sans">
+                        Corporate Settlement Cadence &amp; Schedule Policy
+                      </h3>
+                      <Badge variant="amber" className="text-[0.625rem] font-mono">
+                        Active: {(scheduleConfig?.frequency || scheduleForm.frequency) === "SEMI_MONTHLY"
+                          ? "Semi-Monthly (Twice Monthly / 15-Day Cut-Off)"
+                          : (scheduleConfig?.frequency || scheduleForm.frequency) === "MONTHLY"
+                          ? "Monthly (Full Calendar Month)"
+                          : "Bi-Weekly (Every 14 Days)"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-white/50 font-sans mt-0.5">
+                      Configure company-wide settlement frequency. For Semi-Monthly schedules, monthly base retainers are divided into two equal 15-day cut-offs.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSaveSchedule}
+                    disabled={isSavingSchedule}
+                    className="gap-1.5 font-sans font-semibold cursor-pointer rounded-[2px]"
+                  >
+                    {isSavingSchedule ? (
+                      <IconLoader2 size={15} stroke={2.5} className="animate-spin text-white/90" />
+                    ) : (
+                      <IconCheck size={15} stroke={2} />
+                    )}
+                    <span>Save Schedule Policy</span>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div>
+                  <label className="text-xs font-mono text-white/70 block mb-1.5 font-semibold">
+                    Settlement Frequency Cadence
+                  </label>
+                  <select
+                    value={scheduleForm.frequency}
+                    onChange={(e) =>
+                      setScheduleForm((prev) =>
+                        prev ? { ...prev, frequency: e.target.value as PayrollFrequency } : prev
+                      )
+                    }
+                    className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none focus:border-[#CC6600] font-sans"
+                  >
+                    <option value="SEMI_MONTHLY">Semi-Monthly (Twice Monthly / Every 15 Days)</option>
+                    <option value="MONTHLY">Monthly (Full Calendar Month)</option>
+                    <option value="BI_WEEKLY">Bi-Weekly (Every 14 Days)</option>
+                  </select>
+                  <span className="text-[0.625rem] text-white/40 font-mono mt-1 block">
+                    1st Cut-Off: Days 1–15 | 2nd Cut-Off: Days 16–End of Month
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-mono text-white/70 block mb-1.5 font-semibold">
+                    First Half-Month Boundary
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={10}
+                      max={20}
+                      value={scheduleForm.firstCutoffDay}
+                      onChange={(e) =>
+                        setScheduleForm((prev) =>
+                          prev ? { ...prev, firstCutoffDay: Number(e.target.value) } : prev
+                        )
+                      }
+                      className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
+                    />
+                    <span className="text-xs font-mono text-white/40 shrink-0">th of Month</span>
+                  </div>
+                  <span className="text-[0.625rem] text-white/40 font-mono mt-1 block">
+                    Day marking closure of the 1st cycle.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-mono text-white/70 block mb-1.5 font-semibold">
+                    Disbursement Settlement Grace
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={scheduleForm.disbursementGraceDays}
+                      onChange={(e) =>
+                        setScheduleForm((prev) =>
+                          prev ? { ...prev, disbursementGraceDays: Number(e.target.value) } : prev
+                        )
+                      }
+                      className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
+                    />
+                    <span className="text-xs font-mono text-white/40 shrink-0">Days Post-Cutoff</span>
+                  </div>
+                  <span className="text-[0.625rem] text-white/40 font-mono mt-1 block">
+                    Disbursement window post cut-off closure.
+                  </span>
+                </div>
+              </div>
+
+              {scheduleForm.frequency === "SEMI_MONTHLY" && (
+                <div className="mt-4 pt-4 border-t border-white/[0.06] flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="prorateBase"
+                    checked={scheduleForm.prorateMonthlyBase}
+                    onChange={(e) =>
+                      setScheduleForm((prev) =>
+                        prev ? { ...prev, prorateMonthlyBase: e.target.checked } : prev
+                      )
+                    }
+                    className="accent-[#CC6600] rounded-[2px]"
+                  />
+                  <label htmlFor="prorateBase" className="text-xs text-white/80 font-sans cursor-pointer">
+                    Automatically prorate fixed monthly base retainers and allowances (divide by 2) for each 15-day cut-off run.
+                  </label>
+                </div>
+              )}
+            </Card>
+          )}
+
           <div className="p-4 bg-sky-950/40 border border-sky-500/30 rounded-[2px] flex items-start gap-3 text-xs text-sky-200">
             <IconAdjustments size={20} stroke={1.5} className="text-sky-400 shrink-0 mt-0.5" />
             <div>
@@ -782,7 +999,7 @@ export default function CeoPayrollPolicyPage() {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={handleGenerateBatch}
+                  onClick={() => handleGenerateBatch(selectedBatchCycle)}
                   disabled={isGeneratingBatch}
                   className="gap-1.5 font-sans font-semibold cursor-pointer rounded-[2px]"
                 >
