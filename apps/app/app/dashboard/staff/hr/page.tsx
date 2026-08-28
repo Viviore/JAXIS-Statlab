@@ -1166,100 +1166,120 @@ export default function StaffHrPortalPage() {
                   Zero past payslip records found.
                 </div>
               ) : (
-                <div className="overflow-x-auto border border-white/10 rounded-[2px] bg-[#010D1F]">
-                  <table className="w-full text-left text-xs border-collapse font-sans">
-                    <thead>
-                      <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] bg-white/[0.02]">
-                        <th className="py-3 px-3.5">Doc ID</th>
-                        <th className="py-3 px-3.5">Pay Period &amp; Cut-Off</th>
-                        <th className="py-3 px-3.5">Compensation Model</th>
-                        <th className="py-3 px-3.5">Hours</th>
-                        <th className="py-3 px-3.5">Gross Pay</th>
-                        <th className="py-3 px-3.5">Net Take-Home</th>
-                        <th className="py-3 px-3.5">Settlement Status</th>
-                        <th className="py-3 px-3.5 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.06]">
-                      {allMyPayslips.map((ps) => {
-                        const isCurrent = ps.id === activeDisplayPayslip?.id;
-                        return (
-                          <tr
-                            key={ps.id}
-                            className={`hover:bg-white/[0.04] transition-colors ${
-                              isCurrent ? "bg-[#CC6600]/10 border-l-2 border-l-[#CC6600]" : ""
-                            }`}
-                          >
-                            <td className="py-3 px-3.5 font-mono text-[#38BDF8] font-semibold">
-                              {ps.payslipNumber}
-                            </td>
-                            <td className="py-3 px-3.5 text-white font-medium">
-                              <div>{ps.payPeriodMonth}</div>
-                              {ps.cutOffCycle && (
-                                <span className="text-[0.625rem] text-amber-400 font-mono block">
-                                  {ps.cutOffCycle === "FIRST_HALF"
-                                    ? "1st Cut-Off (Days 1–15)"
-                                    : ps.cutOffCycle === "SECOND_HALF"
-                                    ? "2nd Cut-Off (Days 16–End)"
-                                    : "Full Month Cycle"}
+                <div className="overflow-x-auto rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl">
+                    <table className="w-full text-left text-xs border-collapse font-sans">
+                      <thead>
+                        <tr className="bg-[#010D1F] border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Statement Ref</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Pay Period</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Pay Structure</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[90px]">Duty Hours</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[110px]">Gross Pay</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Take-Home</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[140px]">Settlement Status</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[150px]">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.06]">
+                        {allMyPayslips.map((ps) => {
+                          const isCurrent = ps.id === activeDisplayPayslip?.id;
+                          const parts = ps.payPeriodMonth.split("(");
+                          const mainMonth = parts[0]?.trim() || ps.payPeriodMonth;
+                          let cycleSub = "";
+                          if (parts.length > 1) {
+                            const rawCycle = parts[1]?.replace(")", "").trim();
+                            if (rawCycle?.includes("First Half") || rawCycle?.includes("Days 1-15") || rawCycle?.includes("Days 1–15")) {
+                              cycleSub = "1st Half (Days 1–15)";
+                            } else if (rawCycle?.includes("Second Half") || rawCycle?.includes("Days 16")) {
+                              cycleSub = "2nd Half (Days 16–End)";
+                            } else {
+                              cycleSub = rawCycle || "";
+                            }
+                          } else if (ps.cutOffCycle === "FIRST_HALF") {
+                            cycleSub = "1st Half (Days 1–15)";
+                          } else if (ps.cutOffCycle === "SECOND_HALF") {
+                            cycleSub = "2nd Half (Days 16–End)";
+                          } else if (ps.cutOffCycle === "FULL_MONTH") {
+                            cycleSub = "Full Month Cycle";
+                          }
+
+                          return (
+                            <tr
+                              key={ps.id}
+                              className={`hover:bg-white/[0.04] transition-colors group ${
+                                isCurrent ? "bg-[#CC6600]/10 border-l-2 border-l-[#CC6600]" : ""
+                              }`}
+                            >
+                              <td className="py-3.5 px-4 font-mono text-[#FFA040] font-semibold whitespace-nowrap">
+                                {ps.payslipNumber}
+                              </td>
+                              <td className="py-3.5 px-4 whitespace-nowrap">
+                                <span className="font-semibold text-white font-sans text-xs block leading-tight">
+                                  {mainMonth}
                                 </span>
-                              )}
-                            </td>
-                            <td className="py-3 px-3.5 text-white/70 font-mono text-[0.688rem]">
-                              {ps.compensationType.replace(/_/g, " ")}
-                            </td>
-                            <td className="py-3 px-3.5 font-mono text-white/70">
-                              {ps.verifiedDutyHours} hrs
-                            </td>
-                            <td className="py-3 px-3.5 font-mono text-white/80">
-                              ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                            </td>
-                            <td className="py-3 px-3.5 font-mono font-bold text-emerald-400">
-                              ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                            </td>
-                            <td className="py-3 px-3.5 font-mono">
-                              <Badge
-                                variant={ps.status === "DISBURSED" ? "emerald" : ps.status === "APPROVED" ? "sky" : "amber"}
-                                className="text-[0.625rem]"
-                              >
-                                {ps.status === "DISBURSED"
-                                  ? `Disbursed (${ps.disbursementMethod || "Direct"})`
-                                  : ps.status}
-                              </Badge>
-                              {ps.disbursementReference && (
-                                <span className="text-[0.625rem] text-white/40 block font-mono mt-0.5">
-                                  Ref: {ps.disbursementReference}
+                                {cycleSub && (
+                                  <span className="text-[0.688rem] font-mono text-sky-400/80 block mt-0.5">
+                                    {cycleSub}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-4 text-white/70 font-mono text-[0.688rem] whitespace-nowrap">
+                                {ps.compensationType.replace(/_/g, " ")}
+                              </td>
+                              <td className="py-3.5 px-4 font-mono text-right text-white/90 whitespace-nowrap">
+                                {ps.verifiedDutyHours > 0 ? `${ps.verifiedDutyHours}h` : "—"}
+                              </td>
+                              <td className="py-3.5 px-4 font-mono text-right text-white/70 text-xs whitespace-nowrap">
+                                ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                              </td>
+                              <td className="py-3.5 px-4 font-mono text-right whitespace-nowrap">
+                                <span className="inline-block font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-[2px]">
+                                  ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                                 </span>
-                              )}
-                            </td>
-                            <td className="py-3 px-3.5 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setSelectedPayslipForModal(ps)}
-                                  className="text-[0.688rem] px-2.5 py-1 h-7 font-sans cursor-pointer"
+                              </td>
+                              <td className="py-3.5 px-4 text-center whitespace-nowrap font-mono">
+                                <Badge
+                                  variant={ps.status === "DISBURSED" ? "emerald" : ps.status === "APPROVED" ? "sky" : "amber"}
+                                  className="text-[0.625rem] uppercase tracking-wider"
                                 >
-                                  <span>Statement →</span>
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedPayslip(ps);
-                                  }}
-                                  className="text-[0.688rem] px-2 py-1 h-7 font-sans cursor-pointer text-white/70 hover:text-white"
-                                >
-                                  <span>Inspect</span>
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                                  {ps.status === "DISBURSED"
+                                    ? `Disbursed (${ps.disbursementMethod || "Direct"})`
+                                    : ps.status}
+                                </Badge>
+                                {ps.disbursementReference && (
+                                  <span className="text-[0.625rem] text-white/40 block font-mono mt-0.5">
+                                    Ref: {ps.disbursementReference}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedPayslipForModal(ps)}
+                                    className="h-7 text-xs font-sans px-2.5 text-sky-400 border-sky-500/30 hover:bg-sky-500/10 cursor-pointer rounded-[2px]"
+                                  >
+                                    <span>Statement →</span>
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedPayslip(ps);
+                                    }}
+                                    className="h-7 text-xs font-sans px-2.5 bg-white/10 hover:bg-white/15 text-white cursor-pointer rounded-[2px]"
+                                  >
+                                    <span>Inspect</span>
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
               )}
             </div>
           </Card>

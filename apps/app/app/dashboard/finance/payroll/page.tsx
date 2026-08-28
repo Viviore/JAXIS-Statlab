@@ -332,7 +332,7 @@ export default function FinancePayrollOperationsPage() {
       </div>
 
       {/* Main Payslips Ledger Card */}
-      <Card className="p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+      <Card className="p-5 sm:p-6 lg:p-7 bg-[#01142B] border-white/10 flex flex-col gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
             <h2 className="text-base font-bold text-white font-sans">
@@ -397,122 +397,190 @@ export default function FinancePayrollOperationsPage() {
             Zero payslip records found matching the active filter. Click &ldquo;Run Payroll Cycle&rdquo; to calculate.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem]">
-                  <th className="py-3 px-3">Statement Number</th>
-                  <th className="py-3 px-3">Specialist</th>
-                  <th className="py-3 px-3">Role</th>
-                  <th className="py-3 px-3">Period</th>
-                  <th className="py-3 px-3">Duty Hours</th>
-                  <th className="py-3 px-3">Studies</th>
-                  <th className="py-3 px-3 text-right">Gross Pay</th>
-                  <th className="py-3 px-3 text-right">Net Take-Home</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3 text-right">Actions</th>
+                <tr className="bg-[#010D1F] border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
+                  <th className="py-3 px-2 whitespace-nowrap">Statement No.</th>
+                  <th className="py-3 px-2 whitespace-nowrap">Specialist</th>
+                  <th className="py-3 px-2 whitespace-nowrap">Role</th>
+                  <th className="py-3 px-2 whitespace-nowrap">Pay Period</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-right">Duty Hours</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-center">Studies</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-right">Gross Pay</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-right text-emerald-400/90">Net Take-Home</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-center">Status</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-right pr-3">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
-                {paginatedPayslips.map((ps) => (
-                  <tr key={ps.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3 px-3 font-mono font-semibold text-[#CC6600]">
-                      {ps.payslipNumber}
-                    </td>
-                    <td className="py-3 px-3 font-sans">
-                      <span className="font-semibold text-white block">{ps.staffName}</span>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[0.688rem] font-mono text-white/40">{ps.staffEmail}</span>
-                        {ps.payoutDetails && (
-                          <span
-                            className="text-[0.562rem] font-mono px-1.5 py-0.2 rounded-[2px] bg-orange-500/15 text-[#FFA040] border border-[#FFA040]/30"
-                            title={`${ps.payoutDetails.payoutChannel}: ${ps.payoutDetails.accountNumber} (${ps.payoutDetails.accountName})`}
-                          >
-                            {ps.payoutDetails.payoutChannel.replace(/_/g, " ")}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[0.688rem] text-white/70">
-                      {ps.staffRole}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-white/70">
-                      {ps.payPeriodMonth}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-white/80">
-                      {ps.verifiedDutyHours}h
-                    </td>
-                    <td className="py-3 px-3 font-mono">
-                      {ps.completedStudiesCount > 0 ? (
-                        <span className="text-amber-400 font-semibold">
-                          {ps.completedStudiesCount} studies
+              <tbody className="divide-y divide-white/[0.06]">
+                {paginatedPayslips.map((ps) => {
+                  const parts = ps.payPeriodMonth.split("(");
+                  const mainMonth = parts[0]?.trim() || ps.payPeriodMonth;
+                  let cycleSub = "";
+                  if (parts.length > 1) {
+                    const rawCycle = parts[1]?.replace(")", "").trim();
+                    if (rawCycle?.includes("First Half") || rawCycle?.includes("Days 1-15") || rawCycle?.includes("Days 1–15")) {
+                      cycleSub = "1st Half (Days 1–15)";
+                    } else if (rawCycle?.includes("Second Half") || rawCycle?.includes("Days 16")) {
+                      cycleSub = "2nd Half (Days 16–End)";
+                    } else {
+                      cycleSub = rawCycle || "";
+                    }
+                  } else if (ps.cutOffCycle === "FIRST_HALF") {
+                    cycleSub = "1st Half (Days 1–15)";
+                  } else if (ps.cutOffCycle === "SECOND_HALF") {
+                    cycleSub = "2nd Half (Days 16–End)";
+                  } else if (ps.cutOffCycle === "FULL_MONTH") {
+                    cycleSub = "Full Month Cycle";
+                  }
+
+                  const roleLabel =
+                    ps.staffRole === "STATISTICIAN"
+                      ? "Statistician"
+                      : ps.staffRole === "SENIOR_QA_LEAD"
+                      ? "Senior QA Lead"
+                      : ps.staffRole === "FINANCE_OFFICER"
+                      ? "Finance Officer"
+                      : ps.staffRole === "ADMIN"
+                      ? "Super Admin"
+                      : ps.staffRole === "CEO"
+                      ? "Executive Director"
+                      : ps.staffRole;
+
+                  return (
+                    <tr key={ps.id} className="hover:bg-white/[0.04] transition-colors group">
+                      {/* Statement Number */}
+                      <td className="py-2.5 px-2 font-mono font-semibold text-[#FFA040] whitespace-nowrap">
+                        {ps.payslipNumber}
+                      </td>
+
+                      {/* Specialist Details */}
+                      <td className="py-2.5 px-2">
+                        <span className="font-semibold text-white font-sans text-xs block leading-tight">
+                          {ps.staffName}
                         </span>
-                      ) : (
-                        <span className="text-white/40">--</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-right text-white/70">
-                      ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-right font-bold text-emerald-400">
-                      ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="py-3 px-3">
-                      {ps.status === "DISBURSED" && (
-                        <div className="flex flex-col gap-0.5">
-                          <Badge variant="emerald" className="text-[0.625rem] font-mono">
-                            Disbursed
-                          </Badge>
-                          <span className="text-[0.625rem] font-mono text-white/40">
-                            {ps.disbursementMethod}
-                          </span>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <span className="text-[0.688rem] font-mono text-white/40">{ps.staffEmail}</span>
+                          {ps.payoutDetails && (
+                            <span
+                              className="text-[0.562rem] font-mono px-1.5 py-0.2 rounded-[2px] bg-white/[0.06] text-white/80 border border-white/10 inline-flex items-center gap-1"
+                              title={`${ps.payoutDetails.payoutChannel}: ${ps.payoutDetails.accountNumber} (${ps.payoutDetails.accountName})`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#FFA040]" />
+                              {ps.payoutDetails.payoutChannel.replace(/_/g, " ")}
+                            </span>
+                          )}
                         </div>
-                      )}
-                      {ps.status === "APPROVED" && (
-                        <Badge variant="sky" className="text-[0.625rem] font-mono">
-                          Approved
-                        </Badge>
-                      )}
-                      {ps.status === "DRAFT" && (
-                        <Badge variant="amber" className="text-[0.625rem] font-mono">
-                          Draft
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      </td>
+
+                      {/* Role */}
+                      <td className="py-2.5 px-2 whitespace-nowrap">
+                        <span className="text-xs text-white/70 font-sans">{roleLabel}</span>
+                      </td>
+
+                      {/* Pay Period & Cut-Off */}
+                      <td className="py-2.5 px-2 whitespace-nowrap">
+                        <span className="font-semibold text-white font-sans text-xs block leading-tight">
+                          {mainMonth}
+                        </span>
+                        {cycleSub && (
+                          <span className="text-[0.688rem] font-mono text-sky-400/80 block mt-0.5">
+                            {cycleSub}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Duty Hours */}
+                      <td className="py-2.5 px-2 font-mono text-right text-white/90 whitespace-nowrap">
+                        {ps.verifiedDutyHours > 0 ? `${ps.verifiedDutyHours}h` : "—"}
+                      </td>
+
+                      {/* Studies */}
+                      <td className="py-2.5 px-2 text-center whitespace-nowrap font-mono">
+                        {ps.completedStudiesCount > 0 ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-[2px] bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+                            {ps.completedStudiesCount} {ps.completedStudiesCount === 1 ? "study" : "studies"}
+                          </span>
+                        ) : (
+                          <span className="text-white/30 font-mono">—</span>
+                        )}
+                      </td>
+
+                      {/* Gross Pay */}
+                      <td className="py-2.5 px-2 font-mono text-right text-white/70 text-xs whitespace-nowrap">
+                        ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                      </td>
+
+                      {/* Net Take-Home */}
+                      <td className="py-2.5 px-2 font-mono text-right whitespace-nowrap">
+                        <span className="inline-block font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px]">
+                          ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-2.5 px-2 text-center whitespace-nowrap">
+                        {ps.status === "DISBURSED" && (
+                          <div className="inline-flex flex-col items-center">
+                            <Badge variant="emerald" className="text-[0.562rem] font-mono uppercase tracking-wider py-0.5 px-1.5">
+                              Disbursed
+                            </Badge>
+                            {ps.disbursementMethod && (
+                              <span className="text-[0.562rem] font-mono text-white/40 block mt-0.5 max-w-[100px] truncate" title={ps.disbursementMethod}>
+                                {ps.disbursementMethod.replace("Institutional Transfer", "Transfer").replace("Corporate Bank Wire", "Bank Wire")}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {ps.status === "APPROVED" && (
+                          <Badge variant="sky" className="text-[0.562rem] font-mono uppercase tracking-wider py-0.5 px-1.5">
+                            Approved
+                          </Badge>
+                        )}
                         {ps.status === "DRAFT" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApprove(ps.id)}
-                            className="font-mono text-xs py-1 px-2 cursor-pointer text-sky-400"
-                          >
-                            Approve
-                          </Button>
+                          <Badge variant="amber" className="text-[0.562rem] font-mono uppercase tracking-wider py-0.5 px-1.5">
+                            Draft
+                          </Badge>
                         )}
-                        {ps.status !== "DISBURSED" && (
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-2.5 px-2 text-right whitespace-nowrap pr-3">
+                        <div className="flex items-center justify-end gap-1">
+                          {ps.status === "DRAFT" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApprove(ps.id)}
+                              className="h-6 text-[0.688rem] font-sans px-2 text-sky-400 border-sky-500/30 hover:bg-sky-500/10 cursor-pointer rounded-[2px]"
+                            >
+                              Approve
+                            </Button>
+                          )}
+                          {ps.status !== "DISBURSED" && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => setSelectedPayslipForDisburse(ps)}
+                              className="h-6 text-[0.688rem] font-sans font-semibold px-2 bg-[#CC6600] hover:bg-[#E67300] text-white cursor-pointer rounded-[2px]"
+                            >
+                              Disburse →
+                            </Button>
+                          )}
                           <Button
-                            variant="primary"
+                            variant="secondary"
                             size="sm"
-                            onClick={() => setSelectedPayslipForDisburse(ps)}
-                            className="font-sans text-xs py-1 px-2.5 cursor-pointer rounded-[2px]"
+                            onClick={() => setSelectedPayslipForStatement(ps)}
+                            className="h-6 text-[0.688rem] font-sans px-2 bg-white/10 hover:bg-white/15 text-white cursor-pointer rounded-[2px]"
                           >
-                            Disburse →
+                            View
                           </Button>
-                        )}
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setSelectedPayslipForStatement(ps)}
-                          className="font-sans text-xs py-1 px-2.5 cursor-pointer"
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
