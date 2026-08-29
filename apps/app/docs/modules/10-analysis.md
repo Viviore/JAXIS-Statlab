@@ -198,41 +198,41 @@ const seedAnalysisFiles = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Statistician Analysis Workspace:** Assigned Statistician can access client datasets, research objectives, and locked SOW scope terms.
-- [ ] **Versioned Output File Uploads:** Statistician can upload statistical script files (SPSS `.sav`/`.spv`, R scripts, Python notebooks, Excel tables, draft reports) with auto-incrementing versions.
-- [ ] **Permanent Version History:** Prior versions are preserved (`isCurrent = false`), timestamped, and auditable.
-- [ ] **Scope Creep Flagging (RULE_QUO_03):** Statistician can flag out-of-scope requests, immediately halting work (`SCOPE_CREEP_HALTED`) and prompting Admin for a supplemental quote.
-- [ ] **One-Way Submit for QA:** Statistician can submit complete analysis package, advancing status to `FOR_QA` and locking workbench uploads during QA evaluation.
+- [x] **Statistician Analysis Workspace:** Assigned Statistician can access client datasets, research objectives, and locked SOW scope terms.
+- [x] **Versioned Output File Uploads:** Statistician can upload statistical script files (SPSS `.sav`/`.spv`, R scripts, Python notebooks, Excel tables, draft reports) with auto-incrementing versions.
+- [x] **Permanent Version History:** Prior versions are preserved (`isCurrent = false`), timestamped, and auditable.
+- [x] **Scope Creep Flagging (RULE_QUO_03):** Statistician can flag out-of-scope requests, immediately halting work (`SCOPE_CREEP_HALTED`) and prompting Admin for a supplemental quote.
+- [x] **One-Way Submit for QA:** Statistician can submit complete analysis package, advancing status to `FOR_QA` and locking workbench uploads during QA evaluation.
 
 
 ## 7. Acceptance Criteria (Done Checklist)
 
 ### Uploads & Versioning
-- [ ] Statistician can upload an analysis file to their assigned project
-- [ ] Non-assigned Statistician gets 403
-- [ ] Uploading a second file in the same category: prior file `isCurrent = false`, new file `version = prevVersion + 1`, `isCurrent = true`
-- [ ] All versions remain accessible (no deletion)
-- [ ] File > 200MB → 422
-- [ ] Invalid MIME → 422
+- [x] Statistician can upload an analysis file to their assigned project
+- [x] Non-assigned Statistician gets 403
+- [x] Uploading a second file in the same category: prior file `isCurrent = false`, new file `version = prevVersion + 1`, `isCurrent = true`
+- [x] All versions remain accessible (no deletion)
+- [x] File > 200MB → 422
+- [x] Invalid MIME → 422
 
 ### Scope Creep
-- [ ] Statistician can flag scope creep → project → `SCOPE_CREEP_HALTED`
-- [ ] Further uploads blocked while in `SCOPE_CREEP_HALTED`
-- [ ] `ScopeCreepLog` record created with reason and timestamp
-- [ ] Admin can resolve scope creep (after supplemental quote accepted): project → `IN_PROGRESS`
+- [x] Statistician can flag scope creep → project → `SCOPE_CREEP_HALTED`
+- [x] Further uploads blocked while in `SCOPE_CREEP_HALTED`
+- [x] `ScopeCreepLog` record created with reason and timestamp
+- [x] Admin can resolve scope creep (after supplemental quote accepted): project → `IN_PROGRESS`
 
 ### Submit for QA
-- [ ] Statistician can submit for QA → project → `FOR_QA`
-- [ ] After submission, Statistician upload button disabled
-- [ ] After QA rejection, project → `QA_REVISION` → back to `IN_PROGRESS`; Statistician can upload again
-- [ ] Cannot submit for QA if no files have been uploaded
+- [x] Statistician can submit for QA → project → `FOR_QA`
+- [x] After submission, Statistician upload button disabled
+- [x] After QA rejection, project → `QA_REVISION` → back to `IN_PROGRESS`; Statistician can upload again
+- [x] Cannot submit for QA if no files have been uploaded
 
 ### Access
-- [ ] QA Lead can view and download analysis files (read-only)
-- [ ] Admin can view and download all versions (read-only)
-- [ ] Client cannot access analysis files at any point → 403
+- [x] QA Lead can view and download analysis files (read-only)
+- [x] Admin can view and download all versions (read-only)
+- [x] Client cannot access analysis files at any point → 403
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

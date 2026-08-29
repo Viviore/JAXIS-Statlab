@@ -3,12 +3,13 @@
  *
  * Scans all incoming message content before database persistence.
  * If prohibited contact info, off-platform messaging channels, payment handles,
- * or external URLs are detected, the message is blocked in full.
+ * external URLs, or intentional evasion attempts (leetspeak, repeated characters,
+ * character spacing, spelled-out digits) are detected, the message is blocked in full.
  */
 
 export interface FirewallDetection {
   ruleName: string;
-  category: "EMAIL" | "PHONE" | "PAYMENT" | "MESSENGER" | "SOCIAL" | "URL";
+  category: "EMAIL" | "PHONE" | "PAYMENT" | "MESSENGER" | "SOCIAL" | "URL" | "OFF_PLATFORM";
   label: string;
   matchedText: string;
 }
@@ -29,37 +30,43 @@ export const PROHIBITED_RULES: ProhibitedRule[] = [
     ruleName: "EMAIL_ADDRESS",
     category: "EMAIL",
     label: "Email Address",
-    regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi,
+    regex: /(?:[a-zA-Z0-9._%+-]+\s*(?:@|\[at\]|\(at\))\s*[a-zA-Z0-9.-]+\s*(?:\.|\bdot\b|\[dot\]|\(dot\))\s*[a-zA-Z]{2,}|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/gi,
   },
   {
     ruleName: "PH_MOBILE",
     category: "PHONE",
     label: "Philippine Mobile Number",
-    regex: /(?:\+?63|0)[\s.-]?9\d{2}[\s.-]?\d{3}[\s.-]?\d{4}\b/g,
+    regex: /(?:(?:\+?63|0)[\s.-]?9[\d\s.-]{8,14}\b|\b09\d{9}\b|\b\+639\d{9}\b)/g,
   },
   {
     ruleName: "E_WALLET_PAYMENT",
     category: "PAYMENT",
     label: "Direct Payment / E-Wallet",
-    regex: /\b(gcash|paymaya|maya|paypal|coins\.ph|dragonpay|binance|wire transfer|direct deposit)\b/gi,
+    regex: /\b(gcash|paymaya|maya|paypal|coins\.ph|dragonpay|binance|bdo|bpi|metrobank|unionbank|seabank|gotyme|bank transfer|wire transfer|direct deposit)\b/gi,
   },
   {
     ruleName: "MESSAGING_APP",
     category: "MESSENGER",
     label: "External Messaging App",
-    regex: /\b(whatsapp|viber|telegram|messenger|imessage|signal|wechat|skype|kakao|line app)\b/gi,
+    regex: /(?:\b(whatsapp|viber|telegram|messenger|imessage|signal|wechat|skype|kakao|line app|vbr)\b|(?:wa\.me|t\.me|m\.me|viber\.me)\/\S+)/gi,
   },
   {
     ruleName: "SOCIAL_PLATFORM",
     category: "SOCIAL",
     label: "Social Media Platform",
-    regex: /\b(facebook|instagram|ig|fb|twitter|tiktok|snapchat|discord|linkedin)\b/gi,
+    regex: /\b(facebook|instagram|twitter|tiktok|snapchat|discord|linkedin|fb|ig)\b/gi,
   },
   {
     ruleName: "SOCIAL_HANDLE",
     category: "SOCIAL",
     label: "Social Media Handle",
-    regex: /(?:^|\s)@[a-zA-Z0-9_]{3,30}\b/g,
+    regex: /(?:^|\s)@[a-zA-Z0-9_.]{2,30}\b/g,
+  },
+  {
+    ruleName: "OFF_PLATFORM_INTENT",
+    category: "OFF_PLATFORM",
+    label: "Off-Platform Contact Intent",
+    regex: /\b(?:chat|pm|message|contact|text|call|reach)\s+(?:me\s+)?(?:at|on|in|thru|via)\b/gi,
   },
   {
     ruleName: "EXTERNAL_URL",
@@ -76,27 +83,111 @@ export const PROHIBITED_RULES: ProhibitedRule[] = [
 ];
 
 /**
- * Executes server-side firewall inspection against the given message text.
+ * 1. Converts leetspeak and symbol substitutions to standard ASCII lowercase.
  */
-export function runFirewall(content: string): FirewallResult {
-  if (!content || !content.trim()) {
+function normalizeLeetspeak(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[@4^]/g, "a")
+    .replace(/[8]/g, "b")
+    .replace(/[(<[{]/g, "c")
+    .replace(/[3€]/g, "e")
+    .replace(/[!|1]/g, "i")
+    .replace(/[0*]/g, "o")
+    .replace(/[$5§]/g, "s")
+    .replace(/[7+]/g, "t")
+    .replace(/(?:\/\/|\\\\)/g, "w")
+    .replace(/%/g, "x")
+    .replace(/[2]/g, "z");
+}
+
+/**
+ * 2. Collapses excessive consecutive repeated characters (e.g. 'faceboook' -> 'facebook').
+ */
+function collapseRepeatedChars(text: string): string {
+  return text
+    .replace(/(.)\1{2,}/g, (match, char) => {
+      if (char === "o" || char === "e") return char + char; // Preserve valid double letters like 'oo' in facebook
+      return char;
+    })
+    .replace(/f+a+c+e+b+o+o*k+/gi, "facebook")
+    .replace(/m+e+s+s+e+n+g+e+r+/gi, "messenger")
+    .replace(/w+h+a+t+s+a+p+p+/gi, "whatsapp")
+    .replace(/t+e+l+e+g+r+a+m+/gi, "telegram")
+    .replace(/v+i+b+e+r+/gi, "viber")
+    .replace(/g+c+a+s+h+/gi, "gcash")
+    .replace(/p+a+y+m+a+y+a+/gi, "paymaya")
+    .replace(/m+a+y+a+/gi, "maya")
+    .replace(/i+n+s+t+a+g+r+a+m+/gi, "instagram")
+    .replace(/t+w+i+t+t+e+r+/gi, "twitter")
+    .replace(/t+i+k+t+o+k+/gi, "tiktok")
+    .replace(/d+i+s+c+o+r+d+/gi, "discord");
+}
+
+/**
+ * 3. Strips punctuation, spaces, dots, dashes between single characters (e.g. 'f a c e b o o k' -> 'facebook').
+ */
+function stripIntersperseDelimiters(text: string): string {
+  const clean = text.replace(/[\u200B-\u200D\uFEFF]/g, "");
+  return clean.replace(/([a-zA-Z0-9])[\s._\-~*#]+(?=[a-zA-Z0-9])/g, "$1");
+}
+
+/**
+ * 4. Normalizes written English and Tagalog spelled-out digits (e.g. 'zero nine one seven' -> '0917').
+ */
+function normalizeWordDigits(text: string): string {
+  const digitMap: Record<string, string> = {
+    zero: "0", oh: "0", zeroo: "0",
+    one: "1", isa: "1",
+    two: "2", dalawa: "2",
+    three: "3", tatlo: "3",
+    four: "4", apat: "4",
+    five: "5", lima: "5",
+    six: "6", anim: "6",
+    seven: "7", pito: "7",
+    eight: "8", walo: "8",
+    nine: "9", siyam: "9",
+  };
+
+  return text.toLowerCase().replace(/\b(zero|oh|one|isa|two|dalawa|three|tatlo|four|apat|five|lima|six|anim|seven|pito|eight|walo|nine|siyam)\b/gi, (match) => {
+    return digitMap[match.toLowerCase()] || match;
+  });
+}
+
+/**
+ * Executes multi-pass server-side firewall inspection against raw message text
+ * and evasion-normalized variants.
+ */
+export function runFirewall(rawContent: string): FirewallResult {
+  if (!rawContent || !rawContent.trim()) {
     return { blocked: false };
   }
 
-  for (const rule of PROHIBITED_RULES) {
-    rule.regex.lastIndex = 0; // Reset stateful regex cursor
-    const match = rule.regex.exec(content);
-    if (match) {
-      const matchedText = match[0].trim();
-      return {
-        blocked: true,
-        detection: {
-          ruleName: rule.ruleName,
-          category: rule.category,
-          label: rule.label,
-          matchedText,
-        },
-      };
+  // Multi-pass normalization pipeline for evasion deterrence
+  const passes: Array<{ name: string; text: string }> = [
+    { name: "RAW", text: rawContent },
+    { name: "LEETSPEAK", text: normalizeLeetspeak(rawContent) },
+    { name: "COLLAPSED", text: collapseRepeatedChars(normalizeLeetspeak(rawContent)) },
+    { name: "STRIPPED_DELIMITERS", text: collapseRepeatedChars(stripIntersperseDelimiters(normalizeLeetspeak(rawContent))) },
+    { name: "WORD_DIGITS", text: stripIntersperseDelimiters(normalizeWordDigits(rawContent)) },
+  ];
+
+  for (const { text } of passes) {
+    for (const rule of PROHIBITED_RULES) {
+      rule.regex.lastIndex = 0; // Reset stateful regex cursor
+      const match = rule.regex.exec(text);
+      if (match) {
+        const matchedText = match[0].trim();
+        return {
+          blocked: true,
+          detection: {
+            ruleName: rule.ruleName,
+            category: rule.category,
+            label: rule.label,
+            matchedText,
+          },
+        };
+      }
     }
   }
 
@@ -104,24 +195,27 @@ export function runFirewall(content: string): FirewallResult {
 }
 
 /**
- * Returns plain-English explanation for why a specific rule was triggered.
+ * Generates user-friendly, plain English violation notice.
  */
-export function getFirewallWarningMessage(ruleName?: string | null): string {
+export function getFirewallWarningMessage(ruleName: string): string {
   switch (ruleName) {
     case "EMAIL_ADDRESS":
-      return "Sharing email addresses is prohibited to protect your privacy and project security.";
+      return "Sharing personal email addresses is prohibited under JAXIS terms of service. All communication must remain within the secure study thread.";
     case "PH_MOBILE":
-      return "Sharing phone numbers is not permitted. All research consultations are conducted inside JAXIS.";
+      return "Sharing phone or mobile numbers is prohibited under JAXIS terms of service. All consultations must occur within this escrow-protected portal.";
     case "E_WALLET_PAYMENT":
-      return "Direct payments outside the JAXIS escrow system are prohibited for your protection.";
+      return "Direct payments (GCash, Maya, Bank Transfer) outside JAXIS escrow are strictly prohibited. Payments must be verified through the JAXIS Finance desk.";
     case "MESSAGING_APP":
+      return "External messaging channels (WhatsApp, Viber, Telegram, Messenger) are not permitted. Keep all consultation history in this verified thread.";
     case "SOCIAL_PLATFORM":
     case "SOCIAL_HANDLE":
-      return "Off-platform chat and social handles are not allowed. Please keep all communication inside this study thread.";
+      return "Sharing social media links, handles, or profiles is prohibited under JAXIS terms of service.";
+    case "OFF_PLATFORM_INTENT":
+      return "Requests to communicate outside the JAXIS consultation portal are not permitted under escrow protection policies.";
     case "EXTERNAL_URL":
     case "WWW_URL":
       return "External links are not permitted. Please upload study files through the project document vault.";
     default:
-      return "Sharing external contact details, direct payment channels, or external links is not permitted.";
+      return "Your message was blocked by the communication firewall for containing prohibited external contact information.";
   }
 }

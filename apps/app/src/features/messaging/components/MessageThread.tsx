@@ -234,13 +234,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       return { success: true };
     }
     if (res.blocked) {
-      if (res.data) {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === res.data!.id)) return prev;
-          return [...prev, res.data!];
-        });
-        setTimeout(() => scrollToBottom(true), 30);
-      }
+      // Zero leak policy: Do NOT append or render blocked message in the chat stream
       return { success: false, blocked: true, warning: res.warning };
     }
     return { success: false, warning: res.error?.message };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState, Pagination } from "@repo/ui";
 import { IconPlus } from "@tabler/icons-react";
@@ -26,6 +26,27 @@ export default function AdminDashboardPage() {
   } = useProjects({
     initialLoading: false,
   });
+
+  // Prioritize studies requiring immediate administrative action / ready signal to the top
+  const sortedProjects = useMemo(() => {
+    const actionPriority = [
+      "NEW_REQUEST",
+      "FOR_QA",
+      "QA_REVISION",
+      "AWAITING_PAYMENT",
+      "PROOF_SUBMITTED",
+      "REASSIGNMENT_NEEDED",
+      "ETHICAL_BREACH",
+    ];
+
+    return [...projects].sort((a, b) => {
+      const aIsAction = actionPriority.includes(a.status);
+      const bIsAction = actionPriority.includes(b.status);
+      if (aIsAction && !bIsAction) return -1;
+      if (!aIsAction && bIsAction) return 1;
+      return 0;
+    });
+  }, [projects]);
 
   useEffect(() => {
     if (!selectedStudy) {
@@ -201,14 +222,14 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {projects.length === 0 ? (
+                {sortedProjects.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-12 text-white/40 font-sans text-xs">
                       No active research studies match your current filters.
                     </td>
                   </tr>
                 ) : (
-                  projects.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((study) => (
+                  sortedProjects.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((study) => (
                     <tr key={study.id} className="group">
                       <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
                         {study.id}
@@ -245,10 +266,10 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {projects.length > 0 && (
+        {sortedProjects.length > 0 && (
           <Pagination
             currentPage={currentPage}
-            totalItems={projects.length}
+            totalItems={sortedProjects.length}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}

@@ -146,12 +146,44 @@ export default function AdminIntakeTriagePage() {
     });
   }, [projects, selectedStatus, searchQuery]);
 
+  // Prioritize studies requiring manager / QA / triage action to the top
+  const sortedFilteredProjects = useMemo(() => {
+    const managerActionPriority = [
+      "FOR_QA",
+      "QA_REVISION",
+      "NEW_REQUEST",
+      "AWAITING_INFORMATION",
+      "UNDER_EVALUATION",
+      "AWAITING_PAYMENT",
+      "PROOF_SUBMITTED",
+      "REASSIGNMENT_NEEDED",
+      "ETHICAL_BREACH",
+      "SLA_PAUSED",
+      "QUOTE_SENT",
+      "SOW_PENDING",
+      "IN_PROGRESS",
+      "EXPERT_ASSIGNED",
+      "DELIVERED",
+      "CLOSED",
+    ];
+
+    return [...filteredProjects].sort((a, b) => {
+      const aIndex = managerActionPriority.indexOf(a.masterStatus);
+      const bIndex = managerActionPriority.indexOf(b.masterStatus);
+      const aPriority = aIndex === -1 ? 999 : aIndex;
+      const bPriority = bIndex === -1 ? 999 : bIndex;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+      // Secondary sort: newest first
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [filteredProjects]);
+
   const paginatedProjects = useMemo(() => {
-    return filteredProjects.slice(
+    return sortedFilteredProjects.slice(
       (currentPage - 1) * pageSize,
       currentPage * pageSize
     );
-  }, [filteredProjects, currentPage, pageSize]);
+  }, [sortedFilteredProjects, currentPage, pageSize]);
 
   // Comprehensive Master Status & KPI calculations
   const kpis = useMemo(() => {
@@ -375,8 +407,23 @@ export default function AdminIntakeTriagePage() {
                   </tr>
                 ) : (
                   paginatedProjects.map((p) => {
+                    const isForQa = p.masterStatus === "FOR_QA";
+                    const isNewRequest = p.masterStatus === "NEW_REQUEST";
+                    const isRevision = p.masterStatus === "QA_REVISION" || p.masterStatus === "REVISION_REQUESTED";
+
                     return (
-                      <tr key={p.id} className="group">
+                      <tr
+                        key={p.id}
+                        className={`group transition-colors ${
+                          isForQa
+                            ? "bg-[#10B981]/[0.04] hover:bg-[#10B981]/[0.08] border-l-2 border-l-[#10B981]"
+                            : isNewRequest
+                            ? "bg-[#CC6600]/[0.04] hover:bg-[#CC6600]/[0.08] border-l-2 border-l-[#CC6600]"
+                            : isRevision
+                            ? "bg-[#F59E0B]/[0.04] hover:bg-[#F59E0B]/[0.08] border-l-2 border-l-[#F59E0B]"
+                            : "hover:bg-white/[0.02]"
+                        }`}
+                      >
                         {/* Research Study & Intake */}
                         <td className="max-w-[440px] min-w-0">
                           <div className="flex flex-col gap-1 min-w-0 pr-2">
@@ -475,8 +522,10 @@ export default function AdminIntakeTriagePage() {
                             <StatusBadge
                               status={p.masterStatus}
                               label={
-                                PROJECT_STATUS_LABELS[p.masterStatus] ||
-                                p.masterStatus
+                                p.masterStatus === "FOR_QA"
+                                  ? "FOR QA • READY"
+                                  : PROJECT_STATUS_LABELS[p.masterStatus] ||
+                                    p.masterStatus
                               }
                             />
                             {(p as unknown as { serviceType?: string }).serviceType && (

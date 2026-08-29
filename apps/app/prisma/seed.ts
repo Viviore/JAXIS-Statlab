@@ -361,27 +361,107 @@ async function main() {
         },
       });
 
-      // 3. Blocked Message Incident (Firewall Demo)
-      await prisma.message.create({
-        data: {
-          projectId: sampleProject.id,
-          senderId: sampleProject.clientId,
-          senderRole: "CLIENT",
-          content: "Can we chat on WhatsApp or Telegram instead? My personal phone number is 09171234567.",
-          isBlocked: true,
-          blockedReason: "MESSAGING_APP",
-          blockedLog: {
-            create: {
-              detectedPattern: "MESSAGING_APP",
-              matchedText: "WhatsApp",
+        // 3. Blocked Message Incident (Firewall Demo)
+        await prisma.message.create({
+          data: {
+            projectId: sampleProject.id,
+            senderId: sampleProject.clientId,
+            senderRole: "CLIENT",
+            content: "Can we chat on WhatsApp or Telegram instead? My personal phone number is 09171234567.",
+            isBlocked: true,
+            blockedReason: "MESSAGING_APP",
+            blockedLog: {
+              create: {
+                detectedPattern: "MESSAGING_APP",
+                matchedText: "WhatsApp",
+              },
             },
           },
-        },
+        });
+      }
+
+      // ─── Module 10: Seed Analysis Files ──────────────────────────────────
+      if (statUser) {
+        await prisma.analysisFile.deleteMany({
+          where: { projectId: sampleProject.id },
+        });
+
+        // 1. Excel Workbook v1 (Archived)
+        await prisma.analysisFile.create({
+          data: {
+            projectId: sampleProject.id,
+            statisticianId: statUser.id,
+            fileName: "regression_output_v1.xlsx",
+            filePath: `analysis/${sampleProject.id}/regression_output_v1.xlsx`,
+            fileType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileSize: 45056,
+            fileCategory: "EXCEL_WORKBOOK",
+            version: 1,
+            isCurrent: false,
+            notes: "Initial regression run — pending review of outliers.",
+            uploadedAt: new Date(Date.now() - 86400000),
+          },
+        });
+
+        // 2. Excel Workbook v2 (Current)
+        await prisma.analysisFile.create({
+          data: {
+            projectId: sampleProject.id,
+            statisticianId: statUser.id,
+            fileName: "regression_output_v2_corrected.xlsx",
+            filePath: `analysis/${sampleProject.id}/regression_output_v2_corrected.xlsx`,
+            fileType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileSize: 52224,
+            fileCategory: "EXCEL_WORKBOOK",
+            version: 2,
+            isCurrent: true,
+            notes: "Outliers addressed with robust standard errors. Regression + ANOVA complete.",
+            uploadedAt: new Date(),
+          },
+        });
+
+        // 3. R Script v1 (Current)
+        await prisma.analysisFile.create({
+          data: {
+            projectId: sampleProject.id,
+            statisticianId: statUser.id,
+            fileName: "study_habits_analysis.R",
+            filePath: `analysis/${sampleProject.id}/study_habits_analysis.R`,
+            fileType: "text/x-r-source",
+            fileSize: 12288,
+            fileCategory: "R_OUTPUT",
+            version: 1,
+            isCurrent: true,
+            notes: "Complete reproduction script with dplyr & ggplot2 diagnostic plots.",
+            uploadedAt: new Date(),
+          },
+        });
+
+        console.log("✅ Seeded Module 10 statistical analysis working files.");
+      }
+
+      // ─── Module 11: Seed Quality Assurance Data ──────────────────────────
+      const qaUser = await prisma.user.findFirst({
+        where: { userRoles: { some: { role: { name: "SENIOR_QA_LEAD" } } } },
       });
 
-      console.log("✅ Seeded Module 09 project consultation messages and firewall log.");
+      if (qaUser) {
+        // Set sample project to FOR_QA so it is active in the Senior QA queue
+        await prisma.project.update({
+          where: { id: sampleProject.id },
+          data: {
+            masterStatus: "FOR_QA",
+          },
+        });
+
+        // Clean previous seed reviews
+        await prisma.qAReview.deleteMany({
+          where: { projectId: sampleProject.id },
+        });
+
+        console.log("✅ Seeded Module 11 QA verification data (Project set to FOR_QA).");
+      }
     }
-  }
 }
 
 main()

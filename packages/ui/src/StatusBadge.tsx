@@ -22,16 +22,18 @@ const statusColorMap: Record<string, { bg: string; text: string; border: string;
   RESOLVED_REFUND: { bg: "bg-[#10B981]/15", text: "text-[#10B981]", border: "border-[#10B981]/30", rawBg: "rgba(16, 185, 129, 0.15)", rawText: "#10B981", rawBorder: "rgba(16, 185, 129, 0.35)" },
   RESOLVED_NO_REFUND: { bg: "bg-[#10B981]/15", text: "text-[#10B981]", border: "border-[#10B981]/30", rawBg: "rgba(16, 185, 129, 0.15)", rawText: "#10B981", rawBorder: "rgba(16, 185, 129, 0.35)" },
 
-  // Warning states
+  // In Progress / Working states
+  IN_PROGRESS: { bg: "bg-[#38BDF8]/15", text: "text-[#38BDF8]", border: "border-[#38BDF8]/30", rawBg: "rgba(56, 189, 248, 0.15)", rawText: "#38BDF8", rawBorder: "rgba(56, 189, 248, 0.35)" },
+  FOR_QA: { bg: "bg-[#10B981]/20", text: "text-[#10B981]", border: "border-[#10B981]/50", rawBg: "rgba(16, 185, 129, 0.20)", rawText: "#10B981", rawBorder: "rgba(16, 185, 129, 0.50)" },
+  EXPERT_ASSIGNED: { bg: "bg-white/5", text: "text-white/70", border: "border-white/20", rawBg: "rgba(255, 255, 255, 0.05)", rawText: "rgba(255, 255, 255, 0.70)", rawBorder: "rgba(255, 255, 255, 0.20)" },
+
+  // Warning / Awaiting Action states
   NEW_REQUEST: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   AWAITING_INFORMATION: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   UNDER_EVALUATION: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   QUOTE_SENT: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   SOW_PENDING: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   AWAITING_PAYMENT: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
-  EXPERT_ASSIGNED: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
-  IN_PROGRESS: { bg: "bg-[#3B82F6]/15", text: "text-[#3B82F6]", border: "border-[#3B82F6]/30", rawBg: "rgba(59, 130, 246, 0.15)", rawText: "#60A5FA", rawBorder: "rgba(59, 130, 246, 0.35)" },
-  FOR_QA: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   QA_REVISION: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   REVISION_REQUESTED: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   SLA_PAUSED: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
@@ -62,10 +64,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   label,
   className = "",
-  pulse = false,
+  pulse,
   ...props
 }) => {
   const normalizedKey = status.toUpperCase().replace(/\s+/g, "_");
+  const isActionReady = normalizedKey === "FOR_QA" || normalizedKey === "PROOF_SUBMITTED";
+  const shouldPulse = pulse !== undefined ? pulse : isActionReady;
+
   const style = statusColorMap[normalizedKey] ?? {
     bg: "bg-white/10",
     text: "text-white/80",
@@ -75,7 +80,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     rawBorder: "rgba(255, 255, 255, 0.2)",
   };
 
-  const displayText = label ?? formatStatus(status);
+  const displayText =
+    label ?? (normalizedKey === "FOR_QA" ? "FOR QA • READY" : formatStatus(status));
 
   return (
     <span
@@ -99,7 +105,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       }}
       {...props}
     >
-      {pulse && (
+      {shouldPulse && (
         <span className="relative flex h-1.5 w-1.5" style={{ height: "0.375rem", width: "0.375rem", display: "inline-flex", position: "relative" }}>
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current" style={{ position: "absolute", height: "100%", width: "100%", borderRadius: "9999px" }} />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" style={{ height: "0.375rem", width: "0.375rem", borderRadius: "9999px" }} />

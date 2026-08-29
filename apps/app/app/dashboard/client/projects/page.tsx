@@ -116,12 +116,31 @@ export default function ClientProjectsListPage() {
     });
   }, [projects, statusFilter]);
 
+  // Prioritize studies requiring client action (Go Signal) to the top
+  const sortedFilteredProjects = useMemo(() => {
+    const clientActionPriority = [
+      "QUOTE_SENT",
+      "SOW_PENDING",
+      "AWAITING_PAYMENT",
+      "DELIVERED",
+      "AWAITING_INFORMATION",
+    ];
+
+    return [...filteredProjects].sort((a, b) => {
+      const aIsAction = clientActionPriority.includes(a.masterStatus);
+      const bIsAction = clientActionPriority.includes(b.masterStatus);
+      if (aIsAction && !bIsAction) return -1;
+      if (!aIsAction && bIsAction) return 1;
+      return 0;
+    });
+  }, [filteredProjects]);
+
   const paginatedProjects = useMemo(() => {
-    return filteredProjects.slice(
+    return sortedFilteredProjects.slice(
       (currentPage - 1) * pageSize,
       currentPage * pageSize
     );
-  }, [filteredProjects, currentPage, pageSize]);
+  }, [sortedFilteredProjects, currentPage, pageSize]);
 
   const awaitingInfoList = useMemo(() => {
     return projects.filter((p) => p.masterStatus === "AWAITING_INFORMATION");

@@ -61,6 +61,11 @@ model User {
   sentMessages            Message[]                     @relation("SentMessages")
   messageReadReceipts     MessageReadReceipt[]
   reviewedBlockedMessages BlockedMessageLog[]           @relation("ReviewedBlockedMessages")
+  analysisFiles           AnalysisFile[]                @relation("StatisticianAnalysisFiles")
+  flaggedScopeCreep       ScopeCreepLog[]               @relation("FlaggedScopeCreep")
+  resolvedScopeCreep      ScopeCreepLog[]               @relation("ResolvedScopeCreep")
+  qaReviews               QAReview[]                    @relation("QAOfficerReviews")
+  qaRejections            QARejectionCount[]            @relation("StatisticianQARejections")
 
   @@index([email])
   @@index([status])
@@ -236,16 +241,22 @@ model Project {
   filesPurged        Boolean       @default(false)
   hasActiveDispute   Boolean       @default(false)
   hasPendingRefund   Boolean       @default(false)
+  qaApproved         Boolean       @default(false)
+  isLocked           Boolean       @default(false)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  client     User          @relation("ClientProjects", fields: [clientId], references: [id])
-  files      ProjectFile[]
-  quotations Quotation[]
-  sows       SOW[]
-  payments   Payment[]
-  assignment Assignment?
-  messages   Message[]
+  client            User               @relation("ClientProjects", fields: [clientId], references: [id])
+  files             ProjectFile[]
+  quotations        Quotation[]
+  sows              SOW[]
+  payments          Payment[]
+  assignment        Assignment?
+  messages          Message[]
+  analysisFiles     AnalysisFile[]
+  scopeCreepLogs    ScopeCreepLog[]
+  qaReviews         QAReview[]
+  qaRejectionCounts QARejectionCount[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -660,4 +671,115 @@ model BlockedMessageLog {
   @@index([reviewedBy])
   @@map("blocked_message_logs")
 }
+
+// ─── Module 10: Statistical Analysis Workbench ───────────────────────────────
+
+enum AnalysisFileCategory {
+  SPSS_OUTPUT
+  R_OUTPUT
+  PYTHON_OUTPUT
+  EXCEL_WORKBOOK
+  STATA_OUTPUT
+  PDF_REPORT
+  RAW_DATASET
+  OTHER
+}
+
+model AnalysisFile {
+  id             String               @id @default(cuid())
+  projectId      String
+  statisticianId String
+  fileName       String
+  filePath       String               // R2/S3 object key or local path
+  fileType       String               // MIME type
+  fileSize       Int?                 // File size in bytes
+  fileCategory   AnalysisFileCategory
+  version        Int                  @default(1)
+  isCurrent      Boolean              @default(true)
+  notes          String?              // Statistician version notes
+  uploadedAt     DateTime             @default(now())
+
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  statistician User    @relation("StatisticianAnalysisFiles", fields: [statisticianId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([statisticianId])
+  @@index([isCurrent])
+  @@index([fileCategory])
+  @@index([uploadedAt])
+  @@map("analysis_files")
+}
+
+model ScopeCreepLog {
+  id                      String    @id @default(cuid())
+  projectId               String
+  flaggedBy               String    // Statistician userId
+  flagReason              String
+  flaggedAt               DateTime  @default(now())
+  resolvedAt              DateTime?
+  resolvedBy              String?   // Admin userId
+  resolutionNotes         String?
+  supplementalQuotationId String?
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  flagger  User    @relation("FlaggedScopeCreep", fields: [flaggedBy], references: [id], onDelete: Cascade)
+  resolver User?   @relation("ResolvedScopeCreep", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([flaggedBy])
+  @@index([resolvedBy])
+  @@map("scope_creep_logs")
+}
+
+// ─── Module 11: Quality Assurance & Reproducibility ──────────────────────────
+
+enum QADecision {
+  QA_APPROVED
+  QA_REJECTED
+  ESCALATED_TO_CEO
+}
+
+enum ErrorClassification {
+  MINOR
+  MAJOR
+  CRITICAL
+  ETHICAL_BREACH
+}
+
+model QAReview {
+  id                  String               @id @default(cuid())
+  projectId           String
+  reviewerId          String               // Senior QA Lead userId
+  decision            QADecision
+  errorClassification ErrorClassification?
+  comments            String               // Correction requirements or approval notes
+  qaRevisionDueAt     DateTime?            // Set on rejection: now() + 24 hours
+  reviewedAt          DateTime             @default(now())
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewer User    @relation("QAOfficerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([reviewerId])
+  @@index([decision])
+  @@index([reviewedAt])
+  @@map("qa_reviews")
+}
+
+model QARejectionCount {
+  id             String   @id @default(cuid())
+  projectId      String
+  statisticianId String
+  count          Int      @default(1)
+  lastRejectedAt DateTime @default(now())
+
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  statistician User    @relation("StatisticianQARejections", fields: [statisticianId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, statisticianId])
+  @@index([projectId])
+  @@index([statisticianId])
+  @@map("qa_rejection_counts")
+}
+
 

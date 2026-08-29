@@ -1,6 +1,6 @@
 # JAXIS — Master Task List
 
-**Active Module:** `10-analysis` — Analysis Workbench  
+**Active Module:** `12-deliverables` — Deliverables, Release & Revisions  
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5  
 **Design Standard:** Dark Precision Terminal / Enterprise Scientific (`design-system.md` & `.agents/AGENTS.md`)  
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing any module.
@@ -118,11 +118,18 @@
 
 ## Module 02 — Expert Provisioning & Staff Management (Completed)
 
+### Task 1 — Staff Profile Schema & Violation Models
 - [x] `ViolationType` and `SuspensionAction` enums defined
 - [x] `StaffProfile` model defined and linked to `User`
 - [x] `SuspensionLog` model defined with indexes on `userId` and `performedAt`
+
+### Task 2 — Seed Data for Core Staff Accounts
 - [x] Seeded profiles for Statistician, Senior QA Lead, and Finance Officer
+
+### Task 3 — Staff Management Server Actions
 - [x] Server actions for provisioning, profile updates, suspensions, and CEO termination
+
+### Task 4 — Staff Directory & Self-Service Views
 - [x] Admin Staff Directory (`/dashboard/admin/staff`) with role badges, status, and action modals
 - [x] Staff Self-Profile Workbench Views (`/dashboard/statistician/profile`, `/dashboard/qa/profile`)
 - [x] Quality gates verified (0 errors, 0 warnings)
@@ -131,67 +138,117 @@
 
 ## Module 03 — Client Profile & Account (Completed)
 
+### Task 1 — Client Profile Data Schema
 - [x] `ClientProfile` model linked 1:1 with `User`
+
+### Task 2 — Profile Actions & Onboarding Validation
 - [x] `upsertClientProfile` Server Action and Zod schema
-- [x] Client Profile Form UI (`/dashboard/client/profile`)
 - [x] Profile Completion Gate & Banner across client routes
+
+### Task 3 — Client Profile UI
+- [x] Client Profile Form UI (`/dashboard/client/profile`)
 - [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
 
 ## Module 04 — Project Intake & Submission (Completed)
 
+### Task 1 — Intake Schema & State Machine
 - [x] `Project`, `ProjectFile`, `ProjectStatus` (24 states), and `FileCategory` models
 - [x] `VALID_TRANSITIONS` state machine map in `src/lib/project-rules.ts`
 - [x] Human-readable intake ID generator: `JAXIS-YYYYMM-XXXX`
+
+### Task 2 — Client Intake Wizard UI
 - [x] Client Multi-Step Project Intake Form UI (`/dashboard/client/projects/new`)
+
+### Task 3 — Client Projects Workspace
 - [x] Client Projects Workbench & Detail Views (`/dashboard/client/projects`, `/dashboard/client/projects/[id]`)
+
+### Task 4 — Admin Triage Desk
 - [x] Admin Triage Queue & Inspection Desk (`/dashboard/admin/intake`, `/dashboard/admin/projects/[id]`)
+
+### Task 5 — Module Gate Verification
 - [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
 
 ## Module 05 — Quotation & Pricing (Completed)
 
+### Task 1 — Pricing Schema & Configuration Models
 - [x] `Quotation`, `QuotationLineItem`, `PackagePriceConfig` models and enums
 - [x] `RULE_QUO_01` (Admin/CEO only), `RULE_QUO_02` (100% upfront on Starter packages), price floor enforcement
+
+### Task 2 — Commercial Quotation Actions
 - [x] Server actions with atomic transactions (`prisma.$transaction`)
+
+### Task 3 — Admin Quotation Builder
 - [x] Admin Commercial Quotation Builder UI (`/dashboard/admin/quotations`)
+
+### Task 4 — Client Proposal Review UI
 - [x] Client Commercial Proposal Review UI (`/dashboard/client/projects/[id]/quote`)
 - [x] 3-day countdown timer and auto-expiry logic
+
+### Task 5 — Module Gate Verification
 - [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
 
 ## Module 06 — SOW Generation & Signing (Completed)
 
+### Task 1 — SOW Snapshot Schema & Immutability Rules
 - [x] `SOW` model, `SOWType` enum, and unalterable JSON snapshot engine
 - [x] `assertSOWUnlocked` immutability rule and signatory name verification
+
+### Task 2 — SOW Document & Print Renderer
 - [x] Official `SowDocument.tsx` with clean print stylesheet for PDF export
+
+### Task 3 — Client Digital Signing Portal
 - [x] Client SOW Review & Digital Signing Page (`/dashboard/client/projects/[id]/sow`)
+
+### Task 4 — Admin SOW Control Center
 - [x] Admin SOW Control Center (`/dashboard/admin/projects/[id]/sow`)
+
+### Task 5 — Module Gate Verification
 - [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
 
 ## Module 07 — Payment & Installments (Completed)
 
+### Task 1 — Payment Schema & Balance Calculator
 - [x] `Payment` model and reverse relations on `Project` and `Quotation`
 - [x] `calculateProjectBalance` balance engine and official corporate payment channels
+
+### Task 2 — Payment Ledger Components
 - [x] `PaymentLedgerCard.tsx`, `PaymentProofUploadModal.tsx`, `PaymentVerificationModal.tsx`
+
+### Task 3 — Client Payment Portal
 - [x] Client Payment Portal (`/dashboard/client/projects/[id]/payment`)
+
+### Task 4 — Finance Deposit Verification Desk
 - [x] Finance Deposit Verification Queue (`/dashboard/finance/payments`)
+
+### Task 5 — Module Gate Verification
 - [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
 
 ## Module 08 — Expert Assignment & Workload (Completed)
 
+### Task 1 — Assignment Schema & Holiday Calendar
 - [x] `Assignment`, `AssignmentHistory`, `PhilippineHoliday` models
 - [x] SLA turnaround engine skipping weekends and 17 statutory Philippine holidays
-- [x] Specialization affinity scoring algorithm
+
+### Task 2 — Specialization Affinity Algorithm
+- [x] Specialization affinity scoring algorithm and burnout risk indicators
+
+### Task 3 — Admin Workload & Assignment Desk
 - [x] Admin Expert Assignment & Workload Desk (`/dashboard/admin/assignments`)
+
+### Task 4 — Specialist Study Workspace Routing
 - [x] Live database connections for `/dashboard/statistician` and `/dashboard/qa`
+
+### Task 5 — Module Gate Verification
 - [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
@@ -203,22 +260,128 @@
 - [x] Synchronized schema with Supabase PostgreSQL and generated Prisma Client
 
 ### Task 2 — Server-Side Communication Firewall Engine
-- [x] `src/lib/messaging/firewall.ts` regex pattern scanner
+- [x] 5-pass anti-evasion normalization engine (`RAW`, `LEETSPEAK`, `COLLAPSED`, `STRIPPED_DELIMITERS`, `WORD_DIGITS`)
 - [x] Interception of off-platform emails, PH mobile numbers, GCash/Maya/PayPal, WhatsApp/Telegram/Viber/FB handles, and external URLs
 - [x] Zero-leak message blocking policy with immediate sender warning notices
 
-### Task 3 — Project Consultation Threads & Real-Time Synchronization
-- [x] Supabase Realtime websocket subscriptions (`project-messages:${projectId}`) with 4-second active polling fallback
+### Task 3 — Project Consultation Threads & Real-Time Sync
+- [x] Supabase Realtime websocket subscriptions (`project-messages:${projectId}`) with delta sync
 - [x] `<MessageThread />`, `<MessageBubble />`, and `<MessageInput />` components
-- [x] Sender role badges (`CLIENT`, `STATISTICIAN`, `SENIOR_QA_LEAD`, `ADMIN`, `CEO`) and encrypted read receipts
 - [x] Client Messages Desk (`/dashboard/client/messages`, `/dashboard/client/projects/[id]/messages`)
 - [x] Statistician Study Consultation Console (`/dashboard/statistician/projects/[id]/messages`)
 
 ### Task 4 — Admin & CEO Firewall Incident Review Queue
 - [x] Admin Communication Firewall Audit Desk (`/dashboard/admin/messages`)
-- [x] Incident filtering by pattern category and review status
 - [x] `<BlockedMessageReviewModal />` with matched snippet highlight and review acknowledgment
+
+### Task 5 — Responsive Master-Detail Mobile UX & Verification
+- [x] Full-width Studies List on mobile screens (< `lg` breakpoint) with 1-tap full-screen chat view
+- [x] Verification report documented in `docs/modules/09-verification-report.md`
 - [x] Quality gates verified (0 errors, 0 warnings)
+
+---
+
+## Module 10 — Analysis Workbench (Completed)
+
+### Task 1 — Database Schema & Prisma Sync
+- [x] `AnalysisFile` model with `AnalysisFileCategory`, auto-incrementing `version`, `isCurrent`, and `notes`
+- [x] `ScopeCreepLog` model recording out-of-scope expansion flags, flagging specialist, timestamps, resolution details, and linked supplemental quotation IDs
+- [x] Synchronized schema with Supabase PostgreSQL via `npx prisma db push`
+
+### Task 2 — Analysis Rules & Permission Guardrails
+- [x] `assertStatisticianAssigned()` role & assignment gate
+- [x] `assertCanUploadAnalysis()` blocking uploads during `SCOPE_CREEP_HALTED`, `FOR_QA`, `DELIVERED`, `CLOSED`
+- [x] `validateAnalysisFileFormat()` enforcing 200MB maximum size and supported statistical extensions
+- [x] `getAnalysisFileDownloadUrl()` signed URL generator with strict 403 authorization blocking Client role access
+
+### Task 3 — Multi-Version Upload & Lineage Engine
+- [x] Atomic transactions archiving prior version (`isCurrent = false`) and creating new version (`isCurrent = true`, `version = prev + 1`)
+- [x] First upload automatically advances project status to `IN_PROGRESS`
+- [x] Interactive `VersionHistoryModal` displaying full timestamped file lineage
+
+### Task 4 — Scope Expansion & Work Halting (`RULE_QUO_03`)
+- [x] `flagScopeCreep()` halting work (`SCOPE_CREEP_HALTED`) and notifying Admin for supplemental quotation
+- [x] Upload controls locked across workbench during scope halt
+- [x] Admin `resolveScopeCreep()` returning project to `IN_PROGRESS`
+
+### Task 5 — One-Way Submit for QA
+- [x] `submitForQA()` advancing status to `FOR_QA` with pre-flight file existence assertion
+- [x] Workbench upload controls locked during QA review
+
+### Task 6 — Interactive UI Desks & Verification Sign-Off
+- [x] Statistician Workbench (`/dashboard/statistician/projects/[id]/workbench`)
+- [x] QA Working Files Desk (`/dashboard/qa/projects/[id]/files`)
+- [x] Admin Analysis Audit Vault (`/dashboard/admin/projects/[id]/analysis`)
+- [x] Verification report documented in `docs/modules/10-verification-report.md`
+- [x] Quality gates verified (0 errors, 0 warnings)
+
+---
+
+## Module 11 — Quality Assurance & Reproducibility (Completed)
+
+### Task 1 — Database Schema & Prisma Sync
+- [x] `QADecision` (`QA_APPROVED`, `QA_REJECTED`, `ESCALATED_TO_CEO`) and `ErrorClassification` (`MINOR`, `MAJOR`, `CRITICAL`, `ETHICAL_BREACH`) enums
+- [x] `QAReview` model with `reviewerId`, `decision`, `errorClassification`, `comments`, `qaRevisionDueAt`, `reviewedAt`
+- [x] `QARejectionCount` model tracking cumulative rejections per project/statistician
+- [x] Push schema to Supabase PostgreSQL and generate Prisma Client
+
+### Task 2 — QA Decision Rules & Permission Guardrails
+- [x] `assertQaLeadAssigned()` verification gate
+- [x] `assertCanSubmitQaReview()` validating `FOR_QA` status
+- [x] `RULE_ETH_01`: Immediate project lockdown (`ETHICAL_BREACH`, `isLocked = true`) and CEO alert
+- [x] `RULE_REL_02`: Enforce `qaApproved = true` flag for Tier 2 packages (`JX_03_CORE`, `JX_04_ADVANCED`)
+- [x] Client status masking: Return `IN_PROGRESS` for internal QA states
+
+### Task 3 — QA Evaluation Server Actions & Schemas
+- [x] `SubmitQAReviewSchema` Zod validation
+- [x] `getQaQueue()` action for Senior QA Lead review queue
+- [x] `getQaInspectionDesk(projectId)` complete data bundle action
+- [x] `submitQaReview()` atomic decision action updating status, deadlines, and rejection counts
+- [x] `getQaReviewHistory()` scorecard lineage action
+- [x] `getCeoEscalations()` and `getAdminQaRejectionWarnings()` actions
+
+### Task 4 — QA Lead Dashboard & Review Queue UI
+- [x] Senior QA Lead Dashboard (`/dashboard/qa`) with live telemetry cards (Pending QA, Approved, Under Revision, Escalated)
+- [x] Assigned studies review table with direct link to the Evaluation Desk
+
+### Task 5 — QA Scorecard & Evaluation Desk UI
+- [x] Dedicated Evaluation Desk (`/dashboard/qa/projects/[id]/review`)
+- [x] SOW deliverables & study objectives inspector
+- [x] 1-click analysis output and client dataset downloads
+- [x] Structured QA Evaluation Form (Decision, Error Classification, Comments)
+- [x] Evaluation history timeline
+
+### Task 6 — Executive Escalation Desk, Revision Alerts & Gate Sign-Off
+- [x] CEO Ethical Breach Escalation Queue (`/dashboard/ceo/escalations`)
+- [x] 24-hour revision alert banner in Statistician Workbench (`AnalysisWorkbenchDesk.tsx`)
+- [x] Verification report documented in `docs/modules/11-verification-report.md`
+- [x] Quality gates verified (`npm run check-types`, `npm run lint`)
+
+---
+
+## Module 12 — Deliverables, Release & Revisions (Active)
+
+### Task 1 — Deliverables & Revision Request Schema
+- [ ] `Deliverable`, `DeliverableCategory`, `RevisionRequest`, `RevisionClassification` models
+
+### Task 2 — Dual Release Gates (`RULE_REL_01` & `RULE_REL_02`)
+- [ ] `RULE_REL_01`: Hard block on unpaid balance (`paymentStatus !== FULLY_PAID`)
+- [ ] `RULE_REL_02`: Hard block on Tier 2 packages without QA approval (`qaApproved !== true`)
+
+### Task 3 — Deliverables Packaging & Release Actions
+- [ ] Admin deliverable upload, pre-signed download URLs, and 90-day purge timestamp
+
+### Task 4 — 3-Day Revision Window & Classification Routing
+- [ ] Client 3-day revision window countdown and request submission
+- [ ] Admin revision classification (`INCLUDED`, `METHODOLOGY_CHANGE`, `NEW_PAID_WORK`)
+
+### Task 5 — Client & Admin Deliverable Desks
+- [ ] Client Final Deliverables Portal & Revision Request Desk
+- [ ] Admin Deliverable Packaging & Release Console
+
+### Task 6 — Module Gate Verification
+- [ ] Verification report documented in `docs/modules/12-verification-report.md`
+- [ ] Quality gates verified
 
 ---
 
@@ -319,8 +482,6 @@
 - [x] Harmonized 3-tier hierarchy: (1) Breadcrumbs, (2) Title & Badge, (3) Description, (4) Responsive Actions
 - [x] Documented strict PageHeader standard in `AGENTS.md`, `.agents/AGENTS.md`, and `docs/design-system.md`
 
-
-
 ---
 
 ## Roadmap Status Matrix
@@ -337,9 +498,9 @@
 | `07` | `07-payments` — Payment & Installments | Escrow Vault | ✅ Completed |
 | `08` | `08-assignment` — Expert Assignment & Workload | Operations | ✅ Completed |
 | `09` | `09-messaging` — Messaging & Communication Firewall | Operations | ✅ Completed |
-| `10` | `10-analysis` — Analysis Workbench | Operations | ⏳ **Next in Queue** |
-| `11` | `11-qa` — Quality Assurance & Reproducibility | Operations | ⏳ Queued (Awaiting `10`) |
-| `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ⏳ Queued (Awaiting `11`) |
+| `10` | `10-analysis` — Analysis Workbench | Operations | ✅ Completed |
+| `11` | `11-qa` — Quality Assurance & Reproducibility | Operations | ✅ Completed |
+| `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ⏳ **Active (In Progress)** |
 | `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ⏳ Queued (Awaiting `07`, `08`) |
 | `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | 🟡 Partially Implemented |
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ⏳ Queued (Awaiting `14`) |

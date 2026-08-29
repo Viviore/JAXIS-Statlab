@@ -104,35 +104,48 @@ model BlockedMessageLog {
 
 ---
 
-## 4. Communication Firewall Engine
+## 4. Communication Firewall Engine & Anti-Evasion Normalization
+
+The communication firewall inspects all outgoing text streams using a **5-pass normalization pipeline** before evaluating prohibited regex patterns, preventing users from bypassing filters via typos, leetspeak, intentional character repetition, inter-character spacing, or spelled-out digits:
+
+1. **Pass 1 (`RAW`)**: Inspects original text with case-insensitivity.
+2. **Pass 2 (`LEETSPEAK`)**: Replaces common glyph substitutions (`@`/`4` $\rightarrow$ `a`, `0`/`*` $\rightarrow$ `o`, `3` $\rightarrow$ `e`, `1`/`!` $\rightarrow$ `i`, `$` $\rightarrow$ `s`, etc.).
+3. **Pass 3 (`COLLAPSED`)**: Collapses repeating consecutive characters (`"faceboook"` $\rightarrow$ `"facebook"`, `"gggcaaash"` $\rightarrow$ `"gcash"`).
+4. **Pass 4 (`STRIPPED_DELIMITERS`)**: Removes inter-character spacing, dashes, and periods to detect spaced keywords (`"f a c e b o o k"` $\rightarrow$ `"facebook"`, `"0 9 1 7..."` $\rightarrow$ `"0917..."`).
+5. **Pass 5 (`WORD_DIGITS`)**: Converts spelled-out digit words (`"zero nine one seven..."` $\rightarrow$ `"0917..."`).
 
 ```ts
 // src/lib/messaging/firewall.ts
-type FirewallResult =
-  | { blocked: false }
-  | { blocked: true; patternName: string; matchedText: string };
+export interface FirewallScanResult {
+  blocked: boolean;
+  patternName?: string;
+  matchedText?: string;
+  normalizedPass?: string;
+}
 
-const PROHIBITED_PATTERNS: Array<{ name: string; regex: RegExp }> = [
-  { name: 'EMAIL_ADDRESS',    regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g },
-  { name: 'PH_MOBILE',        regex: /(\+?63|0)[\s-]?9\d{2}[\s-]?\d{3}[\s-]?\d{4}/g },
-  { name: 'GCASH_MAYA',       regex: /\b(gcash|maya|paymaya|paypal|dragonpay)\b/gi },
-  { name: 'MESSENGER_APP',    regex: /\b(whatsapp|viber|telegram|messenger|imessage)\b/gi },
-  { name: 'SOCIAL_PLATFORM',  regex: /\b(facebook|instagram|twitter|tiktok|snapchat|discord)\b/gi },
-  { name: 'SOCIAL_HANDLE',    regex: /@[a-zA-Z0-9_]{2,}/g },
-  { name: 'EXTERNAL_URL',     regex: /https?:\/\/(?!jaxis\.)[a-zA-Z0-9][\w\-.]*\.[a-zA-Z]{2,}/gi },
-];
-
-export function runFirewall(content: string): FirewallResult {
-  for (const { name, regex } of PROHIBITED_PATTERNS) {
-    regex.lastIndex = 0; // Reset stateful regex
-    const match = regex.exec(content);
-    if (match) {
-      return { blocked: true, patternName: name, matchedText: match[0] };
+export function runFirewall(rawContent: string): FirewallScanResult {
+  const passes = generateNormalizationPasses(rawContent);
+  for (const { label, text } of passes) {
+    for (const { name, regex } of PROHIBITED_PATTERNS) {
+      regex.lastIndex = 0;
+      const match = regex.exec(text);
+      if (match) {
+        return {
+          blocked: true,
+          patternName: name,
+          matchedText: match[0],
+          normalizedPass: label,
+        };
+      }
     }
   }
   return { blocked: false };
 }
 ```
+
+### Zero-Leak Live Stream Policy
+- **Zero-Persistence on Stream**: Blocked messages are stored in the database with `isBlocked = true` strictly for administrative audit (`BlockedMessageLog`).
+- **Live Thread Isolation**: Query functions strictly filter out `isBlocked: true` messages, and the client UI displays a prominent amber violation alert banner without rendering the blocked message in the chat stream.
 
 ---
 
@@ -229,40 +242,42 @@ const seedMessages = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Project-Scoped Messaging Thread:** Client, assigned Statistician, and Admin can view and post in the dedicated project communication thread.
-- [ ] **Communication Firewall Enforcement:** Server-side regex engine detects prohibited contact information (personal emails, PH phone numbers, GCash/Maya/PayPal, Telegram/Viber/FB/social handles, external URLs).
-- [ ] **Zero-Leak Message Blocking:** Prohibited messages are blocked entirely (`isBlocked = true`); sender receives an immediate policy violation notice; recipient receives nothing.
-- [ ] **Admin Firewall Review Queue:** Admin can audit all blocked communication attempts with sender, timestamp, detected pattern, and content in a dedicated review queue.
-- [ ] **Realtime Delivery & Polling Fallback:** Instant messaging synchronization via Supabase Realtime WebSockets (`project:{projectId}`) with 5-second polling fallback in development.
-- [ ] **Read Receipts & Participant Badges:** Messages clearly display sender role badges (`CLIENT`, `STATISTICIAN`, `ADMIN`) and track recipient `readAt` timestamps.
+- [x] **Project-Scoped Messaging Thread:** Client, assigned Statistician, and Admin can view and post in the dedicated project communication thread.
+- [x] **Communication Firewall Enforcement:** Server-side regex engine detects prohibited contact information (personal emails, PH phone numbers, GCash/Maya/PayPal, Telegram/Viber/FB/social handles, external URLs).
+- [x] **Zero-Leak Message Blocking:** Prohibited messages are blocked entirely (`isBlocked = true`); sender receives an immediate policy violation notice; recipient receives nothing.
+- [x] **Admin Firewall Review Queue:** Admin can audit all blocked communication attempts with sender, timestamp, detected pattern, and content in a dedicated review queue.
+- [x] **Realtime Delivery & Micro-Delta Sync:** Instant messaging synchronization via Supabase Realtime WebSockets (`project-messages:{projectId}`) with adaptive fallback and Page Visibility API sleeping (`document.hidden`).
+- [x] **Read Receipts & Participant Badges:** Messages clearly display sender role badges (`CLIENT`, `STATISTICIAN`, `QA`, `ADMIN`) and track recipient `readAt` timestamps.
+- [x] **WhatsApp/Telegram Architecture & Reverse Pagination:** 15-message chunking on initial load, automatic scroll-up pagination with scroll position preservation, optimistic UI send, and zero parent window scrolling.
+- [x] **Responsive Mobile Master-Detail UX:** Seamless full-width studies list with single-tap transition into full-height chat desk and one-tap `< Back` header button.
 
 
 ## 8. Acceptance Criteria (Done Checklist)
 
 ### Messaging
-- [ ] Client can send a message to project thread → Statistician and Admin see it
-- [ ] Statistician can send a message → Client and Admin see it
-- [ ] Admin can send a message in any project thread
-- [ ] Messages display sender role label (Client / Statistician / Admin)
-- [ ] Thread is empty state when no messages exist
+- [x] Client can send a message to project thread → Statistician and Admin see it
+- [x] Statistician can send a message → Client and Admin see it
+- [x] Admin can send a message in any project thread
+- [x] Messages display sender role label (Client / Statistician / Admin)
+- [x] Thread is empty state when no messages exist
 
 ### Firewall
-- [ ] Message with email address → blocked; `is_blocked = true`; recipient sees nothing
-- [ ] Message with Philippine mobile number → blocked
-- [ ] Message with GCash/Maya reference → blocked
-- [ ] Message with WhatsApp/Telegram mention → blocked
-- [ ] Message with `@socialhandle` → blocked
-- [ ] Message with external URL (non-jaxis) → blocked
-- [ ] Sender who sent a blocked message sees: `"Your message was blocked. Sharing external contact information is not permitted."`
-- [ ] Normal messages (no prohibited content) are delivered successfully
+- [x] Message with email address → blocked; `is_blocked = true`; recipient sees nothing
+- [x] Message with Philippine mobile number → blocked
+- [x] Message with GCash/Maya reference → blocked
+- [x] Message with WhatsApp/Telegram mention → blocked
+- [x] Message with `@socialhandle` → blocked
+- [x] Message with external URL (non-jaxis) → blocked
+- [x] Sender who sent a blocked message sees: `"Your message was blocked. Sharing external contact information is not permitted."`
+- [x] Normal messages (no prohibited content) are delivered successfully
 
 ### Admin Queue
-- [ ] All blocked messages appear in Admin blocked-message queue
-- [ ] Admin can see: project, sender, `detectedPattern`, `matchedText`, timestamp
-- [ ] Admin can mark a blocked message as reviewed → `reviewedAt` set
-- [ ] Client cannot access Admin blocked-message queue → 403
+- [x] All blocked messages appear in Admin blocked-message queue
+- [x] Admin can see: project, sender, `detectedPattern`, `matchedText`, timestamp
+- [x] Admin can mark a blocked message as reviewed → `reviewedAt` set
+- [x] Client cannot access Admin blocked-message queue → 403
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean

@@ -268,9 +268,14 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
         ]}
         actions={
           <div className="flex items-center gap-2">
+            <Link href={`/dashboard/admin/projects/${project.id}/analysis`}>
+              <Button variant="outline" size="sm" className="rounded-[2px] text-xs">
+                Analysis Files Audit
+              </Button>
+            </Link>
             <Link href="/dashboard/admin/intake">
-              <Button variant="secondary" size="sm">
-                ← TRIAGE QUEUE
+              <Button variant="secondary" size="sm" className="rounded-[2px] text-xs">
+                ← Triage Queue
               </Button>
             </Link>
           </div>

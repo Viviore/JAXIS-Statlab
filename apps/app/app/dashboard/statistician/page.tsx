@@ -9,6 +9,7 @@ import {
   Modal,
   KpiCard,
   Badge,
+  StatusBadge,
   LoadingState,
   Toast,
   Pagination,
@@ -262,6 +263,31 @@ export default function StatisticianDashboardPage() {
   const pausedCount = assignments.filter((a) => a.isPaused).length;
   const burnoutRisk = assessBurnoutRisk(assignments);
 
+  // Prioritize active work requiring statistician action to the top
+  const sortedAssignments = useMemo(() => {
+    return [...assignments].sort((a, b) => {
+      // 1. Studies needing revisions or corrections from QA
+      const aIsRevision = a.masterStatus === "QA_REVISION" || a.masterStatus === "REVISION_REQUESTED";
+      const bIsRevision = b.masterStatus === "QA_REVISION" || b.masterStatus === "REVISION_REQUESTED";
+      if (aIsRevision && !bIsRevision) return -1;
+      if (!aIsRevision && bIsRevision) return 1;
+
+      // 2. Urgent / Overdue studies
+      const aIsUrgent = a.isOverdue || a.isUrgent;
+      const bIsUrgent = b.isOverdue || b.isUrgent;
+      if (aIsUrgent && !bIsUrgent) return -1;
+      if (!aIsUrgent && bIsUrgent) return 1;
+
+      // 3. Active in-progress runs
+      const aIsWorking = a.masterStatus === "IN_PROGRESS";
+      const bIsWorking = b.masterStatus === "IN_PROGRESS";
+      if (aIsWorking && !bIsWorking) return -1;
+      if (!aIsWorking && bIsWorking) return 1;
+
+      return 0;
+    });
+  }, [assignments]);
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Page Header */}
@@ -456,55 +482,69 @@ export default function StatisticianDashboardPage() {
                   <th className="py-3.5 px-6">Research Title &amp; Field</th>
                   <th className="py-3.5 px-6">Methodology</th>
                   <th className="py-3.5 px-6">SLA Countdown</th>
+                  <th className="py-3.5 px-6">Status</th>
                   <th className="py-3.5 px-6">QA Lead</th>
                   <th className="py-3.5 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-sm">
-                {assignments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((item) => (
-                  <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-4 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
-                      {item.projectIntakeId}
-                    </td>
-                    <td className="py-4 px-6 max-w-xs">
-                      <p className="font-semibold text-white text-sm line-clamp-1">
-                        {item.projectTitle}
-                      </p>
-                      <p className="text-xs text-white/50 mt-0.5 truncate">
-                        {item.projectField || "Empirical Research"}
-                      </p>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="text-xs text-white/80 font-sans">
-                        {item.projectMethod || "Statistical Analysis"}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            item.isPaused
-                              ? "amber"
-                              : item.isOverdue
-                              ? "danger"
-                              : item.isUrgent
-                              ? "amber"
-                              : "emerald"
-                          }
-                          className="font-mono text-xs py-0.5 px-2"
-                        >
-                          {item.slaLabel}
-                        </Badge>
-                        <span className="text-[0.688rem] text-white/40 font-mono">
-                          Due: {new Date(item.slaDueAt).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}
+                {sortedAssignments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((item) => {
+                  const isRevision = item.masterStatus === "QA_REVISION" || item.masterStatus === "REVISION_REQUESTED";
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`transition-colors ${
+                        isRevision
+                          ? "bg-[#F59E0B]/[0.03] hover:bg-[#F59E0B]/[0.06] border-l-2 border-l-[#F59E0B]"
+                          : "hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <td className="py-4 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+                        {item.projectIntakeId}
+                      </td>
+                      <td className="py-4 px-6 max-w-xs">
+                        <p className="font-semibold text-white text-sm line-clamp-1">
+                          {item.projectTitle}
+                        </p>
+                        <p className="text-xs text-white/50 mt-0.5 truncate">
+                          {item.projectField || "Empirical Research"}
+                        </p>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="text-xs text-white/80 font-sans">
+                          {item.projectMethod || "Statistical Analysis"}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      <span className="text-xs text-white/70 font-sans">
-                        {item.qaLead.fullName}
-                      </span>
-                    </td>
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              item.isPaused
+                                ? "amber"
+                                : item.isOverdue
+                                ? "danger"
+                                : item.isUrgent
+                                ? "amber"
+                                : "emerald"
+                            }
+                            className="font-mono text-xs py-0.5 px-2"
+                          >
+                            {item.slaLabel}
+                          </Badge>
+                          <span className="text-[0.688rem] text-white/40 font-mono">
+                            Due: {new Date(item.slaDueAt).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <StatusBadge status={item.masterStatus} />
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <span className="text-xs text-white/70 font-sans">
+                          {item.qaLead.fullName}
+                        </span>
+                      </td>
                     <td className="py-4 px-6 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
                         {!item.isPaused && (
@@ -518,28 +558,30 @@ export default function StatisticianDashboardPage() {
                             <span>Request Pause</span>
                           </Button>
                         )}
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => setSelectedStudy(item)}
-                          className="font-sans text-xs font-semibold rounded-[2px] gap-1"
-                        >
-                          <span>Open Desk</span>
-                          <IconArrowRight size={13} stroke={2} />
-                        </Button>
+                        <Link href={`/dashboard/statistician/projects/${item.projectId}/workbench`}>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="font-sans text-xs font-semibold rounded-[2px] gap-1 cursor-pointer"
+                          >
+                            <span>Open Workbench</span>
+                            <IconArrowRight size={13} stroke={2} />
+                          </Button>
+                        </Link>
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>
         )}
 
-        {assignments.length > 0 && (
+        {sortedAssignments.length > 0 && (
           <Pagination
             currentPage={currentPage}
-            totalItems={assignments.length}
+            totalItems={sortedAssignments.length}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
@@ -582,16 +624,26 @@ export default function StatisticianDashboardPage() {
                     className="font-sans text-xs rounded-[2px] gap-1.5"
                   >
                     <IconMessages size={14} stroke={2} className="text-sky-400" />
-                    <span>Consultation Thread</span>
+                    <span>Consultation</span>
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/statistician/projects/${selectedStudy.projectId}/workbench`}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="font-sans text-xs font-semibold rounded-[2px] gap-1.5 cursor-pointer"
+                  >
+                    <span>Launch Workbench</span>
+                    <IconArrowRight size={14} stroke={2} />
                   </Button>
                 </Link>
                 <Button
-                  variant="primary"
+                  variant="ghost"
                   size="sm"
                   onClick={() => setSelectedStudy(null)}
-                  className="font-sans text-xs font-semibold rounded-[2px]"
+                  className="font-sans text-xs rounded-[2px]"
                 >
-                  Close Desk
+                  Close
                 </Button>
               </div>
             </div>

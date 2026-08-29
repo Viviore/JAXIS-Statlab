@@ -119,7 +119,7 @@ export async function sendMessage(
         const warning = getFirewallWarningMessage(ruleName);
 
         // Persist blocked message and audit log
-        const blockedMsg = await db.message.create({
+        await db.message.create({
           data: {
             projectId: project.id,
             senderId: user.id,
@@ -145,20 +145,6 @@ export async function sendMessage(
           error: {
             code: "FIREWALL_BLOCKED",
             message: warning,
-          },
-          data: {
-            id: blockedMsg.id,
-            projectId: project.id,
-            senderId: user.id,
-            senderName: user.fullName,
-            senderRole: callerRole,
-            content,
-            isBlocked: true,
-            blockedReason: ruleName,
-            sentAt: blockedMsg.sentAt.toISOString(),
-            isMine: true,
-            isRead: true,
-            readByCount: 0,
           },
         };
       }
@@ -258,15 +244,12 @@ export async function syncNewMessages(
         });
       }
 
-      // Quick index-targeted delta lookup
+      // Quick index-targeted delta lookup (Only clean delivered messages)
       const rawMessages = await db.message.findMany({
         where: {
           projectId,
           sentAt: { gt: sinceDate },
-          OR: [
-            { isBlocked: false },
-            { senderId: user?.id, isBlocked: true },
-          ],
+          isBlocked: false,
         },
         include: {
           sender: {
@@ -384,11 +367,13 @@ export async function getProjectMessages(
       const project = await db.project.findUnique({
         where: { id: projectId },
         include: {
-          client: true,
+          client: {
+            select: { id: true, fullName: true },
+          },
           assignment: {
             include: {
-              statistician: true,
-              qaLead: true,
+              statistician: { select: { id: true, fullName: true } },
+              qaLead: { select: { id: true, fullName: true } },
             },
           },
         },
@@ -429,10 +414,7 @@ export async function getProjectMessages(
 
       const baseFilter: Prisma.MessageWhereInput = {
         projectId,
-        OR: [
-          { isBlocked: false },
-          { senderId: user?.id, isBlocked: true },
-        ],
+        isBlocked: false,
       };
 
       const [totalCount, rawMessagesDesc] = await Promise.all([
