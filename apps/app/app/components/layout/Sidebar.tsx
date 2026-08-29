@@ -136,9 +136,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Messages",
           href: "/dashboard/client/messages",
           icon: Icons.Feedback,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
         },
         {
           label: "Billing & Payments",
@@ -165,6 +162,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Statistician Workbench",
           href: "/dashboard/statistician",
           icon: Icons.Terminal,
+        },
+        {
+          label: "Messages",
+          href: "/dashboard/statistician/messages",
+          icon: Icons.Feedback,
         },
         {
           label: "Analysis & Scripts",
@@ -219,6 +221,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "QA Review Desk",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
+        },
+        {
+          label: "Messages",
+          href: "/dashboard/qa/messages",
+          icon: Icons.Feedback,
         },
         {
           label: "Review History",
@@ -418,6 +425,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "orange",
         },
         {
+          label: "Firewall Logs",
+          href: "/dashboard/admin/messages",
+          icon: Icons.ShieldCheck,
+          badge: "FIREWALL",
+          badgeColor: "orange",
+        },
+        {
           label: "Reports & Analytics",
           href: "/dashboard/ceo/analytics",
           icon: Icons.Audit,
@@ -492,12 +506,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "orange",
         },
         {
-          label: "Messages & Chat",
+          label: "Firewall Logs",
           href: "/dashboard/admin/messages",
-          icon: Icons.Feedback,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          icon: Icons.ShieldCheck,
+          badge: "FIREWALL",
+          badgeColor: "orange",
         },
         {
           label: "Disputes & Issues",

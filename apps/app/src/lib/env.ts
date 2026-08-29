@@ -29,4 +29,16 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-export const env = envSchema.parse(process.env);
+function getEnv(): Env {
+  if (typeof window === "undefined") {
+    const parsed = envSchema.safeParse(process.env);
+    if (parsed.success) {
+      return parsed.data;
+    }
+    // Return process.env with fallback in dev/build
+    return process.env as unknown as Env;
+  }
+  return process.env as unknown as Env;
+}
+
+export const env = getEnv();

@@ -58,6 +58,9 @@ model User {
   qaAssignments           Assignment[]                  @relation("QAAssignments")
   attendanceLogs          StaffAttendanceLog[]
   attendanceCorrections   AttendanceCorrectionRequest[]
+  sentMessages            Message[]                     @relation("SentMessages")
+  messageReadReceipts     MessageReadReceipt[]
+  reviewedBlockedMessages BlockedMessageLog[]           @relation("ReviewedBlockedMessages")
 
   @@index([email])
   @@index([status])
@@ -242,6 +245,7 @@ model Project {
   sows       SOW[]
   payments   Payment[]
   assignment Assignment?
+  messages   Message[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -602,3 +606,58 @@ model AttendancePolicyConfig {
 
   @@map("attendance_policy_configs")
 }
+
+// ─── Module 09: Messaging & Communication Firewall ──────────────────────────
+
+model Message {
+  id            String               @id @default(cuid())
+  projectId     String
+  senderId      String
+  senderRole    RoleName
+  content       String
+  isBlocked     Boolean              @default(false)
+  blockedReason String?              // Detected firewall pattern name
+  sentAt        DateTime             @default(now())
+
+  project       Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender        User                 @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  readReceipts  MessageReadReceipt[]
+  blockedLog    BlockedMessageLog?
+
+  @@index([projectId])
+  @@index([senderId])
+  @@index([sentAt])
+  @@index([isBlocked])
+  @@map("messages")
+}
+
+model MessageReadReceipt {
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@map("message_read_receipts")
+}
+
+model BlockedMessageLog {
+  id              String    @id @default(cuid())
+  messageId       String    @unique
+  detectedPattern String    // The firewall pattern rule name that matched
+  matchedText     String    // The sensitive text snippet detected
+  reviewedBy      String?   // Admin / CEO userId
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  createdAt       DateTime  @default(now())
+
+  message         Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  reviewer        User?     @relation("ReviewedBlockedMessages", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([reviewedBy])
+  @@map("blocked_message_logs")
+}
+

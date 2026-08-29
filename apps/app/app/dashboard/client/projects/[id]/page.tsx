@@ -24,6 +24,7 @@ import {
   IconReceipt,
   IconShieldCheck,
   IconFileCertificate,
+  IconMessages,
 } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
 import { uploadFileToR2 } from "@/lib/storage-client";
@@ -422,6 +423,12 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
         ]}
         actions={
           <div className="flex items-center gap-2">
+            <Link href={`/dashboard/client/projects/${project.id}/messages`}>
+              <Button variant="primary" size="sm" className="cursor-pointer text-xs font-semibold rounded-[2px]">
+                <IconMessages size={15} stroke={2} className="mr-1.5" />
+                <span>Messages & Chat</span>
+              </Button>
+            </Link>
             <Link href="/dashboard/client/projects">
               <Button variant="secondary" size="sm">
                 ← BACK TO MY STUDIES

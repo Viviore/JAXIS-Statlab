@@ -26,6 +26,7 @@ import {
   IconUserCheck,
   IconClock,
   IconChevronDown,
+  IconMessages,
 } from "@tabler/icons-react";
 import { getStatisticianWorkload, requestSlaPause } from "@/features/assignments/actions";
 import { getStaffSelfProfile, requestLeave, returnFromLeave } from "@/features/staff/actions";
@@ -573,14 +574,26 @@ export default function StatisticianDashboardPage() {
               ) : (
                 <span className="text-xs font-mono text-amber-400">SLA Timer Currently Frozen</span>
               )}
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setSelectedStudy(null)}
-                className="font-sans text-xs font-semibold rounded-[2px]"
-              >
-                Close Desk
-              </Button>
+              <div className="flex items-center gap-2">
+                <Link href={`/dashboard/statistician/projects/${selectedStudy.projectId}/messages`}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="font-sans text-xs rounded-[2px] gap-1.5"
+                  >
+                    <IconMessages size={14} stroke={2} className="text-sky-400" />
+                    <span>Consultation Thread</span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setSelectedStudy(null)}
+                  className="font-sans text-xs font-semibold rounded-[2px]"
+                >
+                  Close Desk
+                </Button>
+              </div>
             </div>
           }
         >

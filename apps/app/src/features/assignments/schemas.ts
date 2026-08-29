@@ -9,12 +9,26 @@ export const CreateAssignmentSchema = z.object({
 
 export type CreateAssignmentInput = z.infer<typeof CreateAssignmentSchema>;
 
-export const ReassignExpertSchema = z.object({
-  projectId: z.string().min(1, "Project ID is required."),
-  newStatisticianId: z.string().optional(),
-  newQaLeadId: z.string().optional(),
-  reason: z.string().min(5, "Reassignment reason must be at least 5 characters."),
-});
+export const ReassignExpertSchema = z
+  .object({
+    projectId: z.string().min(1, "Project ID is required."),
+    newStatisticianId: z.string().optional(),
+    statisticianId: z.string().optional(),
+    newQaLeadId: z.string().optional(),
+    qaLeadId: z.string().optional(),
+    reason: z.string().optional(),
+    reassignReason: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      const r = (data.reason || data.reassignReason || "").trim();
+      return r.length >= 5;
+    },
+    {
+      message: "Please provide a reason for specialist reassignment (at least 5 characters).",
+      path: ["reason"],
+    }
+  );
 
 export type ReassignExpertInput = z.infer<typeof ReassignExpertSchema>;
 

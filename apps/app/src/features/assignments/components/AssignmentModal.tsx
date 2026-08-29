@@ -66,7 +66,7 @@ export function AssignmentModal({
 
   const [selectedStatId, setSelectedStatId] = useState<string>("");
   const [selectedQaId, setSelectedQaId] = useState<string>("");
-  const [reassignReason, setReassignReason] = useState<string>("");
+  const [reassignReason, setReassignReason] = useState<string>(REASSIGNMENT_TEMPLATES[0]?.text || "");
 
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -138,7 +138,7 @@ export function AssignmentModal({
       return;
     }
     if (isReassign && (!reassignReason || reassignReason.trim().length < 5)) {
-      setError("Please provide a valid reason for staff reassignment (at least 5 characters).");
+      setError("Please provide a reason for specialist reassignment (at least 5 characters).");
       return;
     }
 
@@ -147,9 +147,12 @@ export function AssignmentModal({
       if (isReassign) {
         const res = await reassignExperts({
           projectId,
+          newStatisticianId: selectedStatId,
           statisticianId: selectedStatId,
+          newQaLeadId: selectedQaId,
           qaLeadId: selectedQaId,
-          reassignReason,
+          reason: reassignReason.trim(),
+          reassignReason: reassignReason.trim(),
         });
 
         if (res.success) {
@@ -253,6 +256,61 @@ export function AssignmentModal({
           </div>
         ) : (
           <div className="flex flex-col gap-5">
+            {/* Reassignment Reason Input (Only shown on Reassignment) */}
+            {isReassign && (
+              <div className="flex flex-col gap-2.5 p-3.5 bg-amber-950/25 border border-amber-500/40 rounded-[2px]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <label className="text-xs font-semibold text-amber-200">
+                    Reason for Specialist Reassignment *
+                  </label>
+                  <span className="text-[0.625rem] text-amber-300/70 font-mono">
+                    Select a template or type custom note
+                  </span>
+                </div>
+
+                {/* Quick Templates Dropdown */}
+                <div className="relative">
+                  <select
+                    value={REASSIGNMENT_TEMPLATES.find((t) => t.text === reassignReason)?.text || ""}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setReassignReason(e.target.value);
+                      }
+                    }}
+                    className="w-full bg-[#01142B] border border-white/20 rounded-[2px] px-3 py-2 text-xs text-white focus:border-[#CC6600] focus:ring-0 outline-none cursor-pointer appearance-none pr-8 transition-colors font-sans hover:border-white/30"
+                  >
+                    <option value="" className="bg-[#01142B] text-white/50">
+                      Select reason template from dropdown...
+                    </option>
+                    {REASSIGNMENT_TEMPLATES.map((tmpl) => (
+                      <option
+                        key={tmpl.label}
+                        value={tmpl.text}
+                        className="bg-[#01142B] text-white py-1"
+                      >
+                        {tmpl.label}
+                      </option>
+                    ))}
+                  </select>
+                  <IconChevronDown
+                    size={14}
+                    stroke={2}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none"
+                  />
+                </div>
+
+                <textarea
+                  value={reassignReason}
+                  onChange={(e) => setReassignReason(e.target.value)}
+                  placeholder="Explain why the specialist is being reassigned (e.g. medical leave, domain realignment, client request)..."
+                  className="w-full bg-[#01142B] border border-white/15 rounded-[2px] p-2.5 text-xs text-white placeholder-white/40 focus:border-[#CC6600] outline-none resize-none h-16 font-sans leading-relaxed"
+                />
+                <span className="text-[0.688rem] text-amber-300/80 font-sans">
+                  Notice: Reassigning will archive the previous assignment and transfer active SLA oversight to the new specialist.
+                </span>
+              </div>
+            )}
+
             {/* Lead Statistician Selector */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -443,61 +501,6 @@ export function AssignmentModal({
                 </div>
               )}
             </div>
-
-            {/* Reassignment Reason Input (Only shown on Reassignment) */}
-            {isReassign && (
-              <div className="flex flex-col gap-2 p-3.5 bg-amber-950/20 border border-amber-500/30 rounded-[2px]">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <label className="text-xs font-semibold text-amber-200">
-                    Reason for Specialist Reassignment (Mandatory)
-                  </label>
-                  <span className="text-[0.625rem] text-amber-300/60 font-mono">
-                    Click a template or type custom note
-                  </span>
-                </div>
-
-                {/* Quick Templates Dropdown */}
-                <div className="relative">
-                  <select
-                    value={REASSIGNMENT_TEMPLATES.find((t) => t.text === reassignReason)?.text || ""}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setReassignReason(e.target.value);
-                      }
-                    }}
-                    className="w-full bg-[#01142B] border border-white/15 rounded-[2px] px-3 py-2 text-xs text-white/90 focus:border-[#CC6600] focus:ring-0 outline-none cursor-pointer appearance-none pr-8 transition-colors font-sans hover:border-white/30"
-                  >
-                    <option value="" className="bg-[#01142B] text-white/50">
-                      Select reason template from dropdown...
-                    </option>
-                    {REASSIGNMENT_TEMPLATES.map((tmpl) => (
-                      <option
-                        key={tmpl.label}
-                        value={tmpl.text}
-                        className="bg-[#01142B] text-white py-1"
-                      >
-                        {tmpl.label}
-                      </option>
-                    ))}
-                  </select>
-                  <IconChevronDown
-                    size={14}
-                    stroke={2}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none"
-                  />
-                </div>
-
-                <textarea
-                  value={reassignReason}
-                  onChange={(e) => setReassignReason(e.target.value)}
-                  placeholder="Explain why the specialist is being reassigned (e.g. medical leave, domain realignment, client request)..."
-                  className="w-full bg-[#01142B] border border-white/10 rounded-[2px] p-2.5 text-xs text-white placeholder-white/40 focus:border-[#CC6600] outline-none resize-none h-20 mt-0.5 font-sans leading-relaxed"
-                />
-                <span className="text-[0.688rem] text-amber-300/70">
-                  Notice: Reassigning will archive the previous assignment and void their milestone payout claim.
-                </span>
-              </div>
-            )}
           </div>
         )}
       </div>

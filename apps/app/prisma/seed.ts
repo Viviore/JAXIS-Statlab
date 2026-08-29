@@ -312,6 +312,76 @@ async function main() {
   }
 
   console.log(`✅ Seeded ${philippineHolidays.length} Philippine holidays.`);
+
+  // ─── Module 09: Demo Messages & Firewall Incidents ──────────────────────
+  const sampleProject = await prisma.project.findFirst({
+    where: { intakeId: "JAXIS-202608-0001" },
+    include: { client: true },
+  });
+
+  const statUser = await prisma.user.findUnique({ where: { email: "stat@jaxis.dev" } });
+
+  if (sampleProject && statUser) {
+    const existingMsg = await prisma.message.findFirst({
+      where: { projectId: sampleProject.id },
+    });
+
+    if (!existingMsg) {
+      // 1. Initial Client Message
+      await prisma.message.create({
+        data: {
+          projectId: sampleProject.id,
+          senderId: sampleProject.clientId,
+          senderRole: "CLIENT",
+          content: "Hello! When can I expect the initial regression analysis to begin?",
+          isBlocked: false,
+          readReceipts: {
+            create: [
+              { userId: sampleProject.clientId },
+              { userId: statUser.id },
+            ],
+          },
+        },
+      });
+
+      // 2. Statistician Reply
+      await prisma.message.create({
+        data: {
+          projectId: sampleProject.id,
+          senderId: statUser.id,
+          senderRole: "STATISTICIAN",
+          content: "Hi Ana! I have thoroughly inspected your survey dataset and research objectives. I am starting the normality and regression diagnostics now.",
+          isBlocked: false,
+          readReceipts: {
+            create: [
+              { userId: statUser.id },
+              { userId: sampleProject.clientId },
+            ],
+          },
+        },
+      });
+
+      // 3. Blocked Message Incident (Firewall Demo)
+      await prisma.message.create({
+        data: {
+          projectId: sampleProject.id,
+          senderId: sampleProject.clientId,
+          senderRole: "CLIENT",
+          content: "Can we chat on WhatsApp or Telegram instead? My personal phone number is 09171234567.",
+          isBlocked: true,
+          blockedReason: "MESSAGING_APP",
+          blockedLog: {
+            create: {
+              detectedPattern: "MESSAGING_APP",
+              matchedText: "WhatsApp",
+            },
+          },
+        },
+      });
+
+      console.log("✅ Seeded Module 09 project consultation messages and firewall log.");
+    }
+  }
 }
 
 main()

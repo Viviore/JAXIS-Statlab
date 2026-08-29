@@ -194,7 +194,10 @@ export async function reassignExperts(
     return { success: false, error: { code: "VALIDATION_ERROR", message: parsed.error.issues[0]?.message || "Invalid payload" } };
   }
 
-  const { projectId, newStatisticianId, newQaLeadId, reason } = parsed.data;
+  const { projectId } = parsed.data;
+  const newStatisticianId = parsed.data.newStatisticianId || parsed.data.statisticianId;
+  const newQaLeadId = parsed.data.newQaLeadId || parsed.data.qaLeadId;
+  const reason = (parsed.data.reason || parsed.data.reassignReason || "Specialist capacity / domain realignment").trim();
 
   try {
     const result = await withDbTimeout(
