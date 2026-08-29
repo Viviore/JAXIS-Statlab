@@ -486,13 +486,22 @@ export async function getActiveShift(): Promise<ActiveShiftStatus> {
 
   try {
     return await withDbTimeout((async () => {
-      const user = await db.user.findUnique({
+      let user = await db.user.findUnique({
         where: { id: userId },
-        select: { status: true, leaveReason: true, leaveUntil: true },
+        select: { id: true, status: true, leaveReason: true, leaveUntil: true },
       });
 
+      if (!user && session?.user?.email) {
+        user = await db.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true, status: true, leaveReason: true, leaveUntil: true },
+        });
+      }
+
+      const effectiveUserId = user?.id || userId;
+
       const activeShift = await db.staffAttendanceLog.findFirst({
-        where: { userId, status: "IN_PROGRESS" },
+        where: { userId: effectiveUserId, status: "IN_PROGRESS" },
         orderBy: { clockInAt: "desc" },
       });
 
@@ -550,6 +559,8 @@ export async function getActiveShift(): Promise<ActiveShiftStatus> {
     })());
   } catch (error: unknown) {
     console.error("[attendance/getActiveShift] Error:", error);
+    const { getDevUserByEmail } = await import("@/lib/mock-data/users.data");
+    const devUser = session?.user?.email ? getDevUserByEmail(session.user.email) : null;
     return {
       isOnDuty: false,
       activeLogId: null,
@@ -557,7 +568,8 @@ export async function getActiveShift(): Promise<ActiveShiftStatus> {
       elapsedSeconds: 0,
       ipAddress: null,
       notes: null,
-      isOnLeave: false,
+      isOnLeave: devUser?.status === "ON_LEAVE",
+      leaveReason: devUser?.status === "ON_LEAVE" ? "Specialist Leave" : undefined,
     };
   }
 }

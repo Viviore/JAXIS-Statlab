@@ -2,12 +2,25 @@ import { z } from "zod";
 import { RoleName, UserStatus, ViolationType, SuspensionAction } from "@prisma/client";
 
 export const STAFF_ROLES = [
+  "ADMIN",
   "STATISTICIAN",
   "SENIOR_QA_LEAD",
   "FINANCE_OFFICER",
 ] as const;
 
 export type StaffRole = (typeof STAFF_ROLES)[number];
+
+export const MANAGER_CREATABLE_ROLES: StaffRole[] = [
+  "STATISTICIAN",
+  "SENIOR_QA_LEAD",
+];
+
+export const CEO_CREATABLE_ROLES: StaffRole[] = [
+  "ADMIN",
+  "FINANCE_OFFICER",
+  "SENIOR_QA_LEAD",
+  "STATISTICIAN",
+];
 
 export const STANDARD_SPECIALIZATIONS = [
   "Regression",

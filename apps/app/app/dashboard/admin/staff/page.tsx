@@ -39,6 +39,7 @@ import {
 import {
   getStaffRoster,
   getStaffDetail,
+  getStaffSelfProfile,
   provisionStaff,
   suspendStaff,
   liftSuspension,
@@ -68,20 +69,7 @@ const VIOLATION_OPTIONS = [
   { value: "POLICY_VIOLATION", label: "General Operational Policy Violation" },
 ];
 
-const PROVISION_ROLE_OPTIONS = [
-  {
-    value: "STATISTICIAN",
-    label: "Statistician (Data Analysis & Modeling)",
-  },
-  {
-    value: "SENIOR_QA_LEAD",
-    label: "Senior QA Lead (Peer Review & Audit)",
-  },
-  {
-    value: "FINANCE_OFFICER",
-    label: "Finance & HR Officer (Treasury, Escrow & People Operations)",
-  },
-];
+
 
 const LEAVE_REASON_TEMPLATES = [
   {
@@ -129,6 +117,8 @@ export default function StaffRosterPage() {
   const [adminLeaveFrom, setAdminLeaveFrom] = useState<string>("");
   const [adminLeaveUntil, setAdminLeaveUntil] = useState<string>("");
 
+  const [currentUserRole, setCurrentUserRole] = useState<string>("ADMIN");
+
   // Provision modal states
   const [isProvisionOpen, setIsProvisionOpen] = useState<boolean>(false);
   const [provFirstName, setProvFirstName] = useState<string>("");
@@ -168,6 +158,58 @@ export default function StaffRosterPage() {
   const [forfeitPayouts, setForfeitPayouts] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Load current user profile to determine creation capabilities
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await getStaffSelfProfile();
+        if (res.success && res.data) {
+          setCurrentUserRole(res.data.role);
+          setProvRole("STATISTICIAN");
+        }
+      } catch {
+        // Fallback default is ADMIN
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Provision role options: Manager can only create Statistician & QA; CEO can create all
+  const provisionRoleOptions = useMemo(() => {
+    if (currentUserRole === "CEO") {
+      return [
+        {
+          value: "ADMIN",
+          label: "Manager (Operations & Assignments)",
+        },
+        {
+          value: "FINANCE_OFFICER",
+          label: "Finance Officer (Payments & Accounting)",
+        },
+        {
+          value: "SENIOR_QA_LEAD",
+          label: "Senior QA Lead (Quality Reviews)",
+        },
+        {
+          value: "STATISTICIAN",
+          label: "Statistician (Data Analysis & Modeling)",
+        },
+      ];
+    }
+
+    // Manager (ADMIN) can only create Statistician and QA
+    return [
+      {
+        value: "STATISTICIAN",
+        label: "Statistician (Data Analysis & Modeling)",
+      },
+      {
+        value: "SENIOR_QA_LEAD",
+        label: "Senior QA Lead (Quality Reviews)",
+      },
+    ];
+  }, [currentUserRole]);
+
   // Load roster
   const loadRoster = useCallback(async () => {
     setIsLoading(true);
@@ -199,13 +241,14 @@ export default function StaffRosterPage() {
     const finance = staffList.filter(
       (s) => s.role === "FINANCE_OFFICER",
     ).length;
+    const managers = staffList.filter((s) => s.role === "ADMIN").length;
     const active = staffList.filter((s) => s.status === "ACTIVE").length;
     const onLeave = staffList.filter((s) => s.status === "ON_LEAVE").length;
     const suspended = staffList.filter((s) => s.status === "SUSPENDED").length;
     const terminated = staffList.filter(
       (s) => s.status === "TERMINATED",
     ).length;
-    return { total, stats, qa, finance, active, onLeave, suspended, terminated };
+    return { total, stats, qa, finance, managers, active, onLeave, suspended, terminated };
   }, [staffList]);
 
   // View details
@@ -278,8 +321,8 @@ export default function StaffRosterPage() {
       setProvisionedData(res.data);
       setIsSuccessModalOpen(true);
       setToastMessage({
-        message: "Staff Member Provisioned",
-        description: `Account created for ${res.data.fullName}. Temporary credentials are ready to copy.`,
+        message: "Staff Member Created",
+        description: `Account created for ${res.data.fullName}. Temporary password is ready to copy.`,
         variant: "success",
       });
       loadRoster();
@@ -477,6 +520,8 @@ export default function StaffRosterPage() {
         });
         return;
       }
+      window.dispatchEvent(new CustomEvent("leave-status-updated"));
+      window.dispatchEvent(new CustomEvent("shift-status-updated"));
       setToastMessage({
         message: "Leave Concluded",
         description: `${staff.fullName} has returned to Active status and is available for assignments.`,
@@ -498,6 +543,8 @@ export default function StaffRosterPage() {
         });
         return;
       }
+      window.dispatchEvent(new CustomEvent("leave-status-updated"));
+      window.dispatchEvent(new CustomEvent("shift-status-updated"));
       setToastMessage({
         message: "Leave Request Approved",
         description: `${staff.fullName} is now marked On Leave and hidden from Module 08 assignments.`,
@@ -519,6 +566,8 @@ export default function StaffRosterPage() {
         });
         return;
       }
+      window.dispatchEvent(new CustomEvent("leave-status-updated"));
+      window.dispatchEvent(new CustomEvent("shift-status-updated"));
       setToastMessage({
         message: "Leave Request Declined",
         description: `${staff.fullName} has been restored to Active duty.`,
@@ -652,8 +701,8 @@ export default function StaffRosterPage() {
     <div className="flex flex-col gap-9 max-w-7xl mx-auto pb-16 w-full">
       {/* ── Page Header ── */}
       <PageHeader
-        title="Staff & Expert Management"
-        description="System-wide command console for provisioning, managing, and governing internal statisticians, senior QA leads, and finance officers across all specialization domains."
+        title="Staff Directory"
+        description="Create and manage team accounts, roles, and status."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Admin Operations", href: "/dashboard/admin" },
@@ -667,7 +716,7 @@ export default function StaffRosterPage() {
               onClick={loadRoster}
               loading={isLoading}
             >
-              REFRESH DIRECTORY
+              Refresh
             </Button>
             <Button
               variant="primary"
@@ -675,10 +724,11 @@ export default function StaffRosterPage() {
               onClick={() => {
                 setProvFormError(null);
                 setProvFieldErrors({});
+                setProvRole("STATISTICIAN");
                 setIsProvisionOpen(true);
               }}
             >
-              + PROVISION NEW STAFF
+              + Add New Staff
             </Button>
           </div>
         }
@@ -687,28 +737,28 @@ export default function StaffRosterPage() {
       {/* ── KPI Grid (Consistent with Admin Dashboard Standard) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
         <KpiCard
-          label="Total Staff Directory"
+          label="Total Staff"
           value={kpis.total}
           variant="default"
           description={`${kpis.active} active • ${kpis.onLeave} on leave`}
         />
 
         <KpiCard
-          label="Quantitative Statisticians"
+          label="Statisticians"
           value={kpis.stats}
           variant="sky"
-          description="Regression, SEM & Time Series"
+          description="Data analysis & modeling"
         />
 
         <KpiCard
-          label="Senior QA Review Leads"
+          label="QA Leads"
           value={kpis.qa}
           variant="orange"
-          description="Dual-Blind Methodology Audits"
+          description="Quality check & review"
         />
 
         <KpiCard
-          label="Governance & Holds"
+          label="Suspended / Inactive"
           value={kpis.suspended + kpis.terminated}
           variant="amber"
           description={`${kpis.suspended} Suspended / ${kpis.terminated} Terminated`}
@@ -718,8 +768,8 @@ export default function StaffRosterPage() {
       {/* ── Pending Specialist Leave Requests (HR / Admin Review Queue) ── */}
       <PendingLeaveQueue
         onStatusChange={loadRoster}
-        title="Pending Specialist Leave Requests"
-        subtitle="Review and acknowledge specialist absence requests before activating leave status."
+        title="Pending Leave Requests"
+        subtitle="Review and approve staff leave requests."
       />
 
       {/* ── Staff Directory Card ── */}
@@ -737,8 +787,7 @@ export default function StaffRosterPage() {
               Staff Directory
             </h2>
             <p className="text-xs text-white/50 mt-1.5 font-sans leading-relaxed">
-              Active domain experts, verified specializations, and disciplinary
-              governance logs
+              All active staff members, roles, and status
             </p>
           </div>
           <span className="text-xs font-mono text-white/60 bg-white/[0.04] px-3.5 py-1.5 rounded-[2px] border border-white/10 self-start sm:self-auto whitespace-nowrap">
@@ -763,6 +812,7 @@ export default function StaffRosterPage() {
               defaultValue: "ALL",
               options: [
                 { value: "ALL", label: "All Roles" },
+                { value: "ADMIN", label: "Manager" },
                 { value: "STATISTICIAN", label: "Statistician" },
                 { value: "SENIOR_QA_LEAD", label: "QA Lead" },
                 { value: "FINANCE_OFFICER", label: "Finance" },
@@ -1131,7 +1181,12 @@ export default function StaffRosterPage() {
       <Modal
         open={isProvisionOpen}
         onClose={() => setIsProvisionOpen(false)}
-        title="Provision Internal Staff Account"
+        title="Add New Staff Member"
+        description={
+          currentUserRole === "CEO"
+            ? "Create an account for a Manager, Finance Officer, QA Lead, or Statistician."
+            : "Create an account for a Finance Officer or Senior QA Lead."
+        }
         size="2xl"
       >
         <form
@@ -1165,36 +1220,43 @@ export default function StaffRosterPage() {
               </div>
 
               <FormInput
-                label="Institutional Email Address"
+                label="Email Address"
                 type="email"
                 required
-                placeholder="vance@jaxis.dev"
+                placeholder="name@jaxis.dev"
                 value={provEmail}
                 onChange={(e) => setProvEmail(e.target.value)}
                 error={provFieldErrors.email?.[0]}
                 disabled={isPending}
               />
 
-              <FormSelect
-                label="Designated Internal Role"
-                required
-                options={PROVISION_ROLE_OPTIONS}
-                value={provRole}
-                onChange={(e) => setProvRole(e.target.value as StaffRole)}
-                disabled={isPending}
-              />
+              <div className="flex flex-col gap-1">
+                <FormSelect
+                  label="Role"
+                  required
+                  options={provisionRoleOptions}
+                  value={provRole}
+                  onChange={(e) => setProvRole(e.target.value as StaffRole)}
+                  disabled={isPending}
+                />
+                <span className="text-[0.688rem] text-white/50 font-sans">
+                  {currentUserRole === "CEO"
+                    ? "CEO access: You can create Managers, Finance, QA, and Statisticians."
+                    : "Manager access: You can create Statistician and QA staff."}
+                </span>
+              </div>
 
               {/* Automated Credentials Notice Badge */}
-              <div className="p-4 rounded-[4px] bg-sky-500/[0.06] border border-sky-500/20 text-xs text-slate-300 flex items-start gap-3 mt-1">
-                <div className="p-1.5 rounded-[3px] bg-sky-500/10 border border-sky-500/20 text-sky-400 mt-0.5 flex-shrink-0">
+              <div className="p-3.5 rounded-[3px] bg-sky-500/[0.06] border border-sky-500/20 text-xs text-slate-300 flex items-start gap-3 mt-1">
+                <div className="p-1.5 rounded-[2px] bg-sky-500/10 border border-sky-500/20 text-sky-400 mt-0.5 flex-shrink-0">
                   <IconKey size={14} stroke={1.5} />
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-sans uppercase font-bold text-sky-400 text-xs tracking-wider">
-                    Automated Credentials
+                    Temporary Password
                   </span>
                   <p className="text-xs text-slate-300/80 leading-relaxed font-sans mt-0.5">
-                    A cryptographically secure password (<code className="text-sky-300 font-mono">JAXIS-XXXXXXXX</code>) will be generated for immediate one-time handoff.
+                    A secure password (<code className="text-sky-300 font-mono">JAXIS-XXXXXXXX</code>) will be generated automatically for you to copy and share.
                   </p>
                 </div>
               </div>

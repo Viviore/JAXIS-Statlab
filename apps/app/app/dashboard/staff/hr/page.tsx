@@ -30,7 +30,7 @@ import {
 import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
 import Link from "next/link";
 import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
-import { requestLeave } from "@/features/staff/actions";
+import { requestLeave, returnFromLeave } from "@/features/staff/actions";
 import { getMyOfficialPayslip, getMyPayoutDetails, updateMyPayoutDetails } from "@/features/payroll/actions";
 import type { StaffPayslipDTO, StaffPayoutDetailsDTO, PayoutChannel } from "@/features/payroll/schemas";
 import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
@@ -162,9 +162,11 @@ export default function StaffHrPortalPage() {
         setToast({
           variant: "success",
           message: "Leave Request Submitted",
-          description: "Your specialist leave request has been submitted for HR authorization.",
+          description: "Your leave request has been submitted for HR authorization.",
         });
         setIsLeaveModalOpen(false);
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
         await loadData();
       } else {
         setToast({
@@ -181,6 +183,35 @@ export default function StaffHrPortalPage() {
       });
     } finally {
       setIsSubmittingLeave(false);
+    }
+  };
+
+  // End Leave / Return from Leave
+  const handleReturnFromLeave = async () => {
+    try {
+      const res = await returnFromLeave();
+      if (res.success) {
+        setToast({
+          variant: "success",
+          message: "Welcome Back",
+          description: "Your leave has concluded and you are now active.",
+        });
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
+        await loadData();
+      } else {
+        setToast({
+          variant: "danger",
+          message: "Action Failed",
+          description: res.error.message,
+        });
+      }
+    } catch {
+      setToast({
+        variant: "danger",
+        message: "Network Error",
+        description: "Failed to conclude leave.",
+      });
     }
   };
 
@@ -346,15 +377,25 @@ export default function StaffHrPortalPage() {
 
       {/* Leave Status Alert Banner if on leave */}
       {portalData.user.isOnLeave && (
-        <div className="p-4 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-start gap-3">
-          <IconCalendarOff size={20} stroke={1.5} className="text-purple-300 shrink-0 mt-0.5" />
-          <div className="flex flex-col gap-0.5 text-xs text-white/90 font-sans">
-            <span className="font-bold text-purple-200">Currently on Approved Leave</span>
-            <span className="text-white/70">
-              Reason: &ldquo;{portalData.user.leaveReason}&rdquo; &bull; Expected Return Date:{" "}
-              {portalData.user.leaveUntil ? new Date(portalData.user.leaveUntil).toLocaleDateString("en-PH") : "Open"}
-            </span>
+        <div className="p-4 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <IconCalendarOff size={20} stroke={1.5} className="text-purple-300 shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-0.5 text-xs text-white/90 font-sans">
+              <span className="font-bold text-purple-200">Currently on Approved Leave</span>
+              <span className="text-white/70">
+                Reason: &ldquo;{portalData.user.leaveReason}&rdquo; &bull; Expected Return Date:{" "}
+                {portalData.user.leaveUntil ? new Date(portalData.user.leaveUntil).toLocaleDateString("en-PH") : "Open"}
+              </span>
+            </div>
           </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleReturnFromLeave}
+            className="cursor-pointer text-xs font-semibold rounded-[2px] shrink-0"
+          >
+            End Leave &amp; Return to Work
+          </Button>
         </div>
       )}
 
@@ -811,14 +852,25 @@ export default function StaffHrPortalPage() {
               </div>
               <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
                 <span className="text-xs font-sans text-white/50">Capacity Status</span>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setIsLeaveModalOpen(true)}
-                  className="cursor-pointer text-xs py-1 px-2.5"
-                >
-                  + Request Leave
-                </Button>
+                {portalData.user.isOnLeave ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleReturnFromLeave}
+                    className="cursor-pointer text-xs py-1 px-2.5"
+                  >
+                    End Leave Now
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsLeaveModalOpen(true)}
+                    className="cursor-pointer text-xs py-1 px-2.5"
+                  >
+                    + Request Leave
+                  </Button>
+                )}
               </div>
             </Card>
           </div>

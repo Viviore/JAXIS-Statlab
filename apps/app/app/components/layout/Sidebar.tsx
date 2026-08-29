@@ -167,14 +167,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.Terminal,
         },
         {
-          label: "Assigned Studies",
-          href: "/dashboard/statistician/projects",
-          icon: Icons.Studies,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
-        },
-        {
           label: "Analysis & Scripts",
           href: "/dashboard/statistician/analysis",
           icon: Icons.Scripts,
@@ -227,14 +219,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "QA Review Desk",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
-        },
-        {
-          label: "Review Queue",
-          href: "/dashboard/qa/queue",
-          icon: Icons.CheckQueue,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
         },
         {
           label: "Review History",
@@ -413,6 +397,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "QA Review Desk",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
+        },
+        {
+          label: "Staff Directory",
+          href: "/dashboard/admin/staff",
+          icon: Icons.Users,
         },
         {
           label: "Staff Timesheets",

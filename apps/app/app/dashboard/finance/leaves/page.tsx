@@ -207,8 +207,10 @@ export default function SpecialistLeaveApprovalsPage() {
     startTransition(async () => {
       const res = await approveLeave(staff.id);
       if (res.success) {
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
         setToastMessage({
-          message: "Leave Request Acknowledged & Approved",
+          message: "Leave Request Approved",
           description: `${staff.fullName} is now On Leave. Study assignment intake has been paused.`,
           variant: "success",
         });
@@ -229,6 +231,8 @@ export default function SpecialistLeaveApprovalsPage() {
     startTransition(async () => {
       const res = await rejectLeave(staff.id);
       if (res.success) {
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
         setToastMessage({
           message: "Leave Request Declined",
           description: `${staff.fullName} has been restored to Active status.`,
@@ -251,6 +255,8 @@ export default function SpecialistLeaveApprovalsPage() {
     startTransition(async () => {
       const res = await returnFromLeave(staff.id);
       if (res.success) {
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
         setToastMessage({
           message: "Active Duty Restored",
           description: `${staff.fullName} is now available in the Module 08 assignment pool.`,

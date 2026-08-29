@@ -50,6 +50,23 @@ export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CL
     refreshStatus();
   }, [refreshStatus]);
 
+  // Listen for global leave and shift updates from anywhere in the application
+  useEffect(() => {
+    const handleGlobalUpdate = () => {
+      refreshStatus();
+    };
+
+    window.addEventListener("leave-status-updated", handleGlobalUpdate);
+    window.addEventListener("shift-status-updated", handleGlobalUpdate);
+    window.addEventListener("focus", handleGlobalUpdate);
+
+    return () => {
+      window.removeEventListener("leave-status-updated", handleGlobalUpdate);
+      window.removeEventListener("shift-status-updated", handleGlobalUpdate);
+      window.removeEventListener("focus", handleGlobalUpdate);
+    };
+  }, [refreshStatus]);
+
   // 2. Running Live Timer Tick
   useEffect(() => {
     if (!shiftStatus?.isOnDuty) return;

@@ -221,6 +221,8 @@ export default function StatisticianDashboardPage() {
         setIsLeaveModalOpen(false);
         setLeaveReasonInput("");
         setLeaveUntilInput("");
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
         loadWorkload();
         setToastMessage({
           message: "Leave Request Submitted",
@@ -237,6 +239,8 @@ export default function StatisticianDashboardPage() {
     startTransition(async () => {
       const res = await returnFromLeave();
       if (res.success) {
+        window.dispatchEvent(new CustomEvent("leave-status-updated"));
+        window.dispatchEvent(new CustomEvent("shift-status-updated"));
         loadWorkload();
         setToastMessage({
           message: profileStatus === "LEAVE_PENDING" ? "Leave Request Cancelled" : "Welcome Back",

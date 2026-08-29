@@ -48,6 +48,22 @@ export async function provisionStaff(
   }
 
   const { firstName, lastName, fullName, email, role, specializations, bio } = parsed.data;
+
+  // Authorization check: Manager (ADMIN) is strictly limited to creating STATISTICIAN and SENIOR_QA_LEAD
+  const callerRole = (session.user as { role?: string }).role;
+  if (callerRole === "ADMIN") {
+    const managerAllowedRoles: string[] = ["STATISTICIAN", "SENIOR_QA_LEAD"];
+    if (!managerAllowedRoles.includes(role)) {
+      return {
+        success: false,
+        error: {
+          code: "UNAUTHORIZED_ROLE",
+          message: "Managers can only create Statistician Expert and Senior QA Lead accounts.",
+        },
+      };
+    }
+  }
+
   const computedFullName = fullName?.trim() || `${firstName?.trim() || ""} ${lastName?.trim() || ""}`.trim();
   const normalizedEmail = email.toLowerCase().trim();
 
@@ -185,7 +201,7 @@ export async function getStaffRoster(
 
   const targetRoles: RoleName[] =
     role === "ALL"
-      ? ["STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER"]
+      ? ["ADMIN", "STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER"]
       : [role as RoleName];
 
   try {
@@ -778,7 +794,7 @@ export async function getOwnProfile(): Promise<
   const session = await requireRole("STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER", "ADMIN", "CEO");
 
   try {
-    const user = await withDbTimeout(
+    let user = await withDbTimeout(
       db.user.findUnique({
         where: { id: session.user.id },
         include: {
@@ -787,6 +803,18 @@ export async function getOwnProfile(): Promise<
         },
       })
     );
+
+    if (!user && session.user.email) {
+      user = await withDbTimeout(
+        db.user.findUnique({
+          where: { email: session.user.email },
+          include: {
+            userRoles: { include: { role: true } },
+            staffProfile: true,
+          },
+        })
+      );
+    }
 
     if (user) {
       const primaryRole = (user.userRoles[0]?.role.name as RoleName) || (session.user.role as RoleName);
@@ -941,6 +969,15 @@ export async function requestLeave(
       },
     });
 
+    const devUser = getDevUserByEmail(updated.email);
+    if (devUser) {
+      devUser.status = targetStatus;
+      registerDevUser(devUser);
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/staff/hr");
     revalidatePath("/dashboard/finance");
     revalidatePath("/dashboard/finance/leaves");
     revalidatePath("/dashboard/admin/staff");
@@ -970,46 +1007,85 @@ export async function returnFromLeave(
   userId?: string
 ): Promise<StaffActionResult<{ id: string; status: UserStatus }>> {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.user?.id && !session?.user?.email) {
     return { success: false, error: { code: "UNAUTHORIZED", message: "You must be logged in." } };
   }
 
-  const targetUserId = userId || session.user.id;
+  const targetUserId = userId || session?.user?.id;
   const isManager =
-    session.user.role === "ADMIN" ||
-    session.user.role === "CEO" ||
-    session.user.role === "FINANCE_OFFICER";
+    session?.user?.role === "ADMIN" ||
+    session?.user?.role === "CEO" ||
+    session?.user?.role === "FINANCE_OFFICER";
 
-  if (targetUserId !== session.user.id && !isManager) {
+  if (userId && userId !== session?.user?.id && !isManager) {
     return { success: false, error: { code: "FORBIDDEN", message: "You cannot manage leave for other staff members." } };
   }
 
   try {
-    const updated = await db.user.update({
-      where: { id: targetUserId },
-      data: {
-        status: "ACTIVE",
-        leaveReason: null,
-        leaveFrom: null,
-        leaveUntil: null,
-      },
-    });
+    let user = targetUserId ? await db.user.findUnique({ where: { id: targetUserId } }) : null;
+    if (!user && session?.user?.email && !userId) {
+      user = await db.user.findUnique({ where: { email: session.user.email } });
+    }
 
-    revalidatePath("/dashboard/finance");
-    revalidatePath("/dashboard/finance/leaves");
-    revalidatePath("/dashboard/admin/staff");
-    revalidatePath("/dashboard/admin/assignments");
-    revalidatePath("/dashboard/statistician");
-    revalidatePath("/dashboard/qa");
+    if (user) {
+      const updated = await db.user.update({
+        where: { id: user.id },
+        data: {
+          status: "ACTIVE",
+          leaveReason: null,
+          leaveFrom: null,
+          leaveUntil: null,
+        },
+      });
 
-    return {
-      success: true,
-      data: { id: updated.id, status: updated.status },
-    };
+      // Also sync dev user store if present
+      const devUser = getDevUserByEmail(user.email);
+      if (devUser) {
+        devUser.status = "ACTIVE";
+        registerDevUser(devUser);
+      }
+
+      revalidatePath("/", "layout");
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/staff/hr");
+      revalidatePath("/dashboard/finance");
+      revalidatePath("/dashboard/finance/leaves");
+      revalidatePath("/dashboard/admin/staff");
+      revalidatePath("/dashboard/admin/assignments");
+      revalidatePath("/dashboard/statistician");
+      revalidatePath("/dashboard/qa");
+
+      return {
+        success: true,
+        data: { id: updated.id, status: updated.status },
+      };
+    }
   } catch (err: unknown) {
-    console.error("[returnFromLeave] Error:", err);
-    return { success: false, error: { code: "SERVER_ERROR", message: (err as Error).message } };
+    console.warn("[returnFromLeave] DB update error, attempting dev store sync:", err);
   }
+
+  // Fallback for dev / offline mode
+  const email = session?.user?.email;
+  if (email) {
+    const devUser = getDevUserByEmail(email);
+    if (devUser) {
+      devUser.status = "ACTIVE";
+      registerDevUser(devUser);
+
+      revalidatePath("/", "layout");
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/staff/hr");
+      revalidatePath("/dashboard/statistician");
+      revalidatePath("/dashboard/qa");
+
+      return {
+        success: true,
+        data: { id: devUser.id, status: "ACTIVE" },
+      };
+    }
+  }
+
+  return { success: false, error: { code: "NOT_FOUND", message: "User account could not be located." } };
 }
 
 /**
@@ -1103,6 +1179,15 @@ export async function approveLeave(
       },
     });
 
+    const devUser = getDevUserByEmail(updated.email);
+    if (devUser) {
+      devUser.status = "ON_LEAVE";
+      registerDevUser(devUser);
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/staff/hr");
     revalidatePath("/dashboard/finance");
     revalidatePath("/dashboard/finance/leaves");
     revalidatePath("/dashboard/admin/staff");
@@ -1152,6 +1237,15 @@ export async function rejectLeave(
       },
     });
 
+    const devUser = getDevUserByEmail(updated.email);
+    if (devUser) {
+      devUser.status = "ACTIVE";
+      registerDevUser(devUser);
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/staff/hr");
     revalidatePath("/dashboard/finance");
     revalidatePath("/dashboard/finance/leaves");
     revalidatePath("/dashboard/admin/staff");
