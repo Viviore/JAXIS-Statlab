@@ -883,6 +883,77 @@ async function main() {
           }
         }
 
+        // ─── Module 17: Seed Archived Project and Audit Logs ─────────────────
+        if (firstProject && (prisma as any).archivedProject && (prisma as any).auditLog && adminUser) {
+          const existingArchive = await (prisma as any).archivedProject.count();
+          if (existingArchive === 0) {
+            await (prisma as any).archivedProject.create({
+              data: {
+                projectId: firstProject.id,
+                intakeId: firstProject.intakeId,
+                clientName: clientUser?.fullName || "Ana Cruz",
+                packageName: firstProject.packageName || "JX_02_START",
+                snapshot: {
+                  intakeId: firstProject.intakeId,
+                  researchTitle: firstProject.researchTitle,
+                  clientName: clientUser?.fullName,
+                  packageName: firstProject.packageName,
+                  archivedAt: new Date(Date.now() - 86400000 * 15).toISOString(),
+                },
+                archivedAt: new Date(Date.now() - 86400000 * 15),
+                archivedBy: adminUser.id,
+                filesPurged: false,
+              },
+            });
+
+            await (prisma as any).auditLog.createMany({
+              data: [
+                {
+                  projectId: firstProject.id,
+                  actorId: adminUser.id,
+                  actorRole: "ADMIN",
+                  action: "STATUS_TRANSITION",
+                  oldValue: "NEW_REQUEST",
+                  newValue: "UNDER_EVALUATION",
+                  reason: "Initial research evaluation commenced.",
+                  createdAt: new Date(Date.now() - 86400000 * 30),
+                },
+                {
+                  projectId: firstProject.id,
+                  actorId: adminUser.id,
+                  actorRole: "ADMIN",
+                  action: "STATUS_TRANSITION",
+                  oldValue: "UNDER_EVALUATION",
+                  newValue: "QUOTE_SENT",
+                  reason: "Scope of work pricing quotation generated and dispatched.",
+                  createdAt: new Date(Date.now() - 86400000 * 25),
+                },
+                {
+                  projectId: firstProject.id,
+                  actorId: adminUser.id,
+                  actorRole: "ADMIN",
+                  action: "FILE_RELEASED",
+                  oldValue: "FOR_QA",
+                  newValue: "DELIVERED",
+                  reason: "QA Lead certified statistical reproducibility. Final deliverables released.",
+                  createdAt: new Date(Date.now() - 86400000 * 18),
+                },
+                {
+                  projectId: firstProject.id,
+                  actorId: adminUser.id,
+                  actorRole: "ADMIN",
+                  action: "PROJECT_ARCHIVED",
+                  oldValue: "DELIVERED",
+                  newValue: "CLOSED",
+                  reason: "Study completed and archived as immutable read-only snapshot.",
+                  createdAt: new Date(Date.now() - 86400000 * 15),
+                },
+              ],
+            });
+            console.log("✅ Seeded Module 17 Archived Project and System Audit Logs.");
+          }
+        }
+
         console.log("✅ Seeded Module 12 Deliverables packaging and Revision triage records.");
       }
     }

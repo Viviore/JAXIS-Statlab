@@ -240,46 +240,46 @@ const seedAuditLogs = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Operational & Financial Reports:** Admin, Finance, and CEO can query and view 8 parameterized reports (Revenue Summary, Expert Performance, Project Volume, Turnaround Analytics, Dispute/Refund, Client Acquisition, Ledger Export, Expert Payouts).
-- [ ] **PDF Report Export:** Download formatted, branded PDF summaries for any report generated within selected date ranges.
-- [ ] **Project Archival Engine:** Admin can archive `CLOSED` projects into read-only snapshot records (`ArchivedProject`).
-- [ ] **Automated 90-Day Storage Purge:** Trigger.dev background cron automatically purges raw storage files for projects 90 days post-delivery while preserving report records.
-- [ ] **Client Data Deletion Request Workflow:** Compliant client account deletion handling honoring mandatory financial and legal audit retention windows.
+- [x] **Operational & Financial Reports:** Admin, Finance, and CEO can query and view 8 parameterized reports (Revenue Summary, Expert Performance, Project Volume, Turnaround Analytics, Dispute/Refund, Client Acquisition, Ledger Export, Expert Payouts).
+- [x] **PDF Report Export:** Download formatted, branded PDF summaries for any report generated within selected date ranges.
+- [x] **Project Archival Engine:** Admin can archive `CLOSED` projects into read-only snapshot records (`ArchivedProject`).
+- [x] **Automated 90-Day Storage Purge:** Trigger.dev background cron automatically purges raw storage files for projects 90 days post-delivery while preserving report records.
+- [x] **Client Data Deletion Request Workflow:** Compliant client account deletion handling honoring mandatory financial and legal audit retention windows.
 
 
 ## 10. Acceptance Criteria (Done Checklist)
 
 ### Reports
-- [ ] All 8 report types return correct data for a given date range
-- [ ] Finance role can access `ledger-export` and `payout-report` only
-- [ ] Admin role cannot access Finance-only reports → 403
-- [ ] CEO role can access all report types
-- [ ] PDF export generates a readable, styled PDF for each report type
+- [x] All 8 report types return correct data for a given date range
+- [x] Finance role can access `ledger-export` and `payout-report` only
+- [x] Admin role cannot access Finance-only reports → 403
+- [x] CEO role can access all report types
+- [x] PDF export generates a readable, styled PDF for each report type
 
 ### Archive
-- [ ] Admin can archive a `CLOSED` project → `ArchivedProject` snapshot created
-- [ ] Archived project is read-only: status transition attempt → 422 `PROJECT_ARCHIVED`
-- [ ] Archive search by intake ID returns correct results
-- [ ] Archive search by package name filter works
+- [x] Admin can archive a `CLOSED` project → `ArchivedProject` snapshot created
+- [x] Archived project is read-only: status transition attempt → 422 `PROJECT_ARCHIVED`
+- [x] Archive search by intake ID returns correct results
+- [x] Archive search by package name filter works
 
 ### 90-Day Purge
-- [ ] Daily purge job identifies projects with `filesPurge_at <= now()` and `filesPurged = false`
-- [ ] Files deleted from R2/S3 after purge runs
-- [ ] `filesPurged = true` and `filesPurgedAt` set post-purge
-- [ ] Audit log entry created for each purge event
+- [x] Daily purge job identifies projects with `filesPurge_at <= now()` and `filesPurged = false`
+- [x] Files deleted from R2/S3 after purge runs
+- [x] `filesPurged = true` and `filesPurgedAt` set post-purge
+- [x] Audit log entry created for each purge event
 
 ### Data Deletion
-- [ ] Client can submit data deletion request
-- [ ] System retains financial, legal, and audit records
-- [ ] Non-essential data (profile fields, document files, message content) purged
-- [ ] Client notified of deletion via email (Module 16)
+- [x] Client can submit data deletion request
+- [x] System retains financial, legal, and audit records
+- [x] Non-essential data (profile fields, document files, message content) purged
+- [x] Client notified of deletion via email (Module 16)
 
 ### Audit Log
-- [ ] Every project status transition creates an `AuditLog` entry with actor, old→new, reason
-- [ ] Every Admin financial action (payout disburse, verify) logged
-- [ ] Audit log is read-only — no delete or edit endpoints
+- [x] Every project status transition creates an `AuditLog` entry with actor, old→new, reason
+- [x] Every Admin financial action (payout disburse, verify) logged
+- [x] Audit log is read-only — no delete or edit endpoints
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 errors
+- [x] `npm run build` → clean

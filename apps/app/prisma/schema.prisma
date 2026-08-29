@@ -77,6 +77,8 @@ model User {
   resolvedDisputes        Dispute[]                     @relation("ResolvedDisputes")
   notificationLogs        NotificationLog[]
   inAppAlerts             InAppAlert[]
+  auditLogs               AuditLog[]
+  dataDeletionRequests    DataDeletionRequest[]
 
   @@index([email])
   @@index([status])
@@ -1107,6 +1109,71 @@ model InAppAlert {
   @@index([isRead])
   @@index([createdAt])
   @@map("in_app_alerts")
+}
+
+// ─── Module 17: Reporting, Analytics, Searchable Archive & Audit Ledger ───────
+
+enum DeletionStatus {
+  PENDING
+  PROCESSED
+  REJECTED
+}
+
+model ArchivedProject {
+  id            String    @id @default(cuid())
+  projectId     String    @unique
+  intakeId      String    // JAXIS-YYYYMM-XXXX for search
+  clientName    String    // Denormalized for fast search
+  packageName   String    // Denormalized for filter
+  snapshot      Json      // Full immutable project data snapshot
+  archivedAt    DateTime  @default(now())
+  archivedBy    String    // Admin userId
+  filesPurged   Boolean   @default(false)
+  filesPurgedAt DateTime?
+
+  @@index([intakeId])
+  @@index([clientName])
+  @@index([packageName])
+  @@index([archivedAt])
+  @@map("archived_projects")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  projectId String?
+  actorId   String
+  actorRole RoleName
+  action    String   // e.g. "STATUS_TRANSITION", "FILE_RELEASED", "PAYOUT_DISBURSED", "ARCHIVE_CREATED"
+  oldValue  String?  // Old status or value
+  newValue  String?  // New status or value
+  reason    String?
+  metadata  Json?    // Additional context
+  createdAt DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model DataDeletionRequest {
+  id             String         @id @default(cuid())
+  clientId       String
+  requestedAt    DateTime       @default(now())
+  processedAt    DateTime?
+  deletedFields  String[]       // Which non-essential data was deleted
+  retainedFields String[]       // What was retained and why (SOW contracts, invoices, dispute logs)
+  status         DeletionStatus @default(PENDING)
+  processedBy    String?        // Admin userId
+
+  client User @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([status])
+  @@map("data_deletion_requests")
 }
 
 

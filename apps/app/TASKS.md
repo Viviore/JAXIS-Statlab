@@ -584,6 +584,26 @@
 - [x] Seeded mock initial in-app alerts and delivery logs in `prisma/seed.ts`
 - [x] Documented verification report in `docs/modules/16-verification-report.md` (0 check-types errors across 5 packages)
 
+### Task 11 — Module 17: Reporting, Operational Analytics & Audit Archive
+- [x] Implemented Prisma database models: `ArchivedProject`, `AuditLog`, `DataDeletionRequest`, and enum `DeletionStatus` (`PENDING`, `PROCESSED`, `REJECTED`)
+- [x] Synchronized schema with Supabase PostgreSQL and updated relations on `User` and `Project`
+- [x] Built 8 Parameterized Operational & Financial Report calculators in `src/features/reporting/actions.ts`:
+  - `revenue-summary`, `expert-performance`, `project-volume`, `turnaround-analytics`, `dispute-refund`, `client-acquisition`, `ledger-export`, and `payout-report`
+- [x] Built Project Archival & 90-Day Storage Retention Engine:
+  - `archiveProjectAction` saving full immutable JSON snapshots
+  - `getArchivedProjectsAction` with fast search across intake ID, client name, package
+  - `purgeExpiredFilesAction` marking `filesPurged: true` with audit log creation
+  - `submitDataDeletionRequestAction` and `processDataDeletionRequestAction` honoring legal retention boundaries
+- [x] Built Role-Scoped UI Desks & Export Utilities:
+  - Admin Operations & Reports Hub (`/dashboard/admin/reports`) with 8 report switchers, date range intervals, quick presets, and CSV/Print exports
+  - CEO Executive Intelligence Desk (`/dashboard/ceo/reports`) with profit margin overlays
+  - Finance Treasury Reports Desk (`/dashboard/finance/reports`) with per-study ledger records and specialist payout history
+  - Searchable Project Archive Desk (`/dashboard/admin/archive`) with JSON snapshot viewer modal
+  - System Activity & Audit Log Desk (`/dashboard/admin/audit`) with filterable timeline of all mutations
+- [x] Updated `Sidebar.tsx` activating `System Reports`, `Project Archive`, and `Activity Log` across Admin, Finance, and CEO roles
+- [x] Seeded mock initial archived projects and audit logs in `prisma/seed.ts`
+- [x] Documented verification report in `docs/modules/17-verification-report.md` (0 check-types errors across 5 packages)
+
 ---
 
 ## Roadmap Status Matrix
@@ -606,7 +626,7 @@
 | `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ✅ Completed |
 | `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | ✅ Completed |
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ✅ Completed |
-| `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ✅ **Completed** |
-| `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ⏳ **Active (Next)** |
+| `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ✅ Completed |
+| `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ✅ **Completed** |
 | `18` | `18-attendance` — Staff Attendance & Duty Governance | HR & Labor | ✅ Completed |
 | `19` | `19-payroll` — Corporate Payroll & Payslip Engine | HR & Treasury | ✅ Completed |
