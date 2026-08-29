@@ -20,6 +20,26 @@ import type { AuditTelemetryEvent } from "@/types/project";
 import type { ProjectStatus, FileCategory } from "@prisma/client";
 
 const DEV_PROJECTS_FILE = path.join(process.cwd(), ".dev-projects.json");
+const DEV_PAYMENTS_FILE = path.join(process.cwd(), "dev_data", "payments.json");
+
+interface PersistedDevPaymentRecord {
+  id: string;
+  projectId: string;
+  paymentStatus: string;
+  createdAt: string;
+}
+
+function readPersistedDevPayments(): PersistedDevPaymentRecord[] {
+  try {
+    if (fs.existsSync(DEV_PAYMENTS_FILE)) {
+      const data = fs.readFileSync(DEV_PAYMENTS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch {
+    // Ignore read errors
+  }
+  return [];
+}
 
 function readPersistedDevProjects(): ProjectDetailItem[] {
   try {
@@ -324,14 +344,32 @@ export async function getProjects(
               uploadedAt: true,
             },
           },
+          payments: {
+            select: {
+              id: true,
+              paymentStatus: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
         },
         orderBy: { createdAt: "desc" },
       })
     );
 
+    const mappedProjects = (projects as unknown as Array<ProjectDetailItem & { payments?: Array<{ paymentStatus: string }> }>).map((p) => {
+      const latestPay = p.payments?.[0];
+      return {
+        ...p,
+        latestPaymentStatus: latestPay?.paymentStatus || null,
+        hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
+      };
+    });
+
     return {
       success: true,
-      data: projects as unknown as ProjectDetailItem[],
+      data: mappedProjects as unknown as ProjectDetailItem[],
     };
   } catch (dbError) {
     console.warn("[getProjects] DB offline, reading from dev projects cache.", dbError);
@@ -397,6 +435,19 @@ export async function getProjects(
       ];
       writePersistedDevProjects(devProjects);
     }
+
+    const devPayments = readPersistedDevPayments();
+    devProjects = devProjects.map((p) => {
+      const projPayments = devPayments.filter((pay) => pay.projectId === p.id);
+      const latestPay = projPayments.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0];
+      return {
+        ...p,
+        latestPaymentStatus: latestPay?.paymentStatus || null,
+        hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
+      };
+    });
 
     if (userRole === "CLIENT") {
       devProjects = devProjects.filter(
@@ -495,6 +546,15 @@ export async function getProjectById(
               uploadedAt: true,
             },
           },
+          payments: {
+            select: {
+              id: true,
+              paymentStatus: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
         },
       })
     );
@@ -514,9 +574,16 @@ export async function getProjectById(
       };
     }
 
+    const latestPay = (project as unknown as { payments?: Array<{ paymentStatus: string }> }).payments?.[0];
+    const mapped = {
+      ...project,
+      latestPaymentStatus: latestPay?.paymentStatus || null,
+      hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
+    };
+
     return {
       success: true,
-      data: project as unknown as ProjectDetailItem,
+      data: mapped as unknown as ProjectDetailItem,
     };
   } catch (dbError) {
     console.warn("[getProjectById] DB offline, reading from dev projects cache.", dbError);
@@ -538,9 +605,19 @@ export async function getProjectById(
       };
     }
 
+    const devPayments = readPersistedDevPayments();
+    const projPayments = devPayments.filter((pay) => pay.projectId === project.id);
+    const latestPay = projPayments.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
+
     return {
       success: true,
-      data: project,
+      data: {
+        ...project,
+        latestPaymentStatus: latestPay?.paymentStatus || null,
+        hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
+      },
     };
   }
 }

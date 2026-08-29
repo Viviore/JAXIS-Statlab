@@ -34,7 +34,7 @@ import {
   markIntakeComplete,
   requestMissingInfo,
 } from "@/features/projects/actions";
-import { PROJECT_STATUS_LABELS, MISSING_INFO_TEMPLATES } from "@/lib/project-rules";
+import { MISSING_INFO_TEMPLATES, getProjectDisplayStatus } from "@/lib/project-rules";
 import {
   getFileMeta,
   formatFileCategory,
@@ -519,15 +519,20 @@ export default function AdminIntakeTriagePage() {
                         {/* Status */}
                         <td>
                           <div className="flex flex-col gap-1 items-start whitespace-nowrap">
-                            <StatusBadge
-                              status={p.masterStatus}
-                              label={
-                                p.masterStatus === "FOR_QA"
-                                  ? "FOR QA • READY"
-                                  : PROJECT_STATUS_LABELS[p.masterStatus] ||
-                                    p.masterStatus
-                              }
-                            />
+                            {(() => {
+                              const displayStatus = getProjectDisplayStatus(p);
+                              return (
+                                <StatusBadge
+                                  status={displayStatus.status}
+                                  label={
+                                    p.masterStatus === "FOR_QA"
+                                      ? "FOR QA • READY"
+                                      : displayStatus.label
+                                  }
+                                  pulse={displayStatus.pulse}
+                                />
+                              );
+                            })()}
                             {(p as unknown as { serviceType?: string }).serviceType && (
                               <span className="text-[0.6875rem] text-white/40 font-mono">
                                 {(p as unknown as { serviceType?: string }).serviceType!.replace(/_/g, " ")}

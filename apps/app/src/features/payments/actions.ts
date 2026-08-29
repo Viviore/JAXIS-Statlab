@@ -248,8 +248,15 @@ export async function submitPaymentProof(
       // ignore
     }
 
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/projects");
     revalidatePath(`/dashboard/client/projects/${projectId}`);
     revalidatePath(`/dashboard/client/projects/${projectId}/payment`);
+    revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard/admin/intake");
+    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+    revalidatePath(`/dashboard/admin/projects/${projectId}/payment`);
     revalidatePath("/dashboard/finance/payments");
     revalidatePath("/dashboard/finance");
 
@@ -466,11 +473,18 @@ export async function verifyPayment(
       // ignore
     }
 
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/projects");
     revalidatePath(`/dashboard/client/projects/${result.projectId}`);
     revalidatePath(`/dashboard/client/projects/${result.projectId}/payment`);
+    revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard/admin/intake");
+    revalidatePath("/dashboard/admin/projects");
+    revalidatePath(`/dashboard/admin/projects/${result.projectId}`);
+    revalidatePath(`/dashboard/admin/projects/${result.projectId}/payment`);
     revalidatePath("/dashboard/finance/payments");
     revalidatePath("/dashboard/finance");
-    revalidatePath("/dashboard/admin/projects");
 
     return {
       success: true,
@@ -613,8 +627,16 @@ export async function rejectPayment(
       // ignore
     }
 
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/projects");
     revalidatePath(`/dashboard/client/projects/${updated.projectId}`);
     revalidatePath(`/dashboard/client/projects/${updated.projectId}/payment`);
+    revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard/admin/intake");
+    revalidatePath("/dashboard/admin/projects");
+    revalidatePath(`/dashboard/admin/projects/${updated.projectId}`);
+    revalidatePath(`/dashboard/admin/projects/${updated.projectId}/payment`);
     revalidatePath("/dashboard/finance/payments");
     revalidatePath("/dashboard/finance");
 

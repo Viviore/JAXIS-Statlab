@@ -11,6 +11,7 @@ import {
   Toast,
   LoadingState,
   FormTextarea,
+  EmptyState,
 } from "@repo/ui";
 import {
   IconArrowLeft,
@@ -18,6 +19,9 @@ import {
   IconSparkles,
   IconShieldCheck,
   IconLock,
+  IconCreditCard,
+  IconChevronDown,
+  IconChevronUp,
 } from "@tabler/icons-react";
 import { getSOWByProject, generateSOW } from "@/features/sow/actions";
 import { getProjectById } from "@/features/projects/actions";
@@ -36,6 +40,7 @@ export default function AdminSowPage() {
   const [quotation, setQuotation] = useState<QuotationDetailItem | null>(null);
   const [sow, setSow] = useState<SOWDetailItem | null>(null);
   const [customTerms, setCustomTerms] = useState("");
+  const [isOverrideOpen, setIsOverrideOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
@@ -86,7 +91,7 @@ export default function AdminSowPage() {
     }
   }, [projectId]);
 
-  const handleGenerateSOW = () => {
+  const handleManualCompile = () => {
     if (!project) return;
 
     setGenError(null);
@@ -149,7 +154,7 @@ export default function AdminSowPage() {
       {/* ── Page Header (hidden in print) ── */}
       <div className="print:hidden">
         <PageHeader
-          title="Statement of Work Administration"
+          title="Statement of Work & Scope Audit"
           description={`Contract management and scope snapshot control for ${project.intakeId}`}
           breadcrumbs={[
             { label: "WORKSPACE", href: "/dashboard" },
@@ -180,90 +185,124 @@ export default function AdminSowPage() {
         </div>
       )}
 
-      {/* ── Case 1: SOW Not Yet Generated ── */}
+      {/* ── Case 1: SOW Not Yet Generated (Waiting for Client Quote Acceptance) ── */}
       {!sow ? (
-        <Card className="p-8 sm:p-10 bg-[#01142B]/95 border border-white/15 rounded-[6px] flex flex-col gap-6 shadow-2xl">
-          <div className="flex items-start gap-4 border-b border-white/10 pb-6">
-            <div className="h-12 w-12 rounded-[4px] bg-[#CC6600]/20 border border-[#CC6600]/40 flex items-center justify-center shrink-0">
-              <IconFileText size={24} stroke={1.5} className="text-[#FFA040]" />
+        <div className="flex flex-col gap-6">
+          <Card className="p-8 sm:p-10 bg-[#01142B]/95 border border-white/15 rounded-[6px] flex flex-col gap-6 shadow-2xl">
+            <div className="flex items-start gap-4 border-b border-white/10 pb-6">
+              <div className="h-12 w-12 rounded-[4px] bg-sky-500/20 border border-sky-500/40 flex items-center justify-center shrink-0">
+                <IconSparkles size={24} stroke={1.5} className="text-sky-400" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white font-sans">
+                  Statement of Work Auto-Generation
+                </h3>
+                <p className="text-sm text-white/70 font-sans leading-relaxed">
+                  The formal Statement of Work is automatically compiled and dispatched to the client as soon as they accept the commercial quotation. No manual administrative action is needed.
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white font-sans">
-                Compile Statement of Work Contract
-              </h3>
-              <p className="text-sm text-white/70 font-sans leading-relaxed">
-                Generate an official Statement of Work snapshot from the agreed commercial quote. This freezes deliverables, payment terms, and turnaround days into an unalterable contract.
-              </p>
-            </div>
-          </div>
 
-          {genError && <Alert variant="danger">{genError}</Alert>}
+            {genError && <Alert variant="danger">{genError}</Alert>}
 
-          {quotation ? (
-            <div className="flex flex-col gap-6">
-              {/* Target Commercial Basis */}
-              <div className="p-6 rounded-[4px] bg-[#011735]/60 border border-white/10 flex flex-col gap-4">
-                <span className="text-xs font-sans uppercase font-bold text-white/60 tracking-wider">
-                  Target Commercial Quote Basis
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                  <div className="space-y-1">
-                    <span className="text-xs font-sans text-white/40 block">Agreed Package</span>
-                    <strong className="text-sm sm:text-base font-bold text-sky-400 font-sans block">{quotation.packageName}</strong>
+            {quotation ? (
+              <div className="flex flex-col gap-6">
+                {/* Target Commercial Basis */}
+                <div className="p-6 rounded-[4px] bg-[#011735]/60 border border-white/10 flex flex-col gap-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-sans uppercase font-bold text-white/60 tracking-wider">
+                      Commercial Quotation Basis
+                    </span>
+                    <span className="text-xs font-mono px-2.5 py-1 rounded-[2px] bg-white/10 text-white/80 font-semibold uppercase">
+                      Status: {quotation.status}
+                    </span>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-xs font-sans text-white/40 block">Total Contract Sum</span>
-                    <strong className="text-sm sm:text-base font-bold text-amber-400 font-mono block">₱{Number(quotation.totalAmount).toLocaleString()}</strong>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs font-sans text-white/40 block">Initial Downpayment</span>
-                    <strong className="text-sm sm:text-base font-bold text-emerald-400 font-mono block">₱{Number(quotation.downpaymentRequired).toLocaleString()}</strong>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                    <div className="space-y-1">
+                      <span className="text-xs font-sans text-white/40 block">Agreed Package</span>
+                      <strong className="text-sm sm:text-base font-bold text-sky-400 font-sans block">
+                        {quotation.packageName}
+                      </strong>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs font-sans text-white/40 block">Total Contract Sum</span>
+                      <strong className="text-sm sm:text-base font-bold text-amber-400 font-mono block">
+                        ₱{Number(quotation.totalAmount).toLocaleString()}
+                      </strong>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs font-sans text-white/40 block">Initial Downpayment</span>
+                      <strong className="text-sm sm:text-base font-bold text-emerald-400 font-mono block">
+                        ₱{Number(quotation.downpaymentRequired).toLocaleString()}
+                      </strong>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Special Custom Clauses */}
-              <div className="flex flex-col gap-2">
-                <FormTextarea
-                  label="Special Terms & Non-Standard Scope Boundaries (Optional)"
-                  placeholder="e.g., Client to supply raw SPSS (.sav) matrix by Friday. Analysis excludes structural equation modeling."
-                  value={customTerms}
-                  onChange={(e) => setCustomTerms(e.target.value)}
-                  rows={4}
-                  className="font-sans text-sm"
-                />
-              </div>
+                {/* Collapsible Administrative Manual Override */}
+                <div className="border border-white/10 rounded-[4px] bg-[#01142B]/60 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsOverrideOpen(!isOverrideOpen)}
+                    className="w-full p-4 flex items-center justify-between text-left hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <IconFileText size={16} stroke={1.5} className="text-white/60" />
+                      <span className="text-xs font-sans font-semibold text-white/80 uppercase tracking-wider">
+                        Manual SOW Compile (Administrative Override)
+                      </span>
+                    </div>
+                    {isOverrideOpen ? (
+                      <IconChevronUp size={16} className="text-white/60" />
+                    ) : (
+                      <IconChevronDown size={16} className="text-white/60" />
+                    )}
+                  </button>
 
-              <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
-                <Link href={`/dashboard/admin/projects/${project.id}`}>
-                  <Button variant="secondary" size="md">
-                    Cancel
-                  </Button>
-                </Link>
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={isPending}
-                  onClick={handleGenerateSOW}
-                  className="font-sans font-bold text-xs sm:text-sm tracking-wider bg-[#CC6600] hover:bg-[#FFA040] text-white px-6 py-3 flex items-center gap-2"
-                >
-                  <IconSparkles size={18} stroke={1.5} />
-                  <span>COMPILE & DISPATCH OFFICIAL SOW</span>
-                </Button>
+                  {isOverrideOpen && (
+                    <div className="p-6 pt-2 border-t border-white/10 flex flex-col gap-4">
+                      <p className="text-xs text-white/60 font-sans leading-relaxed">
+                        Use this only if you need to manually force SOW generation before client acceptance or inject special contractual clauses.
+                      </p>
+                      <FormTextarea
+                        label="Special Terms & Non-Standard Scope Boundaries (Optional)"
+                        placeholder="e.g., Client to supply raw SPSS (.sav) matrix by Friday. Analysis excludes structural equation modeling."
+                        value={customTerms}
+                        onChange={(e) => setCustomTerms(e.target.value)}
+                        rows={3}
+                        className="font-sans text-sm"
+                      />
+                      <div className="flex items-center justify-end gap-3 pt-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={isPending}
+                          onClick={handleManualCompile}
+                          className="font-sans font-semibold text-xs text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+                        >
+                          <IconSparkles size={15} stroke={1.5} className="mr-1.5" />
+                          <span>Force Compile SOW (Override)</span>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="p-8 text-center text-sm font-sans text-white/60 border border-dashed border-white/15 rounded-[4px] bg-white/[0.02]">
-              No commercial quotation has been created for this study yet. Please create and send a quote first.
-            </div>
-          )}
-        </Card>
+            ) : (
+              <EmptyState
+                icon={IconFileText}
+                title="No Quotation Created"
+                description="No commercial quotation has been created for this study yet. Please create and send a proposal first."
+              />
+            )}
+          </Card>
+        </div>
       ) : (
-        /* ── Case 2: SOW Exists — Document Preview & Status ── */
+        /* ── Case 2: SOW Exists — Full Document & Live Audit Status ── */
         <>
           <SowDocument sow={sow} />
 
-          {/* Admin Status Card */}
+          {/* Admin Status & Action Card */}
           <Card className="p-8 bg-[#01142B]/90 border border-white/15 rounded-[6px] flex flex-col sm:flex-row sm:items-center justify-between gap-6 print:hidden shadow-xl">
             <div className="flex items-center gap-4">
               {sow.isLocked ? (
@@ -277,22 +316,30 @@ export default function AdminSowPage() {
               )}
               <div className="space-y-1">
                 <p className="text-base font-bold text-white font-sans">
-                  {sow.isLocked ? "Contract Signed by Client" : "Dispatched — Awaiting Client Signature"}
+                  {sow.isLocked ? "Contract Signed & Scope Locked" : "Dispatched — Awaiting Client Digital Signature"}
                 </p>
                 <p className="text-sm font-sans text-white/60">
                   {sow.isLocked
-                    ? `Executed by ${sow.signedByName} on ${new Date(sow.signedAt || "").toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}`
-                    : "Client must type their registered full legal name to finalize."}
+                    ? `Executed by ${sow.signedByName} on ${new Date(sow.signedAt || "").toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}.`
+                    : "The contract is available in the client portal awaiting their digital signature."}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <Link href={`/dashboard/admin/projects/${project.id}`}>
                 <Button variant="secondary" size="md" className="font-sans font-semibold text-xs">
                   ← Back to Project Desk
                 </Button>
               </Link>
+              {sow.isLocked && (
+                <Link href={`/dashboard/admin/projects/${project.id}/payment`}>
+                  <Button variant="primary" size="md" className="font-sans font-semibold text-xs bg-[#CC6600] hover:bg-[#FFA040] text-white">
+                    <IconCreditCard size={16} stroke={1.5} className="mr-1.5" />
+                    <span>View Payment Status →</span>
+                  </Button>
+                </Link>
+              )}
             </div>
           </Card>
         </>

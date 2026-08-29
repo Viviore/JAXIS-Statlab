@@ -3,7 +3,7 @@ import type { SOWContentSnapshot } from "@/lib/sow-rules";
 
 export const GenerateSOWSchema = z.object({
   projectId: z.string().min(1, "Project ID is required"),
-  quotationId: z.string().min(1, "Quotation ID is required"),
+  quotationId: z.string().optional(),
   customTerms: z.string().max(2000, "Custom terms cannot exceed 2000 characters").optional(),
 });
 

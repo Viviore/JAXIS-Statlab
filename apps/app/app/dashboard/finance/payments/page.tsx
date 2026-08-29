@@ -426,7 +426,7 @@ export default function FinancePaymentsQueuePage() {
                                   <span>Inspect Receipt</span>
                                 </Button>
 
-                                <Link href={`/dashboard/admin/projects/${projectId}/payment`}>
+                                <Link href={`/dashboard/finance/projects/${projectId}/payment`}>
                                   <Button
                                     variant="secondary"
                                     size="sm"

@@ -388,3 +388,16 @@ export function formatBytes(bytes: number, decimals = 1): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
+
+/**
+ * Resolves a high-availability preview URL for any uploaded file or receipt.
+ * Proxies Cloudflare R2 files through /api/files/preview to prevent CORS, SSL, or private bucket issues.
+ */
+export function getFilePreviewUrl(filePath: string): string {
+  if (!filePath) return "";
+  if (filePath.startsWith("blob:") || filePath.startsWith("data:")) {
+    return filePath;
+  }
+  return `/api/files/preview?url=${encodeURIComponent(filePath)}`;
+}
+

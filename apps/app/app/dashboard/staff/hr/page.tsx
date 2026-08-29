@@ -1012,21 +1012,20 @@ export default function StaffHrPortalPage() {
         <div className="flex flex-col gap-6">
           <Card className="p-4 sm:p-8 lg:p-10 bg-[#01142B] border-white/10 flex flex-col gap-6">
             {/* Header / Pay Period */}
-            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5 border-b border-white/10 pb-5 sm:pb-6">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-2 flex-wrap">
-                  <Badge variant="emerald" className="text-[0.688rem] sm:text-xs font-mono">
-                    Official Compensation Summary
-                  </Badge>
+            <div className="flex flex-col gap-5 border-b border-white/10 pb-6">
+              {/* Top Controls Row: Badges & Cycle Selector */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                {/* Left: Metadata Badges */}
+                <div className="flex items-center gap-2 flex-wrap">
                   {(activeDisplayPayslip?.payslipNumber || portalData.payslip.payslipNumber) && (
-                    <Badge variant="sky" className="text-[0.688rem] sm:text-xs font-mono">
+                    <Badge variant="sky" className="text-xs font-mono font-bold tracking-wider">
                       {activeDisplayPayslip?.payslipNumber || portalData.payslip.payslipNumber}
                     </Badge>
                   )}
                   {(activeDisplayPayslip?.status || portalData.payslip.status) && (
                     <Badge
                       variant={(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED" ? "emerald" : "amber"}
-                      className="text-[0.688rem] sm:text-xs font-mono"
+                      className="text-xs font-mono font-semibold"
                     >
                       {(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED"
                         ? `Disbursed (${activeDisplayPayslip?.disbursementMethod || "Paid"})`
@@ -1034,7 +1033,7 @@ export default function StaffHrPortalPage() {
                     </Badge>
                   )}
                   {activeDisplayPayslip?.cutOffCycle && (
-                    <Badge variant="amber" className="text-[0.688rem] sm:text-xs font-mono">
+                    <Badge variant="amber" className="text-xs font-mono">
                       {activeDisplayPayslip.cutOffCycle === "FIRST_HALF"
                         ? "1st Cut-Off (Days 1–15)"
                         : activeDisplayPayslip.cutOffCycle === "SECOND_HALF"
@@ -1043,34 +1042,26 @@ export default function StaffHrPortalPage() {
                     </Badge>
                   )}
                   {(activeDisplayPayslip?.compensationType || portalData.payslip.compensationType) && (
-                    <span className="text-[0.688rem] font-mono text-white/50">
-                      Model: {(activeDisplayPayslip?.compensationType || portalData.payslip.compensationType || "").replace(/_/g, " ")}
+                    <span className="text-xs font-mono text-white/50 bg-white/[0.04] px-2.5 py-1 rounded-[2px] border border-white/10">
+                      Rate: {(activeDisplayPayslip?.compensationType || portalData.payslip.compensationType || "").replace(/_/g, " ")}
                     </span>
                   )}
                 </div>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white font-sans tracking-tight leading-snug">
-                  Statement of Duty Earnings — {activeDisplayPayslip?.payPeriodMonth || portalData.payslip.payPeriod}
-                </h2>
-                <span className="text-xs text-white/50 font-sans mt-1 block">
-                  Employee: <strong className="text-white">{activeDisplayPayslip?.staffName || portalData.user.fullName}</strong> ({activeDisplayPayslip?.staffRole || portalData.user.role})
-                </span>
-              </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center lg:flex-col lg:items-end xl:flex-row xl:items-center gap-2.5 w-full lg:w-auto shrink-0">
-                {/* Past Months / Cycles Dropdown Selector */}
+                {/* Right: Cycle History Selector */}
                 {allMyPayslips.length > 0 && (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
-                    <span className="text-[0.688rem] sm:text-xs font-mono uppercase text-white/60 font-semibold tracking-wider shrink-0">
+                  <div className="flex items-center gap-2 w-full lg:w-auto">
+                    <span className="text-xs font-mono uppercase text-white/60 font-semibold tracking-wider shrink-0">
                       Cycle History:
                     </span>
-                    <div className="relative w-full sm:w-[350px] md:w-[390px] xl:w-[420px] min-w-0">
+                    <div className="relative flex-1 sm:w-[320px] md:w-[360px] min-w-0">
                       <select
                         value={activeDisplayPayslip?.id || ""}
                         onChange={(e) => {
                           const found = allMyPayslips.find((p) => p.id === e.target.value);
                           if (found) setSelectedPayslip(found);
                         }}
-                        className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] pl-3 pr-8 py-2 sm:py-1.5 text-[0.688rem] sm:text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer appearance-none transition-colors hover:border-white/25 truncate"
+                        className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] pl-3 pr-8 py-2 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer appearance-none transition-colors hover:border-white/25 truncate"
                       >
                         {allMyPayslips.map((ps) => {
                           const monthMatch = ps.payPeriodMonth.match(/([A-Za-z]+)\s+(\d{4})/);
@@ -1100,17 +1091,31 @@ export default function StaffHrPortalPage() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Title & Actions Row */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                <div className="min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight">
+                    Payslip Summary
+                  </h2>
+                  <div className="flex items-center gap-2 text-xs text-white/60 font-sans mt-1 flex-wrap">
+                    <span>Period: <strong className="text-white font-medium">{activeDisplayPayslip?.payPeriodMonth || portalData.payslip.payPeriod}</strong></span>
+                    <span>&bull;</span>
+                    <span>Staff Member: <strong className="text-white font-medium">{activeDisplayPayslip?.staffName || portalData.user.fullName}</strong> ({activeDisplayPayslip?.staffRole || portalData.user.role})</span>
+                  </div>
+                </div>
 
                 {activeDisplayPayslip && (
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                  <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setSelectedPayslipForModal(activeDisplayPayslip)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer text-xs font-sans rounded-[2px] py-2 sm:py-1.5"
+                      className="w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer text-xs font-sans rounded-[2px] px-4 py-2"
                     >
                       <IconFileText size={14} stroke={1.5} />
-                      <span>Inspect Official Statement</span>
+                      <span>Inspect Statement</span>
                     </Button>
 
                     <Link
@@ -1121,10 +1126,10 @@ export default function StaffHrPortalPage() {
                       <Button
                         variant="primary"
                         size="sm"
-                        className="w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer text-xs font-semibold rounded-[2px] py-2 sm:py-1.5"
+                        className="w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer text-xs font-semibold rounded-[2px] px-4 py-2"
                       >
                         <IconPrinter size={14} stroke={2} />
-                        <span>Print Official Voucher / PDF</span>
+                        <span>Print PDF</span>
                       </Button>
                     </Link>
                   </div>
@@ -1135,24 +1140,24 @@ export default function StaffHrPortalPage() {
             {/* Compensation Breakdown Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <KpiCard
-                label="Verified Duty Hours"
+                label="Verified Hours Worked"
                 value={activeDisplayPayslip?.verifiedDutyHours ?? portalData.payslip.totalDutyHours}
                 unit="hrs"
                 icon={<IconClock size={16} stroke={1.5} />}
-                description={`@ ₱${(activeDisplayPayslip?.hourlyRate ?? portalData.payslip.baseHourlyRate ?? 450).toFixed(2)} / hour`}
+                description={<>@ <Peso />{(activeDisplayPayslip?.hourlyRate ?? portalData.payslip.baseHourlyRate ?? 450).toFixed(2)} / hour</>}
               />
 
               <KpiCard
                 label="Hourly Duty Earnings"
-                value={`₱${(activeDisplayPayslip?.hourlyDutyEarnings ?? portalData.payslip.dutyHourlyEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                value={<><Peso />{(activeDisplayPayslip?.hourlyDutyEarnings ?? portalData.payslip.dutyHourlyEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</>}
                 variant="emerald"
                 icon={<IconReceipt size={16} stroke={1.5} />}
-                description="From verified punches"
+                description="From verified duty punches"
               />
 
               <KpiCard
-                label="Project Milestones"
-                value={`₱${(activeDisplayPayslip?.commissionEarnings ?? portalData.payslip.projectMilestoneEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                label="Studies Completed Pay"
+                value={<><Peso />{(activeDisplayPayslip?.commissionEarnings ?? portalData.payslip.projectMilestoneEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</>}
                 variant="emerald"
                 icon={<IconBuildingBank size={16} stroke={1.5} />}
                 description={activeDisplayPayslip?.completedStudiesCount ? `From ${activeDisplayPayslip.completedStudiesCount} delivered studies` : "From delivered studies"}
@@ -1160,14 +1165,14 @@ export default function StaffHrPortalPage() {
 
               <KpiCard
                 label="Allowances & Base Pay"
-                value={`₱${(
+                value={<><Peso />{(
                   (activeDisplayPayslip?.baseSalary ?? 0) +
                   (activeDisplayPayslip?.allowances ?? portalData.payslip.allowances) +
                   (activeDisplayPayslip?.overtimeEarnings ?? portalData.payslip.overtimeEarnings)
-                ).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
+                ).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</>}
                 variant="sky"
                 icon={<IconShieldCheck size={16} stroke={1.5} />}
-                description={activeDisplayPayslip?.baseSalary ? `₱${activeDisplayPayslip.baseSalary.toLocaleString()} Base + Allowances` : "Overtime + Tech stipend"}
+                description={activeDisplayPayslip?.baseSalary ? <><Peso />{activeDisplayPayslip.baseSalary.toLocaleString()} Base + Allowances</> : "Overtime + Tech stipend"}
               />
             </div>
 

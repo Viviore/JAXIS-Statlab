@@ -90,6 +90,8 @@ export interface ProjectDetailItem {
   filesPurged: boolean;
   hasActiveDispute: boolean;
   hasPendingRefund: boolean;
+  latestPaymentStatus?: string | null;
+  hasPendingPaymentVerification?: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
   client: {

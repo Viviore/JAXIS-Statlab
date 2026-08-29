@@ -24,6 +24,8 @@ const statusColorMap: Record<string, { bg: string; text: string; border: string;
 
   // In Progress / Working states
   IN_PROGRESS: { bg: "bg-[#38BDF8]/15", text: "text-[#38BDF8]", border: "border-[#38BDF8]/30", rawBg: "rgba(56, 189, 248, 0.15)", rawText: "#38BDF8", rawBorder: "rgba(56, 189, 248, 0.35)" },
+  PENDING_ASSIGNMENT: { bg: "bg-[#38BDF8]/15", text: "text-[#38BDF8]", border: "border-[#38BDF8]/30", rawBg: "rgba(56, 189, 248, 0.15)", rawText: "#38BDF8", rawBorder: "rgba(56, 189, 248, 0.35)" },
+  AWAITING_ASSIGNMENT: { bg: "bg-[#38BDF8]/15", text: "text-[#38BDF8]", border: "border-[#38BDF8]/30", rawBg: "rgba(56, 189, 248, 0.15)", rawText: "#38BDF8", rawBorder: "rgba(56, 189, 248, 0.35)" },
   FOR_QA: { bg: "bg-[#10B981]/20", text: "text-[#10B981]", border: "border-[#10B981]/50", rawBg: "rgba(16, 185, 129, 0.20)", rawText: "#10B981", rawBorder: "rgba(16, 185, 129, 0.50)" },
   EXPERT_ASSIGNED: { bg: "bg-white/5", text: "text-white/70", border: "border-white/20", rawBg: "rgba(255, 255, 255, 0.05)", rawText: "rgba(255, 255, 255, 0.70)", rawBorder: "rgba(255, 255, 255, 0.20)" },
 
@@ -38,6 +40,9 @@ const statusColorMap: Record<string, { bg: string; text: string; border: string;
   REVISION_REQUESTED: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   SLA_PAUSED: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   PROOF_SUBMITTED: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
+  AWAITING_PAYMENT_CONFIRMATION: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
+  PAYMENT_VERIFICATION: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
+  PENDING_VERIFICATION: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   PENDING: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
   UNDER_REVIEW: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", border: "border-[#F59E0B]/30", rawBg: "rgba(245, 158, 11, 0.15)", rawText: "#F59E0B", rawBorder: "rgba(245, 158, 11, 0.35)" },
 
@@ -68,7 +73,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   ...props
 }) => {
   const normalizedKey = status.toUpperCase().replace(/\s+/g, "_");
-  const isActionReady = normalizedKey === "FOR_QA" || normalizedKey === "PROOF_SUBMITTED";
+  const isActionReady =
+    normalizedKey === "FOR_QA" ||
+    normalizedKey === "PROOF_SUBMITTED" ||
+    normalizedKey === "AWAITING_PAYMENT_CONFIRMATION" ||
+    normalizedKey === "PENDING_VERIFICATION" ||
+    normalizedKey === "PENDING_ASSIGNMENT" ||
+    normalizedKey === "AWAITING_ASSIGNMENT";
   const shouldPulse = pulse !== undefined ? pulse : isActionReady;
 
   const style = statusColorMap[normalizedKey] ?? {
@@ -81,7 +92,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   };
 
   const displayText =
-    label ?? (normalizedKey === "FOR_QA" ? "FOR QA • READY" : formatStatus(status));
+    label ??
+    (normalizedKey === "FOR_QA"
+      ? "FOR QA • READY"
+      : normalizedKey === "PROOF_SUBMITTED" || normalizedKey === "AWAITING_PAYMENT_CONFIRMATION"
+      ? "AWAITING PAYMENT CONFIRMATION"
+      : normalizedKey === "PENDING_ASSIGNMENT"
+      ? "PENDING ASSIGNMENT"
+      : normalizedKey === "AWAITING_ASSIGNMENT"
+      ? "AWAITING ASSIGNMENT"
+      : formatStatus(status));
 
   return (
     <span

@@ -37,6 +37,7 @@ import {
   VALID_TRANSITIONS,
   PROJECT_STATUS_LABELS,
   MISSING_INFO_TEMPLATES,
+  getProjectDisplayStatus,
 } from "@/lib/project-rules";
 import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
 import { getProjectAssignment } from "@/features/assignments/actions";
@@ -295,11 +296,16 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               <span className="text-xs font-sans text-white/60 uppercase font-semibold tracking-wider">
                 Current Master Status:
               </span>
-              <StatusBadge
-                status={project.masterStatus}
-                label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
-                pulse={project.masterStatus === "NEW_REQUEST" || project.masterStatus === "AWAITING_INFORMATION"}
-              />
+              {(() => {
+                const displayStatus = getProjectDisplayStatus(project);
+                return (
+                  <StatusBadge
+                    status={displayStatus.status}
+                    label={displayStatus.label}
+                    pulse={displayStatus.pulse || project.masterStatus === "NEW_REQUEST" || project.masterStatus === "AWAITING_INFORMATION"}
+                  />
+                );
+              })()}
               <button
                 type="button"
                 onClick={handleCopyId}
@@ -536,20 +542,30 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                         project.masterStatus === "SOW_PENDING" ||
                         project.masterStatus === "SOW_SIGNED" ||
                         project.masterStatus === "AWAITING_PAYMENT") && (
-                        <Link href={`/dashboard/admin/projects/${project.id}/sow`}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="gap-2 bg-[#CC6600] text-white hover:bg-[#FFA040] font-sans text-xs font-semibold px-3.5 py-2"
-                          >
-                            <IconFileText size={15} stroke={1.5} />
-                            <span>
-                              {project.masterStatus === "CLIENT_APPROVED"
-                                ? "Compile SOW Contract →"
-                                : "View SOW Contract →"}
-                            </span>
-                          </Button>
-                        </Link>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link href={`/dashboard/admin/projects/${project.id}/sow`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 font-sans text-xs font-semibold px-3.5 py-2"
+                            >
+                              <IconFileText size={15} stroke={1.5} />
+                              <span>View SOW Contract →</span>
+                            </Button>
+                          </Link>
+                          {(project.hasPendingPaymentVerification || project.latestPaymentStatus === "PROOF_SUBMITTED" || project.masterStatus === "AWAITING_PAYMENT") && (
+                            <Link href={`/dashboard/admin/projects/${project.id}/payment`}>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                className="gap-2 bg-[#CC6600] text-white hover:bg-[#FFA040] font-sans text-xs font-semibold px-3.5 py-2"
+                              >
+                                <IconReceipt size={15} stroke={1.5} />
+                                <span>{project.hasPendingPaymentVerification || project.latestPaymentStatus === "PROOF_SUBMITTED" ? "Review & Clear Deposit Funds →" : "Open Payment Desk →"}</span>
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>

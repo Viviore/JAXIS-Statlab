@@ -19,7 +19,7 @@ import { IconDownload, IconCopy, IconFolderOff, IconFileSearch, IconPlus, IconAr
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
-import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import { getProjectDisplayStatus } from "@/lib/project-rules";
 import {
   getFileMeta,
   formatFileCategory,
@@ -457,15 +457,16 @@ export default function ClientProjectsListPage() {
 
                         {/* 3. Status */}
                         <td className="whitespace-nowrap">
-                          <StatusBadge
-                            status={p.masterStatus}
-                            label={PROJECT_STATUS_LABELS[p.masterStatus] || p.masterStatus}
-                            pulse={
-                              p.masterStatus === "AWAITING_INFORMATION" ||
-                              p.masterStatus === "IN_PROGRESS" ||
-                              p.masterStatus === "FOR_QA"
-                            }
-                          />
+                          {(() => {
+                            const displayStatus = getProjectDisplayStatus(p);
+                            return (
+                              <StatusBadge
+                                status={displayStatus.status}
+                                label={displayStatus.label}
+                                pulse={displayStatus.pulse}
+                              />
+                            );
+                          })()}
                         </td>
 
                         {/* 4. Actions */}
@@ -544,14 +545,16 @@ export default function ClientProjectsListPage() {
             >
               <div className="flex items-center gap-3">
                 <span className="font-mono text-xs text-white/50 uppercase">Current Gate:</span>
-                <StatusBadge
-                  status={selectedStudyForInspect.masterStatus}
-                  label={
-                    PROJECT_STATUS_LABELS[selectedStudyForInspect.masterStatus] ||
-                    selectedStudyForInspect.masterStatus
-                  }
-                  pulse={selectedStudyForInspect.masterStatus === "AWAITING_INFORMATION"}
-                />
+                {(() => {
+                  const displayStatus = getProjectDisplayStatus(selectedStudyForInspect);
+                  return (
+                    <StatusBadge
+                      status={displayStatus.status}
+                      label={displayStatus.label}
+                      pulse={displayStatus.pulse}
+                    />
+                  );
+                })()}
               </div>
               <div className="font-mono text-xs text-white/60">
                 Target Deadline:{" "}

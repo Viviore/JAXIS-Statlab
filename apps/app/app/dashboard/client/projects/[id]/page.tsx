@@ -22,6 +22,7 @@ import {
   IconDatabase,
   IconClipboardList,
   IconReceipt,
+  IconClock,
   IconShieldCheck,
   IconFileCertificate,
   IconMessages,
@@ -29,7 +30,7 @@ import {
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
 import { uploadFileToR2 } from "@/lib/storage-client";
 import { ProjectFilesCard } from "@/features/projects/components/ProjectFilesCard";
-import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import { getProjectDisplayStatus } from "@/lib/project-rules";
 import type { ProjectDetailItem, ProjectFileItem } from "@/features/projects/schemas";
 import type { FileCategory } from "@prisma/client";
 
@@ -459,11 +460,16 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               <span className="text-xs font-sans text-white/60 uppercase font-semibold tracking-wider">
                 Current Master Status:
               </span>
-              <StatusBadge
-                status={project.masterStatus}
-                label={PROJECT_STATUS_LABELS[project.masterStatus] || project.masterStatus}
-                pulse={project.masterStatus === "IN_PROGRESS" || project.masterStatus === "FOR_QA"}
-              />
+              {(() => {
+                const displayStatus = getProjectDisplayStatus(project);
+                return (
+                  <StatusBadge
+                    status={displayStatus.status}
+                    label={displayStatus.label}
+                    pulse={displayStatus.pulse}
+                  />
+                );
+              })()}
               <CopyButton
                 value={project.intakeId}
                 label={project.intakeId}
@@ -614,27 +620,82 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
 
       {/* ── Awaiting Payment Deposit Banner (if SOW_SIGNED or AWAITING_PAYMENT) ── */}
       {(project.masterStatus === "SOW_SIGNED" || project.masterStatus === "AWAITING_PAYMENT") && (
-        <Card className="p-6 sm:p-7 bg-[#01142B] border border-[#CC6600]/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
+        project.hasPendingPaymentVerification || project.latestPaymentStatus === "PROOF_SUBMITTED" ? (
+          <Card className="p-6 sm:p-7 bg-[#01142B] border border-sky-500/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-[2px] bg-sky-500/15 border border-sky-500/30 flex items-center justify-center shrink-0">
+                <IconClock size={20} stroke={1.5} className="text-sky-400" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-sans text-sky-400 font-semibold uppercase tracking-wider block">
+                  Deposit Proof Submitted · Awaiting Finance Confirmation
+                </span>
+                <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                  Your payment receipt has been submitted and is currently being verified by our finance team. Once confirmed, research assignment will activate automatically.
+                </p>
+              </div>
+            </div>
+            <Link href={`/dashboard/client/projects/${project.id}/payment`}>
+              <Button
+                variant="secondary"
+                size="md"
+                className="font-sans font-semibold text-xs min-h-[38px] whitespace-nowrap px-5 py-2 rounded-[2px]"
+              >
+                Inspect Payment Desk →
+              </Button>
+            </Link>
+          </Card>
+        ) : (
+          <Card className="p-6 sm:p-7 bg-[#01142B] border border-[#CC6600]/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center shrink-0">
+                <IconReceipt size={20} stroke={1.5} className="text-[#FFA040]" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-sans text-[#FFA040] font-semibold uppercase tracking-wider block">
+                  Milestone Deposit Required · Downpayment Verification
+                </span>
+                <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                  Your Statement of Work is executed. Transfer your agreed downpayment via GCash or Bank Deposit and submit the receipt to activate computational modeling.
+                </p>
+              </div>
+            </div>
+            <Link href={`/dashboard/client/projects/${project.id}/payment`}>
+              <Button
+                variant="primary"
+                size="md"
+                className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#FFA040] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
+              >
+                Proceed to Payment Desk →
+              </Button>
+            </Link>
+          </Card>
+        )
+      )}
+
+      {/* ── Pending Assignment Banner (if ACTIVE) ── */}
+      {project.masterStatus === "ACTIVE" && (
+        <Card className="p-6 sm:p-7 bg-[#01142B] border border-sky-500/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center shrink-0">
-              <IconReceipt size={20} stroke={1.5} className="text-[#FFA040]" />
+            <div className="h-10 w-10 rounded-[2px] bg-sky-500/15 border border-sky-500/30 flex items-center justify-center shrink-0">
+              <IconClock size={20} stroke={1.5} className="text-sky-400" />
             </div>
             <div className="space-y-0.5">
-              <span className="text-xs font-sans text-[#FFA040] font-semibold uppercase tracking-wider block">
-                Milestone Deposit Required · Downpayment Verification
+              <span className="text-xs font-sans text-sky-400 font-semibold uppercase tracking-wider block">
+                Payment Confirmed · Assigning Lead Statistician &amp; QA Lead
               </span>
               <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
-                Your Statement of Work is executed. Transfer your agreed downpayment via GCash or Bank Deposit and submit the receipt to activate computational modeling.
+                Your downpayment has been confirmed. Our team is assigning your Lead Statistician and Senior QA Lead to begin research analysis.
               </p>
             </div>
           </div>
           <Link href={`/dashboard/client/projects/${project.id}/payment`}>
             <Button
-              variant="primary"
+              variant="secondary"
               size="md"
-              className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#FFA040] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
+              className="font-sans font-semibold text-xs min-h-[38px] whitespace-nowrap px-5 py-2 rounded-[2px]"
             >
-              Proceed to Payment Desk →
+              View Payment Ledger →
             </Button>
           </Link>
         </Card>

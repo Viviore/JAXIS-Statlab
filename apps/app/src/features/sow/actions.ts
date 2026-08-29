@@ -47,45 +47,21 @@ function writePersistedDevSows(sows: SOWDetailItem[]): void {
 }
 
 /**
- * Generate a formal Statement of Work from an accepted quotation.
- * Allowed roles: ADMIN, CEO.
+/**
+ * Core internal Statement of Work generator.
+ * Used during automatic generation on quotation approval and manual compile by Admin/CEO.
  */
-export async function generateSOW(
-  input: unknown
-): Promise<ActionResponse<SOWDetailItem>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      error: { code: "UNAUTHORIZED", message: "Authentication required." },
-    };
-  }
-
-  const role = session.user.role || "CLIENT";
-  if (role !== "ADMIN" && role !== "CEO") {
-    return {
-      success: false,
-      error: {
-        code: "FORBIDDEN",
-        message: "Only administrators or CEO can generate Statements of Work.",
-      },
-    };
-  }
-
-  const parsed = GenerateSOWSchema.safeParse(input);
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: {
-        code: "VALIDATION_ERROR",
-        message: "Invalid SOW generation parameters.",
-        fieldErrors: parsed.error.flatten().fieldErrors,
-      },
-    };
-  }
-
-  const { projectId, quotationId, customTerms } = parsed.data;
-
+export async function createOrUpdateSOWInternal({
+  projectId,
+  quotationId,
+  generatedBy,
+  customTerms,
+}: {
+  projectId: string;
+  quotationId?: string;
+  generatedBy: string;
+  customTerms?: string;
+}): Promise<ActionResponse<SOWDetailItem>> {
   try {
     const result = await withDbTimeout(
       db.$transaction(async (tx) => {
@@ -105,13 +81,27 @@ export async function generateSOW(
           throw new Error("Project record not found.");
         }
 
-        // 2. Fetch quotation
-        const quote = await tx.quotation.findUnique({
-          where: { id: quotationId },
-          include: {
-            lineItems: true,
-          },
-        });
+        // 2. Fetch quotation (by ID or latest accepted/sent quote for project)
+        let quote;
+        if (quotationId) {
+          quote = await tx.quotation.findUnique({
+            where: { id: quotationId },
+            include: {
+              lineItems: true,
+            },
+          });
+        } else {
+          quote = await tx.quotation.findFirst({
+            where: {
+              projectId,
+              status: { in: ["CLIENT_APPROVED", "QUOTE_SENT"] },
+            },
+            include: {
+              lineItems: true,
+            },
+            orderBy: { createdAt: "desc" },
+          });
+        }
 
         if (!quote || quote.projectId !== projectId) {
           throw new Error("Quotation not found or does not belong to this project.");
@@ -137,7 +127,7 @@ export async function generateSOW(
           JX_03_CORE: 5,
           JX_04_ADVANCED: 7,
         };
-        const packageDef = PACKAGES_CATALOG[quote.packageName];
+        const packageDef = PACKAGES_CATALOG[quote.packageName as keyof typeof PACKAGES_CATALOG];
         const turnaroundDays = packageTurnaround[quote.packageName] || 5;
 
         const snapshot: SOWContentSnapshot = buildSOWSnapshot({
@@ -181,7 +171,7 @@ export async function generateSOW(
               downpaymentRequired: quote.downpaymentRequired,
               turnaroundDays,
               addOns: addOnsList,
-              generatedBy: session.user.id,
+              generatedBy,
               generatedAt: new Date(),
             },
           });
@@ -196,7 +186,7 @@ export async function generateSOW(
               downpaymentRequired: quote.downpaymentRequired,
               turnaroundDays,
               addOns: addOnsList,
-              generatedBy: session.user.id,
+              generatedBy,
               isLocked: false,
             },
           });
@@ -238,6 +228,9 @@ export async function generateSOW(
     revalidatePath(`/dashboard/client/projects/${projectId}/sow`);
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath(`/dashboard/admin/projects/${projectId}/sow`);
+    revalidatePath(`/dashboard/admin/projects`);
+    revalidatePath(`/dashboard/admin/intake`);
+    revalidatePath(`/dashboard/client/projects`);
 
     return { success: true, data: result };
   } catch (err: unknown) {
@@ -253,12 +246,25 @@ export async function generateSOW(
         : [];
 
       const proj = devProjects.find((p: { id: string }) => p.id === projectId);
-      const quote = devQuotes.find((q: { id: string }) => q.id === quotationId);
+      const quote = quotationId
+        ? devQuotes.find((q: { id: string }) => q.id === quotationId)
+        : devQuotes.find(
+            (q: { projectId: string; status: string }) =>
+              q.projectId === projectId &&
+              (q.status === "CLIENT_APPROVED" || q.status === "QUOTE_SENT")
+          );
 
       if (!proj) {
         return {
           success: false,
           error: { code: "NOT_FOUND", message: "Project not found in system." },
+        };
+      }
+
+      if (!quote) {
+        return {
+          success: false,
+          error: { code: "NOT_FOUND", message: "Quotation not found for this study." },
         };
       }
 
@@ -278,7 +284,14 @@ export async function generateSOW(
         };
       }
 
-      const addOnsList = quote?.addOns || [];
+      const addOnsList = Array.isArray(quote?.lineItems)
+        ? quote.lineItems
+            .filter((li: { itemType: string; itemName: string }) => li.itemType === "ADDON")
+            .map((li: { itemType: string; itemName: string }) => li.itemName)
+        : Array.isArray(quote?.addOns)
+          ? quote.addOns
+          : [];
+
       const packageKey = (quote?.packageName as keyof typeof PACKAGES_CATALOG) || "JX_03_CORE";
       const packageDef = PACKAGES_CATALOG[packageKey] || PACKAGES_CATALOG.JX_03_CORE;
       const packageTurnaround: Record<string, number> = {
@@ -293,8 +306,9 @@ export async function generateSOW(
         client: {
           fullName: proj.client?.fullName || "Lead Researcher",
           email: proj.client?.email || "client@jaxis.dev",
-          institution: "University of the Philippines",
-          academicProgram: "Doctor of Philosophy",
+          institution: proj.client?.clientProfile?.institutionSchool || "University of the Philippines",
+          academicProgram: proj.client?.clientProfile?.academicProgram || "Doctor of Philosophy",
+          phone: proj.client?.phone,
         },
         project: {
           intakeId: proj.intakeId,
@@ -307,9 +321,9 @@ export async function generateSOW(
           packageName: quote?.packageName || "JX_03_CORE",
           packageLabel: packageDef?.name || "JX-03 Core",
           addOns: addOnsList,
-          basePrice: quote?.basePrice || 2500,
-          totalAmount: quote?.totalAmount || 2750,
-          downpaymentRequired: quote?.downpaymentRequired || 1375,
+          basePrice: Number(quote?.basePrice || 2500),
+          totalAmount: Number(quote?.totalAmount || 2750),
+          downpaymentRequired: Number(quote?.downpaymentRequired || 1375),
         },
         delivery: {
           turnaroundDays,
@@ -324,12 +338,12 @@ export async function generateSOW(
         sowType: "PRIMARY",
         contentSnapshot: snapshot,
         packageName: quote?.packageName || "JX_03_CORE",
-        totalAmount: quote?.totalAmount || 2750,
-        downpaymentRequired: quote?.downpaymentRequired || 1375,
+        totalAmount: Number(quote?.totalAmount || 2750),
+        downpaymentRequired: Number(quote?.downpaymentRequired || 1375),
         turnaroundDays,
         addOns: addOnsList,
         isLocked: false,
-        generatedBy: session.user.id,
+        generatedBy,
         generatedAt: new Date().toISOString(),
       };
 
@@ -344,6 +358,14 @@ export async function generateSOW(
       proj.masterStatus = "SOW_PENDING";
       fs.writeFileSync(DEV_PROJECTS_FILE, JSON.stringify(devProjects, null, 2), "utf-8");
 
+      revalidatePath(`/dashboard/client/projects/${projectId}`);
+      revalidatePath(`/dashboard/client/projects/${projectId}/sow`);
+      revalidatePath(`/dashboard/admin/projects/${projectId}`);
+      revalidatePath(`/dashboard/admin/projects/${projectId}/sow`);
+      revalidatePath(`/dashboard/admin/projects`);
+      revalidatePath(`/dashboard/admin/intake`);
+      revalidatePath(`/dashboard/client/projects`);
+
       return { success: true, data: sowItem };
     } catch {
       return {
@@ -352,6 +374,54 @@ export async function generateSOW(
       };
     }
   }
+}
+
+/**
+ * Generate a formal Statement of Work from an accepted quotation.
+ * Allowed roles: ADMIN, CEO.
+ */
+export async function generateSOW(
+  input: unknown
+): Promise<ActionResponse<SOWDetailItem>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "Authentication required." },
+    };
+  }
+
+  const role = session.user.role || "CLIENT";
+  if (role !== "ADMIN" && role !== "CEO") {
+    return {
+      success: false,
+      error: {
+        code: "FORBIDDEN",
+        message: "Only administrators or CEO can generate Statements of Work.",
+      },
+    };
+  }
+
+  const parsed = GenerateSOWSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid SOW generation parameters.",
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      },
+    };
+  }
+
+  const { projectId, quotationId, customTerms } = parsed.data;
+
+  return createOrUpdateSOWInternal({
+    projectId,
+    quotationId,
+    generatedBy: session.user.id,
+    customTerms,
+  });
 }
 
 /**

@@ -256,7 +256,7 @@ export default function FinanceDashboardPage() {
                     {/* Study & Title */}
                     <td className="py-4 px-5 whitespace-nowrap">
                       <Link
-                        href={`/dashboard/admin/projects/${study.id}/payment`}
+                        href={`/dashboard/finance/projects/${study.id}/payment`}
                         className="font-mono text-xs font-bold text-[#FFA040] hover:underline"
                       >
                         {study.intakeId}
@@ -354,7 +354,7 @@ export default function FinanceDashboardPage() {
 
                     {/* Action Links */}
                     <td className="py-4 px-5 whitespace-nowrap text-right">
-                      <Link href={`/dashboard/admin/projects/${study.id}/payment`}>
+                      <Link href={`/dashboard/finance/projects/${study.id}/payment`}>
                         <Button
                           variant="primary"
                           size="sm"

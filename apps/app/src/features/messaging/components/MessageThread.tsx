@@ -5,7 +5,7 @@ import type { MessageDTO } from "../schemas";
 import { getProjectMessages, syncNewMessages, sendMessage } from "../actions";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { LoadingState, Badge } from "@repo/ui";
+import { LoadingState, Badge, StatusBadge } from "@repo/ui";
 import {
   IconMessages,
   IconShieldCheck,
@@ -13,6 +13,7 @@ import {
   IconLoader2,
   IconHistory,
   IconArrowLeft,
+  IconLock,
 } from "@tabler/icons-react";
 import { subscribeToProjectMessages } from "@/lib/messaging/realtime";
 
@@ -60,7 +61,6 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     }
   }, []);
 
-  // 1. Initial Load: Fetch latest 15 messages (1 compact query)
   const loadInitialMessages = useCallback(async () => {
     setIsLoading(true);
     isInitialScrollDone.current = false;
@@ -80,7 +80,6 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     }
   }, [projectId]);
 
-  // 2. Load Older Messages (Chunk of 15 when scrolling up)
   const loadOlderMessages = useCallback(async () => {
     if (!hasMore || isLoadingOlder || !nextCursor) return;
 
@@ -98,7 +97,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
         setHasMore(res.data.hasMore);
         setNextCursor(res.data.nextCursor);
 
-        // Preserve scroll position so content doesn't jump
+        // Preserve scroll position relative to previous top content
         requestAnimationFrame(() => {
           if (chatContainerRef.current) {
             const newScrollHeight = chatContainerRef.current.scrollHeight;
@@ -111,131 +110,67 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     } finally {
       setIsLoadingOlder(false);
     }
-  }, [projectId, hasMore, isLoadingOlder, nextCursor]);
+  }, [hasMore, isLoadingOlder, nextCursor, projectId]);
 
-  // 3. Fast Micro-Delta Sync (Messenger/Telegram delta query)
-  const syncLatestDelta = useCallback(async () => {
-    if (document.hidden) return; // Zero server load when tab is inactive
-
-    const currentList = messagesRef.current;
-    const lastMsg = currentList[currentList.length - 1];
-    const sinceIso = lastMsg ? lastMsg.sentAt : new Date(0).toISOString();
-
-    try {
-      const res = await syncNewMessages(projectId, sinceIso);
-      if (res.success && res.data && res.data.length > 0) {
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m.id));
-          const newArrived = res.data!.filter((m) => !existingIds.has(m.id));
-          if (newArrived.length === 0) return prev;
-
-          // Auto-scroll if user is near bottom
-          if (chatContainerRef.current) {
-            const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 120;
-            if (isNearBottom) {
-              setTimeout(() => scrollToBottom(true), 40);
-            }
-          }
-
-          return [...prev, ...newArrived];
-        });
+  // Scroll listener for top reverse cursor pagination
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      if (chatContainerRef.current.scrollTop <= 40 && hasMore && !isLoadingOlder) {
+        loadOlderMessages();
       }
-    } catch (err) {
-      console.error("Failed to sync delta messages:", err);
     }
-  }, [projectId, scrollToBottom]);
+  };
 
-  // Mount on project change
   useEffect(() => {
     loadInitialMessages();
   }, [loadInitialMessages]);
 
-  // Auto-scroll to bottom on initial message load
+  // Scroll down on initial mount
   useEffect(() => {
     if (!isLoading && messages.length > 0 && !isInitialScrollDone.current) {
       scrollToBottom(false);
       isInitialScrollDone.current = true;
     }
-  }, [messages, isLoading, scrollToBottom]);
+  }, [isLoading, messages.length, scrollToBottom]);
 
-  // 4. WebSocket Push-First + Tab Visibility Sync (Messenger/WhatsApp pattern)
+  // 3. Real-time Subscription via Supabase Realtime Channels
   useEffect(() => {
-    let wsConnected = false;
+    if (!projectId) return;
 
-    // A. Real-time push listener (Instant delivery from Supabase WebSocket)
-    const unsubscribe = subscribeToProjectMessages(
-      projectId,
-      (payload) => {
-        const incoming = payload as unknown as MessageDTO;
-        if (!incoming?.id) return;
+    const cleanup = subscribeToProjectMessages(projectId, async () => {
+      const lastMsg = messagesRef.current[messagesRef.current.length - 1];
+      const sinceIso = lastMsg ? lastMsg.sentAt : new Date(Date.now() - 60000).toISOString();
 
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === incoming.id)) return prev;
-
-          if (chatContainerRef.current) {
-            const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-            if (isNearBottom) {
-              setTimeout(() => scrollToBottom(true), 40);
-            }
-          }
-
-          return [...prev, incoming];
-        });
-      },
-      (status) => {
-        wsConnected = status === "SUBSCRIBED";
+      try {
+        const syncRes = await syncNewMessages(projectId, sinceIso);
+        if (syncRes.success && syncRes.data && syncRes.data.length > 0) {
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const fresh = syncRes.data!.filter((m) => !existingIds.has(m.id));
+            if (fresh.length === 0) return prev;
+            return [...prev, ...fresh];
+          });
+          scrollToBottom(true);
+        }
+      } catch (err) {
+        console.error("Failed to sync realtime delta messages:", err);
       }
-    );
-
-    // B. Adaptive heartbeat: 25s if WebSocket is active, 8s fallback if disconnected
-    const interval = setInterval(() => {
-      if (document.hidden) return; // Tab is asleep
-      syncLatestDelta();
-    }, wsConnected ? 25000 : 8000);
-
-    // C. Instant wake-up sync when tab is focused / restored
-    const handleVisibilityOrFocus = () => {
-      if (!document.hidden) {
-        syncLatestDelta();
-      }
-    };
-
-    window.addEventListener("focus", handleVisibilityOrFocus);
-    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    });
 
     return () => {
-      unsubscribe();
-      clearInterval(interval);
-      window.removeEventListener("focus", handleVisibilityOrFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      cleanup();
     };
-  }, [projectId, syncLatestDelta, scrollToBottom]);
+  }, [projectId, scrollToBottom]);
 
-  // Scroll listener for top reverse-infinite loading
-  const handleScroll = () => {
-    if (!chatContainerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    if (scrollHeight > clientHeight + 60 && scrollTop < 20 && hasMore && !isLoadingOlder) {
-      loadOlderMessages();
-    }
-  };
-
-  // Send message handler
   const handleSendMessage = async (content: string) => {
     const res = await sendMessage({ projectId, content });
     if (res.success && res.data) {
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === res.data!.id)) return prev;
-        return [...prev, res.data!];
-      });
-      setTimeout(() => scrollToBottom(true), 30);
+      setMessages((prev) => [...prev, res.data!]);
+      scrollToBottom(true);
       return { success: true };
     }
-    if (res.blocked) {
-      // Zero leak policy: Do NOT append or render blocked message in the chat stream
-      return { success: false, blocked: true, warning: res.warning };
+    if (res.error?.code === "FIREWALL_BLOCKED") {
+      return { success: false, blocked: true, warning: res.error.message };
     }
     return { success: false, warning: res.error?.message };
   };
@@ -247,6 +182,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       </div>
     );
   }
+
+  const isAssigned = Boolean(projectInfo?.statisticianName || projectInfo?.qaLeadName);
 
   return (
     <div className={`h-full min-h-0 flex flex-col bg-[#01142B] border border-white/10 rounded-[4px] overflow-hidden shadow-2xl ${className}`}>
@@ -271,9 +208,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
               <span className="text-xs font-mono font-semibold text-[#CC6600] tracking-wider">
                 {projectInfo?.intakeId || "STUDY THREAD"}
               </span>
-              <Badge variant="sky" className="text-[0.625rem] font-mono">
-                {projectInfo?.masterStatus.replace(/_/g, " ") || "ACTIVE"}
-              </Badge>
+              {!isAssigned || projectInfo?.masterStatus === "ACTIVE" ? (
+                <StatusBadge status="PENDING_ASSIGNMENT" label="PENDING ASSIGNMENT" />
+              ) : (
+                <Badge variant="sky" className="text-[0.625rem] font-mono">
+                  {projectInfo?.masterStatus.replace(/_/g, " ") || "ACTIVE"}
+                </Badge>
+              )}
             </div>
             <h2 className="text-xs sm:text-sm font-bold text-white tracking-tight mt-0.5 line-clamp-1">
               {projectInfo?.researchTitle || "Research Study Discussion"}
@@ -282,20 +223,29 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
         </div>
 
         {/* Participants Summary */}
-        <div className="flex items-center gap-2.5 text-xs text-white/60 bg-white/[0.03] px-2.5 py-1 rounded-[2px] border border-white/10 shrink-0">
-          <IconUsers size={14} stroke={1.5} className="text-sky-400 shrink-0" />
-          <div className="flex items-center gap-2 flex-wrap text-[0.688rem]">
-            <span><strong>Client:</strong> {projectInfo?.clientName}</span>
-            <span>&bull;</span>
-            <span><strong>Statistician:</strong> {projectInfo?.statisticianName || "Unassigned"}</span>
-            {projectInfo?.qaLeadName && (
-              <>
-                <span>&bull;</span>
-                <span><strong>QA:</strong> {projectInfo.qaLeadName}</span>
-              </>
-            )}
+        {!isAssigned ? (
+          <div className="flex items-center gap-2 text-xs text-amber-400/90 bg-amber-500/10 px-2.5 py-1 rounded-[2px] border border-amber-500/25 shrink-0">
+            <IconLock size={13} stroke={1.5} className="text-amber-400 shrink-0" />
+            <span className="text-[0.688rem] font-mono">
+              Team: Awaiting Assignment
+            </span>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2.5 text-xs text-white/60 bg-white/[0.03] px-2.5 py-1 rounded-[2px] border border-white/10 shrink-0">
+            <IconUsers size={14} stroke={1.5} className="text-sky-400 shrink-0" />
+            <div className="flex items-center gap-2 flex-wrap text-[0.688rem]">
+              <span><strong>Client:</strong> {projectInfo?.clientName}</span>
+              <span>&bull;</span>
+              <span><strong>Statistician:</strong> {projectInfo?.statisticianName || "Unassigned"}</span>
+              {projectInfo?.qaLeadName && (
+                <>
+                  <span>&bull;</span>
+                  <span><strong>QA:</strong> {projectInfo.qaLeadName}</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Messages Stream Container — ONLY THIS SCROLLS */}
@@ -342,8 +292,23 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
           </span>
         </div>
 
-        {/* Empty State */}
-        {messages.length === 0 ? (
+        {/* Empty / Locked State */}
+        {!isAssigned && messages.length === 0 ? (
+          <div className="my-auto py-10 px-6 max-w-md mx-auto rounded-[4px] bg-[#01142B]/90 border border-white/10 flex flex-col items-center justify-center text-center gap-3.5 shadow-xl">
+            <div className="h-12 w-12 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-amber-400">
+              <IconLock size={24} stroke={1.5} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white">Consultation Channel Locked</h3>
+              <p className="text-xs text-white/60 leading-relaxed font-sans">
+                Your downpayment has been confirmed. This consultation thread will automatically open as soon as an administrator assigns your Lead Statistician and QA Lead.
+              </p>
+            </div>
+            <div className="px-3 py-1 rounded-[2px] bg-white/[0.03] border border-white/[0.08] text-[0.688rem] font-mono text-amber-300/90 uppercase tracking-wider">
+              Status: Pending Specialist Assignment
+            </div>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="my-auto py-8 flex flex-col items-center justify-center text-center gap-2.5">
             <div className="h-10 w-10 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/40">
               <IconMessages size={20} stroke={1.5} />
@@ -364,7 +329,12 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
       {/* Message Input Footer — PINNED AT BOTTOM */}
       <div className="flex-shrink-0 p-3 sm:p-4 border-t border-white/10 bg-[#010114]/70">
-        <MessageInput onSendMessage={handleSendMessage} />
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          disabled={!isAssigned}
+          disabledReason={!isAssigned ? "Channel locked • Waiting for administrator to assign research team" : undefined}
+          placeholder={!isAssigned ? "Consultation channel will open once your research team is assigned..." : undefined}
+        />
       </div>
     </div>
   );

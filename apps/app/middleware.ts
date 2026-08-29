@@ -54,6 +54,16 @@ export default auth((req) => {
       "/dashboard/statistician": "STATISTICIAN",
     };
 
+    // Redirect finance officers attempting to access admin payment desks to their native finance desk
+    if (
+      userRole === "FINANCE_OFFICER" &&
+      nextUrl.pathname.startsWith("/dashboard/admin/projects/") &&
+      nextUrl.pathname.endsWith("/payment")
+    ) {
+      const financeUrl = nextUrl.pathname.replace("/dashboard/admin/projects/", "/dashboard/finance/projects/");
+      return NextResponse.redirect(new URL(financeUrl, nextUrl));
+    }
+
     for (const [routePrefix, requiredRole] of Object.entries(roleRoutes)) {
       if (nextUrl.pathname.startsWith(routePrefix)) {
         // Admin and CEO can inspect other desks, but others cannot

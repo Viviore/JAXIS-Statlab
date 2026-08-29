@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalFooter,
@@ -12,15 +10,18 @@ import {
 import {
   IconCheck,
   IconX,
-  IconFileText,
   IconLoader2,
   IconAlertCircle,
   IconBuildingBank,
   IconDeviceMobile,
   IconUser,
+  IconDownload,
+  IconReceipt,
+  IconExternalLink,
 } from "@tabler/icons-react";
 import { verifyPayment, rejectPayment } from "../actions";
 import type { PaymentItem } from "../schemas";
+import { getFilePreviewUrl, triggerFileDownload, formatBytes } from "@/lib/file-utils";
 
 interface PaymentVerificationModalProps {
   open: boolean;
@@ -39,6 +40,14 @@ export function PaymentVerificationModal({
   const [rejectionReason, setRejectionReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+    setIsRejecting(false);
+    setRejectionReason("");
+    setErrorMessage(null);
+  }, [payment]);
 
   if (!payment) return null;
 
@@ -48,7 +57,8 @@ export function PaymentVerificationModal({
     (proof.filePath.toLowerCase().endsWith(".png") ||
       proof.filePath.toLowerCase().endsWith(".jpg") ||
       proof.filePath.toLowerCase().endsWith(".jpeg") ||
-      proof.filePath.toLowerCase().endsWith(".webp"));
+      proof.filePath.toLowerCase().endsWith(".webp") ||
+      proof.fileName.toLowerCase().match(/\.(png|jpe?g|webp|svg)$/));
 
   const handleVerify = async () => {
     setIsSubmitting(true);
@@ -195,46 +205,79 @@ export function PaymentVerificationModal({
 
         {/* ── Receipt Preview Canvas ── */}
         <div className="flex flex-col gap-2">
-          <label className="font-mono text-xs text-white/60 uppercase tracking-wider flex items-center justify-between">
-            <span>Uploaded Transaction Receipt</span>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="font-mono text-xs text-white/60 uppercase tracking-wider">
+              Uploaded Transaction Receipt
+            </span>
             {proof && (
-              <a
-                href={proof.filePath}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sky-400 hover:text-sky-300 font-sans text-xs flex items-center gap-1"
-              >
-                <IconFileText size={14} stroke={1.5} />
-                <span>Open in New Window</span>
-              </a>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => triggerFileDownload(proof.filePath, proof.fileName)}
+                  className="text-xs font-sans text-white/70 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <IconDownload size={13} stroke={1.5} />
+                  <span>Download</span>
+                </button>
+                <a
+                  href={getFilePreviewUrl(proof.filePath)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:text-sky-300 font-sans text-xs flex items-center gap-1"
+                >
+                  <IconExternalLink size={13} stroke={1.5} />
+                  <span>Open in New Window</span>
+                </a>
+              </div>
             )}
-          </label>
+          </div>
 
           {proof ? (
-            <div className="p-3 rounded-[2px] bg-[#010915] border border-white/10 flex flex-col items-center justify-center max-h-[380px] overflow-hidden">
-              {isImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={proof.filePath}
-                  alt={proof.fileName}
-                  className="max-h-[360px] object-contain rounded-[2px]"
-                />
+            <div className="p-4 rounded-[2px] bg-[#010915] border border-white/10 flex flex-col items-center justify-center min-h-[220px] max-h-[420px] overflow-auto">
+              {isImage && !imageError ? (
+                <div className="relative flex items-center justify-center w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getFilePreviewUrl(proof.filePath)}
+                    alt={proof.fileName}
+                    onError={() => setImageError(true)}
+                    className="max-h-[380px] w-auto max-w-full object-contain rounded-[2px] shadow-lg border border-white/10"
+                  />
+                </div>
               ) : (
-                <div className="p-8 text-center flex flex-col items-center gap-2">
-                  <IconFileText size={40} stroke={1.5} className="text-white/40" />
-                  <span className="font-sans text-sm font-semibold text-white">
-                    {proof.fileName}
-                  </span>
-                  <a
-                    href={proof.filePath}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2"
-                  >
-                    <Button variant="outline" size="sm">
-                      View PDF Document
+                <div className="p-6 text-center flex flex-col items-center gap-3 max-w-md">
+                  <div className="w-14 h-14 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 flex items-center justify-center">
+                    <IconReceipt size={30} stroke={1.5} className="text-[#FFA040]" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="font-sans text-sm font-bold text-white block">
+                      {proof.fileName}
+                    </span>
+                    <span className="font-mono text-xs text-white/50 block">
+                      Size: {formatBytes(proof.fileSize || 0)} · Uploaded: {new Date(proof.uploadedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5 mt-2 flex-wrap justify-center">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => triggerFileDownload(proof.filePath, proof.fileName)}
+                      className="font-sans text-xs gap-1.5 font-semibold bg-[#CC6600] hover:bg-[#FFA040] text-white"
+                    >
+                      <IconDownload size={14} stroke={2} />
+                      <span>Download Receipt</span>
                     </Button>
-                  </a>
+                    <a
+                      href={getFilePreviewUrl(proof.filePath)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" size="sm" className="font-sans text-xs gap-1.5">
+                        <IconExternalLink size={14} stroke={1.5} />
+                        <span>Direct View</span>
+                      </Button>
+                    </a>
+                  </div>
                 </div>
               )}
             </div>

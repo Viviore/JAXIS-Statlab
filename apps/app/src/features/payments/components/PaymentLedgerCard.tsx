@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   MoneyDisplay,
@@ -8,6 +8,8 @@ import {
   Button,
   ProgressBar,
   Peso,
+  Modal,
+  ModalFooter,
 } from "@repo/ui";
 import {
   IconReceipt,
@@ -16,9 +18,12 @@ import {
   IconAlertCircle,
   IconFileText,
   IconPlus,
+  IconDownload,
+  IconExternalLink,
 } from "@tabler/icons-react";
 import type { PaymentItem } from "../schemas";
 import type { ProjectPaymentSummary } from "@/lib/payment-rules";
+import { triggerFileDownload, getFilePreviewUrl } from "@/lib/file-utils";
 
 interface PaymentLedgerCardProps {
   summary: ProjectPaymentSummary;
@@ -33,6 +38,10 @@ export function PaymentLedgerCard({
   onOpenUploadModal,
   canUpload = true,
 }: PaymentLedgerCardProps) {
+  const [viewingReceiptPayment, setViewingReceiptPayment] = useState<PaymentItem | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* ── Financial Milestone Metric Ribbon ── */}
@@ -279,15 +288,17 @@ export function PaymentLedgerCard({
 
                       <td className="py-4 px-5 whitespace-nowrap text-right">
                         {proof ? (
-                          <a
-                            href={proof.filePath}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-sans text-sky-400 hover:text-sky-300 transition-colors p-1"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImageError(false);
+                              setViewingReceiptPayment(payment);
+                            }}
+                            className="inline-flex items-center gap-1.5 text-xs font-sans text-sky-400 hover:text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 px-2.5 py-1 rounded-[2px] transition-colors cursor-pointer"
                           >
                             <IconFileText size={14} stroke={1.5} />
                             <span>View Receipt</span>
-                          </a>
+                          </button>
                         ) : (
                           <span className="text-white/30 text-xs">—</span>
                         )}
@@ -300,6 +311,180 @@ export function PaymentLedgerCard({
           </div>
         )}
       </Card>
+
+      {/* ── Receipt View & Audit Modal ── */}
+      {viewingReceiptPayment && (
+        <Modal
+          open={!!viewingReceiptPayment}
+          onClose={() => {
+            setViewingReceiptPayment(null);
+            setImageError(false);
+          }}
+          title="Deposit Receipt & Payment Proof"
+          description={`Official payment receipt audit record for Reference #${viewingReceiptPayment.referenceNumber || viewingReceiptPayment.id}`}
+          size="2xl"
+        >
+          <div className="flex flex-col gap-5 w-full">
+            {/* Transaction Details Dossier */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 p-4 rounded-[2px] bg-[#01142B] border border-white/10">
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-xs text-white/50 uppercase tracking-wider">
+                  Amount Submitted
+                </span>
+                <div className="text-base sm:text-lg font-sans font-bold text-emerald-400">
+                  <MoneyDisplay amount={viewingReceiptPayment.amountSubmitted} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-xs text-white/50 uppercase tracking-wider">
+                  Method & Type
+                </span>
+                <span className="font-sans text-xs text-white font-medium">
+                  {viewingReceiptPayment.paymentMethod === "GCASH" ? "GCash" : "Bank Transfer"} · {viewingReceiptPayment.paymentType}
+                </span>
+                <span className="font-mono text-[0.688rem] text-white/40">
+                  Ref: {viewingReceiptPayment.referenceNumber || "N/A"}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="font-mono text-xs text-white/50 uppercase tracking-wider">
+                  Verification Status
+                </span>
+                <div>
+                  <StatusBadge status={viewingReceiptPayment.paymentStatus} />
+                </div>
+                <span className="font-mono text-[0.688rem] text-white/40">
+                  {new Date(viewingReceiptPayment.createdAt).toLocaleString("en-PH", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            </div>
+
+            {viewingReceiptPayment.rejectionReason && (
+              <div className="p-3.5 rounded-[2px] bg-red-500/10 border border-red-500/30 text-xs font-sans text-red-300">
+                <strong className="font-semibold block mb-0.5">Rejection Reason:</strong>
+                {viewingReceiptPayment.rejectionReason}
+              </div>
+            )}
+
+            {/* Receipt Image / File Preview Canvas */}
+            {(() => {
+              const proof = viewingReceiptPayment.proofs[0];
+              if (!proof) {
+                return (
+                  <div className="p-8 text-center text-white/40 font-sans text-xs border border-white/10 rounded-[2px] bg-white/[0.02]">
+                    No receipt file attached to this payment record.
+                  </div>
+                );
+              }
+
+              const isImage =
+                proof.filePath &&
+                (proof.filePath.toLowerCase().endsWith(".png") ||
+                  proof.filePath.toLowerCase().endsWith(".jpg") ||
+                  proof.filePath.toLowerCase().endsWith(".jpeg") ||
+                  proof.filePath.toLowerCase().endsWith(".webp") ||
+                  proof.fileName.toLowerCase().endsWith(".png") ||
+                  proof.fileName.toLowerCase().endsWith(".jpg") ||
+                  proof.fileName.toLowerCase().endsWith(".jpeg") ||
+                  proof.fileName.toLowerCase().endsWith(".webp"));
+
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-white/60 uppercase tracking-wider">
+                      Receipt Attachment: {proof.fileName}
+                    </span>
+                    {proof.fileSize && (
+                      <span className="font-mono text-[0.688rem] text-white/40">
+                        {(proof.fileSize / 1024).toFixed(1)} KB
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3 rounded-[2px] bg-[#010915] border border-white/10 flex flex-col items-center justify-center min-h-[220px] max-h-[420px] overflow-auto">
+                    {isImage && !imageError ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={getFilePreviewUrl(proof.filePath)}
+                        alt={proof.fileName}
+                        onError={() => setImageError(true)}
+                        className="max-h-[380px] w-auto max-w-full object-contain rounded-[2px]"
+                      />
+                    ) : (
+                      <div className="p-8 text-center flex flex-col items-center gap-3">
+                        <IconFileText size={42} stroke={1.5} className="text-sky-400" />
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="font-sans text-sm font-semibold text-white">
+                            {proof.fileName}
+                          </span>
+                          <span className="font-mono text-xs text-white/40">
+                            Official Receipt Attachment
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal Actions */}
+                  <ModalFooter className="flex items-center justify-between gap-3 pt-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={isDownloading}
+                        onClick={async () => {
+                          setIsDownloading(true);
+                          try {
+                            await triggerFileDownload(proof.filePath, proof.fileName);
+                          } finally {
+                            setIsDownloading(false);
+                          }
+                        }}
+                        className="gap-1.5 font-sans text-xs font-semibold bg-[#CC6600] hover:bg-[#FFA040] text-white"
+                      >
+                        <IconDownload size={14} stroke={2} />
+                        <span>Download Receipt</span>
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          window.open(getFilePreviewUrl(proof.filePath), "_blank", "noopener,noreferrer");
+                        }}
+                        className="gap-1.5 font-sans text-xs"
+                      >
+                        <IconExternalLink size={14} stroke={1.5} />
+                        <span>Open in New Tab</span>
+                      </Button>
+                    </div>
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setViewingReceiptPayment(null);
+                        setImageError(false);
+                      }}
+                      className="font-sans text-xs"
+                    >
+                      Close
+                    </Button>
+                  </ModalFooter>
+                </div>
+              );
+            })()}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

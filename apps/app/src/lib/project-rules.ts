@@ -88,8 +88,8 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   SOW_PENDING: "SOW Pending",
   SOW_SIGNED: "SOW Signed",
   AWAITING_PAYMENT: "Awaiting Payment",
-  ACTIVE: "Active",
-  EXPERT_ASSIGNED: "Expert Assigned",
+  ACTIVE: "Pending Assignment",
+  EXPERT_ASSIGNED: "Specialists Assigned",
   IN_PROGRESS: "In Progress",
   SCOPE_CREEP_HALTED: "Scope Creep Halted",
   SLA_PAUSED: "SLA Paused",
@@ -105,6 +105,55 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   EXPIRED: "Expired",
   REASSIGNMENT_NEEDED: "Reassignment Needed",
 };
+
+/**
+ * Resolves the real-time display status and label for a research project.
+ * 1. If in AWAITING_PAYMENT / SOW_SIGNED with proof submitted -> "Awaiting Payment Confirmation"
+ * 2. If ACTIVE (payment confirmed, in queue for specialists assignment) -> "Pending Assignment"
+ */
+export function getProjectDisplayStatus(project: {
+  masterStatus: ProjectStatus | string;
+  hasPendingPaymentVerification?: boolean;
+  latestPaymentStatus?: string | null;
+}): {
+  status: string;
+  label: string;
+  pulse: boolean;
+  description?: string;
+} {
+  const isAwaitingPayment =
+    project.masterStatus === "AWAITING_PAYMENT" || project.masterStatus === "SOW_SIGNED";
+
+  if (
+    isAwaitingPayment &&
+    (project.hasPendingPaymentVerification || project.latestPaymentStatus === "PROOF_SUBMITTED")
+  ) {
+    return {
+      status: "PROOF_SUBMITTED",
+      label: "Awaiting Payment Confirmation",
+      pulse: true,
+      description: "Payment proof submitted. Waiting for finance to verify cleared funds.",
+    };
+  }
+
+  if (project.masterStatus === "ACTIVE") {
+    return {
+      status: "PENDING_ASSIGNMENT",
+      label: "Pending Assignment",
+      pulse: true,
+      description: "Payment confirmed. In queue for Lead Statistician and QA Lead assignment.",
+    };
+  }
+
+  return {
+    status: project.masterStatus,
+    label: PROJECT_STATUS_LABELS[project.masterStatus as ProjectStatus] || project.masterStatus,
+    pulse:
+      project.masterStatus === "AWAITING_INFORMATION" ||
+      project.masterStatus === "IN_PROGRESS" ||
+      project.masterStatus === "FOR_QA",
+  };
+}
 
 /**
  * Standard pre-configured templates for administrator "Request Missing Artifacts" action.

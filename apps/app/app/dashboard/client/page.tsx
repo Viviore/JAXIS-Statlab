@@ -7,7 +7,7 @@ import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, Toast, LoadingSt
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
 import { QuickProfileModal } from "@/features/client-profile/components/QuickProfileModal";
-import { PROJECT_STATUS_LABELS } from "@/lib/project-rules";
+import { getProjectDisplayStatus } from "@/lib/project-rules";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 function ClientDashboardContent() {
@@ -405,14 +405,16 @@ function ClientDashboardContent() {
                         </div>
                       </td>
                       <td className="whitespace-nowrap">
-                        <StatusBadge
-                          status={study.masterStatus}
-                          label={
-                            PROJECT_STATUS_LABELS[study.masterStatus] ||
-                            study.masterStatus
-                          }
-                          pulse={study.masterStatus === "AWAITING_INFORMATION"}
-                        />
+                        {(() => {
+                          const displayStatus = getProjectDisplayStatus(study);
+                          return (
+                            <StatusBadge
+                              status={displayStatus.status}
+                              label={displayStatus.label}
+                              pulse={displayStatus.pulse}
+                            />
+                          );
+                        })()}
                       </td>
                       <td className="text-right whitespace-nowrap">
                         <Link href={`/dashboard/client/projects/${study.id}`}>

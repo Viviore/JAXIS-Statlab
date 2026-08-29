@@ -1,5 +1,31 @@
 [
   {
+    "id": "cmte70cm30003lrkoxz2zfgm0",
+    "projectId": "cmte6h8b30038lrtsjmb6usf1",
+    "quotationId": "cmte6k70p003flrtsi0le8l5a",
+    "paymentType": "DOWNPAYMENT",
+    "paymentMethod": "GCASH",
+    "amountSubmitted": 3150,
+    "balancePaidTotal": 3150,
+    "referenceNumber": "123",
+    "paymentStatus": "FULLY_PAID",
+    "rejectionReason": null,
+    "verifiedBy": "cmt5plt6q0002lrrkr5jnsghs",
+    "verifiedAt": "2026-08-29T10:06:33.337Z",
+    "createdAt": "2026-08-29T09:43:17.979Z",
+    "updatedAt": "2026-08-29T10:06:33.339Z",
+    "proofs": [
+      {
+        "id": "cmte70cm30004lrkorngnredb",
+        "paymentId": "cmte70cm30003lrkoxz2zfgm0",
+        "filePath": "https://pub-70de33883ce54230863841fbf74f07b3.r2.dev/studies/JAXIS-202608-7845/1787996595915-FUZE__3_.png",
+        "fileName": "FUZE (3).png",
+        "fileSize": 1249300,
+        "uploadedAt": "2026-08-29T09:43:17.979Z"
+      }
+    ]
+  },
+  {
     "id": "pay_dev_1787844845748",
     "projectId": "cmt5plzax000glrrkkntcj94a",
     "quotationId": "cmt5plzax000glrrkkntcj94a",

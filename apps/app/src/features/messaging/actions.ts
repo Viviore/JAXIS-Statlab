@@ -111,6 +111,17 @@ export async function sendMessage(
         };
       }
 
+      // Check if team is assigned for clients
+      if (isClient && (!project.assignment || (!project.assignment.statisticianId && !project.assignment.qaLeadId))) {
+        return {
+          success: false,
+          error: {
+            code: "THREAD_LOCKED",
+            message: "Consultation channel is locked until an administrator assigns your Lead Statistician and QA Lead.",
+          },
+        };
+      }
+
       // 2. Execute Communication Firewall Inspection
       const firewallResult = runFirewall(content);
 

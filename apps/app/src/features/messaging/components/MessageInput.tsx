@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { Button } from "@repo/ui";
 import {
@@ -7,16 +5,21 @@ import {
   IconShieldLock,
   IconAlertTriangle,
   IconX,
+  IconLock,
 } from "@tabler/icons-react";
 
 interface MessageInputProps {
   onSendMessage: (content: string) => Promise<{ success: boolean; blocked?: boolean; warning?: string }>;
   disabled?: boolean;
+  disabledReason?: string;
+  placeholder?: string;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
   disabled = false,
+  disabledReason,
+  placeholder,
 }) => {
   const [content, setContent] = useState<string>("");
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -82,19 +85,32 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)"
+            placeholder={
+              disabled
+                ? placeholder || disabledReason || "Consultation channel is locked until specialists are assigned..."
+                : placeholder || "Type your message here... (Press Enter to send, Shift+Enter for new line)"
+            }
             disabled={disabled || isSending}
             maxLength={5000}
             rows={3}
-            className="w-full p-3.5 sm:p-4 rounded-[2px] bg-[#01142B] border border-white/15 text-sm text-white placeholder:text-white/30 focus:border-[#CC6600] focus:outline-none transition-colors resize-none disabled:opacity-50 font-sans"
+            className={`w-full p-3.5 sm:p-4 rounded-[2px] bg-[#01142B] border text-sm text-white placeholder:text-white/30 focus:border-[#CC6600] focus:outline-none transition-colors resize-none font-sans ${
+              disabled ? "opacity-60 border-white/10 cursor-not-allowed bg-[#010915]" : "border-white/15"
+            }`}
           />
 
           {/* Bottom Action Row inside/below textarea */}
           <div className="flex items-center justify-between mt-2 px-1">
-            <div className="flex items-center gap-1.5 text-[0.688rem] text-white/40 font-sans">
-              <IconShieldLock size={14} stroke={1.5} className="text-[#CC6600]" />
-              <span>In-app communication firewall active &bull; Max 5,000 characters</span>
-            </div>
+            {disabled && disabledReason ? (
+              <div className="flex items-center gap-1.5 text-[0.688rem] text-amber-400/90 font-mono">
+                <IconLock size={13} stroke={1.5} />
+                <span>{disabledReason}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-[0.688rem] text-white/40 font-sans">
+                <IconShieldLock size={14} stroke={1.5} className="text-[#CC6600]" />
+                <span>In-app communication firewall active &bull; Max 5,000 characters</span>
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono text-white/40">
@@ -103,14 +119,23 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
               <Button
                 type="submit"
-                variant="primary"
+                variant={disabled ? "secondary" : "primary"}
                 size="sm"
                 disabled={!content.trim() || disabled || isSending}
                 loading={isSending}
-                className="cursor-pointer text-xs font-semibold rounded-[2px] px-4 py-2"
+                className="text-xs font-semibold rounded-[2px] px-4 py-2"
               >
-                <IconSend size={15} stroke={2} className="mr-1.5" />
-                <span>Send</span>
+                {disabled ? (
+                  <>
+                    <IconLock size={14} stroke={1.5} className="mr-1.5" />
+                    <span>Locked</span>
+                  </>
+                ) : (
+                  <>
+                    <IconSend size={15} stroke={2} className="mr-1.5" />
+                    <span>Send</span>
+                  </>
+                )}
               </Button>
             </div>
           </div>

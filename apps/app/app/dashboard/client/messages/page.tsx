@@ -1,7 +1,5 @@
-"use client";
-
 import React, { useState, useEffect, useCallback } from "react";
-import { PageHeader, Card, LoadingState, Badge } from "@repo/ui";
+import { PageHeader, Card, LoadingState, Badge, StatusBadge } from "@repo/ui";
 import { getMyProjectThreads } from "@/features/messaging/actions";
 import type { ProjectThreadSummaryDTO } from "@/features/messaging/schemas";
 import { MessageThread } from "@/features/messaging/components/MessageThread";
@@ -11,6 +9,7 @@ import {
   IconShieldCheck,
   IconClock,
   IconArrowRight,
+  IconLock,
 } from "@tabler/icons-react";
 
 export default function ClientMessagesPage() {
@@ -102,6 +101,8 @@ export default function ClientMessagesPage() {
             ) : (
               threads.map((t) => {
                 const isSelected = selectedThread?.projectId === t.projectId;
+                const isAssigned = Boolean(t.statisticianName || t.qaLeadName);
+
                 return (
                   <button
                     key={t.projectId}
@@ -112,12 +113,16 @@ export default function ClientMessagesPage() {
                     }}
                     className={`p-3.5 rounded-[4px] text-left transition-all duration-150 border cursor-pointer flex flex-col gap-1.5 select-none ${
                       isSelected
-                        ? "bg-[#011B38] border-[#CC6600] ring-1 ring-[#CC6600]/40 shadow-lg"
-                        : "bg-[#01142B] border-white/10 hover:bg-white/[0.03] hover:border-white/20"
+                        ? isAssigned
+                          ? "bg-[#011B38] border-[#CC6600] ring-1 ring-[#CC6600]/40 shadow-lg"
+                          : "bg-[#011B38] border-sky-500/60 ring-1 ring-sky-500/30 shadow-lg"
+                        : isAssigned
+                        ? "bg-[#01142B] border-white/10 hover:bg-white/[0.03] hover:border-white/20"
+                        : "bg-[#01142B]/75 border-white/[0.07] hover:bg-white/[0.02] opacity-80"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-mono font-bold text-[#CC6600]">
+                      <span className={`text-xs font-mono font-bold ${isAssigned ? "text-[#CC6600]" : "text-sky-400"}`}>
                         {t.intakeId}
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -126,9 +131,13 @@ export default function ClientMessagesPage() {
                             {t.unreadCount} NEW
                           </span>
                         )}
-                        <Badge variant="muted" className="text-[0.625rem] font-mono px-1.5 py-0">
-                          {t.masterStatus.replace(/_/g, " ")}
-                        </Badge>
+                        {!isAssigned || t.masterStatus === "ACTIVE" ? (
+                          <StatusBadge status="PENDING_ASSIGNMENT" label="PENDING ASSIGNMENT" />
+                        ) : (
+                          <Badge variant="muted" className="text-[0.625rem] font-mono px-1.5 py-0">
+                            {t.masterStatus.replace(/_/g, " ")}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -141,26 +150,42 @@ export default function ClientMessagesPage() {
                         <strong>{t.lastMessage.senderName}:</strong> &ldquo;{t.lastMessage.content}&rdquo;
                       </p>
                     ) : (
-                      <span className="text-[0.688rem] text-white/40 italic">No messages yet</span>
+                      <span className="text-[0.688rem] text-white/40 italic">
+                        {isAssigned ? "No messages yet" : "Channel locked · Awaiting specialist assignment"}
+                      </span>
                     )}
 
                     <div className="pt-1.5 border-t border-white/[0.06] flex items-center justify-between text-[0.625rem] text-white/50 font-mono">
                       <span className="flex items-center gap-1">
                         <IconFolder size={11} stroke={1.5} />
-                        <span className="truncate max-w-[140px]">{t.statisticianName || "Awaiting Expert"}</span>
+                        <span className={`truncate max-w-[140px] ${!isAssigned ? "text-amber-400/90 font-medium" : ""}`}>
+                          {t.statisticianName || "Awaiting Expert"}
+                        </span>
                       </span>
                       {isSelected ? (
-                        <span className="text-[#CC6600] font-semibold flex items-center gap-0.5">
-                          <span>ACTIVE CHAT</span>
-                          <IconArrowRight size={10} stroke={2} />
-                        </span>
+                        isAssigned ? (
+                          <span className="text-[#CC6600] font-semibold flex items-center gap-0.5">
+                            <span>ACTIVE CHAT</span>
+                            <IconArrowRight size={10} stroke={2} />
+                          </span>
+                        ) : (
+                          <span className="text-amber-400/80 font-semibold flex items-center gap-1">
+                            <IconLock size={10} stroke={2} />
+                            <span>LOCKED</span>
+                          </span>
+                        )
                       ) : (
-                        t.lastMessage && (
+                        !isAssigned ? (
+                          <span className="text-white/35 flex items-center gap-1">
+                            <IconLock size={10} stroke={1.5} />
+                            <span>LOCKED</span>
+                          </span>
+                        ) : t.lastMessage ? (
                           <span className="flex items-center gap-1">
                             <IconClock size={11} stroke={1.5} />
                             <span>{new Date(t.lastMessage.sentAt).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}</span>
                           </span>
-                        )
+                        ) : null
                       )}
                     </div>
                   </button>
