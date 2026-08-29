@@ -66,6 +66,10 @@ model User {
   resolvedScopeCreep      ScopeCreepLog[]               @relation("ResolvedScopeCreep")
   qaReviews               QAReview[]                    @relation("QAOfficerReviews")
   qaRejections            QARejectionCount[]            @relation("StatisticianQARejections")
+  uploadedDeliverables    Deliverable[]                 @relation("DeliverableUploader")
+  releasedDeliverables    Deliverable[]                 @relation("DeliverableReleaser")
+  clientRevisionRequests  RevisionRequest[]             @relation("ClientRevisionRequests")
+  classifiedRevisions     RevisionRequest[]             @relation("ClassifiedRevisions")
 
   @@index([email])
   @@index([status])
@@ -223,28 +227,29 @@ enum FileCategory {
 }
 
 model Project {
-  id                 String        @id @default(cuid())
-  intakeId           String        @unique
-  clientId           String
-  researchTitle      String
-  researchQuestions  String
-  researchObjectives String
-  hypotheses         String?
-  chapters13         String?
-  questionnaire      String?
-  deadlineRequested  DateTime
-  masterStatus       ProjectStatus @default(NEW_REQUEST)
-  packageName        String?
-  missingInfoReason  String?
-  deliveredAt        DateTime?
-  filesPurgeAt       DateTime?
-  filesPurged        Boolean       @default(false)
-  hasActiveDispute   Boolean       @default(false)
-  hasPendingRefund   Boolean       @default(false)
-  qaApproved         Boolean       @default(false)
-  isLocked           Boolean       @default(false)
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                      String        @id @default(cuid())
+  intakeId                String        @unique
+  clientId                String
+  researchTitle           String
+  researchQuestions       String
+  researchObjectives      String
+  hypotheses              String?
+  chapters13              String?
+  questionnaire           String?
+  deadlineRequested       DateTime
+  masterStatus            ProjectStatus @default(NEW_REQUEST)
+  packageName             String?
+  missingInfoReason       String?
+  deliveredAt             DateTime?
+  filesPurgeAt            DateTime?
+  filesPurged             Boolean       @default(false)
+  hasActiveDispute        Boolean       @default(false)
+  hasPendingRefund        Boolean       @default(false)
+  qaApproved              Boolean       @default(false)
+  isLocked                Boolean       @default(false)
+  revisionWindowExpiresAt DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
   client            User               @relation("ClientProjects", fields: [clientId], references: [id])
   files             ProjectFile[]
@@ -257,6 +262,8 @@ model Project {
   scopeCreepLogs    ScopeCreepLog[]
   qaReviews         QAReview[]
   qaRejectionCounts QARejectionCount[]
+  deliverables      Deliverable[]
+  revisionRequests  RevisionRequest[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -780,6 +787,86 @@ model QARejectionCount {
   @@index([projectId])
   @@index([statisticianId])
   @@map("qa_rejection_counts")
+}
+
+// ─── Module 12: Deliverables, Release & Revisions ────────────────────────────
+
+enum DeliverableCategory {
+  STATISTICAL_OUTPUT
+  PDF_REPORT
+  RAW_DATA_CLEANED
+  APPENDIX
+  OTHER
+}
+
+enum RevisionClassification {
+  INCLUDED
+  METHODOLOGY_CHANGE
+  NEW_PAID_WORK
+}
+
+enum RevisionStatus {
+  PENDING_REVIEW
+  INCLUDED
+  METHODOLOGY_CHANGE
+  NEW_PAID_WORK
+  RESOLVED
+  CANCELLED
+}
+
+model Deliverable {
+  id              String              @id @default(cuid())
+  projectId       String
+  category        DeliverableCategory
+  fileName        String
+  filePath        String              // R2 storage key
+  fileSize        Int                 // bytes
+  fileType        String              // mime type
+  uploadedBy      String              // User id
+  isFinalReleased Boolean             @default(false)
+  releasedAt      DateTime?
+  releasedBy      String?             // Admin userId
+  downloadCount   Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploader        User                @relation("DeliverableUploader", fields: [uploadedBy], references: [id], onDelete: Cascade)
+  releaser        User?               @relation("DeliverableReleaser", fields: [releasedBy], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([category])
+  @@index([isFinalReleased])
+  @@index([uploadedBy])
+  @@map("deliverables")
+}
+
+model RevisionRequest {
+  id                      String                  @id @default(cuid())
+  projectId               String
+  clientId                String
+  description             String
+  requestedSections       String?
+  status                  RevisionStatus          @default(PENDING_REVIEW)
+  classification          RevisionClassification?
+  classificationNotes     String?
+  classifiedBy            String?                 // Admin userId
+  classifiedAt            DateTime?
+  supplementalQuotationId String?
+  supplementalSowId       String?
+  resolvedAt              DateTime?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+
+  project                 Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  client                  User                    @relation("ClientRevisionRequests", fields: [clientId], references: [id], onDelete: Cascade)
+  classifier              User?                   @relation("ClassifiedRevisions", fields: [classifiedBy], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("revision_requests")
 }
 
 

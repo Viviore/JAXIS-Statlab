@@ -361,6 +361,22 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
               </Link>
             )}
 
+            {(project.masterStatus === "FOR_QA" ||
+              project.masterStatus === "DELIVERED" ||
+              project.masterStatus === "REVISION_REQUESTED" ||
+              project.masterStatus === "IN_PROGRESS") && (
+              <Link href={`/dashboard/admin/projects/${project.id}/deliverables`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs font-sans whitespace-nowrap flex items-center gap-1.5"
+                >
+                  <IconFileText size={14} stroke={1.5} />
+                  <span>Deliverables Desk</span>
+                </Button>
+              </Link>
+            )}
+
             {project.masterStatus === "ACTIVE" && (
               <Button
                 variant="primary"

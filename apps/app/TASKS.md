@@ -1,6 +1,6 @@
 # JAXIS — Master Task List
 
-**Active Module:** `12-deliverables` — Deliverables, Release & Revisions  
+**Active Module:** `13-defenselab` — DefenseLab Scheduling & Mock Defense  
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5  
 **Design Standard:** Dark Precision Terminal / Enterprise Scientific (`design-system.md` & `.agents/AGENTS.md`)  
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing any module.
@@ -359,29 +359,29 @@
 
 ---
 
-## Module 12 — Deliverables, Release & Revisions (Active)
+## Module 12 — Deliverables, Release & Revisions (Completed)
 
 ### Task 1 — Deliverables & Revision Request Schema
-- [ ] `Deliverable`, `DeliverableCategory`, `RevisionRequest`, `RevisionClassification` models
+- [x] `Deliverable`, `DeliverableCategory`, `RevisionRequest`, `RevisionClassification` models
 
 ### Task 2 — Dual Release Gates (`RULE_REL_01` & `RULE_REL_02`)
-- [ ] `RULE_REL_01`: Hard block on unpaid balance (`paymentStatus !== FULLY_PAID`)
-- [ ] `RULE_REL_02`: Hard block on Tier 2 packages without QA approval (`qaApproved !== true`)
+- [x] `RULE_REL_01`: Hard block on unpaid balance (`paymentStatus !== FULLY_PAID`)
+- [x] `RULE_REL_02`: Hard block on Tier 2 packages without QA approval (`qaApproved !== true`)
 
 ### Task 3 — Deliverables Packaging & Release Actions
-- [ ] Admin deliverable upload, pre-signed download URLs, and 90-day purge timestamp
+- [x] Admin deliverable upload, pre-signed download URLs, and 90-day purge timestamp
 
 ### Task 4 — 3-Day Revision Window & Classification Routing
-- [ ] Client 3-day revision window countdown and request submission
-- [ ] Admin revision classification (`INCLUDED`, `METHODOLOGY_CHANGE`, `NEW_PAID_WORK`)
+- [x] Client 3-day revision window countdown and request submission
+- [x] Admin revision classification (`INCLUDED`, `METHODOLOGY_CHANGE`, `NEW_PAID_WORK`)
 
 ### Task 5 — Client & Admin Deliverable Desks
-- [ ] Client Final Deliverables Portal & Revision Request Desk
-- [ ] Admin Deliverable Packaging & Release Console
+- [x] Client Final Deliverables Portal & Revision Request Desk
+- [x] Admin Deliverable Packaging & Release Console
 
 ### Task 6 — Module Gate Verification
-- [ ] Verification report documented in `docs/modules/12-verification-report.md`
-- [ ] Quality gates verified
+- [x] Verification report documented in `docs/modules/12-verification-report.md`
+- [x] Quality gates verified (0 errors, 0 warnings)
 
 ---
 
@@ -500,8 +500,8 @@
 | `09` | `09-messaging` — Messaging & Communication Firewall | Operations | ✅ Completed |
 | `10` | `10-analysis` — Analysis Workbench | Operations | ✅ Completed |
 | `11` | `11-qa` — Quality Assurance & Reproducibility | Operations | ✅ Completed |
-| `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ⏳ **Active (In Progress)** |
-| `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ⏳ Queued (Awaiting `07`, `08`) |
+| `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ✅ Completed |
+| `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ⏳ **Active (Next)** |
 | `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | 🟡 Partially Implemented |
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ⏳ Queued (Awaiting `14`) |
 | `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ⏳ Queued |

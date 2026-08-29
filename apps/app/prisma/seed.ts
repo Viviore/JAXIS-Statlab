@@ -461,6 +461,147 @@ async function main() {
 
         console.log("✅ Seeded Module 11 QA verification data (Project set to FOR_QA).");
       }
+
+      // ─── Module 12: Seed Deliverables & Released Project Data ────────────
+      const adminUser = await prisma.user.findFirst({
+        where: { email: "admin@jaxis.dev" },
+      });
+
+      if (adminUser && clientUser) {
+        // 1. Packaged draft deliverables for sampleProject (JAXIS-202608-0001)
+        await prisma.deliverable.deleteMany({
+          where: { projectId: sampleProject.id },
+        });
+
+        await prisma.deliverable.createMany({
+          data: [
+            {
+              projectId: sampleProject.id,
+              category: "STATISTICAL_OUTPUT",
+              fileName: "study_habits_regression_tables_final.xlsx",
+              filePath: `deliverables/${sampleProject.id}/study_habits_regression_tables_final.xlsx`,
+              fileSize: 64512,
+              fileType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              uploadedBy: adminUser.id,
+              isFinalReleased: false,
+            },
+            {
+              projectId: sampleProject.id,
+              category: "PDF_REPORT",
+              fileName: "academic_performance_findings_report.pdf",
+              filePath: `deliverables/${sampleProject.id}/academic_performance_findings_report.pdf`,
+              fileSize: 1450000,
+              fileType: "application/pdf",
+              uploadedBy: adminUser.id,
+              isFinalReleased: false,
+            },
+            {
+              projectId: sampleProject.id,
+              category: "RAW_DATA_CLEANED",
+              fileName: "cleaned_survey_dataset_n250.csv",
+              filePath: `deliverables/${sampleProject.id}/cleaned_survey_dataset_n250.csv`,
+              fileSize: 88400,
+              fileType: "text/csv",
+              uploadedBy: adminUser.id,
+              isFinalReleased: false,
+            },
+          ],
+        });
+
+        // 2. Upsert second completed & released project for Client Ana Cruz
+        const deliveredProject = await prisma.project.upsert({
+          where: { intakeId: "JAXIS-202608-0002" },
+          update: {
+            researchTitle: "Predictors of Patient Readmission in Tertiary Level Hospitals in Metro Manila",
+            masterStatus: "DELIVERED",
+            qaApproved: true,
+            deliveredAt: new Date(Date.now() - 86400000), // 1 day ago
+            filesPurgeAt: new Date(Date.now() + 89 * 86400000),
+            revisionWindowExpiresAt: new Date(Date.now() + 2 * 86400000), // 2 days left
+          },
+          create: {
+            intakeId: "JAXIS-202608-0002",
+            clientId: clientUser.id,
+            researchTitle: "Predictors of Patient Readmission in Tertiary Level Hospitals in Metro Manila",
+            researchQuestions: "What clinical and socioeconomic variables predict 30-day unplanned readmissions?",
+            researchObjectives: "Construct multivariable logistic regression model and evaluate receiver operating characteristics (ROC/AUC).",
+            deadlineRequested: new Date("2026-08-20"),
+            masterStatus: "DELIVERED",
+            packageName: "JX_03_CORE",
+            qaApproved: true,
+            deliveredAt: new Date(Date.now() - 86400000),
+            filesPurgeAt: new Date(Date.now() + 89 * 86400000),
+            revisionWindowExpiresAt: new Date(Date.now() + 2 * 86400000),
+          },
+        });
+
+        // Add released deliverables for JAXIS-202608-0002
+        await prisma.deliverable.deleteMany({
+          where: { projectId: deliveredProject.id },
+        });
+
+        await prisma.deliverable.createMany({
+          data: [
+            {
+              projectId: deliveredProject.id,
+              category: "STATISTICAL_OUTPUT",
+              fileName: "patient_readmission_logistic_regression.xlsx",
+              filePath: `deliverables/${deliveredProject.id}/patient_readmission_logistic_regression.xlsx`,
+              fileSize: 84200,
+              fileType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              uploadedBy: adminUser.id,
+              isFinalReleased: true,
+              releasedAt: new Date(Date.now() - 86400000),
+              releasedBy: adminUser.id,
+              downloadCount: 2,
+            },
+            {
+              projectId: deliveredProject.id,
+              category: "PDF_REPORT",
+              fileName: "tertiary_hospital_readmission_study_report.pdf",
+              filePath: `deliverables/${deliveredProject.id}/tertiary_hospital_readmission_study_report.pdf`,
+              fileSize: 1850000,
+              fileType: "application/pdf",
+              uploadedBy: adminUser.id,
+              isFinalReleased: true,
+              releasedAt: new Date(Date.now() - 86400000),
+              releasedBy: adminUser.id,
+              downloadCount: 1,
+            },
+            {
+              projectId: deliveredProject.id,
+              category: "APPENDIX",
+              fileName: "roc_curves_and_odds_ratios_appendix.pdf",
+              filePath: `deliverables/${deliveredProject.id}/roc_curves_and_odds_ratios_appendix.pdf`,
+              fileSize: 520000,
+              fileType: "application/pdf",
+              uploadedBy: adminUser.id,
+              isFinalReleased: true,
+              releasedAt: new Date(Date.now() - 86400000),
+              releasedBy: adminUser.id,
+              downloadCount: 0,
+            },
+          ],
+        });
+
+        // Seed sample Revision Request for JAXIS-202608-0002
+        await prisma.revisionRequest.deleteMany({
+          where: { projectId: deliveredProject.id },
+        });
+
+        await prisma.revisionRequest.create({
+          data: {
+            projectId: deliveredProject.id,
+            clientId: clientUser.id,
+            description: "Please re-label Table 3 Odds Ratios from 90% confidence intervals to standard 95% confidence intervals as requested by our thesis defense panel.",
+            requestedSections: "Chapter 4 - Table 3 (Multivariable Odds Ratios)",
+            status: "PENDING_REVIEW",
+            createdAt: new Date(),
+          },
+        });
+
+        console.log("✅ Seeded Module 12 Deliverables packaging and Revision triage records.");
+      }
     }
 }
 

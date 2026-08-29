@@ -571,6 +571,20 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               </Link>
             )}
 
+            {(project.masterStatus === "DELIVERED" ||
+              project.masterStatus === "REVISION_REQUESTED") && (
+              <Link href={`/dashboard/client/projects/${project.id}/deliverables`}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#FFA040]"
+                >
+                  <IconFileText size={14} stroke={2} />
+                  <span>Download Deliverables →</span>
+                </Button>
+              </Link>
+            )}
+
             {isPreSow && (
               <Button
                 variant="outline"
@@ -696,6 +710,34 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               className="font-sans font-semibold text-xs min-h-[38px] whitespace-nowrap px-5 py-2 rounded-[2px]"
             >
               View Payment Ledger →
+            </Button>
+          </Link>
+        </Card>
+      )}
+
+      {/* ── Deliverables Released Banner (if DELIVERED or REVISION_REQUESTED) ── */}
+      {(project.masterStatus === "DELIVERED" || project.masterStatus === "REVISION_REQUESTED") && (
+        <Card className="p-6 sm:p-7 bg-[#011B38] border border-emerald-500/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <IconShieldCheck size={20} stroke={1.5} className="text-emerald-400" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-xs font-sans text-emerald-400 font-semibold uppercase tracking-wider block">
+                Research Study Complete · Final Deliverables Available
+              </span>
+              <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                Your statistical findings, cleaned datasets, and official reports have been verified and released. Access your downloads and the 3-day revision window.
+              </p>
+            </div>
+          </div>
+          <Link href={`/dashboard/client/projects/${project.id}/deliverables`}>
+            <Button
+              variant="primary"
+              size="md"
+              className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#E67300] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
+            >
+              Access Deliverables Portal →
             </Button>
           </Link>
         </Card>

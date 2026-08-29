@@ -113,11 +113,8 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         },
         {
           label: "Final Files & Outputs",
-          href: "/dashboard/client/deliverables",
+          href: "/dashboard/client/projects",
           icon: Icons.Vault,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
         },
         {
           label: "Defense Coaching",
@@ -479,6 +476,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           href: "/dashboard/admin/assignments",
           icon: Icons.KeyRelease,
           badge: "ASSIGN",
+          badgeColor: "orange",
+        },
+        {
+          label: "Client Revisions",
+          href: "/dashboard/admin/revisions",
+          icon: Icons.Award,
+          badge: "TRIAGE",
           badgeColor: "orange",
         },
       ],

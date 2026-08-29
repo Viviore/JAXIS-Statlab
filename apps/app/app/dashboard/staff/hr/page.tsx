@@ -1285,10 +1285,10 @@ export default function StaffHrPortalPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-white font-sans">
-                      Past Months &amp; Historical Payslips Ledger ({allMyPayslips.length})
+                      Past Payslips ({allMyPayslips.length})
                     </h3>
                     <span className="text-[0.688rem] text-white/50 font-sans">
-                      Official compensation statements and corporate settlement records across all cut-off cycles.
+                      View and download your payslips across all pay cycles.
                     </span>
                   </div>
                 </div>
@@ -1296,20 +1296,20 @@ export default function StaffHrPortalPage() {
 
               {allMyPayslips.length === 0 ? (
                 <div className="py-8 text-center text-xs text-white/40 italic font-sans border border-white/10 rounded-[2px] bg-[#010D1F]">
-                  Zero past payslip records found.
+                  No past payslip records found.
                 </div>
               ) : (
                 <div className="overflow-x-auto rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl">
                     <table className="w-full text-left text-xs border-collapse font-sans">
                       <thead>
                         <tr className="bg-[#010D1F] border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
-                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Statement Ref</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Payslip No.</th>
                           <th className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Pay Period</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Pay Structure</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[90px]">Duty Hours</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Pay Rate</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[90px]">Hours</th>
                           <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[110px]">Gross Pay</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Take-Home</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[140px]">Settlement Status</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Pay</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[140px]">Status</th>
                           <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[150px]">Actions</th>
                         </tr>
                       </thead>
