@@ -31,7 +31,9 @@ export function getDb(): PrismaClient {
       !(globalForPrisma.prisma as any).defenseLabSession ||
       !(globalForPrisma.prisma as any).payout ||
       !(globalForPrisma.prisma as any).financialLedger ||
-      !(globalForPrisma.prisma as any).dispute
+      !(globalForPrisma.prisma as any).dispute ||
+      !(globalForPrisma.prisma as any).notificationLog ||
+      !(globalForPrisma.prisma as any).inAppAlert
     ) {
       globalForPrisma.prisma = createPrismaClient();
     }

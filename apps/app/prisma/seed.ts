@@ -816,6 +816,73 @@ async function main() {
           }
         }
 
+        // ─── Module 16: Seed In-App Alerts & Outbound Email Delivery Logs ─────
+        if (firstProject && (prisma as any).inAppAlert && (prisma as any).notificationLog && adminUser) {
+          const existingAlerts = await (prisma as any).inAppAlert.count({
+            where: { recipientId: adminUser.id },
+          });
+
+          if (existingAlerts === 0) {
+            await (prisma as any).inAppAlert.createMany({
+              data: [
+                {
+                  recipientId: adminUser.id,
+                  recipientRole: "ADMIN",
+                  alertType: "NEW_INTAKE",
+                  projectId: firstProject.id,
+                  message: `New study intake received: ${firstProject.intakeId} — ${firstProject.researchTitle}`,
+                  linkUrl: "/dashboard/admin/intake",
+                  isRead: false,
+                  createdAt: new Date(Date.now() - 3600000),
+                },
+                {
+                  recipientId: adminUser.id,
+                  recipientRole: "ADMIN",
+                  alertType: "QA_SUBMISSION",
+                  projectId: firstProject.id,
+                  message: `QA Lead completed audit for ${firstProject.intakeId}. Study ready for deliverable release.`,
+                  linkUrl: "/dashboard/admin/disputes",
+                  isRead: false,
+                  createdAt: new Date(Date.now() - 1800000),
+                },
+              ],
+            });
+
+            await (prisma as any).notificationLog.createMany({
+              data: [
+                {
+                  recipientId: clientUser.id,
+                  email: clientUser.email,
+                  template: "SOWReady",
+                  projectId: firstProject.id,
+                  status: "SENT",
+                  attemptCount: 1,
+                  sentAt: new Date(Date.now() - 86400000 * 3),
+                },
+                {
+                  recipientId: clientUser.id,
+                  email: clientUser.email,
+                  template: "PaymentVerified",
+                  projectId: firstProject.id,
+                  status: "SENT",
+                  attemptCount: 1,
+                  sentAt: new Date(Date.now() - 86400000 * 2),
+                },
+                {
+                  recipientId: clientUser.id,
+                  email: clientUser.email,
+                  template: "ProjectDelivered",
+                  projectId: firstProject.id,
+                  status: "SENT",
+                  attemptCount: 1,
+                  sentAt: new Date(Date.now() - 86400000),
+                },
+              ],
+            });
+            console.log("✅ Seeded Module 16 In-App Alerts and Outbound Email Delivery Logs.");
+          }
+        }
+
         console.log("✅ Seeded Module 12 Deliverables packaging and Revision triage records.");
       }
     }

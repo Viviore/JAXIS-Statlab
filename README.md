@@ -17,6 +17,7 @@ The platform ensures quality and accountability by following a strict 9-stage op
 9. **Archive & Payout:** Projects are archived, and revenue shares are automatically calculated and disbursed.
 
 ## Recent System Enhancements & Completed Modules
+- **Email Notifications & In-App Alert Center (Module 16)**: Transactional email engine with Resend provider abstraction and local simulation fallback, 11 responsive HTML client email templates, slide-out in-app notification center in `Topbar.tsx`, 3-attempt exponential delivery retry logic, delivery audit ledger at `/dashboard/admin/notifications`, and strict internal event masking.
 - **Disputes, Academic Arbitrations & Refunds (Module 15)**: 7-day post-delivery dispute window enforcement (`assertDisputeWindowOpen`), objective technical grounds validation (`METHODOLOGY_DEVIATION`, `MATHEMATICAL_ERROR`, `SLA_BREACH`), evidence vault attachments, chargeback project halts with automatic escrow payout freezes, CEO exclusive refund authority (`RULE_ROL_01`), and SLA turnaround upgrade fee refund calculations.
 - **Finance, Milestone Payouts & Treasury Ledger (Module 14)**: Escrow release safety gates (`RULE_PAY_01`), package commission splits, per-study gross revenue and net platform margin ledgers, CEO rate matrix governance, and specialist self-service earnings history.
 - **DefenseLab Oral Defense Simulation (Module 13)**: End-to-end rehearsal scheduling, 12-hour cancellation rule enforcement, Google Meet integration, cloud recording vault, and penalty governance.

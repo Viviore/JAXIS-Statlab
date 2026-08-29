@@ -567,6 +567,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "orange",
         },
         {
+          label: "Email Delivery Logs",
+          href: "/dashboard/admin/notifications",
+          icon: Icons.Receipt,
+          badge: "EMAILS",
+          badgeColor: "orange",
+        },
+        {
           label: "Activity Log",
           href: "/dashboard/admin/audit",
           icon: Icons.Audit,

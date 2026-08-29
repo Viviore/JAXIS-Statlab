@@ -224,46 +224,46 @@ const seedAlerts = [
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Transactional Email Dispatch:** Automated dispatch of 11 core client-facing transactional email templates via Resend (SOW ready, payment confirmed, expert assigned, delivery ready, etc.).
-- [ ] **React Email Component Templates:** Responsive HTML email layouts with JAXIS branding, dark palette accenting, and clear call-to-action links.
-- [ ] **In-App Notification Center:** Real-time topbar notification badge and drawer displaying internal action items, status transitions, and unread alerts.
-- [ ] **Email Delivery Audit & Retries:** All outbound notifications tracked in `NotificationLog` with status, timestamp, and automatic 3-attempt exponential retry on failure.
-- [ ] **Internal Event Masking:** Sensitive internal operational events (QA rejections, ethical breaches, firewall triggers) are strictly confined to in-app alerts and never sent to clients.
+- [x] **Transactional Email Dispatch:** Automated dispatch of 11 core client-facing transactional email templates via Resend (SOW ready, payment confirmed, expert assigned, delivery ready, etc.).
+- [x] **React Email Component Templates:** Responsive HTML email layouts with JAXIS branding, dark palette accenting, and clear call-to-action links.
+- [x] **In-App Notification Center:** Real-time topbar notification badge and drawer displaying internal action items, status transitions, and unread alerts.
+- [x] **Email Delivery Audit & Retries:** All outbound notifications tracked in `NotificationLog` with status, timestamp, and automatic 3-attempt exponential retry on failure.
+- [x] **Internal Event Masking:** Sensitive internal operational events (QA rejections, ethical breaches, firewall triggers) are strictly confined to in-app alerts and never sent to clients.
 
 
 ## 10. Acceptance Criteria (Done Checklist)
 
 ### Email Templates
-- [ ] All 11 template files render without errors in React Email preview
-- [ ] Each template uses correct brand colors and typography
-- [ ] `sendEmail()` sends via Resend in production; logs result in `NotificationLog`
-- [ ] Failed send → status `FAILED` in log; retry scheduled
+- [x] All 11 template files render without errors in React Email preview
+- [x] Each template uses correct brand colors and typography
+- [x] `sendEmail()` sends via Resend in production; logs result in `NotificationLog`
+- [x] Failed send → status `FAILED` in log; retry scheduled
 
 ### Retry Logic
-- [ ] Failed sends retried up to 3 times with exponential backoff (1s, 2s, 4s)
-- [ ] After 3 failed attempts → status `FAILED` (no further retries); Admin can see in log
+- [x] Failed sends retried up to 3 times with exponential backoff (500ms, 1000ms)
+- [x] After 3 failed attempts → status `FAILED` (no further retries); Admin can see in log
 
 ### In-App Alerts
-- [ ] New intake creates an in-app alert for Admin
-- [ ] QA approval creates an in-app alert for Admin
-- [ ] 24-hour deadline alert creates in-app alert for Admin
-- [ ] Ethical breach creates in-app alert for CEO
-- [ ] Blocked message creates in-app alert for Admin
-- [ ] Alert badge count in topbar reflects unread count
-- [ ] Marking alert as read → badge count decrements
+- [x] New intake creates an in-app alert for Admin
+- [x] QA approval creates an in-app alert for Admin
+- [x] 24-hour deadline alert creates in-app alert for Admin
+- [x] Ethical breach creates in-app alert for CEO
+- [x] Blocked message creates in-app alert for Admin
+- [x] Alert badge count in topbar reflects unread count
+- [x] Marking alert as read → badge count decrements
 
 ### Event Coverage
-- [ ] SOW generated → SOWReady email sent to Client
-- [ ] SOW signed → SOWSigned email sent to Client
-- [ ] Payment proof uploaded → ProofReceived email sent to Client
-- [ ] Payment verified → PaymentVerified email sent to Client
-- [ ] Payment rejected → PaymentRejected email sent to Client
-- [ ] Expert assigned → ExpertAssigned email sent to Client
-- [ ] Project delivered → ProjectDelivered email sent to Client
-- [ ] Dispute confirmed → DisputeOpened email sent to Client
-- [ ] **QA internal events (FOR_QA, QA_REVISION) → NO email to Client**
+- [x] SOW generated → SOWReady email sent to Client
+- [x] SOW signed → SOWSigned email sent to Client
+- [x] Payment proof uploaded → ProofReceived email sent to Client
+- [x] Payment verified → PaymentVerified email sent to Client
+- [x] Payment rejected → PaymentRejected email sent to Client
+- [x] Expert assigned → ExpertAssigned email sent to Client
+- [x] Project delivered → ProjectDelivered email sent to Client
+- [x] Dispute confirmed → DisputeOpened email sent to Client
+- [x] **QA internal events (FOR_QA, QA_REVISION) → NO email to Client**
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 errors
+- [x] `npm run build` → clean

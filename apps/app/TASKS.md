@@ -565,7 +565,24 @@
   - Admin Dispute Triage & Evidence Investigation Queue (`/dashboard/admin/disputes`)
   - CEO Academic Arbitrations & Refund Resolution Panel (`/dashboard/ceo/disputes`)
 - [x] Updated `Sidebar.tsx` activating Disputes links across Client, Admin, and CEO roles
-- [x] Documented verification report in `docs/modules/15-verification-report.md` (0 check-types errors across 5 packages)
+### Task 10 — Module 16: Email Notifications & In-App Alert Center
+- [x] Implemented Prisma database models: `NotificationLog` and `InAppAlert` with enum `NotificationStatus` (`SENT`, `FAILED`, `RETRYING`)
+- [x] Synchronized schema with Supabase PostgreSQL and updated client relations on `Project` and `User`
+- [x] Built Email Provider Abstraction & Template Engine in `src/lib/email/`:
+  - `sendEmail()` with Resend API integration in production and simulated fallback logging in local development
+  - Implemented 3-attempt exponential retry logic on delivery failures
+  - Built 11 responsive HTML email templates: `SOWReady`, `SOWSigned`, `ProofReceived`, `PaymentVerified`, `PaymentRejected`, `ExpertAssigned`, `NewMessage`, `InfoRequested`, `ProjectDelivered`, `RefundProcessed`, and `DisputeOpened`
+- [x] Built Server Actions in `src/features/notifications/actions.ts`:
+  - `getInAppAlertsAction` and `getUnreadAlertCountAction` for dynamic user notifications
+  - `markAlertReadAction` and `markAllAlertsReadAction`
+  - `createInAppAlertAction` for internal lifecycle triggers
+  - `getNotificationLogsAction` and `retryFailedNotificationAction` for administrative delivery audits
+- [x] Built UI Desks & Components:
+  - Topbar Notification Bell with live unread badge counter and slide-out `<NotificationDrawer />` in `Topbar.tsx`
+  - Admin Email Delivery Logs & Telemetry Desk (`/dashboard/admin/notifications`) with KPI telemetry cards and details modal
+- [x] Updated `Sidebar.tsx` activating Email Delivery Logs navigation under Admin
+- [x] Seeded mock initial in-app alerts and delivery logs in `prisma/seed.ts`
+- [x] Documented verification report in `docs/modules/16-verification-report.md` (0 check-types errors across 5 packages)
 
 ---
 
@@ -588,8 +605,8 @@
 | `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ✅ Completed |
 | `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ✅ Completed |
 | `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | ✅ Completed |
-| `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ✅ **Completed** |
-| `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ⏳ **Active (Next)** |
-| `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ⏳ Queued |
+| `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ✅ Completed |
+| `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ✅ **Completed** |
+| `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ⏳ **Active (Next)** |
 | `18` | `18-attendance` — Staff Attendance & Duty Governance | HR & Labor | ✅ Completed |
 | `19` | `19-payroll` — Corporate Payroll & Payslip Engine | HR & Treasury | ✅ Completed |

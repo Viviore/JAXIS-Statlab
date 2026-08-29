@@ -19,6 +19,7 @@ import {
   IconMenu2,
 } from "@tabler/icons-react";
 import { DutyClockWidget } from "@/features/attendance/components/DutyClockWidget";
+import { NotificationDrawer } from "../notifications/NotificationDrawer";
 
 export interface TopbarProps {
   userFullName?: string;
@@ -79,8 +80,11 @@ export const Topbar: React.FC<TopbarProps> = ({
         </Link>
       </div>
 
-      {/* Right Controls: Duty Clock Widget + User Profile + Mobile Hamburger */}
+      {/* Right Controls: Notification Center + Duty Clock Widget + User Profile + Mobile Hamburger */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* In-App Notification Center Drawer */}
+        <NotificationDrawer />
+
         {/* Topbar Duty Clock Widget for internal staff */}
         <DutyClockWidget userRole={userRole} />
 
