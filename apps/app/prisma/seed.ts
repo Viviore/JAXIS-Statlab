@@ -653,6 +653,169 @@ async function main() {
           }
         }
 
+        // ─── Module 14: Seed PayoutRateConfig and Project Financial Ledger ───
+        const seedRates = [
+          { packageName: "JX_01_DATACHECK", ratePercent: 45.0 },
+          { packageName: "JX_02_START", ratePercent: 47.0 },
+          { packageName: "JX_03_CORE", ratePercent: 62.0 },
+          { packageName: "JX_04_ADVANCED", ratePercent: 72.0 },
+          { packageName: "DEFENSELAB", ratePercent: 80.0 },
+        ];
+
+        for (const r of seedRates) {
+          await (prisma as any).payoutRateConfig.upsert({
+            where: { packageName: r.packageName },
+            create: {
+              packageName: r.packageName,
+              ratePercent: r.ratePercent,
+            },
+            update: {
+              ratePercent: r.ratePercent,
+            },
+          });
+        }
+        console.log("✅ Seeded Module 14 PayoutRateConfig tiers.");
+
+        // Upsert Financial Ledgers and Payouts for all existing studies
+        const allStudies = await prisma.project.findMany({
+          include: {
+            quotations: { where: { status: "CLIENT_APPROVED" }, take: 1 },
+            assignment: true,
+            payments: { orderBy: { createdAt: "desc" }, take: 1 },
+          },
+        });
+
+        for (const s of allStudies) {
+          const quote = s.quotations[0];
+          const grossAmount = quote ? Number(quote.totalAmount) : 3200;
+          const pkg = s.packageName || quote?.packageName || "JX_03_CORE";
+          const rateObj = seedRates.find((r) => r.packageName === pkg) || { ratePercent: 62.0 };
+          const statShare = Math.round((grossAmount * (rateObj.ratePercent / 100)) * 100) / 100;
+          const qaShare = s.assignment?.qaLeadId ? Math.round((statShare * 0.1) * 100) / 100 : 0;
+          const netMargin = Math.round((grossAmount - statShare - qaShare) * 100) / 100;
+
+          await (prisma as any).financialLedger.upsert({
+            where: { projectId: s.id },
+            create: {
+              projectId: s.id,
+              grossRevenue: grossAmount,
+              platformFee: netMargin,
+              statisticianShare: statShare,
+              qaLeadShare: qaShare,
+              netMargin: netMargin,
+            },
+            update: {
+              grossRevenue: grossAmount,
+              platformFee: netMargin,
+              statisticianShare: statShare,
+              qaLeadShare: qaShare,
+              netMargin: netMargin,
+            },
+          });
+
+          if (s.assignment?.statisticianId) {
+            const isDelivered = s.masterStatus === "DELIVERED" || s.masterStatus === "CLOSED";
+            const isDisbursed = isDelivered;
+
+            const existingPayout = await (prisma as any).payout.findFirst({
+              where: {
+                projectId: s.id,
+                recipientId: s.assignment.statisticianId,
+                recipientRole: "STATISTICIAN",
+              },
+            });
+
+            if (!existingPayout) {
+              await (prisma as any).payout.create({
+                data: {
+                  projectId: s.id,
+                  recipientId: s.assignment.statisticianId,
+                  recipientRole: "STATISTICIAN",
+                  grossProjectAmount: grossAmount,
+                  payoutRateApplied: rateObj.ratePercent,
+                  payoutAmount: statShare,
+                  payoutStatus: isDisbursed ? "DISBURSED" : isDelivered ? "APPROVED" : "NOT_ELIGIBLE",
+                  disbursedAt: isDisbursed ? new Date() : null,
+                  disbursedBy: isDisbursed ? adminUser?.id : null,
+                  disbursementMethod: isDisbursed ? "GCASH" : null,
+                  disbursementRef: isDisbursed ? `GCASH-2026-${s.intakeId.slice(-4)}` : null,
+                  notes: isDisbursed ? "Milestone disbursement completed via GCash." : null,
+                },
+              });
+            }
+          }
+
+          if (s.assignment?.qaLeadId && qaShare > 0) {
+            const isDelivered = s.masterStatus === "DELIVERED" || s.masterStatus === "CLOSED";
+            const isDisbursed = isDelivered;
+
+            const existingQa = await (prisma as any).payout.findFirst({
+              where: {
+                projectId: s.id,
+                recipientId: s.assignment.qaLeadId,
+                recipientRole: "QA_LEAD",
+              },
+            });
+
+            if (!existingQa) {
+              await (prisma as any).payout.create({
+                data: {
+                  projectId: s.id,
+                  recipientId: s.assignment.qaLeadId,
+                  recipientRole: "QA_LEAD",
+                  grossProjectAmount: grossAmount,
+                  payoutRateApplied: 10.0,
+                  payoutAmount: qaShare,
+                  payoutStatus: isDisbursed ? "DISBURSED" : isDelivered ? "APPROVED" : "NOT_ELIGIBLE",
+                  disbursedAt: isDisbursed ? new Date() : null,
+                  disbursedBy: isDisbursed ? adminUser?.id : null,
+                  disbursementMethod: isDisbursed ? "GCASH" : null,
+                  disbursementRef: isDisbursed ? `GCASH-QA-2026-${s.intakeId.slice(-4)}` : null,
+                  notes: isDisbursed ? "QA Lead review compensation disbursed." : null,
+                },
+              });
+            }
+          }
+        }
+        console.log("✅ Seeded Module 14 Financial Ledgers and Milestone Payout records.");
+
+        // ─── Module 15: Seed Historical Dispute & Arbitration Record ────────
+        const firstProject = await prisma.project.findFirst({
+          where: { intakeId: "JAXIS-202608-0001" },
+        });
+        const ceoUser = await prisma.user.findFirst({
+          where: { email: "ceo@jaxis.dev" },
+        });
+
+        if (firstProject && (prisma as any).dispute && ceoUser) {
+          const existingDispute = await (prisma as any).dispute.findFirst({
+            where: { projectId: firstProject.id },
+          });
+
+          if (!existingDispute) {
+            await (prisma as any).dispute.create({
+              data: {
+                projectId: firstProject.id,
+                clientId: clientUser.id,
+                grounds: "METHODOLOGY_DEVIATION",
+                description:
+                  "Client inquired whether logistic regression was performed per SOW Section 3 specifications.",
+                evidenceFilePaths: [
+                  "https://jaxis-storage.com/evidence/sow_section_3_extract.pdf",
+                ],
+                status: "RESOLVED_NO_REFUND",
+                resolutionType: "NO_REFUND",
+                resolutionNotes:
+                  "Comprehensive review of deliverables confirmed multivariable logistic regression and odds ratio tables were accurately executed per SOW terms. Deliverables upheld.",
+                resolvedBy: ceoUser.id,
+                resolvedAt: new Date(Date.now() - 2 * 86400000),
+                disputeWindowExpiresAt: new Date(Date.now() + 5 * 86400000),
+              },
+            });
+            console.log("✅ Seeded Module 15 Historical Dispute and CEO Arbitration record.");
+          }
+        }
+
         console.log("✅ Seeded Module 12 Deliverables packaging and Revision triage records.");
       }
     }

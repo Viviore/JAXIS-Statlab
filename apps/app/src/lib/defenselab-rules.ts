@@ -1,4 +1,3 @@
-import { Decimal } from "@prisma/client/runtime/library";
 import { db, withDbTimeout } from "@/lib/db";
 
 export const DEFENSELAB_RATE_PER_HOUR = 250; // PHP 250 per hour

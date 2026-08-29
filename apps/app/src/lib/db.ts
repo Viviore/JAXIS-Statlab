@@ -26,7 +26,13 @@ function createPrismaClient(): PrismaClient {
 
 export function getDb(): PrismaClient {
   if (env.NODE_ENV !== "production") {
-    if (!globalForPrisma.prisma || !(globalForPrisma.prisma as any).defenseLabSession) {
+    if (
+      !globalForPrisma.prisma ||
+      !(globalForPrisma.prisma as any).defenseLabSession ||
+      !(globalForPrisma.prisma as any).payout ||
+      !(globalForPrisma.prisma as any).financialLedger ||
+      !(globalForPrisma.prisma as any).dispute
+    ) {
       globalForPrisma.prisma = createPrismaClient();
     }
   }

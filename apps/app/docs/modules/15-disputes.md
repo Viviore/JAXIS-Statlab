@@ -219,38 +219,38 @@ const seedDisputeResolved = {
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **7-Day Formal Dispute Filing:** Client can lodge a formal dispute within 7 days of delivery with valid grounds (`METHODOLOGY_DEVIATION` or `MATHEMATICAL_ERROR`) and evidence attachments.
-- [ ] **Admin Investigation Queue:** Admin reviews dispute claims, inspects SOW scope vs outputs, and transitions status to `UNDER_REVIEW`.
-- [ ] **CEO Refund Authority (RULE_ROL_01):** Exclusive ruling desk for CEO to issue `RESOLVED_REFUND` (full refund only) or `RESOLVED_NO_REFUND` with documented rationale.
-- [ ] **Chargeback & Payout Freeze:** Chargebacks immediately freeze project state (`HALTED`) and lock related expert payouts pending arbitration.
-- [ ] **SLA Failure Add-On Refund:** Automated handling of turnaround breach claims refunding rush fee add-ons without canceling core package deliverables.
+- [x] **7-Day Formal Dispute Filing:** Client can lodge a formal dispute within 7 days of delivery with valid grounds (`METHODOLOGY_DEVIATION`, `MATHEMATICAL_ERROR`, or `SLA_BREACH`) and evidence attachments.
+- [x] **Admin Investigation Queue:** Admin reviews dispute claims, inspects SOW scope vs outputs, and transitions status to `UNDER_REVIEW`.
+- [x] **CEO Refund Authority (RULE_ROL_01):** Exclusive ruling desk for CEO to issue `RESOLVED_REFUND` (full refund or SLA upgrade only) or `RESOLVED_NO_REFUND` with documented rationale.
+- [x] **Chargeback & Payout Freeze:** Chargebacks immediately freeze project state (`HALTED`) and lock related expert payouts pending arbitration.
+- [x] **SLA Failure Add-On Refund:** Automated handling of turnaround breach claims refunding rush fee add-ons without canceling core package deliverables.
 
 
 ## 9. Acceptance Criteria (Done Checklist)
 
 ### Dispute Submission
-- [ ] Client can submit dispute within 7 days of delivery
-- [ ] Dispute submitted after 7 days → 422 `DISPUTE_WINDOW_EXPIRED`
-- [ ] Invalid grounds (not in enum) → 422 validation error
-- [ ] Evidence files upload correctly
-- [ ] `project.hasActiveDispute = true` set on submission
-- [ ] `disputeWindowExpiresAt` = `deliveredAt + 7 days`
+- [x] Client can submit dispute within 7 days of delivery
+- [x] Dispute submitted after 7 days → 422 `DISPUTE_WINDOW_EXPIRED`
+- [x] Invalid grounds (not in enum) → 422 validation error
+- [x] Evidence files upload correctly
+- [x] `project.hasActiveDispute = true` set on submission
+- [x] `disputeWindowExpiresAt` = `deliveredAt + 7 days`
 
 ### Admin Actions
-- [ ] Admin can move dispute to `UNDER_REVIEW`
-- [ ] Admin can trigger chargeback → project → `HALTED`; payouts frozen
+- [x] Admin can move dispute to `UNDER_REVIEW`
+- [x] Admin can trigger chargeback → project → `HALTED`; payouts frozen
 
 ### CEO Resolution (RULE_ROL_01)
-- [ ] Non-CEO attempting to resolve → 403
-- [ ] CEO resolves `RESOLVED_REFUND` with resolution type and notes
-- [ ] CEO resolves `RESOLVED_NO_REFUND` → project → `CLOSED`; payout unblocked
-- [ ] SLA breach resolution → only add-on fee computed as refund
+- [x] Non-CEO attempting to resolve → 403
+- [x] CEO resolves `RESOLVED_REFUND` with resolution type and notes
+- [x] CEO resolves `RESOLVED_NO_REFUND` → project → `CLOSED`; payout unblocked
+- [x] SLA breach resolution → only add-on fee computed as refund
 
 ### Payout Impact
-- [ ] Active dispute → payout disbursement blocked (RULE_PAY_01 gate returns 403)
-- [ ] Dispute resolved `RESOLVED_NO_REFUND` → payout unblocked
+- [x] Active dispute → payout disbursement blocked (RULE_PAY_01 gate returns 403)
+- [x] Dispute resolved `RESOLVED_NO_REFUND` → payout unblocked
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 errors
+- [x] `npm run build` → clean

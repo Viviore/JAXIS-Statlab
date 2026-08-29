@@ -34,7 +34,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   const [messages, setMessages] = useState<MessageDTO[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        const cached = sessionStorage.getItem(`jaxis_chat_cache_${projectId}`);
+        const cached = sessionStorage.getItem(CACHE_KEY);
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed.messages)) return parsed.messages;

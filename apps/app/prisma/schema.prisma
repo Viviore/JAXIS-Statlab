@@ -72,6 +72,9 @@ model User {
   classifiedRevisions     RevisionRequest[]             @relation("ClassifiedRevisions")
   clientDefenseLabSessions DefenseLabSession[]          @relation("ClientDefenseLab")
   expertDefenseLabSessions DefenseLabSession[]          @relation("ExpertDefenseLab")
+  payouts                 Payout[]                      @relation("RecipientPayouts")
+  clientDisputes          Dispute[]                     @relation("ClientDisputes")
+  resolvedDisputes        Dispute[]                     @relation("ResolvedDisputes")
 
   @@index([email])
   @@index([status])
@@ -267,6 +270,9 @@ model Project {
   deliverables      Deliverable[]
   revisionRequests  RevisionRequest[]
   defenseLabSessions DefenseLabSession[]
+  payouts           Payout[]
+  financialLedger   FinancialLedger?
+  disputes          Dispute[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -921,5 +927,131 @@ model DefenseLabSession {
   @@index([status])
   @@map("defense_lab_sessions")
 }
+
+// ─── Module 14: Finance, Milestone Payouts & Treasury Ledger ────────────────
+
+model PayoutRateConfig {
+  id            Int      @id @default(autoincrement())
+  packageName   String   @unique
+  ratePercent   Decimal  @db.Decimal(5, 2)
+  effectiveFrom DateTime @default(now())
+  approvedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("payout_rate_configs")
+}
+
+enum PayoutStatus {
+  NOT_ELIGIBLE
+  PENDING
+  APPROVED
+  DISBURSED
+  VOIDED
+}
+
+enum PayoutRole {
+  STATISTICIAN
+  QA_LEAD
+}
+
+model Payout {
+  id                 String       @id @default(cuid())
+  projectId          String
+  recipientId        String
+  recipientRole      PayoutRole
+  grossProjectAmount Decimal      @db.Decimal(10, 2)
+  payoutRateApplied  Decimal      @db.Decimal(5, 2)
+  payoutAmount       Decimal      @db.Decimal(10, 2)
+  payoutStatus       PayoutStatus @default(NOT_ELIGIBLE)
+  voidReason         String?
+  disbursedAt        DateTime?
+  disbursedBy        String?      // Finance Officer userId
+  approvedBy         String?      // Finance/CEO userId
+  disbursementMethod String?      // GCASH, MAYA, BANK_TRANSFER, CASH
+  disbursementRef    String?      // Transaction reference
+  disbursementProofUrl String?
+  notes              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  recipient User    @relation("RecipientPayouts", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([recipientId])
+  @@index([payoutStatus])
+  @@index([createdAt])
+  @@map("payouts")
+}
+
+model FinancialLedger {
+  id                String   @id @default(cuid())
+  projectId         String   @unique
+  grossRevenue      Decimal  @db.Decimal(10, 2)
+  platformFee       Decimal  @db.Decimal(10, 2) // JAXIS net profit
+  statisticianShare Decimal  @db.Decimal(10, 2)
+  qaLeadShare       Decimal  @db.Decimal(10, 2)
+  netMargin         Decimal  @db.Decimal(10, 2)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("financial_ledgers")
+}
+
+// ─── Module 15: Disputes, Academic Arbitrations, Refunds & Chargebacks ─────────
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_REFUND
+  RESOLVED_NO_REFUND
+  CHARGEBACK
+}
+
+enum DisputeGrounds {
+  METHODOLOGY_DEVIATION
+  MATHEMATICAL_ERROR
+  SLA_BREACH
+}
+
+enum DisputeResolutionType {
+  FULL_REFUND
+  TURNAROUND_UPGRADE_REFUND_ONLY
+  NO_REFUND
+  CHARGEBACK
+}
+
+model Dispute {
+  id                    String                 @id @default(cuid())
+  projectId             String
+  clientId              String
+  grounds               DisputeGrounds
+  description           String
+  evidenceFilePaths     String[]               // R2/S3 keys or file URLs
+  status                DisputeStatus          @default(OPEN)
+  resolutionType        DisputeResolutionType?
+  resolutionNotes       String?
+  resolvedBy            String?                // CEO userId
+  resolvedAt            DateTime?
+  chargebackTriggeredBy String?                // Admin / CEO userId
+  chargebackAt          DateTime?
+  disputeWindowExpiresAt DateTime              // deliveredAt + 7 days
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  client   User    @relation("ClientDisputes", fields: [clientId], references: [id], onDelete: Cascade)
+  resolver User?   @relation("ResolvedDisputes", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("disputes")
+}
+
 
 

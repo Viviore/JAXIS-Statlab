@@ -17,6 +17,8 @@ The platform ensures quality and accountability by following a strict 9-stage op
 9. **Archive & Payout:** Projects are archived, and revenue shares are automatically calculated and disbursed.
 
 ## Recent System Enhancements & Completed Modules
+- **Disputes, Academic Arbitrations & Refunds (Module 15)**: 7-day post-delivery dispute window enforcement (`assertDisputeWindowOpen`), objective technical grounds validation (`METHODOLOGY_DEVIATION`, `MATHEMATICAL_ERROR`, `SLA_BREACH`), evidence vault attachments, chargeback project halts with automatic escrow payout freezes, CEO exclusive refund authority (`RULE_ROL_01`), and SLA turnaround upgrade fee refund calculations.
+- **Finance, Milestone Payouts & Treasury Ledger (Module 14)**: Escrow release safety gates (`RULE_PAY_01`), package commission splits, per-study gross revenue and net platform margin ledgers, CEO rate matrix governance, and specialist self-service earnings history.
 - **DefenseLab Oral Defense Simulation (Module 13)**: End-to-end rehearsal scheduling, 12-hour cancellation rule enforcement, Google Meet integration, cloud recording vault, and penalty governance.
 - **Messenger-Style High-Performance Chat (Module 09)**: Instant 0ms cache-first preload, optimistic message dispatch, background delta syncing, communication firewall anti-evasion, and canonical orbital loading states.
 - **Staff Attendance & Duty Governance (Module 18)**: Topbar live timeclock widget, 14-hour anti-runaway shift safety auto-close, automated meal break deductions, and Segregation of Duties shift correction approval workflows.

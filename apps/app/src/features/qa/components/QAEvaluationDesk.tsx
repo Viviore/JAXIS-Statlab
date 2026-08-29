@@ -17,7 +17,6 @@ import {
   IconCheck,
   IconDownload,
   IconFileText,
-  IconDatabase,
   IconFiles,
   IconClock,
   IconHistory,

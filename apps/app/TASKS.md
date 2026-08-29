@@ -404,19 +404,21 @@
 - [x] `updateDefenseLabMeetingLink` coordinating Google Meet / Zoom links
 - [x] `completeDefenseLabSession` and `uploadDefenseLabRecording` with client access gates
 - [x] `applyDefenseLabPenalty` recording administrative determinations
+- [x] Dynamic database delegation in `db.ts` with direct query execution fallbacks
 
 ### Task 4 — Client DefenseLab Portal UI
 - [x] Client DefenseLab Hub (`/dashboard/client/defenselab`)
 - [x] Live rehearsal appointment countdown, meeting link joiner, and reschedule modal
 - [x] Gated session recording vault (unlocked post-completion)
+- [x] Seeded mock sessions (1 Upcoming + 1 Completed with Google Drive recording) for Client Ana Cruz
 
 ### Task 5 — Admin Operations Control Center UI
 - [x] Admin DefenseLab Operations Queue (`/dashboard/admin/defenselab`)
 - [x] Meeting link coordinator, session completion modal, recording attacher, and penalty manager
 
 ### Task 6 — Module Gate Verification
-- [x] Verification report documented in `docs/modules/13-verification-report.md`
-- [x] Quality gates verified (`npm run check-types` → 0 errors)
+- [x] Verification report documented in [`docs/modules/13-verification-report.md`](./docs/modules/13-verification-report.md)
+- [x] Quality gates verified (`npm run check-types` → 0 errors across 5 workspace packages)
 
 ---
 
@@ -525,6 +527,46 @@
 - [x] Added resilient database client delegation and dynamic schema reload in `db.ts` to prevent stale client model exceptions in dev environments
 - [x] Seeded mock DefenseLab sessions and messaging threads for Client Ana Cruz and Dr. Juan Reyes
 
+### Task 8 — Module 14: Finance, Milestone Payouts & Treasury Ledger
+- [x] Implemented Prisma database models: `PayoutRateConfig`, `Payout`, `FinancialLedger` with enums `PayoutStatus` (`NOT_ELIGIBLE`, `PENDING`, `APPROVED`, `DISBURSED`, `VOIDED`) and `PayoutRole` (`STATISTICIAN`, `QA_LEAD`)
+- [x] Synchronized schema with Supabase PostgreSQL and seeded baseline package payout rates (`JX_01`: 45%, `JX_02`: 47%, `JX_03`: 62%, `JX_04`: 72%, `DEFENSELAB`: 80%)
+- [x] Implemented core calculation and validation engine in `src/lib/payout-rules.ts`:
+  - `assertPayoutEligible()` strictly enforcing `RULE_PAY_01` (DELIVERED/CLOSED status, 100% paid, no disputes, no refunds)
+  - `calculateAndSyncProjectPayouts()` computing Statistician commission and Senior QA Lead audit fees (10% of stat share)
+- [x] Built Server Actions in `src/features/finance/actions.ts`:
+  - `getFinancePayoutQueue` with `RULE_PAY_01` checklist inspection and registered specialist settlement accounts
+  - `disbursePayoutAction` recording disbursement method (`GCASH`, `MAYA`, `BANK_TRANSFER`, `CASH`) and transaction reference numbers
+  - `voidPayoutAction` with documented administrative reasons
+  - `getFinancialLedgerAction` with per-project gross revenue, platform fee, and net margin analytics
+  - `getCeoFinancialOverviewAction` and `updatePayoutRateConfigAction` for executive rate matrix governance
+  - `getSpecialistPayoutHistoryAction` for statistician and QA lead earnings ledgers
+- [x] Built UI Desks complying with Dark Precision design system & Plain English copywriting:
+  - Finance Milestone Payouts Desk (`/dashboard/finance/payouts`) with `<DisbursePayoutModal />` and `<VoidPayoutModal />`
+  - Project Financial Ledger Desk (`/dashboard/finance/ledger`) with margin pills and package filtering
+  - CEO Financial Governance Desk (`/dashboard/ceo/finance`) with package profitability matrix and live rate editor modal
+  - Statistician Payouts Desk (`/dashboard/statistician/payouts`)
+  - Senior QA Lead Audit Earnings Desk (`/dashboard/qa/payouts`)
+- [x] Updated `Sidebar.tsx` activating Finance Payouts/Ledger, CEO Treasury, and Specialist Payouts navigation
+### Task 9 — Module 15: Disputes, Academic Arbitrations, Refunds & Chargebacks
+- [x] Implemented Prisma database models: `Dispute` with enums `DisputeStatus` (`OPEN`, `UNDER_REVIEW`, `RESOLVED_REFUND`, `RESOLVED_NO_REFUND`, `CHARGEBACK`), `DisputeGrounds` (`METHODOLOGY_DEVIATION`, `MATHEMATICAL_ERROR`, `SLA_BREACH`), and `DisputeResolutionType` (`FULL_REFUND`, `TURNAROUND_UPGRADE_REFUND_ONLY`, `NO_REFUND`, `CHARGEBACK`)
+- [x] Synchronized schema with Supabase PostgreSQL and updated client relations on `Project` and `User`
+- [x] Implemented core dispute rules engine in `src/lib/dispute-rules.ts`:
+  - `assertDisputeWindowOpen()` strictly enforcing 7-day post-delivery claim window (`deliveredAt + 7 days`)
+  - `computeSLABreachRefund()` computing refundable turnaround upgrade add-on fees (Core Rule 11)
+- [x] Built Server Actions in `src/features/disputes/actions.ts`:
+  - `getClientEligibleDisputesAction` listing eligible delivered projects within the 7-day window
+  - `submitDisputeAction` validating objective grounds and placing project into `DISPUTED` state
+  - `getAdminDisputesAction` with status filters, search, and comprehensive arbitration summary
+  - `reviewDisputeAction` transitioning claim to `UNDER_REVIEW`
+  - `triggerChargebackAction` moving project to `HALTED` and freezing specialist milestone payouts
+  - `resolveDisputeAction` strictly enforcing CEO exclusive authority (`RULE_ROL_01`) for refund and output rulings
+- [x] Built UI Desks complying with Dark Precision design system & Plain English copywriting:
+  - Client Dispute Filing & 7-Day Window Tracker Desk (`/dashboard/client/disputes`)
+  - Admin Dispute Triage & Evidence Investigation Queue (`/dashboard/admin/disputes`)
+  - CEO Academic Arbitrations & Refund Resolution Panel (`/dashboard/ceo/disputes`)
+- [x] Updated `Sidebar.tsx` activating Disputes links across Client, Admin, and CEO roles
+- [x] Documented verification report in `docs/modules/15-verification-report.md` (0 check-types errors across 5 packages)
+
 ---
 
 ## Roadmap Status Matrix
@@ -545,9 +587,9 @@
 | `11` | `11-qa` — Quality Assurance & Reproducibility | Operations | ✅ Completed |
 | `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ✅ Completed |
 | `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ✅ Completed |
-| `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | ⏳ **Active (Next)** |
-| `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ⏳ Queued (Awaiting `14`) |
-| `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ⏳ Queued |
+| `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | ✅ Completed |
+| `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ✅ **Completed** |
+| `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ⏳ **Active (Next)** |
 | `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ⏳ Queued |
 | `18` | `18-attendance` — Staff Attendance & Duty Governance | HR & Labor | ✅ Completed |
 | `19` | `19-payroll` — Corporate Payroll & Payslip Engine | HR & Treasury | ✅ Completed |

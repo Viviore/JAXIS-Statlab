@@ -229,42 +229,42 @@ const seedPayout = {
 
 ### 🎯 Expected Output (What you should be able to do now)
 
-- [ ] **Financial Revenue Ledger:** Finance Officer and CEO can view itemized gross revenue, platform margin, and expert earnings across all projects.
-- [ ] **Automated Payout Computation:** System applies seeded payout rate configuration by package tier (`JX-01`, `JX-02`, `JX-03`, `JX-04`, `DefenseLab`).
-- [ ] **Disbursement Eligibility Gate (RULE_PAY_01):** Payouts are strictly locked until project status is `DELIVERED`/`CLOSED`, `paymentStatus === FULLY_PAID`, and zero active disputes exist.
-- [ ] **Finance Disbursement Workflow:** Finance Officer logs disbursement reference (GCash/bank ref) and marks payout `DISBURSED`.
-- [ ] **Expert Earnings & History:** Statisticians and QA Leads can view their individual verified earnings, pending balances, and payout history.
+- [x] **Financial Revenue Ledger:** Finance Officer and CEO can view itemized gross revenue, platform margin, and expert earnings across all projects.
+- [x] **Automated Payout Computation:** System applies seeded payout rate configuration by package tier (`JX-01`, `JX-02`, `JX-03`, `JX-04`, `DefenseLab`).
+- [x] **Disbursement Eligibility Gate (RULE_PAY_01):** Payouts are strictly locked until project status is `DELIVERED`/`CLOSED`, `paymentStatus === FULLY_PAID`, and zero active disputes exist.
+- [x] **Finance Disbursement Workflow:** Finance Officer logs disbursement reference (GCash/bank ref) and marks payout `DISBURSED`.
+- [x] **Expert Earnings & History:** Statisticians and QA Leads can view their individual verified earnings, pending balances, and payout history.
 
 
 ## 9. Acceptance Criteria (Done Checklist)
 
 ### Payout Calculation
-- [ ] Payout computed correctly: `grossRevenue × ratePercent`
-- [ ] QA Lead payout = 10% of Statistician payout
-- [ ] Payout rate pulled from `PayoutRateConfig` by package name
-- [ ] `FinancialLedger` record created on project delivery with correct margin breakdown
+- [x] Payout computed correctly: `grossRevenue × ratePercent`
+- [x] QA Lead payout = 10% of Statistician payout
+- [x] Payout rate pulled from `PayoutRateConfig` by package name
+- [x] `FinancialLedger` record created on project delivery with correct margin breakdown
 
 ### Disbursement (RULE_PAY_01)
-- [ ] Project not DELIVERED/CLOSED → 403 `PAYOUT_NOT_ELIGIBLE`
-- [ ] Project not FULLY_PAID → 403 `PAYOUT_NOT_ELIGIBLE`
-- [ ] Active dispute → 403 `PAYOUT_NOT_ELIGIBLE`
-- [ ] All 4 conditions met → Finance can approve and disburse
-- [ ] `disbursedAt` and `disbursedBy` set on disbursement
+- [x] Project not DELIVERED/CLOSED → 403 `PAYOUT_NOT_ELIGIBLE`
+- [x] Project not FULLY_PAID → 403 `PAYOUT_NOT_ELIGIBLE`
+- [x] Active dispute → 403 `PAYOUT_NOT_ELIGIBLE`
+- [x] All 4 conditions met → Finance can approve and disburse
+- [x] `disbursedAt` and `disbursedBy` set on disbursement
 
 ### Voiding
-- [ ] Expert reassignment → original payout voided with reason `REASSIGNMENT`
-- [ ] `VOIDED` payout cannot be reinstated
+- [x] Expert reassignment → original payout voided with reason `REASSIGNMENT`
+- [x] `VOIDED` payout cannot be reinstated
 
 ### Ledger
-- [ ] Finance ledger shows all projects with revenue, margin, payout amounts
-- [ ] Date range filter works
-- [ ] CEO ledger view shows all data + override button placeholder
+- [x] Finance ledger shows all projects with revenue, margin, payout amounts
+- [x] Date range filter works
+- [x] CEO ledger view shows all data + override button placeholder
 
 ### Statistician View
-- [ ] Statistician sees own payouts only (not other Experts)
-- [ ] Admin cannot see Statistician-only payout view as Statistician
+- [x] Statistician sees own payouts only (not other Experts)
+- [x] Admin cannot see Statistician-only payout view as Statistician
 
 ### Quality Gates
-- [ ] `npm run check-types` → 0 errors
-- [ ] `npm run lint` → 0 warnings/errors
-- [ ] `npm run build` → clean
+- [x] `npm run check-types` → 0 errors
+- [x] `npm run lint` → 0 warnings/errors
+- [x] `npm run build` → clean
