@@ -36,7 +36,8 @@ export function getDb(): PrismaClient {
       !(globalForPrisma.prisma as any).inAppAlert ||
       !(globalForPrisma.prisma as any).archivedProject ||
       !(globalForPrisma.prisma as any).auditLog ||
-      !(globalForPrisma.prisma as any).dataDeletionRequest
+      !(globalForPrisma.prisma as any).dataDeletionRequest ||
+      !(globalForPrisma.prisma as any).storageRetentionConfig
     ) {
       globalForPrisma.prisma = createPrismaClient();
     }

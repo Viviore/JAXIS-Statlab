@@ -464,8 +464,15 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         {
           label: "Intelligence Reports",
           href: "/dashboard/ceo/reports",
-          icon: Icons.Audit,
+          icon: Icons.Activity,
           badge: "REPORTS",
+          badgeColor: "orange",
+        },
+        {
+          label: "Storage & Purge Policy",
+          href: "/dashboard/ceo/retention",
+          icon: Icons.Vault,
+          badge: "POLICY",
           badgeColor: "orange",
         },
       ],

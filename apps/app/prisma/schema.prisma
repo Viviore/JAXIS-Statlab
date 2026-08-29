@@ -1176,5 +1176,25 @@ model DataDeletionRequest {
   @@map("data_deletion_requests")
 }
 
+model StorageRetentionConfig {
+  id                  String   @id @default("default-config")
+  retentionPeriodDays Int      @default(90)
+  purgeInactiveDays   Int      @default(180)
+  autoPurgeEnabled    Boolean  @default(true)
+
+  // Categorical file protection toggles (true = PRESERVE / DO NOT PURGE)
+  keepDatasets        Boolean  @default(true)
+  keepResearchDocs    Boolean  @default(true)
+  keepQuestionnaires  Boolean  @default(true)
+  keepReceiptPhotos   Boolean  @default(true)
+  keepChatHistory     Boolean  @default(true)
+  keepDeliverables    Boolean  @default(true)
+
+  updatedAt           DateTime @updatedAt
+  updatedBy           String?  // CEO userId
+
+  @@map("storage_retention_configs")
+}
+
 
 

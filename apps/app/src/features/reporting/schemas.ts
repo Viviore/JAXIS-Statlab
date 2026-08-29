@@ -77,6 +77,33 @@ export interface AuditLogDTO {
   createdAt: string;
 }
 
+export const StorageRetentionConfigSchema = z.object({
+  retentionPeriodDays: z.number().int().min(1).max(3650),
+  purgeInactiveDays: z.number().int().min(1).max(3650),
+  autoPurgeEnabled: z.boolean(),
+  keepDatasets: z.boolean(),
+  keepResearchDocs: z.boolean(),
+  keepQuestionnaires: z.boolean(),
+  keepReceiptPhotos: z.boolean(),
+  keepChatHistory: z.boolean(),
+  keepDeliverables: z.boolean(),
+});
+export type StorageRetentionConfigInput = z.infer<typeof StorageRetentionConfigSchema>;
+
+export interface StorageRetentionConfigDTO {
+  retentionPeriodDays: number;
+  purgeInactiveDays: number;
+  autoPurgeEnabled: boolean;
+  keepDatasets: boolean;
+  keepResearchDocs: boolean;
+  keepQuestionnaires: boolean;
+  keepReceiptPhotos: boolean;
+  keepChatHistory: boolean;
+  keepDeliverables: boolean;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
 export interface DataDeletionRequestDTO {
   id: string;
   clientId: string;
@@ -89,3 +116,39 @@ export interface DataDeletionRequestDTO {
   status: "PENDING" | "PROCESSED" | "REJECTED";
   processedBy: string | null;
 }
+
+export interface InfrastructureHealthDTO {
+  supabase: {
+    status: "HEALTHY" | "WARNING" | "CRITICAL";
+    databaseSizeMB: number;
+    databaseLimitMB: number;
+    percentageUsed: number;
+    totalRows: number;
+    latencyMs: number;
+    connectionPoolStatus: string;
+  };
+  cloudflare: {
+    status: "HEALTHY" | "WARNING" | "CRITICAL";
+    totalFiles: number;
+    storageUsedMB: number;
+    storageLimitMB: number;
+    percentageUsed: number;
+    purgedFilesCount: number;
+    purgedSavingsMB: number;
+  };
+  resend: {
+    status: "HEALTHY" | "WARNING" | "CRITICAL";
+    sentToday: number;
+    dailyLimit: number;
+    sentThisMonth: number;
+    monthlyLimit: number;
+    dailyPercentageUsed: number;
+    deliverySuccessRate: number;
+    mode: "PRODUCTION_API" | "LOCAL_SIMULATION";
+  };
+  overallStatus: "HEALTHY" | "WARNING" | "CRITICAL";
+  hasActiveWarning: boolean;
+  warningDetails: string[];
+}
+
+

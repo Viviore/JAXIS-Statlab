@@ -9,12 +9,15 @@ import {
   DataDeletionRequestSchema,
   ProcessDeletionSchema,
   AuditLogFilterSchema,
+  StorageRetentionConfigSchema,
   type ReportQueryInput,
   type ArchiveProjectInput,
   type ArchiveFilterInput,
   type DataDeletionRequestInput,
   type ProcessDeletionInput,
   type AuditLogFilterInput,
+  type StorageRetentionConfigInput,
+  type StorageRetentionConfigDTO,
   type ArchivedProjectDTO,
   type AuditLogDTO,
   type DataDeletionRequestDTO,
@@ -642,6 +645,118 @@ export async function getArchivedProjectsAction(rawInput?: ArchiveFilterInput): 
   }
 }
 
+export async function getStorageRetentionConfigAction(): Promise<{
+  success: boolean;
+  data?: StorageRetentionConfigDTO;
+  error?: { message: string };
+}> {
+  try {
+    const session = await auth();
+    const user = session?.user;
+    if (!user || !["ADMIN", "CEO"].includes(user.role)) {
+      return { success: false, error: { message: "Access restricted." } };
+    }
+
+    let config = await withDbTimeout(
+      db.storageRetentionConfig.findUnique({
+        where: { id: "default-config" },
+      })
+    );
+
+    if (!config) {
+      config = await withDbTimeout(
+        db.storageRetentionConfig.create({
+          data: {
+            id: "default-config",
+            retentionPeriodDays: 90,
+            purgeInactiveDays: 180,
+            autoPurgeEnabled: true,
+            keepDatasets: true,
+            keepResearchDocs: true,
+            keepQuestionnaires: true,
+            keepReceiptPhotos: true,
+            keepChatHistory: true,
+            keepDeliverables: true,
+          },
+        })
+      );
+    }
+
+    return {
+      success: true,
+      data: {
+        retentionPeriodDays: config.retentionPeriodDays,
+        purgeInactiveDays: config.purgeInactiveDays,
+        autoPurgeEnabled: config.autoPurgeEnabled,
+        keepDatasets: config.keepDatasets,
+        keepResearchDocs: config.keepResearchDocs,
+        keepQuestionnaires: config.keepQuestionnaires,
+        keepReceiptPhotos: config.keepReceiptPhotos,
+        keepChatHistory: config.keepChatHistory,
+        keepDeliverables: config.keepDeliverables,
+        updatedAt: config.updatedAt.toISOString(),
+        updatedBy: config.updatedBy,
+      },
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to load storage retention settings.";
+    return { success: false, error: { message: msg } };
+  }
+}
+
+export async function updateStorageRetentionConfigAction(rawInput: StorageRetentionConfigInput): Promise<{
+  success: boolean;
+  error?: { message: string };
+}> {
+  try {
+    const session = await auth();
+    const user = session?.user;
+    if (!user || user.role !== "CEO") {
+      return { success: false, error: { message: "Only the CEO has authority to modify data retention and storage purge policies." } };
+    }
+
+    const parsed = StorageRetentionConfigSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return { success: false, error: { message: parsed.error.issues[0]?.message || "Invalid policy parameters." } };
+    }
+
+    const data = parsed.data;
+
+    await withDbTimeout(
+      db.storageRetentionConfig.upsert({
+        where: { id: "default-config" },
+        create: {
+          id: "default-config",
+          ...data,
+          updatedBy: user.id,
+        },
+        update: {
+          ...data,
+          updatedBy: user.id,
+        },
+      })
+    );
+
+    await withDbTimeout(
+      db.auditLog.create({
+        data: {
+          actorId: user.id,
+          actorRole: "CEO",
+          action: "STORAGE_RETENTION_POLICY_UPDATED",
+          reason: `CEO updated retention policy to ${data.retentionPeriodDays} days with selective file protections.`,
+        },
+      })
+    );
+
+    revalidatePath("/dashboard/ceo/reports");
+    revalidatePath("/dashboard/admin/archive");
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to save storage retention policy.";
+    return { success: false, error: { message: msg } };
+  }
+}
+
 export async function purgeExpiredFilesAction(): Promise<{
   success: boolean;
   purgedCount: number;
@@ -654,11 +769,20 @@ export async function purgeExpiredFilesAction(): Promise<{
       return { success: false, purgedCount: 0, error: { message: "Administrative authority required." } };
     }
 
-    const now = new Date();
+    // Load CEO's configured retention period
+    const config = await withDbTimeout(
+      db.storageRetentionConfig.findUnique({
+        where: { id: "default-config" },
+      })
+    );
+
+    const retentionDays = config ? config.retentionPeriodDays : 90;
+    const cutoffDate = new Date(Date.now() - retentionDays * 86400000);
+
     const expiredProjects = await withDbTimeout(
       db.project.findMany({
         where: {
-          filesPurgeAt: { lte: now },
+          deliveredAt: { lte: cutoffDate },
           filesPurged: false,
         },
         select: { id: true, intakeId: true },
@@ -676,7 +800,7 @@ export async function purgeExpiredFilesAction(): Promise<{
       await withDbTimeout(
         db.archivedProject.updateMany({
           where: { projectId: p.id },
-          data: { filesPurged: true, filesPurgedAt: now },
+          data: { filesPurged: true, filesPurgedAt: new Date() },
         })
       );
 
@@ -687,7 +811,7 @@ export async function purgeExpiredFilesAction(): Promise<{
             actorId: user.id,
             actorRole: user.role as any,
             action: "FILES_PURGED",
-            reason: "Automated 90-day storage retention policy purge executed.",
+            reason: `Storage retention purge (${retentionDays}-day policy) executed by ${user.fullName || user.role}.`,
           },
         })
       );
