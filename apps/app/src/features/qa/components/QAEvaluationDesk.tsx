@@ -18,6 +18,7 @@ import {
   IconDownload,
   IconFileText,
   IconDatabase,
+  IconFiles,
   IconClock,
   IconHistory,
   IconAlertOctagon,
@@ -25,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { submitQaReview } from "../actions";
 import { getAnalysisFileDownloadUrl } from "@/features/analysis/actions";
+import { formatFileCategory } from "@/lib/file-utils";
 import {
   ERROR_CLASSIFICATION_METADATA,
   QA_DECISION_METADATA,
@@ -395,42 +397,51 @@ export function QAEvaluationDesk({ data }: QAEvaluationDeskProps) {
             )}
           </Card>
 
-          {/* Client Datasets (Inputs) */}
+          {/* Client Uploaded Files (Inputs) */}
           <Card className="p-6 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <IconDatabase size={18} stroke={2} className="text-[#10B981]" />
-                <h2 className="text-sm font-bold text-white">Client Input Datasets ({data.clientFiles.length})</h2>
+                <IconFiles size={18} stroke={2} className="text-[#38BDF8]" />
+                <h2 className="text-sm font-bold text-white">Client Uploaded Files ({data.clientFiles.length})</h2>
               </div>
             </div>
 
             {data.clientFiles.length === 0 ? (
               <div className="p-4 text-center text-white/40 text-xs border border-white/5 rounded-[2px]">
-                No client input datasets uploaded.
+                No client study files uploaded.
               </div>
             ) : (
               <div className="space-y-2">
-                {data.clientFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    className="p-3 bg-black/20 border border-white/5 rounded-[2px] flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="min-w-0">
-                      <span className="font-medium text-white block truncate">{file.fileName}</span>
-                      <span className="text-[0.625rem] font-mono text-white/40">{file.fileCategory}</span>
-                    </div>
-                    <a
-                      href={file.filePath}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors shrink-0"
-                      title="Download Input File"
+                {data.clientFiles.map((file) => {
+                  const catMeta = formatFileCategory(file.fileCategory);
+                  return (
+                    <div
+                      key={file.id}
+                      className="p-3 bg-black/20 border border-white/5 rounded-[2px] flex items-center justify-between gap-3 text-xs"
                     >
-                      <IconDownload size={15} stroke={2} />
-                    </a>
-                  </div>
-                ))}
+                      <div className="min-w-0 flex flex-col gap-1">
+                        <span className="font-medium text-white block truncate">{file.fileName}</span>
+                        <div>
+                          <span
+                            className={`text-[0.625rem] font-mono font-medium px-1.5 py-0.5 rounded-[2px] border inline-block ${catMeta.badgeClass}`}
+                          >
+                            {catMeta.label}
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={file.filePath}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors shrink-0"
+                        title="Download Study File"
+                      >
+                        <IconDownload size={15} stroke={2} />
+                      </a>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>

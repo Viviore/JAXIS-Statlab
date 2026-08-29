@@ -317,13 +317,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "HR & STAFF",
       items: [
         {
-          label: "My HR & Timeclock",
-          href: "/dashboard/staff/hr",
-          icon: Icons.LeaveDesk,
-          badge: "PORTAL",
-          badgeColor: "orange",
-        },
-        {
           label: "Leave Approvals",
           href: "/dashboard/finance/leaves",
           icon: Icons.LeaveDesk,
@@ -342,6 +335,18 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           href: "/dashboard/finance/payroll",
           icon: Icons.Receipt,
           badge: "PAYROLL",
+          badgeColor: "orange",
+        },
+      ],
+    },
+    {
+      groupTitle: "MY WORKSPACE",
+      items: [
+        {
+          label: "My HR & Timeclock",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "HR",
           badgeColor: "orange",
         },
       ],
@@ -386,13 +391,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "MANAGEMENT & AUDIT",
       items: [
         {
-          label: "My HR & Timeclock",
-          href: "/dashboard/staff/hr",
-          icon: Icons.LeaveDesk,
-          badge: "PORTAL",
-          badgeColor: "orange",
-        },
-        {
           label: "Finance & Payments",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
@@ -435,6 +433,18 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           disabled: true,
           badge: "SOON",
           badgeColor: "gray",
+        },
+      ],
+    },
+    {
+      groupTitle: "MY WORKSPACE",
+      items: [
+        {
+          label: "My HR & Timeclock",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "HR",
+          badgeColor: "orange",
         },
       ],
     },
@@ -491,13 +501,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "STAFF & TOOLS",
       items: [
         {
-          label: "My HR & Timeclock",
-          href: "/dashboard/staff/hr",
-          icon: Icons.LeaveDesk,
-          badge: "PORTAL",
-          badgeColor: "orange",
-        },
-        {
           label: "Staff Directory",
           href: "/dashboard/admin/staff",
           icon: Icons.Users,
@@ -539,6 +542,18 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           disabled: true,
           badge: "SOON",
           badgeColor: "gray",
+        },
+      ],
+    },
+    {
+      groupTitle: "MY WORKSPACE",
+      items: [
+        {
+          label: "My HR & Timeclock",
+          href: "/dashboard/staff/hr",
+          icon: Icons.LeaveDesk,
+          badge: "HR",
+          badgeColor: "orange",
         },
       ],
     },

@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { db, withDbTimeout } from "@/lib/db";
 import { auth, requireRole } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import type { RoleName, Prisma } from "@prisma/client";
@@ -17,21 +17,6 @@ import {
   type ProjectThreadSummaryDTO,
   type MessagingActionResult,
 } from "./schemas";
-
-const DB_TIMEOUT_MS = 6000;
-
-async function withDbTimeout<T>(promise: Promise<T>): Promise<T> {
-  let timer: NodeJS.Timeout | null = null;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Database operation timed out.")), DB_TIMEOUT_MS);
-  });
-
-  try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
 
 /**
  * 1. Send a new message in a project communication thread.

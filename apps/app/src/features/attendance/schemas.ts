@@ -160,6 +160,8 @@ export interface DailyAttendanceEvent {
   leaveReason?: string;
   isHoliday?: boolean;
   holidayName?: string;
+  isWeekend?: boolean;
+  isWorkingDay?: boolean;
   logId?: string;
   isAdjusted?: boolean;
 }
@@ -179,13 +181,14 @@ export interface PayslipSummary {
   dutyHourlyEarnings: number; // dutyHours * hourlyRate
   projectMilestoneEarnings: number; // e.g. from studies
   overtimeEarnings: number;
-  grossPay: number;
   allowances: number;
+  grossPay: number;
+  withholdingTax?: number;
   netPay: number;
+  status?: "DRAFT" | "APPROVED" | "DISBURSED" | string;
   payslipNumber?: string;
   commissionPercentage?: number;
   completedStudiesCount?: number;
-  status?: string;
   compensationType?: string;
   baseSalary?: number;
 }
@@ -208,5 +211,5 @@ export interface HrPortalData {
   leaveHistory: LeaveRecordItem[];
   corrections: AttendanceCorrectionItem[];
   payslip: PayslipSummary;
+  policy?: AttendancePolicyDTO;
 }
-

@@ -9,9 +9,11 @@ import {
   IconArrowLeft,
   IconMessages,
   IconDatabase,
+  IconFiles,
   IconUser,
   IconClock,
 } from "@tabler/icons-react";
+import { formatFileCategory } from "@/lib/file-utils";
 
 interface QAProjectFilesPageProps {
   params: Promise<{ id: string }>;
@@ -99,40 +101,49 @@ export default async function QAProjectFilesPage({ params }: QAProjectFilesPageP
 
       {/* Files Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Verified Datasets */}
+        {/* Verified Client Uploaded Files */}
         <Card className="p-6 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-4 lg:col-span-1">
           <div className="flex items-center gap-2">
-            <IconDatabase size={18} stroke={2} className="text-[#10B981]" />
-            <h2 className="text-sm font-bold text-white">Client Input Datasets ({clientFiles.length})</h2>
+            <IconFiles size={18} stroke={2} className="text-[#38BDF8]" />
+            <h2 className="text-sm font-bold text-white">Client Uploaded Files ({clientFiles.length})</h2>
           </div>
 
           {clientFiles.length === 0 ? (
             <div className="p-6 text-center text-white/40 text-xs border border-white/5 rounded-[2px]">
-              No client input datasets found.
+              No client files found.
             </div>
           ) : (
             <div className="space-y-2.5">
-              {clientFiles.map((f) => (
-                <div
-                  key={f.id}
-                  className="p-3 bg-black/20 border border-white/5 rounded-[2px] flex items-center justify-between gap-3 text-xs"
-                >
-                  <div className="min-w-0">
-                    <span className="font-medium text-white block truncate">{f.fileName}</span>
-                    <span className="text-[0.625rem] font-mono text-white/40">{f.fileCategory}</span>
-                  </div>
-                  <a
-                    href={f.filePath}
-                    download
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors shrink-0"
-                    title="Download File"
+              {clientFiles.map((f) => {
+                const catMeta = formatFileCategory(f.fileCategory);
+                return (
+                  <div
+                    key={f.id}
+                    className="p-3 bg-black/20 border border-white/5 rounded-[2px] flex items-center justify-between gap-3 text-xs"
                   >
-                    <IconDownload size={15} stroke={2} />
-                  </a>
-                </div>
-              ))}
+                    <div className="min-w-0 flex flex-col gap-1">
+                      <span className="font-medium text-white block truncate">{f.fileName}</span>
+                      <div>
+                        <span
+                          className={`text-[0.625rem] font-mono font-medium px-1.5 py-0.5 rounded-[2px] border inline-block ${catMeta.badgeClass}`}
+                        >
+                          {catMeta.label}
+                        </span>
+                      </div>
+                    </div>
+                    <a
+                      href={f.filePath}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors shrink-0"
+                      title="Download Study File"
+                    >
+                      <IconDownload size={15} stroke={2} />
+                    </a>
+                  </div>
+                );
+              })}
             </div>
           )}
         </Card>

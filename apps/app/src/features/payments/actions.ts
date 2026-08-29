@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, withDbTimeout } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import {
   SubmitPaymentProofSchema,
@@ -23,18 +23,6 @@ import {
 import type { PaymentStatus, PackageName, ProjectStatus } from "@prisma/client";
 import fs from "fs";
 import path from "path";
-
-// Timeout helper for resilient DB calls
-async function withDbTimeout<T>(promise: Promise<T>, timeoutMs = 8000): Promise<T> {
-  let timeoutHandle: NodeJS.Timeout;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutHandle = setTimeout(
-      () => reject(new Error("Database operation timed out. Falling back to local state.")),
-      timeoutMs
-    );
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutHandle));
-}
 
 // ─── Local Dev Persistence Fallback ──────────────────────────────────────────
 

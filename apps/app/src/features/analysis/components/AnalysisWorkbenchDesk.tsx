@@ -18,6 +18,7 @@ import {
   IconShieldCheck,
   IconMessages,
   IconDatabase,
+  IconFiles,
   IconCheck,
   IconClock,
   IconUser,
@@ -26,6 +27,7 @@ import {
 } from "@tabler/icons-react";
 import { ANALYSIS_CATEGORY_METADATA } from "@/lib/analysis-rules";
 import { uploadAnalysisFile, getAnalysisFileDownloadUrl } from "../actions";
+import { formatFileCategory } from "@/lib/file-utils";
 import { VersionHistoryModal } from "./VersionHistoryModal";
 import { ScopeCreepModal } from "./ScopeCreepModal";
 import { SubmitForQAModal } from "./SubmitForQAModal";
@@ -446,45 +448,52 @@ export const AnalysisWorkbenchDesk: React.FC<AnalysisWorkbenchDeskProps> = ({ in
             )}
           </Card>
 
-          {/* Verified Client Datasets Vault */}
+          {/* Verified Client Uploaded Files */}
           <Card className="p-6 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <IconDatabase size={18} stroke={2} className="text-[#10B981]" />
-              <h2 className="text-sm font-bold text-white">Verified Client Datasets ({data.clientFiles.length})</h2>
+              <IconFiles size={18} stroke={2} className="text-[#38BDF8]" />
+              <h2 className="text-sm font-bold text-white">Client Uploaded Files ({data.clientFiles.length})</h2>
             </div>
 
             {data.clientFiles.length === 0 ? (
               <div className="p-6 text-center text-white/40 text-xs border border-white/5 rounded-[2px]">
-                No client datasets attached to this study.
+                No client files attached to this study.
               </div>
             ) : (
               <div className="space-y-2.5">
-                {data.clientFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    className="p-3 bg-black/20 border border-white/5 rounded-[2px] flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <IconDatabase size={16} stroke={1.5} className="text-emerald-400 shrink-0" />
-                      <div className="min-w-0">
-                        <span className="font-medium text-white block truncate">{file.fileName}</span>
-                        <span className="text-[0.625rem] font-mono text-white/40">
-                          {file.fileCategory} &bull; {new Date(file.uploadedAt).toLocaleDateString("en-PH")}
-                        </span>
-                      </div>
-                    </div>
-                    <a
-                      href={file.filePath}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors shrink-0"
-                      title="Download Client Dataset"
+                {data.clientFiles.map((file) => {
+                  const catMeta = formatFileCategory(file.fileCategory);
+                  return (
+                    <div
+                      key={file.id}
+                      className="p-3 bg-black/20 border border-white/5 rounded-[2px] flex items-center justify-between gap-3 text-xs"
                     >
-                      <IconDownload size={15} stroke={2} />
-                    </a>
-                  </div>
-                ))}
+                      <div className="min-w-0 flex flex-col gap-1">
+                        <span className="font-medium text-white block truncate">{file.fileName}</span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-[0.625rem] font-mono font-medium px-1.5 py-0.5 rounded-[2px] border inline-block ${catMeta.badgeClass}`}
+                          >
+                            {catMeta.label}
+                          </span>
+                          <span className="text-[0.625rem] font-mono text-white/40">
+                            {new Date(file.uploadedAt).toLocaleDateString("en-PH")}
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={file.filePath}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors shrink-0"
+                        title="Download Study File"
+                      >
+                        <IconDownload size={15} stroke={2} />
+                      </a>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>

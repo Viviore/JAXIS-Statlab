@@ -226,56 +226,37 @@ export async function getSignatoryDetails(): Promise<{ ceoName: string; financeN
   }
 
   try {
-    const ceo = await withDbTimeout(
-      db.user.findFirst({
+    const users = await withDbTimeout(
+      db.user.findMany({
         where: {
           userRoles: {
             some: {
               role: {
-                name: "CEO",
+                name: { in: ["CEO", "FINANCE_OFFICER", "ADMIN"] },
               },
             },
           },
         },
-        select: { fullName: true },
+        select: {
+          fullName: true,
+          userRoles: {
+            select: {
+              role: {
+                select: { name: true },
+              },
+            },
+          },
+        },
       }),
       1500
     );
-    if (ceo?.fullName) ceoName = ceo.fullName;
 
-    const fin = await withDbTimeout(
-      db.user.findFirst({
-        where: {
-          userRoles: {
-            some: {
-              role: {
-                name: "FINANCE_OFFICER",
-              },
-            },
-          },
-        },
-        select: { fullName: true },
-      }),
-      1500
-    );
-    if (fin?.fullName) financeName = fin.fullName;
-
-    const adm = await withDbTimeout(
-      db.user.findFirst({
-        where: {
-          userRoles: {
-            some: {
-              role: {
-                name: "ADMIN",
-              },
-            },
-          },
-        },
-        select: { fullName: true },
-      }),
-      1500
-    );
-    if (adm?.fullName) adminName = adm.fullName;
+    for (const u of users) {
+      const roleNames = u.userRoles.map((ur) => ur.role.name);
+      if (roleNames.includes("CEO") && u.fullName) ceoName = u.fullName;
+      if (roleNames.includes("FINANCE_OFFICER") && u.fullName) financeName = u.fullName;
+      if (roleNames.includes("ADMIN") && u.fullName) adminName = u.fullName;
+    }
   } catch {
     const devUsers = getDevUsers();
     const ceoDev = Object.values(devUsers).find((u) => u.role === "CEO");
@@ -543,24 +524,8 @@ export async function generateBatchPayslips(
   const existingPayslips = readPayslipsStorage();
   const { ceoName } = await getSignatoryDetails();
 
-  // Load attendance logs for duty hours
+  // Load attendance logs and assignments concurrently
   let attendanceLogs: { userId: string; totalMinutes: number | null; status: string; clockInAt: Date }[] = [];
-  try {
-    attendanceLogs = await withDbTimeout(
-      db.staffAttendanceLog.findMany({
-        where: {
-          clockInAt: { gte: startDate, lte: endDate },
-          status: { in: ["COMPLETED", "ADJUSTED", "AUTO_CLOSED"] },
-        },
-        select: { userId: true, totalMinutes: true, status: true, clockInAt: true },
-      }),
-      3000
-    );
-  } catch {
-    // fallback
-  }
-
-  // Load projects / assignments for studies
   let assignments: {
     projectId: string;
     statisticianId: string;
@@ -569,16 +534,30 @@ export async function generateBatchPayslips(
   }[] = [];
 
   try {
-    assignments = await withDbTimeout(
-      db.assignment.findMany({
-        include: {
-          project: {
-            select: { id: true, intakeId: true, researchTitle: true, masterStatus: true, packageName: true },
+    const [attRes, assignRes] = await Promise.all([
+      withDbTimeout(
+        db.staffAttendanceLog.findMany({
+          where: {
+            clockInAt: { gte: startDate, lte: endDate },
+            status: { in: ["COMPLETED", "ADJUSTED", "AUTO_CLOSED"] },
           },
-        },
-      }),
-      3000
-    );
+          select: { userId: true, totalMinutes: true, status: true, clockInAt: true },
+        }),
+        3000
+      ),
+      withDbTimeout(
+        db.assignment.findMany({
+          include: {
+            project: {
+              select: { id: true, intakeId: true, researchTitle: true, masterStatus: true, packageName: true },
+            },
+          },
+        }),
+        3000
+      ),
+    ]);
+    attendanceLogs = attRes;
+    assignments = assignRes;
   } catch {
     // fallback
   }

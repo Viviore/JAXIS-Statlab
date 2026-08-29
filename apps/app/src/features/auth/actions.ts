@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { db, withDbTimeout } from "@/lib/db";
 import { RegisterClientSchema, type ActionResult } from "./schemas";
 import {
   getDevUserByEmail,
@@ -28,9 +28,12 @@ export async function registerClient(
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    const existing = await db.user.findUnique({
-      where: { email: normalizedEmail },
-    });
+    const existing = await withDbTimeout(
+      db.user.findUnique({
+        where: { email: normalizedEmail },
+      }),
+      2500
+    );
 
     if (existing) {
       return {
@@ -44,41 +47,55 @@ export async function registerClient(
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const clientRole = await db.role.findUnique({
-      where: { name: "CLIENT" },
-    });
+    let clientRole = null;
+    try {
+      clientRole = await withDbTimeout(
+        db.role.findUnique({
+          where: { name: "CLIENT" },
+        }),
+        1500
+      );
+    } catch {
+      // Role table lookup fallback
+    }
 
-    const user = await db.user.create({
-      data: {
-        email: normalizedEmail,
-        fullName: fullName.trim(),
-        passwordHash,
-        status: "ACTIVE",
-        userRoles: clientRole
-          ? {
-              create: {
-                roleId: clientRole.id,
-              },
-            }
-          : undefined,
-      },
-      select: {
-        id: true,
-        email: true,
-      },
-    });
+    const user = await withDbTimeout(
+      db.user.create({
+        data: {
+          email: normalizedEmail,
+          fullName: fullName.trim(),
+          passwordHash,
+          status: "ACTIVE",
+          userRoles: clientRole
+            ? {
+                create: {
+                  roleId: clientRole.id,
+                },
+              }
+            : undefined,
+        },
+        select: {
+          id: true,
+          email: true,
+        },
+      }),
+      3000
+    );
 
     try {
-      await db.authAuditLog.create({
-        data: {
-          userId: user.id,
-          email: user.email,
-          event: "REGISTRATION",
-          metadata: { role: "CLIENT" },
-        },
-      });
-    } catch (e) {
-      void e;
+      await withDbTimeout(
+        db.authAuditLog.create({
+          data: {
+            userId: user.id,
+            email: user.email,
+            event: "REGISTRATION",
+            metadata: { role: "CLIENT" },
+          },
+        }),
+        1000
+      );
+    } catch {
+      // Ignore audit log failure
     }
 
     // Also sync to dev user store for fast credentials fallback

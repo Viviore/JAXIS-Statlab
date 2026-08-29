@@ -18,11 +18,11 @@ if (env.NODE_ENV !== "production") {
 
 /**
  * Wraps a Prisma query with a fast timeout in development.
- * Prevents 7-second Windows TCP socket hangs when local PostgreSQL is offline.
+ * Prevents Windows TCP socket hangs and speeds up fallback when PostgreSQL is slow/offline.
  */
 export async function withDbTimeout<T>(
   promise: Promise<T>,
-  timeoutMs: number = env.NODE_ENV === "development" ? 15000 : 20000
+  timeoutMs: number = env.NODE_ENV === "development" ? 15000 : 10000
 ): Promise<T> {
   let timer: NodeJS.Timeout | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {

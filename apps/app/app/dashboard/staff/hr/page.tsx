@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   IconCalendar,
   IconClock,
@@ -37,6 +37,29 @@ import { PayslipStatementModal } from "@/features/payroll/components/PayslipStat
 import type { HrPortalData, DailyAttendanceEvent } from "@/features/attendance/schemas";
 import { formatSettlementAccountNumber } from "@/lib/formatters";
 
+const LEAVE_REASON_TEMPLATES = [
+  {
+    label: "Annual Vacation / Personal Rest",
+    text: "Taking scheduled annual vacation leave for personal rest and recuperation. Active projects can be monitored or escalated to the QA lead.",
+  },
+  {
+    label: "Sick / Medical Recovery",
+    text: "Taking medical recovery leave due to personal health reasons. Will resume statistical duties once medically cleared.",
+  },
+  {
+    label: "Academic Conference Presentation",
+    text: "Attending and presenting research at an academic conference with limited connectivity during daytime hours.",
+  },
+  {
+    label: "Family Emergency / Urgent Matters",
+    text: "Stepping away temporarily to attend to urgent family matters. Will keep the team updated on expected availability.",
+  },
+  {
+    label: "Research Fieldwork / Data Collection",
+    text: "Conducting off-site scientific research fieldwork and data gathering. Analysis will resume upon field mission completion.",
+  },
+];
+
 type ActiveHrTab = "TIMESHEETS" | "CALENDAR" | "LEAVES" | "OVERTIME" | "PAYSLIP" | "PAYOUT";
 
 export default function StaffHrPortalPage() {
@@ -55,9 +78,24 @@ export default function StaffHrPortalPage() {
   // Leave Request Modal
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
   const [isSubmittingLeave, setIsSubmittingLeave] = useState<boolean>(false);
-  const [leaveReason, setLeaveReason] = useState<string>("Annual Paid Specialist Leave");
+  const [leaveReason, setLeaveReason] = useState<string>("");
   const [leaveFrom, setLeaveFrom] = useState<string>(new Date().toISOString().split("T")[0]!);
-  const [leaveUntil, setLeaveUntil] = useState<string>(new Date(Date.now() + 86400000 * 3).toISOString().split("T")[0]!);
+  const [leaveUntil, setLeaveUntil] = useState<string>(new Date().toISOString().split("T")[0]!);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
+
+  const leaveDaysCount = useMemo(() => {
+    if (!leaveFrom || !leaveUntil) return 0;
+    const start = new Date(leaveFrom);
+    const end = new Date(leaveUntil);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return 0;
+    const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 3600 * 24)) + 1;
+    return Math.max(1, diff);
+  }, [leaveFrom, leaveUntil]);
+
+  const isReturnBeforeStart = useMemo(() => {
+    if (!leaveFrom || !leaveUntil) return false;
+    return new Date(leaveUntil) < new Date(leaveFrom);
+  }, [leaveFrom, leaveUntil]);
 
   // Adjustment / Overtime Filing Modal
   const [isAdjModalOpen, setIsAdjModalOpen] = useState<boolean>(false);
@@ -633,6 +671,16 @@ export default function StaffHrPortalPage() {
                 </div>
               ))}
 
+              {/* Empty placeholder cells for days before the 1st of the month */}
+              {Array.from({
+                length: new Date(currentYear, currentMonth - 1, 1).getDay(),
+              }).map((_, i) => (
+                <div
+                  key={`empty-prev-${i}`}
+                  className="min-h-[50px] sm:min-h-[72px] p-1 sm:p-2 rounded-[2px] border border-white/[0.03] bg-white/[0.01] opacity-20 pointer-events-none"
+                />
+              ))}
+
               {portalData.currentMonthEvents.map((evt) => {
                 const isSelected = selectedDayEvent?.date === evt.date;
 
@@ -664,10 +712,10 @@ export default function StaffHrPortalPage() {
                       </span>
                       {evt.isHoliday && (
                         <>
-                          <span className="text-[0.5rem] font-mono uppercase px-1 py-0.2 rounded-[2px] bg-white/10 text-white/80 hidden sm:inline truncate max-w-[42px]">
+                          <span className="text-[0.5rem] font-mono uppercase px-1 py-0.2 rounded-[2px] bg-white/10 text-white/80 hidden sm:inline truncate max-w-[48px]" title={evt.holidayName || "Holiday"}>
                             Holiday
                           </span>
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 sm:hidden shrink-0" title="Holiday" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 sm:hidden shrink-0" title={evt.holidayName || "Holiday"} />
                         </>
                       )}
                     </div>
@@ -698,6 +746,12 @@ export default function StaffHrPortalPage() {
                         <span className="text-amber-400">
                           <span className="sm:hidden">Miss</span>
                           <span className="hidden sm:inline">No Punch</span>
+                        </span>
+                      )}
+                      {evt.status === "REST_DAY" && evt.isHoliday && (
+                        <span className="text-white/40">
+                          <span className="sm:hidden">Hol</span>
+                          <span className="hidden sm:inline">Holiday</span>
                         </span>
                       )}
                       {evt.status === "REST_DAY" && !evt.isHoliday && (
@@ -745,6 +799,18 @@ export default function StaffHrPortalPage() {
                   <span className="text-white/60">Shift Classification:</span>
                   <span className="font-mono font-bold text-white">
                     {selectedDayEvent.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+
+                {/* Day Type / Labor Policy Status */}
+                <div className="p-3 bg-[#010D1F] border border-white/10 rounded-[2px] flex items-center justify-between">
+                  <span className="text-white/60">Day Schedule:</span>
+                  <span className="font-mono text-xs text-white/90">
+                    {selectedDayEvent.isHoliday
+                      ? `Holiday (${selectedDayEvent.isWorkingDay ? "Duty Permitted" : "Rest Day"})`
+                      : selectedDayEvent.isWeekend
+                      ? `Weekend (${selectedDayEvent.isWorkingDay ? "Duty Permitted" : "Rest Day"})`
+                      : "Core Weekday (Working Day)"}
                   </span>
                 </div>
 
@@ -1743,91 +1809,155 @@ export default function StaffHrPortalPage() {
       )}
 
       {/* LEAVE REQUEST MODAL */}
-      <Modal
-        isOpen={isLeaveModalOpen}
-        onClose={() => !isSubmittingLeave && setIsLeaveModalOpen(false)}
-        title="Submit Specialist Leave Request"
-        size="md"
-        footer={
-          <div className="flex items-center justify-end gap-2.5 w-full">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={isSubmittingLeave}
-              onClick={() => setIsLeaveModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              disabled={isSubmittingLeave}
-              onClick={handleSubmitLeave}
-            >
-              {isSubmittingLeave ? (
-                <div className="flex items-center gap-1.5">
-                  <IconLoader2 size={14} stroke={2.5} className="animate-spin text-white" />
-                  <span>Submitting...</span>
-                </div>
-              ) : (
-                <span>Submit Leave Request</span>
-              )}
-            </Button>
-          </div>
-        }
-      >
-        <form onSubmit={handleSubmitLeave} className="flex flex-col gap-4 text-xs font-sans text-white/90">
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-white/90">Leave Category / Purpose</label>
-            <div className="relative">
-              <select
+      {isLeaveModalOpen && (
+        <Modal
+          open={isLeaveModalOpen}
+          onClose={() => !isSubmittingLeave && setIsLeaveModalOpen(false)}
+          title="Schedule Specialist Leave"
+          description="Pause assignment intake and declare your unavailable period."
+          size="md"
+          footer={
+            <div className="flex items-center justify-end gap-3 w-full">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={isSubmittingLeave}
+                onClick={() => setIsLeaveModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={isSubmittingLeave || !leaveReason.trim() || isReturnBeforeStart}
+                onClick={handleSubmitLeave}
+                className="font-sans text-xs font-semibold rounded-[2px]"
+              >
+                {isSubmittingLeave ? (
+                  <div className="flex items-center gap-1.5">
+                    <IconLoader2 size={15} stroke={2.5} className="animate-spin text-white" />
+                    <span>Submitting...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <IconCheck size={15} stroke={2} />
+                    <span>Submit Leave Request</span>
+                  </div>
+                )}
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4 text-xs font-sans text-white/80">
+            {leaveError && (
+              <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-[2px] text-red-200">
+                {leaveError}
+              </div>
+            )}
+
+            <div className="p-3 bg-amber-950/20 border border-amber-500/30 rounded-[2px] flex items-start gap-2.5 text-amber-200">
+              <IconClock size={16} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+              <span>
+                Submitting this request will queue your leave for Finance Officer (HR) and Administrator approval. Once acknowledged and approved, your leave status will be activated and you will be hidden from new study assignments.
+              </span>
+            </div>
+
+            {/* Reason for Leave with Dropdown Selector */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold text-white/90">
+                  Reason for Leave (Mandatory)
+                </label>
+                <span className="text-[0.625rem] text-purple-300/60 font-mono">
+                  Select template or enter custom note
+                </span>
+              </div>
+
+              {/* Template Dropdown */}
+              <div className="relative">
+                <select
+                  value={LEAVE_REASON_TEMPLATES.find((t) => t.text === leaveReason)?.text || ""}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setLeaveReason(e.target.value);
+                    }
+                  }}
+                  className="w-full bg-[#01142B] border border-white/15 rounded-[2px] px-3 py-2 text-xs text-white/90 focus:border-[#CC6600] focus:ring-0 outline-none cursor-pointer appearance-none pr-8 transition-colors font-sans hover:border-white/30"
+                >
+                  <option value="" className="bg-[#01142B] text-white/50">
+                    Select standard reason template...
+                  </option>
+                  {LEAVE_REASON_TEMPLATES.map((tmpl) => (
+                    <option
+                      key={tmpl.label}
+                      value={tmpl.text}
+                      className="bg-[#01142B] text-white py-1"
+                    >
+                      {tmpl.label}
+                    </option>
+                  ))}
+                </select>
+                <IconChevronDown
+                  size={14}
+                  stroke={2}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none"
+                />
+              </div>
+
+              <textarea
                 value={leaveReason}
                 onChange={(e) => setLeaveReason(e.target.value)}
-                className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] pl-3 pr-10 py-2.5 text-xs text-white outline-none cursor-pointer font-sans appearance-none hover:border-white/20 transition-colors"
-              >
-                <option value="Annual Paid Specialist Leave">Annual Paid Specialist Vacation Leave</option>
-                <option value="Medical & Health Recovery">Medical & Health Recovery (Doctor&apos;s Note Attached)</option>
-                <option value="Emergency Family Leave">Family Emergency Leave</option>
-              </select>
-              <IconChevronDown
-                size={15}
-                stroke={2}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+                placeholder="e.g. Annual vacation, medical recovery, academic conference presentation..."
+                className="w-full bg-[#01142B] border border-white/10 rounded-[2px] p-2.5 text-xs text-white placeholder-white/40 focus:border-[#CC6600] outline-none resize-none h-16 font-sans leading-relaxed"
               />
+            </div>
+
+            {/* Leave Duration & Date Range (Day or Days) */}
+            <div className="flex flex-col gap-2 p-3 bg-black/40 border border-white/10 rounded-[2px]">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold text-white/90">
+                  Leave Duration (Day or Days)
+                </label>
+                {isReturnBeforeStart ? (
+                  <span className="text-xs font-mono font-semibold text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-[2px] border border-rose-500/30">
+                    Invalid Return Date
+                  </span>
+                ) : (
+                  <span className="text-xs font-mono font-semibold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded-[2px] border border-amber-500/30">
+                    {leaveDaysCount} {leaveDaysCount === 1 ? "Day" : "Days"} Scheduled
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.625rem] font-mono text-white/50 uppercase">Leave Start Date</span>
+                  <input
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                    value={leaveFrom}
+                    onChange={(e) => setLeaveFrom(e.target.value)}
+                    className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] px-3 py-2 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.625rem] font-mono text-white/50 uppercase">Expected Return Date</span>
+                  <input
+                    type="date"
+                    min={leaveFrom}
+                    value={leaveUntil}
+                    onChange={(e) => setLeaveUntil(e.target.value)}
+                    className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] px-3 py-2 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer"
+                    required
+                  />
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-white/90">Start Date</label>
-              <input
-                type="date"
-                min={new Date().toISOString().split("T")[0]}
-                value={leaveFrom}
-                onChange={(e) => setLeaveFrom(e.target.value)}
-                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-white/90">Expected Return Date</label>
-              <input
-                type="date"
-                min={leaveFrom}
-                value={leaveUntil}
-                onChange={(e) => setLeaveUntil(e.target.value)}
-                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
-                required
-              />
-            </div>
-          </div>
-
-          <p className="text-[0.688rem] text-white/50">
-            Once authorized by the Finance & HR Officer, your specialist capacity in Module 08 study assignments will be marked as greyed-out and unavailable until your return date.
-          </p>
-        </form>
-      </Modal>
+        </Modal>
+      )}
 
       {/* OVERTIME / ADJUSTMENT MODAL */}
       <Modal
