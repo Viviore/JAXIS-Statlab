@@ -117,12 +117,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.Vault,
         },
         {
-          label: "Defense Coaching",
+          label: "DefenseLab Rehearsals",
           href: "/dashboard/client/defenselab",
           icon: Icons.Terminal,
-          disabled: true,
-          badge: "SOON",
-          badgeColor: "gray",
+          badge: "ADDON",
+          badgeColor: "orange",
         },
       ],
     },
@@ -288,7 +287,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "RECORDS & PROFILE",
+      groupTitle: "RECORDS & AUDIT",
       items: [
         {
           label: "Transactions",
@@ -305,11 +304,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           disabled: true,
           badge: "SOON",
           badgeColor: "gray",
-        },
-        {
-          label: "My Profile",
-          href: "/dashboard/finance/profile",
-          icon: Icons.Users,
         },
       ],
     },
@@ -348,6 +342,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.LeaveDesk,
           badge: "HR",
           badgeColor: "orange",
+        },
+        {
+          label: "My Profile",
+          href: "/dashboard/finance/profile",
+          icon: Icons.Users,
         },
       ],
     },
@@ -446,6 +445,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badge: "HR",
           badgeColor: "orange",
         },
+        {
+          label: "My Profile",
+          href: "/dashboard/ceo/profile",
+          icon: Icons.Users,
+        },
       ],
     },
   ],
@@ -493,6 +497,13 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           href: "/dashboard/admin/revisions",
           icon: Icons.Award,
           badge: "TRIAGE",
+          badgeColor: "orange",
+        },
+        {
+          label: "DefenseLab Schedule",
+          href: "/dashboard/admin/defenselab",
+          icon: Icons.LeaveDesk,
+          badge: "SESSIONS",
           badgeColor: "orange",
         },
       ],
@@ -554,6 +565,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.LeaveDesk,
           badge: "HR",
           badgeColor: "orange",
+        },
+        {
+          label: "My Profile",
+          href: "/dashboard/admin/profile",
+          icon: Icons.Users,
         },
       ],
     },
@@ -741,7 +757,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 return (
                   <Link
-                    key={item.href}
+                    key={`${item.href}-${item.label}`}
                     href={item.href}
                     onClick={() => {
                       if (onClose) onClose();

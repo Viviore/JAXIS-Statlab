@@ -70,6 +70,8 @@ model User {
   releasedDeliverables    Deliverable[]                 @relation("DeliverableReleaser")
   clientRevisionRequests  RevisionRequest[]             @relation("ClientRevisionRequests")
   classifiedRevisions     RevisionRequest[]             @relation("ClassifiedRevisions")
+  clientDefenseLabSessions DefenseLabSession[]          @relation("ClientDefenseLab")
+  expertDefenseLabSessions DefenseLabSession[]          @relation("ExpertDefenseLab")
 
   @@index([email])
   @@index([status])
@@ -264,6 +266,7 @@ model Project {
   qaRejectionCounts QARejectionCount[]
   deliverables      Deliverable[]
   revisionRequests  RevisionRequest[]
+  defenseLabSessions DefenseLabSession[]
 
   @@index([clientId])
   @@index([masterStatus])
@@ -867,6 +870,56 @@ model RevisionRequest {
   @@index([status])
   @@index([createdAt])
   @@map("revision_requests")
+}
+
+// ─── Module 13: DefenseLab Scheduling & Mock Defense ────────────────────────
+
+enum DefenseLabStatus {
+  SCHEDULED
+  COMPLETED
+  NO_SHOW_CLIENT
+  RESCHEDULED
+  CANCELLED
+  PENALTY_APPLIED
+}
+
+model DefenseLabSession {
+  id                  String           @id @default(cuid())
+  projectId           String
+  clientId            String
+  expertId            String           // Assigned Statistician
+  scheduledAt         DateTime
+  durationHours       Int              @default(1)
+  amountPaid          Decimal          @db.Decimal(10, 2)
+  status              DefenseLabStatus @default(SCHEDULED)
+  meetingUrl          String?          // Google Meet / Zoom link
+  recordingUrl        String?          // Cloud / R2 recording URL
+  completedAt         DateTime?
+  completedBy         String?          // Admin / Specialist userId
+  notes               String?          // Agenda / Rehearsal notes
+
+  // Reschedule tracking
+  rescheduledAt       DateTime?
+  rescheduleReason    String?
+  rescheduleBy        String?          // userId who requested reschedule
+  penaltyApplied      Boolean          @default(false)
+  penaltyReason       String?
+  penaltyDeterminedBy String?          // Admin userId
+  penaltyAmount       Decimal?         @db.Decimal(10, 2)
+
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  client  User    @relation("ClientDefenseLab", fields: [clientId], references: [id], onDelete: Cascade)
+  expert  User    @relation("ExpertDefenseLab", fields: [expertId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([expertId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("defense_lab_sessions")
 }
 
 

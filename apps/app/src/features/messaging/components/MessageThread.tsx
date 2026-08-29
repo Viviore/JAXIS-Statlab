@@ -28,7 +28,24 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   className = "",
   onBack,
 }) => {
-  const [messages, setMessages] = useState<MessageDTO[]>([]);
+  const CACHE_KEY = `jaxis_chat_cache_${projectId}`;
+
+  // Read initial cache synchronously if available
+  const [messages, setMessages] = useState<MessageDTO[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = sessionStorage.getItem(`jaxis_chat_cache_${projectId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.messages)) return parsed.messages;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return [];
+  });
+
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingOlder, setIsLoadingOlder] = useState<boolean>(false);
@@ -40,8 +57,39 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     clientName: string;
     statisticianName: string | null;
     qaLeadName: string | null;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  } | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = sessionStorage.getItem(`jaxis_chat_cache_${projectId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.project) return parsed.project;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return null;
+  });
+
+  // Only show skeleton if we have zero cached messages & zero projectInfo
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = sessionStorage.getItem(`jaxis_chat_cache_${projectId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.project || (parsed.messages && parsed.messages.length > 0)) {
+            return false; // Instant 0ms render from cache!
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return true;
+  });
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialScrollDone = useRef<boolean>(false);
@@ -62,23 +110,43 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   }, []);
 
   const loadInitialMessages = useCallback(async () => {
-    setIsLoading(true);
+    // If no cache, mark loading
+    if (messages.length === 0 && !projectInfo) {
+      setIsLoading(true);
+    }
     isInitialScrollDone.current = false;
 
     try {
-      const res = await getProjectMessages(projectId, { limit: 15 });
+      const res = await getProjectMessages(projectId, { limit: 20 });
       if (res.success && res.data) {
         setProjectInfo(res.data.project);
         setMessages(res.data.messages);
         setHasMore(res.data.hasMore);
         setNextCursor(res.data.nextCursor);
+
+        // Cache snapshot to browser sessionStorage for instant 0ms reload
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(
+              `jaxis_chat_cache_${projectId}`,
+              JSON.stringify({
+                project: res.data.project,
+                messages: res.data.messages,
+                hasMore: res.data.hasMore,
+                nextCursor: res.data.nextCursor,
+              })
+            );
+          } catch {
+            // ignore quota errors
+          }
+        }
       }
     } catch (err) {
       console.error("Failed to load initial project messages:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, messages.length, projectInfo]);
 
   const loadOlderMessages = useCallback(async () => {
     if (!hasMore || isLoadingOlder || !nextCursor) return;
@@ -87,12 +155,30 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     const prevScrollHeight = chatContainerRef.current?.scrollHeight || 0;
 
     try {
-      const res = await getProjectMessages(projectId, { cursor: nextCursor, limit: 15 });
+      const res = await getProjectMessages(projectId, { cursor: nextCursor, limit: 20 });
       if (res.success && res.data) {
         setMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id));
           const olderUnique = res.data!.messages.filter((m) => !existingIds.has(m.id));
-          return [...olderUnique, ...prev];
+          const updated = [...olderUnique, ...prev];
+
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.setItem(
+                `jaxis_chat_cache_${projectId}`,
+                JSON.stringify({
+                  project: projectInfo,
+                  messages: updated,
+                  hasMore: res.data!.hasMore,
+                  nextCursor: res.data!.nextCursor,
+                })
+              );
+            } catch {
+              // ignore
+            }
+          }
+
+          return updated;
         });
         setHasMore(res.data.hasMore);
         setNextCursor(res.data.nextCursor);
@@ -110,7 +196,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     } finally {
       setIsLoadingOlder(false);
     }
-  }, [hasMore, isLoadingOlder, nextCursor, projectId]);
+  }, [hasMore, isLoadingOlder, nextCursor, projectId, projectInfo]);
 
   // Scroll listener for top reverse cursor pagination
   const handleScroll = () => {
@@ -148,7 +234,25 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
             const existingIds = new Set(prev.map((m) => m.id));
             const fresh = syncRes.data!.filter((m) => !existingIds.has(m.id));
             if (fresh.length === 0) return prev;
-            return [...prev, ...fresh];
+            const updated = [...prev, ...fresh];
+
+            if (typeof window !== "undefined") {
+              try {
+                sessionStorage.setItem(
+                  `jaxis_chat_cache_${projectId}`,
+                  JSON.stringify({
+                    project: projectInfo,
+                    messages: updated,
+                    hasMore,
+                    nextCursor,
+                  })
+                );
+              } catch {
+                // ignore
+              }
+            }
+
+            return updated;
           });
           scrollToBottom(true);
         }
@@ -160,25 +264,84 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     return () => {
       cleanup();
     };
-  }, [projectId, scrollToBottom]);
+  }, [projectId, scrollToBottom, projectInfo, hasMore, nextCursor]);
 
+  // Optimistic Message Sender (0ms instant bubble display)
   const handleSendMessage = async (content: string) => {
-    const res = await sendMessage({ projectId, content });
-    if (res.success && res.data) {
-      setMessages((prev) => [...prev, res.data!]);
-      scrollToBottom(true);
-      return { success: true };
+    const trimmed = content.trim();
+    if (!trimmed) return { success: false };
+
+    const tempId = `optimistic_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const optimisticMessage: MessageDTO = {
+      id: tempId,
+      projectId,
+      senderId: "current_user",
+      senderName: "You",
+      senderRole: "CLIENT",
+      content: trimmed,
+      isBlocked: false,
+      blockedReason: null,
+      sentAt: new Date().toISOString(),
+      isMine: true,
+      isRead: false,
+      readByCount: 0,
+    };
+
+    // 1. Paint optimistic bubble immediately on screen (0ms delay)
+    setMessages((prev) => [...prev, optimisticMessage]);
+    scrollToBottom(true);
+
+    try {
+      // 2. Transmit to server in background
+      const res = await sendMessage({ projectId, content: trimmed });
+
+      if (res.success && res.data) {
+        // Swap temporary optimistic bubble with confirmed server record
+        setMessages((prev) => {
+          const updated = prev.map((m) => (m.id === tempId ? res.data! : m));
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.setItem(
+                `jaxis_chat_cache_${projectId}`,
+                JSON.stringify({
+                  project: projectInfo,
+                  messages: updated,
+                  hasMore,
+                  nextCursor,
+                })
+              );
+            } catch {
+              // ignore
+            }
+          }
+          return updated;
+        });
+        scrollToBottom(true);
+        return { success: true };
+      }
+
+      // If blocked or server returned error, rollback optimistic bubble
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+
+      if (res.error?.code === "FIREWALL_BLOCKED") {
+        return { success: false, blocked: true, warning: res.error.message };
+      }
+      return { success: false, warning: res.error?.message };
+    } catch (err) {
+      // Rollback on network failure
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      return { success: false, warning: (err as Error).message || "Failed to deliver message." };
     }
-    if (res.error?.code === "FIREWALL_BLOCKED") {
-      return { success: false, blocked: true, warning: res.error.message };
-    }
-    return { success: false, warning: res.error?.message };
   };
 
   if (isLoading) {
     return (
-      <div className={`h-full min-h-0 p-12 bg-[#01142B] border border-white/10 rounded-[4px] flex flex-col items-center justify-center ${className}`}>
-        <LoadingState variant="card" />
+      <div className={`h-full min-h-0 p-8 sm:p-12 bg-[#01142B] border border-white/10 rounded-[4px] flex flex-col items-center justify-center shadow-2xl ${className}`}>
+        <LoadingState
+          variant="card"
+          label="Loading Conversation..."
+          description="Please wait while we load your research consultation thread"
+        />
       </div>
     );
   }

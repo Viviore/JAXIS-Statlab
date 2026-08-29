@@ -27,22 +27,29 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!content.trim() || isSending || disabled) return;
+    const textToSend = content.trim();
+    if (!textToSend || isSending || disabled) return;
 
     setFirewallError(null);
+    setContent(""); // Instant clear for 0ms responsiveness
     setIsSending(true);
 
     try {
-      const res = await onSendMessage(content.trim());
-      if (res.success) {
-        setContent("");
-      } else if (res.blocked) {
-        setFirewallError(
-          res.warning || "Your message was blocked. Sharing external contact info, direct payments, or outside chat links is prohibited."
-        );
+      const res = await onSendMessage(textToSend);
+      if (!res.success) {
+        if (res.blocked) {
+          setFirewallError(
+            res.warning || "Your message was blocked. Sharing external contact info, direct payments, or outside chat links is prohibited."
+          );
+        } else if (res.warning) {
+          setFirewallError(res.warning);
+        }
+        // Restore text on failure so user doesn't lose what they typed
+        setContent(textToSend);
       }
     } catch {
       setFirewallError("An unexpected error occurred while sending your message.");
+      setContent(textToSend);
     } finally {
       setIsSending(false);
     }

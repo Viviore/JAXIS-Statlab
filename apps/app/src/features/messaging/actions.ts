@@ -347,53 +347,11 @@ export async function getProjectMessages(
   }
 
   const callerRole = (session.user as { role?: RoleName }).role || "CLIENT";
-  const limit = options?.limit ?? 15;
+  const userId = session.user.id;
+  const limit = options?.limit ?? 20;
 
   try {
     return await withDbTimeout((async () => {
-      let user = await db.user.findUnique({
-        where: { id: session.user.id },
-      });
-      if (!user && session.user.email) {
-        user = await db.user.findUnique({
-          where: { email: session.user.email },
-        });
-      }
-
-      const project = await db.project.findUnique({
-        where: { id: projectId },
-        include: {
-          client: {
-            select: { id: true, fullName: true },
-          },
-          assignment: {
-            include: {
-              statistician: { select: { id: true, fullName: true } },
-              qaLead: { select: { id: true, fullName: true } },
-            },
-          },
-        },
-      });
-
-      if (!project) {
-        return {
-          success: false,
-          error: { code: "PROJECT_NOT_FOUND", message: "Project not found." },
-        };
-      }
-
-      const isClient = user && project.clientId === user.id;
-      const isStatistician = user && project.assignment?.statisticianId === user.id;
-      const isQaLead = user && project.assignment?.qaLeadId === user.id;
-      const isManager = callerRole === "ADMIN" || callerRole === "CEO";
-
-      if (!isClient && !isStatistician && !isQaLead && !isManager) {
-        return {
-          success: false,
-          error: { code: "FORBIDDEN", message: "You do not have access to this study's thread." },
-        };
-      }
-
       // If cursor is provided, find that message's timestamp to load older messages
       let cursorFilter: Prisma.MessageWhereInput = {};
       if (options?.cursor) {
@@ -413,7 +371,29 @@ export async function getProjectMessages(
         isBlocked: false,
       };
 
-      const [totalCount, rawMessagesDesc] = await Promise.all([
+      // Run project verification, message count, and messages query ALL IN PARALLEL
+      const [project, totalCount, rawMessagesDesc] = await Promise.all([
+        db.project.findUnique({
+          where: { id: projectId },
+          select: {
+            id: true,
+            intakeId: true,
+            researchTitle: true,
+            masterStatus: true,
+            clientId: true,
+            client: {
+              select: { id: true, fullName: true },
+            },
+            assignment: {
+              select: {
+                statisticianId: true,
+                qaLeadId: true,
+                statistician: { select: { id: true, fullName: true } },
+                qaLead: { select: { id: true, fullName: true } },
+              },
+            },
+          },
+        }),
         db.message.count({
           where: baseFilter,
         }),
@@ -421,16 +401,45 @@ export async function getProjectMessages(
           where: {
             AND: [baseFilter, cursorFilter],
           },
-          include: {
+          select: {
+            id: true,
+            projectId: true,
+            senderId: true,
+            senderRole: true,
+            content: true,
+            isBlocked: true,
+            blockedReason: true,
+            sentAt: true,
             sender: {
               select: { id: true, fullName: true, email: true },
             },
-            readReceipts: true,
+            readReceipts: {
+              select: { userId: true },
+            },
           },
           orderBy: { sentAt: "desc" },
           take: limit + 1,
         }),
       ]);
+
+      if (!project) {
+        return {
+          success: false,
+          error: { code: "PROJECT_NOT_FOUND", message: "Project not found." },
+        };
+      }
+
+      const isClient = project.clientId === userId;
+      const isStatistician = project.assignment?.statisticianId === userId;
+      const isQaLead = project.assignment?.qaLeadId === userId;
+      const isManager = callerRole === "ADMIN" || callerRole === "CEO";
+
+      if (!isClient && !isStatistician && !isQaLead && !isManager) {
+        return {
+          success: false,
+          error: { code: "FORBIDDEN", message: "You do not have access to this study's thread." },
+        };
+      }
 
       const hasMore = rawMessagesDesc.length > limit;
       const paginatedRawDesc = hasMore ? rawMessagesDesc.slice(0, limit) : rawMessagesDesc;
@@ -439,30 +448,26 @@ export async function getProjectMessages(
       // Reverse to chronological order [oldest -> newest]
       const chronological = [...paginatedRawDesc].reverse();
 
-      // Mark unread messages as read for this user
-      if (user) {
-        const unreadMsgIds = chronological
-          .filter((m) => !m.readReceipts.some((r) => r.userId === user.id))
-          .map((m) => m.id);
+      // Mark unread messages as read non-blocking in the background
+      const unreadMsgIds = chronological
+        .filter((m) => !m.readReceipts.some((r) => r.userId === userId))
+        .map((m) => m.id);
 
-        if (unreadMsgIds.length > 0) {
-          try {
-            await db.messageReadReceipt.createMany({
-              data: unreadMsgIds.map((mId) => ({
-                messageId: mId,
-                userId: user.id,
-              })),
-              skipDuplicates: true,
-            });
-          } catch (e) {
-            void e;
-          }
-        }
+      if (unreadMsgIds.length > 0 && userId) {
+        db.messageReadReceipt
+          .createMany({
+            data: unreadMsgIds.map((mId) => ({
+              messageId: mId,
+              userId,
+            })),
+            skipDuplicates: true,
+          })
+          .catch((e) => console.warn("[getProjectMessages] Background receipt write err:", e));
       }
 
       const messages: MessageDTO[] = chronological.map((m) => {
-        const isMine = Boolean(user && m.senderId === user.id);
-        const isReadByMe = Boolean(user && m.readReceipts.some((r) => r.userId === user.id));
+        const isMine = Boolean(userId && m.senderId === userId);
+        const isReadByMe = Boolean(userId && m.readReceipts.some((r) => r.userId === userId));
 
         return {
           id: m.id,
@@ -523,30 +528,18 @@ export async function getMyProjectThreads(): Promise<
   }
 
   const callerRole = (session.user as { role?: RoleName }).role || "CLIENT";
+  const userId = session.user.id;
 
   try {
     return await withDbTimeout((async () => {
-      let user = await db.user.findUnique({
-        where: { id: session.user.id },
-      });
-      if (!user && session.user.email) {
-        user = await db.user.findUnique({
-          where: { email: session.user.email },
-        });
-      }
-
-      if (!user) {
-        return { success: true, data: [] };
-      }
-
       // Filter accessible projects depending on role
-      let projectsWhere = {};
+      let projectsWhere: Prisma.ProjectWhereInput = {};
       if (callerRole === "CLIENT") {
-        projectsWhere = { clientId: user.id };
+        projectsWhere = { clientId: userId };
       } else if (callerRole === "STATISTICIAN") {
-        projectsWhere = { assignment: { statisticianId: user.id } };
+        projectsWhere = { assignment: { statisticianId: userId } };
       } else if (callerRole === "SENIOR_QA_LEAD") {
-        projectsWhere = { assignment: { qaLeadId: user.id } };
+        projectsWhere = { assignment: { qaLeadId: userId } };
       } else {
         // ADMIN or CEO sees all active projects
         projectsWhere = {};
@@ -564,11 +557,21 @@ export async function getMyProjectThreads(): Promise<
           },
           messages: {
             where: { isBlocked: false },
+            take: 1,
+            orderBy: { sentAt: "desc" },
             include: {
               sender: { select: { fullName: true } },
-              readReceipts: true,
+              readReceipts: {
+                where: { userId },
+              },
             },
-            orderBy: { sentAt: "desc" },
+          },
+          _count: {
+            select: {
+              messages: {
+                where: { isBlocked: false },
+              },
+            },
           },
         },
         orderBy: { updatedAt: "desc" },
@@ -576,9 +579,9 @@ export async function getMyProjectThreads(): Promise<
 
       const summaries: ProjectThreadSummaryDTO[] = projects.map((p) => {
         const lastMsg = p.messages[0];
-        const unreadCount = p.messages.filter(
-          (m) => m.senderId !== user.id && !m.readReceipts.some((r) => r.userId === user.id)
-        ).length;
+        const hasUnreadLastMsg = Boolean(
+          lastMsg && lastMsg.senderId !== userId && lastMsg.readReceipts.length === 0
+        );
 
         return {
           projectId: p.id,
@@ -597,8 +600,8 @@ export async function getMyProjectThreads(): Promise<
                 senderRole: lastMsg.senderRole,
               }
             : null,
-          unreadCount,
-          totalMessagesCount: p.messages.length,
+          unreadCount: hasUnreadLastMsg ? 1 : 0,
+          totalMessagesCount: p._count.messages,
         };
       });
 

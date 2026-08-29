@@ -600,6 +600,59 @@ async function main() {
           },
         });
 
+        // ─── Module 13: Seed DefenseLab Mock Rehearsal Sessions for Client Ana Cruz ───
+        if (clientUser && statUser) {
+          const sampleStudy = await prisma.project.findFirst({
+            where: { clientId: clientUser.id },
+          });
+
+          if (sampleStudy) {
+            await prisma.defenseLabSession.deleteMany({
+              where: { projectId: sampleStudy.id },
+            });
+
+            const upcomingSlot = new Date();
+            upcomingSlot.setDate(upcomingSlot.getDate() + 2);
+            upcomingSlot.setHours(14, 0, 0, 0);
+
+            const completedSlot = new Date();
+            completedSlot.setDate(completedSlot.getDate() - 3);
+            completedSlot.setHours(10, 0, 0, 0);
+
+            await prisma.defenseLabSession.createMany({
+              data: [
+                {
+                  projectId: sampleStudy.id,
+                  clientId: clientUser.id,
+                  expertId: statUser.id,
+                  scheduledAt: upcomingSlot,
+                  durationHours: 1,
+                  amountPaid: 250.0,
+                  status: "SCHEDULED",
+                  meetingUrl: "https://meet.google.com/jaxis-mock-defense-anna",
+                  notes: "Drill down on ANOVA assumptions, regression coefficient interpretation, and panel defense responses.",
+                },
+                {
+                  projectId: sampleStudy.id,
+                  clientId: clientUser.id,
+                  expertId: statUser.id,
+                  scheduledAt: completedSlot,
+                  durationHours: 1,
+                  amountPaid: 250.0,
+                  status: "COMPLETED",
+                  meetingUrl: "https://meet.google.com/jaxis-mock-defense-anna-p1",
+                  recordingUrl: "https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9-jaxis-defense-rehearsal-anna/view",
+                  completedAt: completedSlot,
+                  completedBy: statUser.id,
+                  notes: "Part 1 Rehearsal: Strong command of Chapter 3 methodology. Recommended refining rationale for purposive sampling.",
+                },
+              ],
+            });
+
+            console.log("✅ Seeded Module 13 DefenseLab rehearsal sessions for Client Ana Cruz.");
+          }
+        }
+
         console.log("✅ Seeded Module 12 Deliverables packaging and Revision triage records.");
       }
     }

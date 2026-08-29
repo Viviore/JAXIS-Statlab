@@ -42,6 +42,39 @@ export default function StatisticianMessagesPage() {
 
   const selectedThread = threads.find((t) => t.projectId === selectedProjectId) || threads[0] || null;
 
+  if (isLoading) {
+    return (
+      <div className="h-full flex-1 flex flex-col min-h-0 gap-3 w-full animate-content-fade font-sans overflow-hidden">
+        <div className="flex-shrink-0">
+          <PageHeader
+            breadcrumbs={[
+              { label: "WORKSPACE", href: "/dashboard" },
+              { label: "STATISTICIAN WORKBENCH", href: "/dashboard/statistician" },
+              { label: "MESSAGES" },
+            ]}
+            title="Study Messages & Consultation"
+            description="Direct communication with assigned lead researchers for active statistical computations and analysis requirements."
+            actions={
+              <div className="flex items-center gap-2">
+                <Badge variant="emerald" className="text-[0.688rem] font-mono flex items-center gap-1">
+                  <IconShieldCheck size={13} stroke={2} />
+                  <span>Firewall Protected</span>
+                </Badge>
+              </div>
+            }
+          />
+        </div>
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <LoadingState
+            variant="page"
+            label="Loading Messages..."
+            description="Please wait while we load your research consultation threads"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex-1 flex flex-col min-h-0 gap-3 w-full animate-content-fade font-sans overflow-hidden">
       {/* Standardized PageHeader (Compact & Responsive) */}
@@ -74,28 +107,12 @@ export default function StatisticianMessagesPage() {
         >
           <div className="flex items-center justify-between px-1 flex-shrink-0">
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/50">
-              Assigned Studies {isLoading ? "" : `(${threads.length})`}
+              Assigned Studies ({threads.length})
             </span>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col gap-2">
-            {isLoading ? (
-              <>
-                {[1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="p-3.5 rounded-[4px] bg-[#01142B] border border-white/10 flex flex-col gap-2 animate-pulse"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="h-3 w-20 bg-white/10 rounded" />
-                      <div className="h-3 w-14 bg-white/5 rounded" />
-                    </div>
-                    <div className="h-4 w-3/4 bg-white/10 rounded" />
-                    <div className="h-3 w-1/2 bg-white/5 rounded" />
-                  </div>
-                ))}
-              </>
-            ) : threads.length === 0 ? (
+            {threads.length === 0 ? (
               <div className="p-6 rounded-[4px] bg-[#01142B] border border-white/10 text-center text-xs text-white/40">
                 No assigned studies
               </div>

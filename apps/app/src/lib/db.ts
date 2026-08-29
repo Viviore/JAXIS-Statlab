@@ -3,18 +3,49 @@ import { env } from "@/lib/env";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient(): PrismaClient {
+  let ClientConstructor = PrismaClient;
+  try {
+    if (typeof require !== "undefined") {
+      const dynamicModule = require("@prisma/client");
+      if (dynamicModule?.PrismaClient) {
+        ClientConstructor = dynamicModule.PrismaClient;
+      }
+    }
+  } catch {
+    // fallback
+  }
+
+  return new ClientConstructor({
     log:
       env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
   });
-
-if (env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
 }
+
+export function getDb(): PrismaClient {
+  if (env.NODE_ENV !== "production") {
+    if (!globalForPrisma.prisma || !(globalForPrisma.prisma as any).defenseLabSession) {
+      globalForPrisma.prisma = createPrismaClient();
+    }
+  }
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+  }
+  return globalForPrisma.prisma;
+}
+
+export const db: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getDb();
+    const val = (client as any)[prop];
+    if (typeof val === "function") {
+      return val.bind(client);
+    }
+    return val;
+  },
+});
 
 /**
  * Wraps a Prisma query with a fast timeout in development.

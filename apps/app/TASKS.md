@@ -1,6 +1,6 @@
 # JAXIS — Master Task List
 
-**Active Module:** `13-defenselab` — DefenseLab Scheduling & Mock Defense  
+**Active Module:** `14-finance` — Finance, Milestone Payouts & Treasury Ledger  
 **Stack:** Next.js 16 App Router · Turborepo · Tailwind CSS v4 · Prisma · Supabase PostgreSQL · Cloudflare R2 · Resend · Trigger.dev · NextAuth.js v5  
 **Design Standard:** Dark Precision Terminal / Enterprise Scientific (`design-system.md` & `.agents/AGENTS.md`)  
 **Gate:** `npm run check-types` + `npm run lint` + `npm run build` must all pass before closing any module.
@@ -385,6 +385,41 @@
 
 ---
 
+## Module 13 — DefenseLab Scheduling & Mock Defense (Completed)
+
+### Task 1 — Database Schema & Prisma Sync
+- [x] `DefenseLabStatus` enum (`SCHEDULED`, `COMPLETED`, `NO_SHOW_CLIENT`, `RESCHEDULED`, `CANCELLED`, `PENALTY_APPLIED`)
+- [x] `DefenseLabSession` model with relations to `Project` and `User` (`ClientDefenseLab`, `ExpertDefenseLab`)
+- [x] Synchronized schema with Supabase PostgreSQL via `npx prisma db push`
+
+### Task 2 — Reschedule Rules & 12-Hour Cancellation Guardrail
+- [x] `assertRescheduleEligible()` enforcing strict 12-hour advance notice window
+- [x] Late client notice ($< 12\text{h}$) automatically transitions to `NO_SHOW_CLIENT` (non-refundable)
+- [x] Late specialist notice ($< 12\text{h}$) triggers administrative penalty review and rescheduling
+- [x] `computeDefenseLabAmount()` computing fee at ₱250/hour
+
+### Task 3 — DefenseLab Server Actions & Validation
+- [x] `bookDefenseLabSession` verifying payment status and assigned statistician
+- [x] `rescheduleDefenseLabSession` handling 12-hour notice checks and state transitions
+- [x] `updateDefenseLabMeetingLink` coordinating Google Meet / Zoom links
+- [x] `completeDefenseLabSession` and `uploadDefenseLabRecording` with client access gates
+- [x] `applyDefenseLabPenalty` recording administrative determinations
+
+### Task 4 — Client DefenseLab Portal UI
+- [x] Client DefenseLab Hub (`/dashboard/client/defenselab`)
+- [x] Live rehearsal appointment countdown, meeting link joiner, and reschedule modal
+- [x] Gated session recording vault (unlocked post-completion)
+
+### Task 5 — Admin Operations Control Center UI
+- [x] Admin DefenseLab Operations Queue (`/dashboard/admin/defenselab`)
+- [x] Meeting link coordinator, session completion modal, recording attacher, and penalty manager
+
+### Task 6 — Module Gate Verification
+- [x] Verification report documented in `docs/modules/13-verification-report.md`
+- [x] Quality gates verified (`npm run check-types` → 0 errors)
+
+---
+
 ## Module 18 — Staff Attendance & Duty Governance (Completed)
 
 ### Task 1 — Timeclock Data Layer & Shift Safety Models
@@ -482,6 +517,14 @@
 - [x] Harmonized 3-tier hierarchy: (1) Breadcrumbs, (2) Title & Badge, (3) Description, (4) Responsive Actions
 - [x] Documented strict PageHeader standard in `AGENTS.md`, `.agents/AGENTS.md`, and `docs/design-system.md`
 
+### Task 7 — Messenger-Style Chat Optimization & Canonical Orbital Loading Standard
+- [x] Implemented instant cache-first preload in `MessageThread.tsx` (0ms perceived load time from browser session cache)
+- [x] Implemented optimistic instant message rendering (0ms send latency, instant input clearing, automatic rollback on firewall violation or network exception)
+- [x] Replaced inline grey skeleton boxes with canonical full-page orbital loader `<LoadingState variant="page" />` across Client and Statistician messages desks
+- [x] Optimized Prisma queries in `messaging/actions.ts` (`take: 1` preview snippet, parallel `Promise.all` query execution, non-blocking background read receipts)
+- [x] Added resilient database client delegation and dynamic schema reload in `db.ts` to prevent stale client model exceptions in dev environments
+- [x] Seeded mock DefenseLab sessions and messaging threads for Client Ana Cruz and Dr. Juan Reyes
+
 ---
 
 ## Roadmap Status Matrix
@@ -501,8 +544,8 @@
 | `10` | `10-analysis` — Analysis Workbench | Operations | ✅ Completed |
 | `11` | `11-qa` — Quality Assurance & Reproducibility | Operations | ✅ Completed |
 | `12` | `12-deliverables` — Deliverables, Release & Revisions | Delivery | ✅ Completed |
-| `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ⏳ **Active (Next)** |
-| `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | 🟡 Partially Implemented |
+| `13` | `13-defenselab` — DefenseLab Scheduling & Mock Defense | Add-on | ✅ Completed |
+| `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | ⏳ **Active (Next)** |
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ⏳ Queued (Awaiting `14`) |
 | `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ⏳ Queued |
 | `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ⏳ Queued |
