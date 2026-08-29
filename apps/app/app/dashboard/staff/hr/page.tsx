@@ -27,7 +27,7 @@ import {
   IconCopy,
   IconEdit,
 } from "@tabler/icons-react";
-import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, Peso, PageHeader, Pagination } from "@repo/ui";
 import Link from "next/link";
 import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
 import { requestLeave, returnFromLeave } from "@/features/staff/actions";
@@ -74,6 +74,8 @@ export default function StaffHrPortalPage() {
   const [allMyPayslips, setAllMyPayslips] = useState<StaffPayslipDTO[]>([]);
   const [selectedPayslip, setSelectedPayslip] = useState<StaffPayslipDTO | null>(null);
   const [selectedPayslipForModal, setSelectedPayslipForModal] = useState<StaffPayslipDTO | null>(null);
+  const [payslipPage, setPayslipPage] = useState<number>(1);
+  const [payslipPageSize, setPayslipPageSize] = useState<number>(10);
 
   // Payout & Banking Details
   const [payoutDetails, setPayoutDetails] = useState<StaffPayoutDetailsDTO | null>(null);
@@ -1285,10 +1287,10 @@ export default function StaffHrPortalPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-white font-sans">
-                      Past Payslips ({allMyPayslips.length})
+                      Past Months &amp; Historical Payslips Ledger ({allMyPayslips.length})
                     </h3>
                     <span className="text-[0.688rem] text-white/50 font-sans">
-                      View and download your payslips across all pay cycles.
+                      Official compensation statements and corporate settlement records across all cut-off cycles.
                     </span>
                   </div>
                 </div>
@@ -1299,22 +1301,25 @@ export default function StaffHrPortalPage() {
                   No past payslip records found.
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl">
+                <div className="overflow-hidden rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl flex flex-col">
+                  <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse font-sans">
                       <thead>
                         <tr className="bg-[#010D1F] border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
-                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Payslip No.</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Statement Ref</th>
                           <th className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Pay Period</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Pay Rate</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[90px]">Hours</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Pay Structure</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[90px]">Duty Hours</th>
                           <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[110px]">Gross Pay</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Pay</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[140px]">Status</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[150px]">Actions</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Take-Home</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[140px]">Settlement Status</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[160px]">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.06]">
-                        {allMyPayslips.map((ps) => {
+                        {allMyPayslips
+                          .slice((payslipPage - 1) * payslipPageSize, payslipPage * payslipPageSize)
+                          .map((ps) => {
                           const isCurrent = ps.id === activeDisplayPayslip?.id;
                           const parts = ps.payPeriodMonth.split("(");
                           const mainMonth = parts[0]?.trim() || ps.payPeriodMonth;
@@ -1412,6 +1417,20 @@ export default function StaffHrPortalPage() {
                       </tbody>
                     </table>
                   </div>
+
+                  <Pagination
+                    currentPage={payslipPage}
+                    totalItems={allMyPayslips.length}
+                    pageSize={payslipPageSize}
+                    onPageChange={setPayslipPage}
+                    onPageSizeChange={(newSize) => {
+                      setPayslipPageSize(newSize);
+                      setPayslipPage(1);
+                    }}
+                    pageSizeOptions={[5, 10, 20, 50]}
+                    itemLabel="payslips"
+                  />
+                </div>
               )}
             </div>
           </Card>

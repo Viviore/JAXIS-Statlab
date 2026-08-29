@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { PageHeader, Card, LoadingState, Badge, StatusBadge } from "@repo/ui";
 import { getMyProjectThreads } from "@/features/messaging/actions";
