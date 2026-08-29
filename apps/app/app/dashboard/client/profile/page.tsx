@@ -81,7 +81,7 @@ export default function ClientProfilePage() {
 
       setToastMessage({
         message: "Profile Saved Successfully",
-        description: "Your institutional affiliation and contact details have been updated.",
+        description: "Your school and contact details have been updated.",
         variant: "success",
       });
 
@@ -95,8 +95,8 @@ export default function ClientProfilePage() {
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-20 w-full animate-content-fade">
       <PageHeader
-        title="Institutional & Academic Profile"
-        description="Complete your institutional affiliation and contact details in the Philippines to unlock project intake capabilities and secure communications."
+        title="School &amp; Academic Profile"
+        description="Complete your university and contact details in the Philippines to submit research study requests."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Client Portal", href: "/dashboard/client" },
@@ -107,15 +107,15 @@ export default function ClientProfilePage() {
       <Card className="p-6 md:p-8">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="border-b border-white/[0.08] pb-4">
-            <h2 className="text-base font-bold text-white">Institutional Details (Philippines)</h2>
+            <h2 className="text-base font-bold text-white">School &amp; University Details</h2>
             <p className="text-xs text-white/50 mt-1">
-              Used for formal statistical certifications, commission endorsements, and thesis data security
+              Used for official statistical certificates and research consultation records.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             <FormInput
-              label="Institution / University"
+              label="School / University"
               required
               placeholder="e.g. University of the Philippines"
               value={formData.institutionSchool}

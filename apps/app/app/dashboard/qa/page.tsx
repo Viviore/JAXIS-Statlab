@@ -198,8 +198,8 @@ export default function QALeadDashboardPage() {
       if (res.success) {
         loadWorkload();
         setToastMessage({
-          message: profileStatus === "LEAVE_PENDING" ? "Leave Request Withdrawn" : "Welcome Back to Active Duty",
-          description: profileStatus === "LEAVE_PENDING" ? "Your pending leave request has been cancelled." : "Your availability is restored in the verification assignment directory.",
+          message: profileStatus === "LEAVE_PENDING" ? "Leave Request Cancelled" : "Welcome Back",
+          description: profileStatus === "LEAVE_PENDING" ? "Your pending leave request has been cancelled." : "You are now marked as available for assignments.",
           variant: "success",
         });
       } else {
@@ -218,11 +218,11 @@ export default function QALeadDashboardPage() {
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Page Header */}
       <PageHeader
-        title="Senior QA Lead Studio & Verification Desk"
-        description="Dual-blind recalculation verification, hypothesis reproducibility audits, APA 7th compliance seals, and deliverable release authorization."
+        title="QA Review Desk"
+        description="Review study calculations, check formatting, and approve files for release."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "QA Studio" },
+          { label: "QA Reviews" },
         ]}
         actions={
           <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ export default function QALeadDashboardPage() {
                 className="font-sans text-xs font-semibold rounded-[2px] bg-emerald-600/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-600/30 gap-1.5 cursor-pointer"
               >
                 <IconUserCheck size={14} stroke={2} />
-                <span>Return to Active Duty</span>
+                <span>Return to Work</span>
               </Button>
             ) : profileStatus === "LEAVE_PENDING" ? (
               <Button
@@ -270,7 +270,7 @@ export default function QALeadDashboardPage() {
             )}
             <Link href="/dashboard/qa/profile">
               <Button variant="outline" size="sm" className="font-sans text-xs font-semibold rounded-[2px] cursor-pointer">
-                Specialization Profile
+                My Profile
               </Button>
             </Link>
           </div>

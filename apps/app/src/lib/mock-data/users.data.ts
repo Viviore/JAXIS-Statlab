@@ -21,7 +21,7 @@ export const DEV_USERS: Record<string, MockUser> = {
   "admin@jaxis.dev": {
     id: "usr_dev_admin_001",
     email: "admin@jaxis.dev",
-    fullName: "Super Admin",
+    fullName: "Operations Manager",
     role: "ADMIN",
     password: "JaxisAdmin2026!",
     status: "ACTIVE",

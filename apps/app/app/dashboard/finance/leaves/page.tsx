@@ -322,22 +322,22 @@ export default function SpecialistLeaveApprovalsPage() {
           { label: "Leave Approvals" },
         ]}
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={loadData}
               disabled={isLoading || isPending}
-              className="gap-2 font-sans text-xs rounded-[2px] cursor-pointer"
+              className="w-full sm:w-auto justify-center gap-2 font-sans text-xs rounded-[2px] cursor-pointer"
             >
               <IconRefresh size={14} className={isLoading ? "animate-spin" : ""} />
               <span>Refresh Telemetry</span>
             </Button>
-            <Link href="/dashboard/finance">
+            <Link href="/dashboard/finance" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 font-sans text-xs rounded-[2px] cursor-pointer text-white/70 hover:text-white"
+                className="w-full sm:w-auto justify-center gap-1.5 font-sans text-xs rounded-[2px] cursor-pointer text-white/70 hover:text-white"
               >
                 <IconArrowLeft size={14} />
                 <span>Treasury Console</span>

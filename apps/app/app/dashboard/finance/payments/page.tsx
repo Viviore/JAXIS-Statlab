@@ -125,9 +125,9 @@ export default function FinancePaymentsQueuePage() {
           { label: "Deposit Verification & Ledger" },
         ]}
         actions={
-          <div className="flex items-center gap-2.5">
-            <Link href="/dashboard/finance">
-              <Button variant="outline" size="sm">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            <Link href="/dashboard/finance" className="w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto justify-center">
                 ← Finance Overview
               </Button>
             </Link>
@@ -135,7 +135,7 @@ export default function FinancePaymentsQueuePage() {
               variant="secondary"
               size="sm"
               onClick={loadQueue}
-              className="gap-1.5"
+              className="w-full sm:w-auto justify-center gap-1.5"
             >
               <IconRefresh size={14} stroke={2} />
               <span>Refresh Queue</span>

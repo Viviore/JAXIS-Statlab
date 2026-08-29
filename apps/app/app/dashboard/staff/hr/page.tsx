@@ -273,8 +273,8 @@ export default function StaffHrPortalPage() {
         setPayoutDetails(res.data);
         setToast({
           variant: "success",
-          message: "Settlement Method Saved",
-          description: "Your payout details have been synchronized with the Finance Treasury desk.",
+          message: "Payout Method Saved",
+          description: "Your payout details have been updated for future payslips.",
         });
       } else {
         setToast({
@@ -287,7 +287,7 @@ export default function StaffHrPortalPage() {
       setToast({
         variant: "danger",
         message: "Network Error",
-        description: "Unable to contact treasury services.",
+        description: "Unable to save payout details.",
       });
     } finally {
       setIsSavingPayout(false);
@@ -297,7 +297,7 @@ export default function StaffHrPortalPage() {
   if (isLoading || !portalData) {
     return (
       <div className="flex-1 w-full flex items-center justify-center animate-content-fade my-auto">
-        <LoadingState variant="page" label="Loading HR & Staff Portal..." description="Please wait while we load your research workspace" />
+        <LoadingState variant="page" label="Loading HR &amp; Staff Portal..." description="Getting timesheets and payroll details" />
       </div>
     );
   }
@@ -311,11 +311,11 @@ export default function StaffHrPortalPage() {
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {/* Standardized PageHeader Component */}
       <PageHeader
-        title="HR & People Operations Portal"
-        description="Manage your daily attendance calendar, leave entitlements, overtime filings, and monthly compensation payslips."
+        title="My HR &amp; Timeclock"
+        description="Manage your timesheets, duty calendar, leave requests, and monthly payslips."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "HR & People Operations" },
+          { label: "My HR" },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2.5">
@@ -349,7 +349,7 @@ export default function StaffHrPortalPage() {
         <div className="p-4 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-start gap-3">
           <IconCalendarOff size={20} stroke={1.5} className="text-purple-300 shrink-0 mt-0.5" />
           <div className="flex flex-col gap-0.5 text-xs text-white/90 font-sans">
-            <span className="font-bold text-purple-200">Currently on Authorized Specialist Leave</span>
+            <span className="font-bold text-purple-200">Currently on Approved Leave</span>
             <span className="text-white/70">
               Reason: &ldquo;{portalData.user.leaveReason}&rdquo; &bull; Expected Return Date:{" "}
               {portalData.user.leaveUntil ? new Date(portalData.user.leaveUntil).toLocaleDateString("en-PH") : "Open"}
@@ -361,12 +361,12 @@ export default function StaffHrPortalPage() {
       {/* Navigation Tab Bar */}
       <div className="flex items-center border-b border-white/10 gap-2 overflow-x-auto pb-1">
         {[
-          { id: "TIMESHEETS", label: "Duty Timesheets & History", icon: IconClock },
-          { id: "CALENDAR", label: "Duty Calendar & Shifts", icon: IconCalendar },
-          { id: "LEAVES", label: "Leave Center & Balances", icon: IconCalendarOff },
-          { id: "OVERTIME", label: "Overtimes & Adjustments", icon: IconClockPlay },
-          { id: "PAYSLIP", label: "Monthly Payslips & Earnings", icon: IconReceipt },
-          { id: "PAYOUT", label: "Payout & Banking Methods", icon: IconBuildingBank },
+          { id: "TIMESHEETS", label: "Timesheets", icon: IconClock },
+          { id: "CALENDAR", label: "Calendar", icon: IconCalendar },
+          { id: "LEAVES", label: "Leave Requests", icon: IconCalendarOff },
+          { id: "OVERTIME", label: "Overtime & Corrections", icon: IconClockPlay },
+          { id: "PAYSLIP", label: "My Payslips", icon: IconReceipt },
+          { id: "PAYOUT", label: "Payout Method", icon: IconBuildingBank },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -388,7 +388,7 @@ export default function StaffHrPortalPage() {
         })}
       </div>
 
-      {/* TAB 0: DUTY TIMESHEETS & HISTORY */}
+      {/* TAB 0: TIMESHEETS */}
       {activeTab === "TIMESHEETS" && (
         <Card className="p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
@@ -397,7 +397,7 @@ export default function StaffHrPortalPage() {
                 <IconClock size={18} stroke={1.5} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white font-sans">Duty Timesheets &amp; Workstation History</h2>
+                <h2 className="text-base font-bold text-white font-sans">Timesheets &amp; Shift History</h2>
                 <span className="text-[0.688rem] text-white/50 font-mono">
                   {portalData.recentLogs.length} shifts recorded in {monthTitle}
                 </span>
@@ -427,10 +427,10 @@ export default function StaffHrPortalPage() {
                     <th className="py-3 px-3">Date</th>
                     <th className="py-3 px-3">Clock In</th>
                     <th className="py-3 px-3">Clock Out</th>
-                    <th className="py-3 px-3">Break Deducted</th>
-                    <th className="py-3 px-3">Net Payable Hours</th>
-                    <th className="py-3 px-3">Device &amp; Telemetry</th>
-                    <th className="py-3 px-3">Duty Status</th>
+                    <th className="py-3 px-3">Break</th>
+                    <th className="py-3 px-3">Total Hours</th>
+                    <th className="py-3 px-3">Device</th>
+                    <th className="py-3 px-3">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -1011,14 +1011,14 @@ export default function StaffHrPortalPage() {
                     <span className="text-[0.688rem] sm:text-xs font-mono uppercase text-white/60 font-semibold tracking-wider shrink-0">
                       Cycle History:
                     </span>
-                    <div className="relative w-full sm:w-72 md:w-80 min-w-0">
+                    <div className="relative w-full sm:w-[350px] md:w-[390px] xl:w-[420px] min-w-0">
                       <select
                         value={activeDisplayPayslip?.id || ""}
                         onChange={(e) => {
                           const found = allMyPayslips.find((p) => p.id === e.target.value);
                           if (found) setSelectedPayslip(found);
                         }}
-                        className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] pl-3 pr-10 py-2 sm:py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer truncate appearance-none transition-colors hover:border-white/25"
+                        className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] pl-3 pr-8 py-2 sm:py-1.5 text-[0.688rem] sm:text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer appearance-none transition-colors hover:border-white/25 truncate"
                       >
                         {allMyPayslips.map((ps) => {
                           const monthMatch = ps.payPeriodMonth.match(/([A-Za-z]+)\s+(\d{4})/);
@@ -1041,9 +1041,9 @@ export default function StaffHrPortalPage() {
                         })}
                       </select>
                       <IconChevronDown
-                        size={15}
+                        size={14}
                         stroke={2}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
                       />
                     </div>
                   </div>

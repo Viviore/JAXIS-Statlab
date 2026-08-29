@@ -24,7 +24,7 @@ Module 19 provides institutional payroll governance, executive compensation conf
    - Live interactive formula preview reflecting adjustments in real-time.
    - 1-click Save with high-contrast orbital loader and toast alerts.
 2. **Individual Specialist Bespoke Overrides (`/dashboard/ceo/payroll` - TAB 2)**:
-   - Directory of internal specialists (`Dr. Juan Reyes`, `QA Lead Maria`, `Finance Officer`, `Super Admin`, etc.).
+   - Directory of internal specialists (`Dr. Juan Reyes`, `QA Lead Maria`, `Finance Officer`, `Operations Manager`, etc.).
    - Bespoke terms editor allowing the CEO to customize compensation terms for individual senior specialists without changing default company-wide role rates.
    - Status indicators (`Role Default` vs `Bespoke Override`) and 1-click Revert to Default.
 3. **Finance Staff Payroll & Payslips Desk (`/dashboard/finance/payroll`)**:

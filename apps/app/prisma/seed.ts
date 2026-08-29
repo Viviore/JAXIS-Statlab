@@ -28,7 +28,7 @@ const roles: SeedRole[] = [
 
 const seedUsers: SeedUser[] = [
   {
-    fullName: "Super Admin",
+    fullName: "Operations Manager",
     email: "admin@jaxis.dev",
     role: "ADMIN",
     password: "JaxisAdmin2026!",

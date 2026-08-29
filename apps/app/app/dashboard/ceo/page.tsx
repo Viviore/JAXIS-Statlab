@@ -63,29 +63,29 @@ export default function CEODashboardPage() {
           variant="outline"
           size="sm"
           onClick={() => setSelectedStudy(study)}
-          className="py-1 px-3 whitespace-nowrap font-mono text-xs tracking-wider"
+          className="py-1 px-3 whitespace-nowrap font-sans text-xs"
         >
-          EXECUTIVE AUDIT
+          View Details
         </Button>
       ),
     },
   ];
 
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full">
+    <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full animate-content-fade">
       <PageHeader
-        title="Executive Intelligence & Macro Governance Desk"
-        description="Executive visibility into institutional client retention, turnaround SLAs, revenue throughput, and cross-desk statistical integrity."
+        title="CEO Overview"
+        description="Overview of client retention, turnaround times, revenue, and study progress."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "CEO Console" },
+          { label: "CEO Overview" },
         ]}
         actions={
           <div className="flex items-center gap-2">
             <Link href="/dashboard/ceo/payroll">
               <Button variant="primary" size="sm" className="gap-2 font-sans font-semibold cursor-pointer rounded-[2px]">
                 <IconReceipt size={15} stroke={1.5} />
-                <span>Executive Payroll Policy →</span>
+                <span>Payroll Settings →</span>
               </Button>
             </Link>
           </div>
@@ -95,16 +95,16 @@ export default function CEODashboardPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <KpiCard
-          label="Gross Pipeline Value"
+          label="Pipeline Value"
           value="₱1,425,000"
           variant="default"
           badge="+18.4%"
           badgeColor="emerald"
-          description="MoM growth trend"
+          description="Month-over-month growth"
         />
 
         <KpiCard
-          label="Avg Turnaround SLA"
+          label="Avg Turnaround"
           value="4.2 Days"
           variant="sky"
           description="99.2% on-time delivery"
@@ -114,14 +114,14 @@ export default function CEODashboardPage() {
           label="QA Rejection Rate"
           value="0.8%"
           variant="emerald"
-          description="Elite statistical accuracy"
+          description="High statistical accuracy"
         />
 
         <KpiCard
-          label="Active Institutional Orgs"
+          label="Active Schools &amp; Orgs"
           value={14}
           variant="amber"
-          description="Universities & Labs"
+          description="Universities & hospitals"
         />
       </div>
 
@@ -129,8 +129,8 @@ export default function CEODashboardPage() {
       <Card className="p-0 overflow-hidden">
         <div className="p-5 border-b border-white/[0.08] flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-white">Cross-Department Study Pipeline</h2>
-            <p className="text-xs text-white/50">Macro lifecycle oversight across all client universities and medical centers</p>
+            <h2 className="text-base font-bold text-white font-sans">All Research Studies</h2>
+            <p className="text-xs text-white/50 font-sans">Overview across all client universities and organizations</p>
           </div>
         </div>
 
@@ -147,19 +147,19 @@ export default function CEODashboardPage() {
         <Modal
           open={!!selectedStudy}
           onClose={() => setSelectedStudy(null)}
-          title={`Executive Overview: ${selectedStudy.id}`}
+          title={`Study Details: ${selectedStudy.id}`}
           description={selectedStudy.title}
           size="md"
           footer={
             <Button variant="secondary" onClick={() => setSelectedStudy(null)}>
-              CLOSE
+              Close
             </Button>
           }
         >
-          <div className="flex flex-col gap-3 text-xs text-white/80">
-            <p><strong>Commissioning Client:</strong> {selectedStudy.client}</p>
+          <div className="flex flex-col gap-3 text-xs text-white/80 font-sans">
+            <p><strong>Lead Researcher:</strong> {selectedStudy.client}</p>
             <p><strong>University:</strong> {selectedStudy.university}</p>
-            <p><strong>Field of Research:</strong> {selectedStudy.field}</p>
+            <p><strong>Field of Study:</strong> {selectedStudy.field}</p>
             <p><strong>Methodology:</strong> {selectedStudy.method}</p>
           </div>
         </Modal>

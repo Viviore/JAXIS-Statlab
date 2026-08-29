@@ -213,8 +213,8 @@ export default function FinancePayrollOperationsPage() {
 
       {/* Standardized PageHeader */}
       <PageHeader
-        title="Finance &amp; HR: Staff Payroll &amp; Payslips Desk"
-        description="Execute monthly staff payroll runs using CEO-authorized compensation formulas, verify duty hours and completed studies, and record GCash and bank disbursements."
+        title="Staff Payroll &amp; Payslips"
+        description="Generate staff payroll, verify hours worked and completed studies, and record payments via GCash or bank transfer."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Finance & HR", href: "/dashboard/finance" },
@@ -230,7 +230,7 @@ export default function FinancePayrollOperationsPage() {
               >
                 <option value="FIRST_HALF">First Half (Days 1–15)</option>
                 <option value="SECOND_HALF">Second Half (Days 16–End)</option>
-                <option value="FULL_MONTH">Full Calendar Month</option>
+                <option value="FULL_MONTH">Full Month</option>
               </select>
               <IconChevronDown
                 size={14}
@@ -251,13 +251,13 @@ export default function FinancePayrollOperationsPage() {
               ) : (
                 <IconReceipt size={16} stroke={1.5} />
               )}
-              <span>Run Selected Cycle</span>
+              <span>Generate Payslips</span>
             </Button>
           </div>
         }
       />
 
-      {/* Active CEO Policy Banner */}
+      {/* Active Pay Policy Banner */}
       <div className="p-3.5 sm:p-4 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
           <div className="p-2 bg-[#CC6600]/15 border border-[#CC6600]/40 rounded-[2px] text-[#FFA040] shrink-0 mt-0.5">
@@ -266,25 +266,21 @@ export default function FinancePayrollOperationsPage() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-col gap-1.5 min-w-0">
               <span className="font-bold text-white text-xs sm:text-sm">
-                CEO Authorized Compensation &amp; Settlement Policy Active
+                Active Pay Rates &amp; Schedule
               </span>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                 <Badge variant="emerald" className="text-[0.625rem] font-mono shrink-0">
-                  Verified Formula
+                  Active Formula
                 </Badge>
                 {scheduleConfig && (
                   <Badge variant="amber" className="text-[0.625rem] font-mono truncate max-w-full">
                     {scheduleConfig.frequency === "SEMI_MONTHLY" ? (
                       <>
-                        <span className="hidden sm:inline">Schedule: </span>Semi-Monthly (1–15 &amp; 16–End)
-                      </>
-                    ) : scheduleConfig.frequency === "MONTHLY" ? (
-                      <>
-                        <span className="hidden sm:inline">Schedule: </span>Monthly (Calendar Month)
+                        <span className="hidden sm:inline">Schedule: </span>Semi-Monthly (Twice a month)
                       </>
                     ) : (
                       <>
-                        <span className="hidden sm:inline">Schedule: </span>Bi-Weekly (14 Days)
+                        <span className="hidden sm:inline">Schedule: </span>Monthly (Once a month)
                       </>
                     )}
                   </Badge>
@@ -292,7 +288,7 @@ export default function FinancePayrollOperationsPage() {
               </div>
             </div>
             <p className="text-[0.688rem] sm:text-xs text-white/60 font-sans mt-1.5 leading-relaxed">
-              All payroll numbers are governed by the executive rate matrix configured by the CEO Office.
+              Pay calculations follow the rates set by the CEO.
             </p>
           </div>
         </div>
@@ -332,36 +328,36 @@ export default function FinancePayrollOperationsPage() {
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          label="Total Payroll Net"
+          label="Total Payroll"
           value={`₱${kpis.totalInstitutionalPayroll.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="default"
           icon={<IconCoins size={16} stroke={1.5} />}
-          description={`${kpis.activeStaffCount} Active Specialists`}
+          description={`${kpis.activeStaffCount} active staff`}
         />
 
         <KpiCard
-          label="Disbursed from Vault"
+          label="Total Paid Out"
           value={`₱${kpis.totalDisbursed.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="sky"
           icon={<IconBuildingBank size={16} stroke={1.5} />}
-          description={kpis.pendingDisbursementsCount === 0 ? "All Cleared" : `${kpis.pendingDisbursementsCount} Pending`}
+          description={kpis.pendingDisbursementsCount === 0 ? "All paid" : `${kpis.pendingDisbursementsCount} pending`}
         />
 
         <KpiCard
-          label="Compensated Duty Hours"
+          label="Hours Worked"
           value={kpis.totalDutyHoursCompensated}
           unit="hrs total"
           icon={<IconClock size={16} stroke={1.5} />}
-          description="Verified Attendance Punches"
+          description="Verified attendance hours"
         />
 
         <KpiCard
-          label="Study Deliverables Paid"
+          label="Studies Completed"
           value={kpis.totalStudiesRewarded}
           unit="completed"
           variant="amber"
           icon={<IconSparkles size={16} stroke={1.5} />}
-          description="APA 7th Verified Studies"
+          description="Paid commissions this cycle"
         />
       </div>
 
@@ -370,10 +366,10 @@ export default function FinancePayrollOperationsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
             <h2 className="text-base font-bold text-white font-sans">
-              Employee Payslip Ledger &amp; Disbursement Queue
+              Staff Payslips
             </h2>
             <p className="text-xs text-white/50 font-sans mt-0.5">
-              Review computed earnings, inspect official itemized statements, and disburse via GCash or institutional bank transfers.
+              Review earnings, view itemized statements, and mark payments as sent.
             </p>
           </div>
 
@@ -408,7 +404,7 @@ export default function FinancePayrollOperationsPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search specialist or ID..."
+                placeholder="Search staff or ID..."
                 className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] pl-9 pr-3 py-2 text-xs text-white placeholder-white/30 outline-none focus:border-[#CC6600] font-sans"
               />
             </div>
@@ -426,7 +422,7 @@ export default function FinancePayrollOperationsPage() {
                       : "text-white/60 hover:text-white"
                   }`}
                 >
-                  {st}
+                  {st === "DISBURSED" ? "PAID" : st}
                 </button>
               ))}
             </div>
@@ -435,21 +431,21 @@ export default function FinancePayrollOperationsPage() {
 
         {filteredPayslips.length === 0 ? (
           <div className="py-12 text-center text-xs text-white/40 italic font-sans">
-            Zero payslip records found matching the active filter. Click &ldquo;Run Payroll Cycle&rdquo; to calculate.
+            No payslips found for the selected filter. Click &ldquo;Generate Payslips&rdquo; to calculate.
           </div>
         ) : (
           <div className="overflow-x-auto rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-[#010D1F] border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
-                  <th className="py-3 px-2 whitespace-nowrap">Statement No.</th>
-                  <th className="py-3 px-2 whitespace-nowrap">Specialist</th>
+                  <th className="py-3 px-2 whitespace-nowrap">Payslip No.</th>
+                  <th className="py-3 px-2 whitespace-nowrap">Staff</th>
                   <th className="py-3 px-2 whitespace-nowrap">Role</th>
                   <th className="py-3 px-2 whitespace-nowrap">Pay Period</th>
-                  <th className="py-3 px-2 whitespace-nowrap text-right">Duty Hours</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-right">Hours</th>
                   <th className="py-3 px-2 whitespace-nowrap text-center">Studies</th>
                   <th className="py-3 px-2 whitespace-nowrap text-right">Gross Pay</th>
-                  <th className="py-3 px-2 whitespace-nowrap text-right text-emerald-400/90">Net Take-Home</th>
+                  <th className="py-3 px-2 whitespace-nowrap text-right text-emerald-400/90">Net Pay</th>
                   <th className="py-3 px-2 whitespace-nowrap text-center">Status</th>
                   <th className="py-3 px-2 whitespace-nowrap text-right pr-3">Actions</th>
                 </tr>
@@ -484,7 +480,7 @@ export default function FinancePayrollOperationsPage() {
                       : ps.staffRole === "FINANCE_OFFICER"
                       ? "Finance Officer"
                       : ps.staffRole === "ADMIN"
-                      ? "Super Admin"
+                      ? "Operations Manager"
                       : ps.staffRole === "CEO"
                       ? "Executive Director"
                       : ps.staffRole;
@@ -565,7 +561,7 @@ export default function FinancePayrollOperationsPage() {
                         {ps.status === "DISBURSED" && (
                           <div className="inline-flex flex-col items-center">
                             <Badge variant="emerald" className="text-[0.562rem] font-mono uppercase tracking-wider py-0.5 px-1.5">
-                              Disbursed
+                              Paid
                             </Badge>
                             {ps.disbursementMethod && (
                               <span className="text-[0.562rem] font-mono text-white/40 block mt-0.5 max-w-[100px] truncate" title={ps.disbursementMethod}>
@@ -606,7 +602,7 @@ export default function FinancePayrollOperationsPage() {
                               onClick={() => setSelectedPayslipForDisburse(ps)}
                               className="h-6 text-[0.688rem] font-sans font-semibold px-2 bg-[#CC6600] hover:bg-[#E67300] text-white cursor-pointer rounded-[2px]"
                             >
-                              Disburse →
+                              Send Pay →
                             </Button>
                           )}
                           <Button
@@ -621,7 +617,7 @@ export default function FinancePayrollOperationsPage() {
                             href={`/dashboard/finance/payroll/payslips/${ps.id}/print`}
                             target="_blank"
                             className="h-6 px-1.5 flex items-center text-white/60 hover:text-white border border-white/10 hover:border-white/20 rounded-[2px] hover:bg-white/[0.06] transition-colors"
-                            title="Print Official Voucher / PDF"
+                            title="Print Payslip Voucher"
                           >
                             <IconPrinter size={13} stroke={2} />
                           </Link>
@@ -664,8 +660,8 @@ export default function FinancePayrollOperationsPage() {
           onSuccess={async () => {
             setToast({
               variant: "success",
-              message: "Payment Disbursed Successfully",
-              description: `Disbursement record saved for ${selectedPayslipForDisburse.staffName}.`,
+              message: "Payment Recorded",
+              description: `Payment marked as sent for ${selectedPayslipForDisburse.staffName}.`,
             });
             await loadData();
           }}

@@ -56,18 +56,18 @@ export default function AdminDashboardPage() {
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {/* ── Page Header ── */}
       <PageHeader
-        title="Admin Operations & Governance Desk"
-        description="System-wide command console for stakeholder orchestration, live pipeline audit enforcement, and global deliverable verification."
+        title="Admin Overview"
+        description="Manage study requests, expert assignments, staff, and project progress."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "Admin Command" },
+          { label: "Admin Overview" },
         ]}
         actions={
           <div className="flex items-center gap-3">
             <Link href="/dashboard/admin/intake">
               <Button variant="primary" size="sm" className="gap-2 font-sans font-semibold">
                 <IconPlus size={15} stroke={2} />
-                <span>Intake Triage Queue →</span>
+                <span>New Study Requests →</span>
               </Button>
             </Link>
           </div>
@@ -82,25 +82,25 @@ export default function AdminDashboardPage() {
           variant="default"
           badge={kpis?.totalActiveStudiesTrend ?? "+14%"}
           badgeColor="emerald"
-          description="MoM active growth"
+          description="Month-over-month growth"
         />
 
         <KpiCard
           label="Under Evaluation"
           value={kpis?.underEvaluationCount ?? 7}
           variant="sky"
-          description="Computational run in progress"
+          description="Analysis in progress"
         />
 
         <KpiCard
-          label="QA Review Gates"
+          label="In QA Review"
           value={kpis?.qaReviewGateCount ?? 5}
           variant="amber"
-          description="Dual-blind review pending"
+          description="Quality check pending"
         />
 
         <KpiCard
-          label="Monthly Revenue Escrow"
+          label="Monthly Revenue"
           value={kpis?.monthlyRevenueEscrow ?? "₱485,200"}
           variant="emerald"
           description={kpis?.escrowSecuredRatio ?? "99.4% Secured"}
@@ -124,10 +124,10 @@ export default function AdminDashboardPage() {
         >
           <div>
             <h2 className="text-lg sm:text-xl font-semibold text-white tracking-normal font-sans">
-              System-Wide Study Registry
+              All Studies
             </h2>
             <p className="text-sm text-white/60 mt-1 font-sans leading-relaxed">
-              Comprehensive pipeline with full audit history and role assignments
+              Complete list of all studies, staff assignments, and progress statuses.
             </p>
           </div>
           <span

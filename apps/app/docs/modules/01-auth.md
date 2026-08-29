@@ -32,7 +32,7 @@
 | `AUTH-F08` | **Admin-Provisioned Staff Accounts** | Admin creates accounts for Statistician, QA Lead, Finance Officer, CEO roles via seed + admin panel stub. |
 | `AUTH-F09` | **Password Hashing** | `bcryptjs` with salt rounds = 12 on all password storage. |
 | `AUTH-F10` | **Logout** | Session destruction. Redirect to `/login`. |
-| `AUTH-F11` | **Database Seed** | Super Admin + one user per role seeded via `prisma db seed` for development. |
+| `AUTH-F11` | **Database Seed** | Operations Manager + one user per role seeded via `prisma db seed` for development. |
 | `AUTH-F12` | **Audit Log (Auth Events)** | Login success, login failure, logout, and registration events written to `AuthAuditLog`. |
 | `AUTH-F13` | **Account Status Gate** | `SUSPENDED` or `TERMINATED` accounts cannot log in. Returns descriptive error. |
 | `AUTH-F14` | **Token Refresh / Session Extension** | JWT auto-rotated on each request within the active session window. |
@@ -267,7 +267,7 @@ const roles = [
 ];
 
 const seedUsers = [
-  { fullName: 'Super Admin',      email: 'admin@jaxis.dev',      role: 'ADMIN',           password: 'JaxisAdmin2026!' },
+  { fullName: 'Operations Manager', email: 'admin@jaxis.dev',   role: 'ADMIN',           password: 'JaxisAdmin2026!' },
   { fullName: 'CEO Owner',        email: 'ceo@jaxis.dev',        role: 'CEO',             password: 'JaxisCeo2026!' },
   { fullName: 'Finance Officer',  email: 'finance@jaxis.dev',    role: 'FINANCE_OFFICER', password: 'JaxisFin2026!' },
   { fullName: 'Dr. Juan Reyes',   email: 'stat@jaxis.dev',       role: 'STATISTICIAN',    password: 'JaxisStat2026!' },

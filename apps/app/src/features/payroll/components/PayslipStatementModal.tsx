@@ -159,15 +159,15 @@ export function PayslipStatementModal({
               }`}
             >
               <IconLayoutGrid size={14} stroke={2} className="shrink-0" />
-              <span className="hidden sm:inline">Interactive Data Breakdown</span>
+              <span className="hidden sm:inline">Detailed Breakdown</span>
               <span className="sm:hidden">Breakdown</span>
             </button>
           </div>
 
           <span className="text-[0.688rem] font-mono text-white/40 hidden sm:inline-block">
             {viewMode === "document"
-              ? "Document Formatted for A4 / Letter Print Output"
-              : "Real-Time Telemetry & Ledger Audit"}
+              ? "Formatted for print / PDF output"
+              : "Itemized pay breakdown"}
           </span>
         </div>
 
@@ -179,12 +179,12 @@ export function PayslipStatementModal({
             </div>
           </div>
         ) : (
-          /* ── Interactive Telemetry Breakdown Mode (Zero nested scroll) ── */
+          /* ── Interactive Breakdown Mode (Zero nested scroll) ── */
           <div className="flex flex-col gap-6 text-white font-sans animate-content-fade">
-            {/* KPI Telemetry Quad */}
+            {/* KPI Quad */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <KpiCard
-                label="Net Take-Home Pay"
+                label="Net Pay"
                 value={
                   <span className="inline-flex items-baseline">
                     <Peso />
@@ -192,13 +192,13 @@ export function PayslipStatementModal({
                   </span>
                 }
                 variant="emerald"
-                badge={isDisbursed ? "Disbursed" : "Pending"}
+                badge={isDisbursed ? "Paid" : "Pending"}
                 badgeColor={isDisbursed ? "emerald" : "amber"}
-                description="Audited net compensation settled"
+                description="Final pay amount"
               />
 
               <KpiCard
-                label="Gross Duty Earnings"
+                label="Gross Earnings"
                 value={
                   <span className="inline-flex items-baseline">
                     <Peso />
@@ -206,7 +206,7 @@ export function PayslipStatementModal({
                   </span>
                 }
                 variant="default"
-                description="Base salary, study commissions & duty hours"
+                description="Base salary, commissions & hours"
               />
 
               <KpiCard
@@ -219,11 +219,11 @@ export function PayslipStatementModal({
                   </span>
                 }
                 variant="default"
-                description="Withholding tax & institutional deductions"
+                description="Taxes & other deductions"
               />
 
               <KpiCard
-                label="Delivered Studies"
+                label="Completed Studies"
                 value={payslip.completedStudiesCount}
                 unit="studies"
                 variant="sky"
@@ -235,7 +235,7 @@ export function PayslipStatementModal({
               />
             </div>
 
-            {/* Payout & Settlement Particulars Card */}
+            {/* Payout Details Card */}
             <div className="p-5 rounded-[2px] bg-[#01142B] border border-white/10 flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export function PayslipStatementModal({
                     <IconDeviceMobile size={16} stroke={1.5} className="text-[#FFA040]" />
                   )}
                   <span className="text-xs font-mono font-bold uppercase tracking-wider text-white/90">
-                    Disbursement Particulars &amp; Routing
+                    Payment &amp; Bank Details
                   </span>
                 </div>
                 <Badge

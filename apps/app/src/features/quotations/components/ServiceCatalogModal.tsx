@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, ModalFooter, Button, Peso } from "@repo/ui";
+import { Modal, Button, Peso } from "@repo/ui";
 import {
   IconPackage,
   IconBolt,
@@ -285,7 +285,45 @@ export function ServiceCatalogModal({
       onClose={onClose}
       title="Commercial Service Catalog & Pricing Governance"
       description="Manage statistical analysis tiers, pricing ranges, and priority add-on riders."
-      size="2xl"
+      size="3xl"
+      footer={
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleReset}
+            disabled={isSaving || isResetting}
+            size="sm"
+          >
+            <IconRotateClockwise size={15} stroke={1.5} className={isResetting ? "animate-spin" : ""} />
+            <span>{isResetting ? "Resetting..." : "Reset Factory Defaults"}</span>
+          </Button>
+
+          <div className="flex items-center justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isSaving || isResetting}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving || isResetting}
+              loading={isSaving}
+            >
+              <IconDeviceFloppy size={15} stroke={2} />
+              <span>Save &amp; Apply Changes</span>
+            </Button>
+          </div>
+        </div>
+      }
     >
       <div className="flex flex-col gap-6 text-white font-sans">
         {/* Segmented Tab Switcher + Action Header */}
@@ -495,7 +533,7 @@ export function ServiceCatalogModal({
             )}
 
             {/* 2-Column Responsive Card Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {packageKeys.map((key) => {
                 const pkg = catalog.packages[key];
                 if (!pkg) return null;
@@ -730,7 +768,7 @@ export function ServiceCatalogModal({
             )}
 
             {/* 2-Column Responsive Add-Ons Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {addonKeys.map((key) => {
                 const addon = catalog.addOns[key];
                 if (!addon) return null;
@@ -808,41 +846,6 @@ export function ServiceCatalogModal({
             </div>
           </div>
         )}
-
-        {/* ── Modal Actions Footer ── */}
-        <ModalFooter align="between">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleReset}
-            disabled={isSaving || isResetting}
-          >
-            <IconRotateClockwise size={16} stroke={1.5} className={isResetting ? "animate-spin" : ""} />
-            <span>{isResetting ? "Resetting..." : "Reset Factory Defaults"}</span>
-          </Button>
-
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSaving || isResetting}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleSave}
-              disabled={isSaving || isResetting}
-              loading={isSaving}
-            >
-              <IconDeviceFloppy size={16} stroke={2} />
-              <span>Save &amp; Apply Changes</span>
-            </Button>
-          </div>
-        </ModalFooter>
       </div>
     </Modal>
   );

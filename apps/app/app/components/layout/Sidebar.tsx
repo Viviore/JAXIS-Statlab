@@ -112,7 +112,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "orange",
         },
         {
-          label: "Deliverables Vault",
+          label: "Final Files & Outputs",
           href: "/dashboard/client/deliverables",
           icon: Icons.Vault,
           disabled: true,
@@ -120,7 +120,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "DefenseLab Coaching",
+          label: "Defense Coaching",
           href: "/dashboard/client/defenselab",
           icon: Icons.Terminal,
           disabled: true,
@@ -133,7 +133,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       groupTitle: "COMMUNICATION & ACCOUNT",
       items: [
         {
-          label: "Secure Messaging",
+          label: "Messages",
           href: "/dashboard/client/messages",
           icon: Icons.Feedback,
           disabled: true,
@@ -141,7 +141,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Escrow & Payments",
+          label: "Billing & Payments",
           href: "/dashboard/client/payments",
           icon: Icons.FinanceVault,
           disabled: true,
@@ -149,7 +149,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Institutional Profile",
+          label: "School & Contact Info",
           href: "/dashboard/client/profile",
           icon: Icons.Users,
         },
@@ -159,7 +159,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   STATISTICIAN: [
     {
-      groupTitle: "COMPUTATIONAL LAB",
+      groupTitle: "STUDIES & DATA",
       items: [
         {
           label: "Statistician Workbench",
@@ -175,7 +175,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Analysis & Syntax Lab",
+          label: "Analysis & Scripts",
           href: "/dashboard/statistician/analysis",
           icon: Icons.Scripts,
           disabled: true,
@@ -183,7 +183,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Upload Output Dataset",
+          label: "Upload Final Files",
           href: "/dashboard/statistician/uploads",
           icon: Icons.UploadCloud,
           disabled: true,
@@ -191,7 +191,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "DefenseLab Panels",
+          label: "Defense Coaching",
           href: "/dashboard/statistician/defenselab",
           icon: Icons.Award,
           disabled: true,
@@ -201,17 +201,17 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "HR & PEOPLE OPERATIONS",
+      groupTitle: "MY WORKSPACE",
       items: [
         {
-          label: "HR & Staff Portal",
+          label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
           badge: "HR",
           badgeColor: "orange",
         },
         {
-          label: "Statistician Profile",
+          label: "My Profile",
           href: "/dashboard/statistician/profile",
           icon: Icons.Users,
         },
@@ -221,7 +221,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   SENIOR_QA_LEAD: [
     {
-      groupTitle: "QUALITY ASSURANCE DESK",
+      groupTitle: "QUALITY CHECKS",
       items: [
         {
           label: "QA Review Desk",
@@ -229,7 +229,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.ShieldCheck,
         },
         {
-          label: "Deliverable Verification Queue",
+          label: "Review Queue",
           href: "/dashboard/qa/queue",
           icon: Icons.CheckQueue,
           disabled: true,
@@ -237,7 +237,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Statistical Audit Logs",
+          label: "Review History",
           href: "/dashboard/qa/audits",
           icon: Icons.Audit,
           disabled: true,
@@ -247,17 +247,17 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "HR & PEOPLE OPERATIONS",
+      groupTitle: "MY WORKSPACE",
       items: [
         {
-          label: "HR & Staff Portal",
+          label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
           badge: "HR",
           badgeColor: "orange",
         },
         {
-          label: "QA Specialist Profile",
+          label: "My Profile",
           href: "/dashboard/qa/profile",
           icon: Icons.Users,
         },
@@ -267,22 +267,22 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   FINANCE_OFFICER: [
     {
-      groupTitle: "TREASURY & ESCROW DESK",
+      groupTitle: "PAYMENTS & FINANCES",
       items: [
         {
-          label: "Finance Control Center",
+          label: "Finance Overview",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
         },
         {
-          label: "Deposit Verification Queue",
+          label: "Deposit Queue",
           href: "/dashboard/finance/payments",
           icon: Icons.CheckQueue,
           badge: "QUEUE",
           badgeColor: "orange",
         },
         {
-          label: "Milestone Payout Authorizations",
+          label: "Milestone Payments",
           href: "/dashboard/finance/payouts",
           icon: Icons.Award,
           disabled: true,
@@ -290,7 +290,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Refund & Dispute Adjudications",
+          label: "Refunds & Disputes",
           href: "/dashboard/finance/refunds",
           icon: Icons.Receipt,
           disabled: true,
@@ -300,10 +300,10 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "LEDGER & RECORDS",
+      groupTitle: "RECORDS & PROFILE",
       items: [
         {
-          label: "Transaction Ledgers",
+          label: "Transactions",
           href: "/dashboard/finance/ledgers",
           icon: Icons.Audit,
           disabled: true,
@@ -319,38 +319,38 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Finance & HR Officer Profile",
+          label: "My Profile",
           href: "/dashboard/finance/profile",
           icon: Icons.Users,
         },
       ],
     },
     {
-      groupTitle: "HR & SPECIALIST GOVERNANCE",
+      groupTitle: "HR & STAFF",
       items: [
         {
-          label: "My HR & Staff Portal",
+          label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
           badge: "PORTAL",
           badgeColor: "orange",
         },
         {
-          label: "Specialist Leave Approvals",
+          label: "Leave Approvals",
           href: "/dashboard/finance/leaves",
           icon: Icons.LeaveDesk,
           badge: "HR",
           badgeColor: "orange",
         },
         {
-          label: "Staff Attendance Audit",
+          label: "Staff Timesheets",
           href: "/dashboard/finance/attendance",
           icon: Icons.Clock,
           badge: "HR",
           badgeColor: "orange",
         },
         {
-          label: "Staff Payroll & Payslips",
+          label: "Payroll & Payslips",
           href: "/dashboard/finance/payroll",
           icon: Icons.Receipt,
           badge: "PAYROLL",
@@ -362,22 +362,22 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   CEO: [
     {
-      groupTitle: "EXECUTIVE INTELLIGENCE",
+      groupTitle: "CEO OVERVIEW",
       items: [
         {
-          label: "CEO Command Console",
+          label: "CEO Overview",
           href: "/dashboard/ceo",
           icon: Icons.Activity,
         },
         {
-          label: "Quotation & Pricing Desk",
+          label: "Pricing & Quotations",
           href: "/dashboard/admin/quotations",
           icon: Icons.Receipt,
           badge: "PRICING",
           badgeColor: "orange",
         },
         {
-          label: "Department SLAs",
+          label: "Turnaround Times",
           href: "/dashboard/ceo/slas",
           icon: Icons.Clock,
           disabled: true,
@@ -385,7 +385,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Institutional Retention",
+          label: "Client Retention",
           href: "/dashboard/ceo/retention",
           icon: Icons.Award,
           disabled: true,
@@ -395,41 +395,41 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "MACRO GOVERNANCE",
+      groupTitle: "MANAGEMENT & AUDIT",
       items: [
         {
-          label: "My HR & Staff Portal",
+          label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
           badge: "PORTAL",
           badgeColor: "orange",
         },
         {
-          label: "Escrow Vault Telemetry",
+          label: "Finance & Payments",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
         },
         {
-          label: "QA Verification Index",
+          label: "QA Review Desk",
           href: "/dashboard/qa",
           icon: Icons.ShieldCheck,
         },
         {
-          label: "Attendance Audit Vault",
+          label: "Staff Timesheets",
           href: "/dashboard/ceo/attendance",
           icon: Icons.Clock,
           badge: "AUDIT",
           badgeColor: "orange",
         },
         {
-          label: "Executive Payroll Policy",
+          label: "Payroll Settings",
           href: "/dashboard/ceo/payroll",
           icon: Icons.Receipt,
           badge: "POLICY",
           badgeColor: "orange",
         },
         {
-          label: "Executive Analytics",
+          label: "Reports & Analytics",
           href: "/dashboard/ceo/analytics",
           icon: Icons.Audit,
           disabled: true,
@@ -442,18 +442,18 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   ADMIN: [
     {
-      groupTitle: "PROJECT & INTAKE GOVERNANCE",
+      groupTitle: "STUDIES & INTAKE",
       items: [
         {
-          label: "Admin Command Center",
+          label: "Admin Overview",
           href: "/dashboard/admin",
           icon: Icons.Terminal,
         },
         {
-          label: "Intake Triage Queue",
+          label: "New Study Requests",
           href: "/dashboard/admin/intake",
           icon: Icons.CheckQueue,
-          badge: "TRIAGE",
+          badge: "INTAKE",
           badgeColor: "orange",
         },
         {
@@ -465,14 +465,14 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Quotation & Pricing Desk",
+          label: "Pricing & Quotations",
           href: "/dashboard/admin/quotations",
           icon: Icons.Receipt,
           badge: "PRICING",
           badgeColor: "orange",
         },
         {
-          label: "Expert Assignment Desk",
+          label: "Assign Experts",
           href: "/dashboard/admin/assignments",
           icon: Icons.KeyRelease,
           badge: "ASSIGN",
@@ -481,29 +481,29 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
       ],
     },
     {
-      groupTitle: "OPERATIONS & COMPLIANCE",
+      groupTitle: "STAFF & TOOLS",
       items: [
         {
-          label: "My HR & Staff Portal",
+          label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
           badge: "PORTAL",
           badgeColor: "orange",
         },
         {
-          label: "Staff & Expert Directory",
+          label: "Staff Directory",
           href: "/dashboard/admin/staff",
           icon: Icons.Users,
         },
         {
-          label: "Staff Attendance Audit",
+          label: "Staff Timesheets",
           href: "/dashboard/finance/attendance",
           icon: Icons.Clock,
           badge: "HR",
           badgeColor: "orange",
         },
         {
-          label: "Communication Firewall",
+          label: "Messages & Chat",
           href: "/dashboard/admin/messages",
           icon: Icons.Feedback,
           disabled: true,
@@ -511,7 +511,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Dispute Escalations",
+          label: "Disputes & Issues",
           href: "/dashboard/admin/disputes",
           icon: Icons.ShieldCheck,
           disabled: true,
@@ -519,7 +519,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "Cryptographic Audit Trail",
+          label: "Activity Log",
           href: "/dashboard/admin/audit",
           icon: Icons.Audit,
           disabled: true,
@@ -527,7 +527,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           badgeColor: "gray",
         },
         {
-          label: "System Analytics & Reports",
+          label: "System Reports",
           href: "/dashboard/admin/reporting",
           icon: Icons.Activity,
           disabled: true,

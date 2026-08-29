@@ -118,8 +118,8 @@ export function SpecialistOverrideModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Individual Specialist Compensation Override"
-      description={`Bespoke compensation agreement for ${staff.fullName} (${staff.role})`}
+      title="Customize Staff Pay Rates"
+      description={`Set custom pay rates for ${staff.fullName} (${staff.role})`}
       size="md"
       footer={
         <div className="flex items-center justify-between w-full">
@@ -132,7 +132,7 @@ export function SpecialistOverrideModal({
                 disabled={isSubmitting}
                 className="text-red-400 border-red-500/30 hover:bg-red-950/40 text-xs cursor-pointer"
               >
-                Revert to Role Default
+                Reset to Role Default
               </Button>
             )}
           </div>
@@ -152,7 +152,7 @@ export function SpecialistOverrideModal({
               ) : (
                 <IconCheck size={16} stroke={2} />
               )}
-              <span>Save Specialist Override</span>
+              <span>Save Custom Rates</span>
             </Button>
           </div>
         </div>
@@ -165,7 +165,7 @@ export function SpecialistOverrideModal({
           </div>
         )}
 
-        {/* Specialist Payout Settlement Badge */}
+        {/* Staff Payout Account Badge */}
         <div className="p-3 bg-[#010D1F] border border-white/10 rounded-[2px] flex items-center justify-between">
           <div className="flex items-center gap-2">
             {staff.payoutDetails?.payoutChannel === "BANK_TRANSFER" ? (
@@ -175,7 +175,7 @@ export function SpecialistOverrideModal({
             )}
             <div className="flex flex-col">
               <span className="text-[0.625rem] uppercase font-mono text-white/50">
-                Registered Settlement Destination
+                Registered Payout Account
               </span>
               {staff.payoutDetails ? (
                 <div className="flex items-center gap-2 mt-0.5">

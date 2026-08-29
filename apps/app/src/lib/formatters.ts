@@ -250,4 +250,89 @@ export function numberToWordsPesos(amount: number): string {
   return `${result} Pesos${centsText}`;
 }
 
+/**
+ * Normalizes user-entered names (including ALL-CAPS or all-lowercase registrations)
+ * into proper Title Case while preserving special acronyms (CEO, QA) and suffixes (Jr., III, etc.).
+ *
+ * Examples:
+ * - "BARTH BRAYAN" -> "Barth Brayan"
+ * - "BARTH BRAYAN SERCENA" -> "Barth Brayan Sercena"
+ * - "DR. JUAN REYES JR." -> "Dr. Juan Reyes Jr."
+ */
+export function normalizePersonName(rawName: string): string {
+  if (!rawName || !rawName.trim()) return "";
+
+  // Sanitize legacy "Super Admin" to "Operations Manager"
+  const sanitized = rawName.trim().replace(/super\s*admin/gi, "Operations Manager");
+
+  const ACRONYMS = new Set(["CEO", "CTO", "CFO", "COO", "HR", "QA", "SOW", "QC", "IT", "SLA"]);
+  const SUFFIXES = new Set(["JR", "JR.", "SR", "SR.", "II", "III", "IV", "V"]);
+  const PARTICLES = new Set(["de", "del", "la", "da", "di", "von", "van"]);
+
+  return sanitized
+    .split(/\s+/)
+    .map((word, index) => {
+      const upper = word.toUpperCase().replace(/[.,]/g, "");
+      if (ACRONYMS.has(upper)) return word.toUpperCase();
+      if (SUFFIXES.has(upper)) {
+        return word.endsWith(".") ? word.toUpperCase() : word.toUpperCase() + (upper.startsWith("JR") || upper.startsWith("SR") ? "." : "");
+      }
+      if (index > 0 && PARTICLES.has(word.toLowerCase())) {
+        return word.toLowerCase();
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
+/**
+ * Formats a full name or title into a realistic, compact executive signature
+ * (First Initial(s) + Last Name), stripping honorifics (Dr., Prof., etc.) and
+ * normalizing ALL-CAPS text into proper casing.
+ *
+ * Supports double first names cleanly:
+ * - "BARTH BRAYAN" -> "B. Brayan"
+ * - "BARTH BRAYAN SERCENA" -> "B. B. Sercena"
+ * - "Mary Jane Watson" -> "M. J. Watson"
+ * - "Dr. Juan Reyes Jr." -> "J. Reyes Jr."
+ * - "CEO OWNER" -> "C. Owner"
+ * - "OPERATIONS MANAGER" -> "O. Manager"
+ */
+export function formatSignatureName(rawName: string): string {
+  if (!rawName || !rawName.trim()) return "Signature";
+
+  // 1. Strip honorific titles (Dr., Prof., Atty., Engr., etc.)
+  const cleaned = rawName
+    .replace(/^(Dr\.|Prof\.|Atty\.|Engr\.|Mr\.|Ms\.|Mrs\.)\s+/i, "")
+    .trim();
+
+  // 2. Normalize casing so "BARTH BRAYAN" becomes "Barth Brayan"
+  const normalized = normalizePersonName(cleaned);
+  const parts = normalized.split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) return rawName;
+  if (parts.length === 1) return parts[0]!;
+
+  // 3. Detect and extract suffixes (Jr., Sr., III, etc.)
+  const SUFFIX_REGEX = /^(Jr\.?|Sr\.?|II|III|IV|V)$/i;
+  let suffix = "";
+  if (parts.length > 2 && SUFFIX_REGEX.test(parts[parts.length - 1]!)) {
+    suffix = parts.pop()!;
+  }
+
+  // 4. Extract surname (last element)
+  const lastName = parts.pop()!;
+
+  // 5. Build initials from all preceding names (handles single and double first names)
+  // e.g. ["Barth", "Brayan"] -> "B. B."
+  // e.g. ["Barth"] -> "B."
+  const initials = parts
+    .map((p) => `${p.charAt(0).toUpperCase()}.`)
+    .join(" ");
+
+  const baseSignature = `${initials} ${lastName}`;
+  return suffix ? `${baseSignature} ${suffix}` : baseSignature;
+}
+
+
 

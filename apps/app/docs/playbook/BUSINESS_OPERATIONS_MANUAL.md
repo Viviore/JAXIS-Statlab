@@ -101,7 +101,7 @@ To prevent financial loss or fraud, the system enforces strict rules:
   Rule 1: ZERO SELF-APPROVALS
   ────────
   Finance Officers cannot approve their own overtime, attendance corrections,
-  or leave requests. These must be reviewed by Super Admin or the CEO.
+  or leave requests. These must be reviewed by Operations Manager or the CEO.
 
   Rule 2: DUAL-MANDATE PAYROLL
   ────────

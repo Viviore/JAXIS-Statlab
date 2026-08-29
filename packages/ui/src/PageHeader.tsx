@@ -54,7 +54,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       )}
 
       {/* Header Container: Title, Description & Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-sans">
@@ -71,7 +71,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </div>
 
         {actions && (
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 pt-1 sm:pt-0">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full lg:w-auto shrink-0 pt-1 lg:pt-0">
             {actions}
           </div>
         )}

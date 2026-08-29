@@ -130,7 +130,7 @@ apps/app/
 ├── prisma/
 │   ├── schema.prisma               ← Single source of truth for all DB models
 │   ├── migrations/                 ← Prisma migration history
-│   └── seed.ts                     ← DB seed: roles, Super Admin user, package configs
+│   └── seed.ts                     ← DB seed: roles, Operations Manager user, package configs
 │
 ├── public/                         ← Static assets (favicon, OG images)
 │

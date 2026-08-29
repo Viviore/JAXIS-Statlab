@@ -63,8 +63,34 @@ All AI coding assistants and developers MUST strictly follow the design system a
 
 ## 6. Copywriting & Tone Standard (CRITICAL)
 - **Zero Double Slashes Policy**: Double slashes (`//`) are **strictly forbidden** anywhere in UI copy, loading states, badges, alert headers, and toasts.
-- **Simple & Human-Friendly Language**: Keep all words simple, natural, and accessible. Avoid robotic, overly technical, or sci-fi jargon (e.g. NEVER use `"SYNCING TELEMETRY // RETRIEVING DATA"`, `"ESTABLISHING SECURE PROTOCOL"`, `"CALCULATING COMPUTE STATE"`).
-- **Clear, Direct Phrasing**: Use straightforward phrasing such as `"Loading research studies..."`, `"Verifying profile..."`, `"Loading workspace..."`, `"Please wait a moment"`.
+- **Plain English First**: All UI text must read like a normal person talking. Write for someone who has never used enterprise software before. If a 5th grader can't understand the label, rewrite it.
+- **Banned Jargon & Words** (never use these in UI copy):
+  - `Institutional`, `Corporate`, `Executive`, `Bespoke`, `Treasury`, `Disbursement`, `Settlement`, `Cadence`, `Matrices`, `Parameters`, `Telemetry`, `Calibrated`, `Governance`, `Sprint`, `Retainer`, `Consolidated`, `Proration`, `Computational`, `Multivariate`, `Methodological`, `Reproducibility`, `Baseline`, `Deliverables`
+  - `"Syncing Telemetry"`, `"Establishing Secure Protocol"`, `"Calculating Compute State"`, `"Institutional Escrow Release Gates"`
+- **Use Instead**:
+  | Jargon | Simple Alternative |
+  |---|---|
+  | Institutional Payroll Net | Total Payroll |
+  | Treasury Disbursed | Total Paid Out |
+  | Compensated Duty Hours | Hours Worked |
+  | Study Deliverables Paid | Studies Completed |
+  | Settlement Cadence | Pay Schedule |
+  | Disbursement Grace | Processing Days |
+  | Prorate Fixed Monthly Base Retainers | Split Monthly Salary in Half |
+  | Bespoke Override | Custom Rate |
+  | Specialist Overrides | Staff Overrides |
+  | Company Payslips Ledger | Payslips |
+  | Statement Ref | Payslip No. |
+  | Audit & Preview | Actions |
+  | Role Compensation Policies | Pay Rates |
+  | Executive Authority | CEO Access |
+  | Institutional Payslip Audit Ledger | All Payslips |
+  | Modify Terms / Set Override | Edit / Customize |
+  | Run Batch Cycle | Generate Payslips |
+- **Loading States**: Use short, friendly phrases like `"Loading payroll settings..."`, `"Getting pay rates..."`, `"Loading workspace..."`. Never `"Retrieving institutional compensation matrices"`.
+- **Toast Messages**: Keep toast titles to 2–4 words (`"Payslips Generated"`, `"Custom Rates Saved"`, `"Schedule Updated"`). Descriptions should be one plain sentence.
+- **Descriptions & Helper Text**: Write like you're explaining to a coworker. Example: `"Choose how often staff get paid and when payments go out."` — not `"Configure institutional compensation disbursement cadence parameters."`
+- **Button Labels**: Short and action-oriented. `"Save"`, `"Edit"`, `"Customize"`, `"Generate Payslips"`, `"View"` — not `"Apply Schedule Policy"`, `"Modify Terms"`, `"Run Selected Cycle"`.
 - **Terminology**: Never use "Principal Investigator" / "Investigator" — use **"Lead Researcher"** and **"Research Study"**.
 
 ---

@@ -216,7 +216,7 @@ JAXIS committed a verifiable mathematical error.
 
 Subjective academic disagreement does not qualify.
 
-Final refund authority is **Super Admin**. Partial refunds are not
+Final refund authority is **Operations Manager**. Partial refunds are not
 allowed under the confirmed policy.
 
 If a JAXIS/system error results in a refund, the Expert still receives
@@ -228,7 +228,7 @@ the approved payout; the system/JAXIS side bears that risk.
 -   The dispute is handled through the bank/payment dispute process and
     SOW.
 -   Expert payout remains **Pending**.
--   Super Admin has final authority.
+-   Operations Manager has final authority.
 
 ## 10. Expert Assignment
 
@@ -376,7 +376,7 @@ resolution.
 
 Admin can temporarily suspend an Expert.
 
-Super Admin can permanently terminate an Expert.
+Operations Manager can permanently terminate an Expert.
 
 Serious violations include bypassing JAXIS for direct payment,
 falsifying data, p-hacking, ghostwriting, and other serious policy
@@ -389,7 +389,7 @@ pending payouts.
 
 ## 20. Disputes
 
--   Final authority: Super Admin.
+-   Final authority: Operations Manager.
 -   Client may submit supporting evidence.
 -   Dispute deadline: 7 days after delivery.
 -   Expert payout remains protected when the dispute is caused by a
@@ -440,7 +440,7 @@ permissions.
 11. JAXIS SLA failure refunds only the turnaround upgrade fee.
 12. JAXIS/system errors do not reduce the Expert's approved payout.
 13. Chargebacks halt the project and keep payout pending.
-14. Super Admin has final authority for refunds and
+14. Operations Manager has final authority for refunds and
     chargebacks/disputes.
 15. DefenseLab requires 12-hour rescheduling notice.
 16. Late client DefenseLab reschedule/no-show proceeds as planned.
@@ -489,7 +489,7 @@ Expert's approved payout remains protected.
 
 ### Chargeback
 
-Project is halted; payout remains pending; Super Admin decides the final
+Project is halted; payout remains pending; Operations Manager decides the final
 outcome.
 
 ### Expert reassignment

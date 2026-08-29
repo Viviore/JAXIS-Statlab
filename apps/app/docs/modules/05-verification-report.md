@@ -62,7 +62,7 @@ Module 05 implements the administrative commercial proposal & quotation engine, 
 ## 4. Manual Verification Walkthrough
 
 ### Test 1: Admin Configures & Issues Commercial Proposal
-- **Account**: `admin@jaxis.dev` (Super Admin)
+- **Account**: `admin@jaxis.dev` (Operations Manager)
 - **Action**: In Intake Queue (`/dashboard/admin/intake`), filtered by `UNDER_EVALUATION`, opened study `JAXIS-202608-1533`, selected package `JX-03 Core (Inferential)` (₱2,500) + add-on `DefenseLab 1-on-1 Defense Prep` (+₱250), confirmed 50% milestone calculation (₱1,375 downpayment, ₱1,375 balance), and clicked `"ISSUE QUOTE TO CLIENT →"`.
 - **Result**: Proposal created with status `QUOTE_SENT`, study master status updated to `QUOTE_SENT`, and notification logged.
 

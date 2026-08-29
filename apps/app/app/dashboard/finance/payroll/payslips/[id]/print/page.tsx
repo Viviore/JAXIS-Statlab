@@ -38,7 +38,7 @@ export default function FinancePayslipPrintPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#010114] text-white flex items-center justify-center p-8">
+      <div className="flex-1 w-full flex items-center justify-center py-24">
         <LoadingState variant="page" label="Loading Official Payslip Document..." />
       </div>
     );
@@ -46,7 +46,7 @@ export default function FinancePayslipPrintPage() {
 
   if (error || !payslip) {
     return (
-      <div className="min-h-screen bg-[#010114] text-white flex flex-col items-center justify-center p-8 max-w-lg mx-auto">
+      <div className="flex-1 w-full flex flex-col items-center justify-center py-24 max-w-lg mx-auto">
         <Alert variant="danger">{error || "Document not found"}</Alert>
         <Link href="/dashboard/finance/payroll" className="mt-4">
           <Button variant="secondary" size="md">
@@ -58,9 +58,9 @@ export default function FinancePayslipPrintPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 py-8 px-4 sm:px-6 lg:px-8 print:p-0 print:m-0 print:bg-white animate-content-fade">
+    <div className="w-full max-w-4xl mx-auto pb-24 flex flex-col gap-6 animate-content-fade print:max-w-none print:w-full print:m-0 print:p-0 print:pb-0">
       {/* ── Top Floating Navigation Toolbar (Hidden in Print) ── */}
-      <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between print:hidden">
+      <div className="w-full flex items-center justify-between print:hidden">
         <Link href="/dashboard/finance/payroll">
           <Button variant="secondary" size="sm" className="gap-2 font-sans text-xs">
             <IconArrowLeft size={14} stroke={2} />

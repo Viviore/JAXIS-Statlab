@@ -79,46 +79,50 @@ export default function FinanceDashboardPage() {
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       <PageHeader
-        title="Finance & HR Operations: Receivables & Escrow Vault"
-        description="Monitor institutional study revenue, track downpayment clearances, manage specialist leave authorizations, and audit cleared client proofs."
+        title="Finance Overview"
+        description="Track client payments, downpayments, leave approvals, and payment channels."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "Finance & HR Console" },
+          { label: "Finance Overview" },
         ]}
         actions={
-          <div className="flex items-center gap-2.5">
-            <Link href="/dashboard/finance/leaves">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            <Link href="/dashboard/finance/leaves" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 font-sans rounded-[2px] cursor-pointer"
+                className="w-full sm:w-auto justify-center gap-1.5 sm:gap-2 font-sans text-xs rounded-[2px] cursor-pointer py-2 sm:py-1.5"
               >
-                <IconCalendarTime size={15} stroke={1.5} />
-                <span>Specialist Leaves</span>
+                <IconCalendarTime size={14} stroke={1.5} className="shrink-0" />
+                <span className="truncate">Staff Leaves</span>
               </Button>
             </Link>
-            <Link href="/dashboard/finance/payroll">
+            <Link href="/dashboard/finance/payroll" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 font-sans rounded-[2px] cursor-pointer"
+                className="w-full sm:w-auto justify-center gap-1.5 sm:gap-2 font-sans text-xs rounded-[2px] cursor-pointer py-2 sm:py-1.5"
               >
-                <IconCoins size={15} stroke={1.5} />
-                <span>Staff Payroll</span>
+                <IconCoins size={14} stroke={1.5} className="shrink-0" />
+                <span className="truncate">Staff Payroll</span>
               </Button>
             </Link>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsSettingsOpen(true)}
-              className="gap-2 font-sans"
+              className="w-full sm:w-auto justify-center gap-1.5 sm:gap-2 font-sans text-xs rounded-[2px] cursor-pointer py-2 sm:py-1.5"
             >
-              <IconSettings size={15} stroke={1.5} />
-              <span>Configure Channels &amp; QR</span>
+              <IconSettings size={14} stroke={1.5} className="shrink-0" />
+              <span className="truncate">Payment Channels</span>
             </Button>
-            <Link href="/dashboard/finance/payments">
-              <Button variant="primary" size="sm" className="gap-2 font-sans font-semibold">
-                <IconReceipt size={15} stroke={1.5} />
+            <Link href="/dashboard/finance/payments" className="w-full sm:w-auto">
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-full sm:w-auto justify-center gap-1.5 sm:gap-2 font-sans font-semibold text-xs rounded-[2px] py-2 sm:py-1.5 whitespace-nowrap"
+              >
+                <IconReceipt size={14} stroke={1.5} className="shrink-0" />
                 <span>
                   Deposit Queue
                   {kpis.pendingClearancesCount > 0 ? ` (${kpis.pendingClearancesCount})` : ""} →
@@ -132,39 +136,39 @@ export default function FinanceDashboardPage() {
       {/* ── Live Financial KPI Metrics ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
         <KpiCard
-          label="Total Cleared Vault"
+          label="Total Collected"
           value={`₱${kpis.totalVaultCleared.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="emerald"
-          description="Verified institutional deposits in vault"
+          description="Total verified payments collected"
         />
 
         <KpiCard
-          label="Outstanding Receivables"
+          label="Pending Balances"
           value={`₱${kpis.totalOutstandingReceivables.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="amber"
-          description="Remaining milestone balances to collect"
+          description="Remaining balances to collect"
         />
 
         <KpiCard
-          label="Total Contracted Volume"
+          label="Total Project Value"
           value={`₱${kpis.totalContractVolume.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="sky"
-          description={`${receivables.length} active research studies contracted`}
+          description={`${receivables.length} active research studies`}
         />
       </div>
 
-      {/* ── HR Personnel & Specialist Leave Queue (Finance HR Authority) ── */}
+      {/* ── HR Personnel & Staff Leave Queue ── */}
       <PendingLeaveQueue onStatusChange={loadData} />
 
-      {/* ── Receivables & Ledger Table ── */}
+      {/* ── Receivables & Payment Table ── */}
       <Card className="p-0 overflow-hidden border-white/10 bg-[#01142B]/90">
         <div className="p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-bold text-white font-sans">
-              Study Receivables &amp; Payment Balances
+              Client Payments &amp; Balances
             </h2>
             <p className="text-xs text-white/50 mt-0.5">
-              Live ledger of total contract prices, cleared downpayments, and outstanding balances.
+              List of project prices, payments received, and remaining balances.
             </p>
           </div>
 
@@ -211,7 +215,7 @@ export default function FinanceDashboardPage() {
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
-              Fully Settled ({receivables.filter((r) => r.isFullyPaid).length})
+              Fully Paid ({receivables.filter((r) => r.isFullyPaid).length})
             </button>
           </div>
         </div>
@@ -220,8 +224,8 @@ export default function FinanceDashboardPage() {
           <div className="py-16">
             <LoadingState
               variant="table"
-              label="Compiling institutional receivables ledger..."
-              description="Please wait while financial telemetry syncs."
+              label="Loading payments..."
+              description="Getting study balances and receipts"
             />
           </div>
         ) : filteredReceivables.length === 0 ? (

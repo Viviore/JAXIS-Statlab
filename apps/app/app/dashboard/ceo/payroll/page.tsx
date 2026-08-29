@@ -28,6 +28,7 @@ import {
   IconCoins,
   IconAdjustments,
   IconCalendarTime,
+  IconArrowRight,
 } from "@tabler/icons-react";
 import {
   getPayrollConfigurations,
@@ -45,7 +46,6 @@ import type {
   CompensationType,
   CorporatePayrollScheduleConfigDTO,
   CutOffCycle,
-  PayrollFrequency,
 } from "@/features/payroll/schemas";
 import { PayslipStatementModal } from "@/features/payroll/components/PayslipStatementModal";
 import { SpecialistOverrideModal } from "@/features/payroll/components/SpecialistOverrideModal";
@@ -53,19 +53,19 @@ import { SpecialistOverrideModal } from "@/features/payroll/components/Specialis
 const ROLE_DISPLAY_NAMES: Record<string, { title: string; subtitle: string }> = {
   STATISTICIAN: {
     title: "Lead Research Statistician",
-    subtitle: "Multivariate analysis, statistical modeling, and computational deliverables.",
+    subtitle: "Data analysis, statistical modeling, and research deliverables.",
   },
   SENIOR_QA_LEAD: {
-    title: "Senior QA & Methodological Reviewer",
-    subtitle: "Peer verification, script audits, data reproducibility, and APA compliance.",
+    title: "Senior QA Reviewer",
+    subtitle: "Quality checks, script reviews, data accuracy, and formatting compliance.",
   },
   FINANCE_OFFICER: {
-    title: "Finance & HR Governance Officer",
-    subtitle: "Institutional escrow release gates, treasury disbursements, and leave management.",
+    title: "Finance & HR Officer",
+    subtitle: "Payment processing, fund releases, and leave management.",
   },
   ADMIN: {
-    title: "Operations & Study Administrator",
-    subtitle: "Client intake triage, scoping quotations, SLA monitoring, and platform coordination.",
+    title: "Operations & Study Admin",
+    subtitle: "Client handling, quotations, timeline tracking, and platform coordination.",
   },
 };
 
@@ -93,6 +93,15 @@ export default function CeoPayrollPolicyPage() {
   const [scheduleForm, setScheduleForm] = useState<CorporatePayrollScheduleConfigDTO | null>(null);
   const [isSavingSchedule, setIsSavingSchedule] = useState(false);
   const [selectedBatchCycle, setSelectedBatchCycle] = useState<CutOffCycle>("FIRST_HALF");
+
+  const hasUnsavedScheduleChanges = Boolean(
+    scheduleConfig &&
+    scheduleForm &&
+    (scheduleConfig.frequency !== scheduleForm.frequency ||
+      scheduleConfig.firstCutoffDay !== scheduleForm.firstCutoffDay ||
+      scheduleConfig.disbursementGraceDays !== scheduleForm.disbursementGraceDays ||
+      scheduleConfig.prorateMonthlyBase !== scheduleForm.prorateMonthlyBase)
+  );
 
   // Editing state for roles
   const [editingRole, setEditingRole] = useState<string | null>(null);
@@ -176,10 +185,8 @@ export default function CeoPayrollPolicyPage() {
           message: "Corporate Payroll Schedule Updated",
           description: `Settlement cadence configured to ${
             res.config.frequency === "SEMI_MONTHLY"
-              ? "Semi-Monthly (Twice Monthly / 15-Day Cut-Off)"
-              : res.config.frequency === "MONTHLY"
-              ? "Monthly (Full Calendar Month)"
-              : "Bi-Weekly (Every 14 Days)"
+              ? "Semi-Monthly (Twice a month)"
+              : "Monthly (Once a month)"
           }.`,
         });
         await loadData();
@@ -247,15 +254,15 @@ export default function CeoPayrollPolicyPage() {
       if (cycle === "FIRST_HALF") {
         startStr = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
         endStr = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59).toISOString();
-        cycleTitle = "First Half-Month Cycle (Days 1–15)";
+        cycleTitle = "1st Half (Days 1–15)";
       } else if (cycle === "SECOND_HALF") {
         startStr = new Date(now.getFullYear(), now.getMonth(), 16, 0, 0, 0).toISOString();
         endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
-        cycleTitle = "Second Half-Month Cycle (Days 16–End)";
+        cycleTitle = "2nd Half (Days 16–End)";
       } else {
         startStr = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
         endStr = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
-        cycleTitle = "Full Calendar Month Cycle";
+        cycleTitle = "Full Month";
       }
 
       const res = await generateBatchPayslips({
@@ -268,8 +275,8 @@ export default function CeoPayrollPolicyPage() {
       if (res.success) {
         setToast({
           variant: "success",
-          message: "Institutional Payroll Run Generated",
-          description: `Calculated official payslips for ${res.count} active specialists for ${cycleTitle} (${currentMonthStr}).`,
+          message: "Payslips Generated",
+          description: `Created payslips for ${res.count} staff members for ${cycleTitle} (${currentMonthStr}).`,
         });
         await loadData();
       } else {
@@ -297,7 +304,7 @@ export default function CeoPayrollPolicyPage() {
         setToast({
           variant: "success",
           message: "Payslip Approved",
-          description: "Payslip marked as approved for institutional disbursement.",
+          description: "Payslip approved and ready for payment.",
         });
         await loadData();
       }
@@ -315,8 +322,8 @@ export default function CeoPayrollPolicyPage() {
       <div className="flex-1 w-full flex items-center justify-center animate-content-fade my-auto">
         <LoadingState
           variant="page"
-          label="Loading Corporate Payroll Policies..."
-          description="Retrieving institutional compensation matrices and staff compensation parameters"
+          label="Loading payroll settings..."
+          description="Getting pay rates and staff details"
         />
       </div>
     );
@@ -336,18 +343,18 @@ export default function CeoPayrollPolicyPage() {
 
       {/* Page Header */}
       <PageHeader
-        title="Corporate Payroll Policies &amp; Compensation Desk"
-        description="Configure institutional compensation models by employee role (fixed salary, study percentage, or duty wages), customize specialist terms, and oversee company-wide payslip generation."
+        title="Payroll & Pay Rates"
+        description="Set how each role gets paid — fixed salary, per-study commission, hourly rate, or a mix. Customize individual staff terms and generate payslips."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "CEO Console", href: "/dashboard/ceo" },
-          { label: "Executive Payroll Policy" },
+          { label: "Payroll Settings" },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="amber" className="text-xs font-mono flex items-center gap-1">
               <IconShieldLock size={13} stroke={2} />
-              <span>CEO Executive Authority</span>
+              <span>CEO Access</span>
             </Badge>
 
             <select
@@ -372,7 +379,7 @@ export default function CeoPayrollPolicyPage() {
               ) : (
                 <IconReceipt size={15} stroke={2} />
               )}
-              <span>Run Selected Cycle</span>
+              <span>Generate Payslips</span>
             </Button>
           </div>
         }
@@ -381,36 +388,36 @@ export default function CeoPayrollPolicyPage() {
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          label="Institutional Payroll Net"
+          label="Total Payroll"
           value={`₱${payrollKpis.totalInstitutionalPayroll.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="default"
           icon={<IconCoins size={16} stroke={1.5} />}
-          description={`${payrollKpis.activeStaffCount} Specialists in Active Cycle`}
+          description={`${payrollKpis.activeStaffCount} active staff members`}
         />
 
         <KpiCard
-          label="Treasury Disbursed"
+          label="Total Paid Out"
           value={`₱${payrollKpis.totalDisbursed.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="sky"
           icon={<IconBuildingBank size={16} stroke={1.5} />}
-          description={payrollKpis.pendingDisbursementsCount === 0 ? "100% Cleared" : `${payrollKpis.pendingDisbursementsCount} Pending`}
+          description={payrollKpis.pendingDisbursementsCount === 0 ? "All paid" : `${payrollKpis.pendingDisbursementsCount} pending`}
         />
 
         <KpiCard
-          label="Compensated Duty Hours"
+          label="Hours Worked"
           value={payrollKpis.totalDutyHoursCompensated}
           unit="hrs total"
           icon={<IconClock size={16} stroke={1.5} />}
-          description="Verified Platform Attendance"
+          description="Verified attendance hours"
         />
 
         <KpiCard
-          label="Study Deliverables Paid"
+          label="Studies Completed"
           value={payrollKpis.totalStudiesRewarded}
           unit="completed"
           variant="amber"
           icon={<IconSparkles size={16} stroke={1.5} />}
-          description="Active Cycle Commissions"
+          description="Paid commissions this cycle"
         />
       </div>
 
@@ -426,21 +433,21 @@ export default function CeoPayrollPolicyPage() {
             className="flex items-center gap-2 px-4 py-2 text-xs font-sans font-semibold rounded-[2px] transition-colors data-[state=active]:bg-[#CC6600] data-[state=active]:text-white text-white/70 hover:text-white cursor-pointer"
           >
             <IconSettings size={15} stroke={2} />
-            <span>Role Compensation Policies</span>
+            <span>Pay Rates</span>
           </TabsTrigger>
           <TabsTrigger
             value="STAFF"
             className="flex items-center gap-2 px-4 py-2 text-xs font-sans font-semibold rounded-[2px] transition-colors data-[state=active]:bg-[#CC6600] data-[state=active]:text-white text-white/70 hover:text-white cursor-pointer"
           >
             <IconUsers size={15} stroke={2} />
-            <span>Specialist Overrides ({staffMembers.length})</span>
+            <span>Staff Overrides ({staffMembers.length})</span>
           </TabsTrigger>
           <TabsTrigger
             value="PAYSLIPS"
             className="flex items-center gap-2 px-4 py-2 text-xs font-sans font-semibold rounded-[2px] transition-colors data-[state=active]:bg-[#CC6600] data-[state=active]:text-white text-white/70 hover:text-white cursor-pointer"
           >
             <IconReceipt size={15} stroke={2} />
-            <span>Company Payslips Ledger ({payslips.length})</span>
+            <span>Payslips ({payslips.length})</span>
           </TabsTrigger>
         </TabsList>
 
@@ -448,139 +455,334 @@ export default function CeoPayrollPolicyPage() {
         <TabsContent value="ROLES" className="mt-6 flex flex-col gap-6">
           {/* Corporate Settlement Schedule Card */}
           {scheduleForm && (
-            <Card className="p-6 sm:p-7 bg-[#01142B] border border-white/10 rounded-[2px]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px]">
+            <Card className="p-6 sm:p-7 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="p-2.5 bg-amber-950/50 border border-amber-500/30 text-amber-400 rounded-[2px] shrink-0 mt-0.5 sm:mt-0">
                     <IconCalendarTime size={20} stroke={1.5} />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-base font-bold text-white font-sans">
-                        Corporate Settlement Cadence &amp; Schedule Policy
+                        Pay Schedule
                       </h3>
-                      <Badge variant="amber" className="text-[0.625rem] font-mono">
-                        Active: {(scheduleConfig?.frequency || scheduleForm.frequency) === "SEMI_MONTHLY"
-                          ? "Semi-Monthly (Twice Monthly / 15-Day Cut-Off)"
-                          : (scheduleConfig?.frequency || scheduleForm.frequency) === "MONTHLY"
-                          ? "Monthly (Full Calendar Month)"
-                          : "Bi-Weekly (Every 14 Days)"}
-                      </Badge>
+                      {hasUnsavedScheduleChanges ? (
+                        <Badge variant="amber" className="text-[0.625rem] font-mono">
+                          Unsaved Changes
+                        </Badge>
+                      ) : (
+                        <Badge variant="emerald" className="text-[0.625rem] font-mono">
+                          Active: {scheduleConfig?.frequency === "SEMI_MONTHLY"
+                            ? "Semi-Monthly (Twice a month)"
+                            : "Monthly (Once a month)"}
+                        </Badge>
+                      )}
                     </div>
-                    <p className="text-xs text-white/50 font-sans mt-0.5">
-                      Configure company-wide settlement frequency. For Semi-Monthly schedules, monthly base retainers are divided into two equal 15-day cut-offs.
+                    <p className="text-xs text-white/50 font-sans mt-0.5 leading-relaxed">
+                      Choose how often staff get paid and when payments go out.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={handleSaveSchedule}
-                    disabled={isSavingSchedule}
-                    className="gap-1.5 font-sans font-semibold cursor-pointer rounded-[2px]"
+                    disabled={isSavingSchedule || !hasUnsavedScheduleChanges}
+                    className={`gap-1.5 font-sans font-semibold cursor-pointer rounded-[2px] transition-all ${
+                      hasUnsavedScheduleChanges
+                        ? "shadow-md ring-2 ring-[#CC6600]/40"
+                        : "opacity-80"
+                    }`}
                   >
                     {isSavingSchedule ? (
                       <IconLoader2 size={15} stroke={2.5} className="animate-spin text-white/90" />
                     ) : (
                       <IconCheck size={15} stroke={2} />
                     )}
-                    <span>Save Schedule Policy</span>
+                    <span>{hasUnsavedScheduleChanges ? "Save Schedule" : "Saved"}</span>
                   </Button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div>
-                  <label className="text-xs font-mono text-white/70 block mb-1.5 font-semibold">
-                    Settlement Frequency Cadence
-                  </label>
-                  <select
-                    value={scheduleForm.frequency}
-                    onChange={(e) =>
+              {/* 1. Interactive Cadence Selector Cards */}
+              <div className="flex flex-col gap-2.5">
+                <span className="text-xs font-mono text-white/70 font-semibold tracking-wide uppercase">
+                  1. How Often to Pay
+                </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {/* Card 1: Semi-Monthly */}
+                  <button
+                    type="button"
+                    onClick={() =>
                       setScheduleForm((prev) =>
-                        prev ? { ...prev, frequency: e.target.value as PayrollFrequency } : prev
+                        prev ? { ...prev, frequency: "SEMI_MONTHLY" } : prev
                       )
                     }
-                    className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none focus:border-[#CC6600] font-sans"
+                    className={`text-left p-4 rounded-[2px] border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                      scheduleForm.frequency === "SEMI_MONTHLY"
+                        ? "bg-[#CC6600]/10 border-[#CC6600] ring-1 ring-[#CC6600]/50 shadow-sm"
+                        : "bg-[#010D1F] border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
+                    }`}
                   >
-                    <option value="SEMI_MONTHLY">Semi-Monthly (Twice Monthly / Every 15 Days)</option>
-                    <option value="MONTHLY">Monthly (Full Calendar Month)</option>
-                    <option value="BI_WEEKLY">Bi-Weekly (Every 14 Days)</option>
-                  </select>
-                  <span className="text-[0.625rem] text-white/40 font-mono mt-1 block">
-                    1st Cut-Off: Days 1–15 | 2nd Cut-Off: Days 16–End of Month
-                  </span>
-                </div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[0.688rem] font-mono font-semibold text-[#FFA040] uppercase tracking-wider block">
+                          Most Common
+                        </span>
+                        <h4 className="text-sm font-bold text-white font-sans mt-0.5">
+                          Semi-Monthly
+                        </h4>
+                      </div>
+                      <div
+                        className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                          scheduleForm.frequency === "SEMI_MONTHLY"
+                            ? "bg-[#CC6600] text-white"
+                            : "border border-white/25"
+                        }`}
+                      >
+                        {scheduleForm.frequency === "SEMI_MONTHLY" && (
+                          <IconCheck size={12} stroke={3} />
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-white/70 font-sans leading-relaxed">
+                      Pay twice a month. First half covers Days 1–15, second half covers Days 16 to end of month.
+                    </p>
+                    <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
+                      <span>24 Runs / Year</span>
+                      <span>15-Day Cycles</span>
+                    </div>
+                  </button>
 
-                <div>
-                  <label className="text-xs font-mono text-white/70 block mb-1.5 font-semibold">
-                    First Half-Month Boundary
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={10}
-                      max={20}
-                      value={scheduleForm.firstCutoffDay}
-                      onChange={(e) =>
-                        setScheduleForm((prev) =>
-                          prev ? { ...prev, firstCutoffDay: Number(e.target.value) } : prev
-                        )
-                      }
-                      className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                    />
-                    <span className="text-xs font-mono text-white/40 shrink-0">th of Month</span>
-                  </div>
-                  <span className="text-[0.625rem] text-white/40 font-mono mt-1 block">
-                    Day marking closure of the 1st cycle.
-                  </span>
-                </div>
-
-                <div>
-                  <label className="text-xs font-mono text-white/70 block mb-1.5 font-semibold">
-                    Disbursement Settlement Grace
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={0}
-                      max={10}
-                      value={scheduleForm.disbursementGraceDays}
-                      onChange={(e) =>
-                        setScheduleForm((prev) =>
-                          prev ? { ...prev, disbursementGraceDays: Number(e.target.value) } : prev
-                        )
-                      }
-                      className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-                    />
-                    <span className="text-xs font-mono text-white/40 shrink-0">Days Post-Cutoff</span>
-                  </div>
-                  <span className="text-[0.625rem] text-white/40 font-mono mt-1 block">
-                    Disbursement window post cut-off closure.
-                  </span>
+                  {/* Card 2: Monthly */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setScheduleForm((prev) =>
+                        prev ? { ...prev, frequency: "MONTHLY" } : prev
+                      )
+                    }
+                    className={`text-left p-4 rounded-[2px] border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                      scheduleForm.frequency === "MONTHLY"
+                        ? "bg-[#CC6600]/10 border-[#CC6600] ring-1 ring-[#CC6600]/50 shadow-sm"
+                        : "bg-[#010D1F] border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[0.688rem] font-mono font-semibold text-emerald-400 uppercase tracking-wider block">
+                          Single Payout
+                        </span>
+                        <h4 className="text-sm font-bold text-white font-sans mt-0.5">
+                          Monthly
+                        </h4>
+                      </div>
+                      <div
+                        className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                          scheduleForm.frequency === "MONTHLY"
+                            ? "bg-[#CC6600] text-white"
+                            : "border border-white/25"
+                        }`}
+                      >
+                        {scheduleForm.frequency === "MONTHLY" && (
+                          <IconCheck size={12} stroke={3} />
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-white/70 font-sans leading-relaxed">
+                      One payday per month. Full salary paid at once at the end of the month.
+                    </p>
+                    <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[0.688rem] font-mono text-white/50">
+                      <span>12 Runs / Year</span>
+                      <span>Full Month</span>
+                    </div>
+                  </button>
                 </div>
               </div>
 
-              {scheduleForm.frequency === "SEMI_MONTHLY" && (
-                <div className="mt-4 pt-4 border-t border-white/[0.06] flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="prorateBase"
-                    checked={scheduleForm.prorateMonthlyBase}
-                    onChange={(e) =>
+              {/* 2. Visual Schedule & Contextual Parameters */}
+              <div className="flex flex-col gap-3 pt-2">
+                <span className="text-xs font-mono text-white/70 font-semibold tracking-wide uppercase">
+                  2. Pay Timeline
+                </span>
+
+                {/* Timeline Strip */}
+                {scheduleForm.frequency === "SEMI_MONTHLY" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#010D1F] p-3.5 rounded-[2px] border border-white/10">
+                    {/* Cycle 1 */}
+                    <div className="p-3 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-[#FFA040] font-semibold">
+                          Cut-Off 1 (First Half)
+                        </span>
+                        <Badge variant="amber" className="text-[0.625rem] font-mono">
+                          Cycle 1
+                        </Badge>
+                      </div>
+                      <div className="text-sm font-bold text-white font-sans flex items-center gap-2">
+                        <span>Day 1</span>
+                        <IconArrowRight size={14} className="text-white/40" />
+                        <span>Day {scheduleForm.firstCutoffDay}</span>
+                      </div>
+                      <p className="text-xs text-white/60 font-sans">
+                        Payday: <span className="text-white font-mono font-semibold">Day {scheduleForm.firstCutoffDay + scheduleForm.disbursementGraceDays} of the month</span>
+                      </p>
+                    </div>
+
+                    {/* Cycle 2 */}
+                    <div className="p-3 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-emerald-400 font-semibold">
+                          Cut-Off 2 (Second Half)
+                        </span>
+                        <Badge variant="emerald" className="text-[0.625rem] font-mono">
+                          Cycle 2
+                        </Badge>
+                      </div>
+                      <div className="text-sm font-bold text-white font-sans flex items-center gap-2">
+                        <span>Day {scheduleForm.firstCutoffDay + 1}</span>
+                        <IconArrowRight size={14} className="text-white/40" />
+                        <span>Month-End (30th/31st)</span>
+                      </div>
+                      <p className="text-xs text-white/60 font-sans">
+                        Payday: <span className="text-white font-mono font-semibold">Day {scheduleForm.disbursementGraceDays} of next month</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-[#010D1F] p-3.5 rounded-[2px] border border-white/10">
+                    <div className="p-3.5 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-emerald-400 font-semibold">
+                            Full Month
+                          </span>
+                          <Badge variant="emerald" className="text-[0.625rem] font-mono">
+                            Once a Month
+                          </Badge>
+                        </div>
+                        <div className="text-sm font-bold text-white font-sans flex items-center gap-2 mt-1">
+                          <span>Day 1</span>
+                          <IconArrowRight size={14} className="text-white/40" />
+                          <span>Last Day of Month (28th–31st)</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-white/60 font-sans sm:text-right">
+                        Target Disbursement:{" "}
+                        <span className="text-white font-mono font-semibold block sm:inline">
+                           Within {scheduleForm.disbursementGraceDays} days after cycle ends
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Granular Parameter Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
+                  {/* First Cut-Off Day (Only relevant for Semi-Monthly) */}
+                  {scheduleForm.frequency === "SEMI_MONTHLY" && (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-mono text-white/70 font-semibold flex items-center justify-between">
+                        <span>1st Cut-Off Day</span>
+                        <span className="text-[0.625rem] text-white/40 font-mono">Range: 10th–20th</span>
+                      </label>
+                      <div className="relative flex items-center">
+                        <input
+                          type="number"
+                          min={10}
+                          max={20}
+                          value={scheduleForm.firstCutoffDay}
+                          onChange={(e) =>
+                            setScheduleForm((prev) =>
+                              prev ? { ...prev, firstCutoffDay: Number(e.target.value) } : prev
+                            )
+                          }
+                          className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] py-2.5 pl-3 pr-28 text-xs text-white font-mono outline-none focus:border-[#CC6600] transition-colors"
+                        />
+                        <span className="absolute right-3 text-xs font-mono text-white/40 pointer-events-none select-none">
+                          th of month
+                        </span>
+                      </div>
+                      <span className="text-[0.688rem] text-white/45 font-sans">
+                        Day of the month when the first pay period ends (usually the 15th).
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Disbursement Grace Window */}
+                  <div className={`flex flex-col gap-1.5 ${scheduleForm.frequency !== "SEMI_MONTHLY" ? "sm:col-span-2" : ""}`}>
+                    <label className="text-xs font-mono text-white/70 font-semibold flex items-center justify-between">
+                      <span>Processing Days</span>
+                      <span className="text-[0.625rem] text-white/40 font-mono">Range: 0–10 days</span>
+                    </label>
+                    <div className="relative flex items-center">
+                      <input
+                        type="number"
+                        min={0}
+                        max={10}
+                        value={scheduleForm.disbursementGraceDays}
+                        onChange={(e) =>
+                          setScheduleForm((prev) =>
+                            prev ? { ...prev, disbursementGraceDays: Number(e.target.value) } : prev
+                          )
+                        }
+                        className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] py-2.5 pl-3 pr-32 text-xs text-white font-mono outline-none focus:border-[#CC6600] transition-colors"
+                      />
+                      <span className="absolute right-3 text-xs font-mono text-white/40 pointer-events-none select-none">
+                        business days
+                      </span>
+                    </div>
+                    <span className="text-[0.688rem] text-white/45 font-sans">
+                      Extra days for Finance to process and verify payments after each pay period.
+                    </span>
+                  </div>
+                </div>
+
+                {/* Proration Switch (Semi-Monthly only) */}
+                {scheduleForm.frequency === "SEMI_MONTHLY" && (
+                  <div
+                    onClick={() =>
                       setScheduleForm((prev) =>
-                        prev ? { ...prev, prorateMonthlyBase: e.target.checked } : prev
+                        prev ? { ...prev, prorateMonthlyBase: !prev.prorateMonthlyBase } : prev
                       )
                     }
-                    className="accent-[#CC6600] rounded-[2px]"
-                  />
-                  <label htmlFor="prorateBase" className="text-xs text-white/80 font-sans cursor-pointer">
-                    Automatically prorate fixed monthly base retainers and allowances (divide by 2) for each 15-day cut-off run.
-                  </label>
-                </div>
-              )}
+                    className="p-3.5 bg-[#010D1F] border border-white/10 hover:border-white/20 rounded-[2px] flex items-center justify-between gap-4 cursor-pointer transition-colors mt-1 select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 shrink-0 ${
+                          scheduleForm.prorateMonthlyBase ? "bg-[#CC6600]" : "bg-white/20"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                            scheduleForm.prorateMonthlyBase ? "translate-x-4" : "translate-x-0"
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-white font-sans block">
+                          Split Monthly Salary in Half (50% each payday)
+                        </span>
+                        <span className="text-[0.688rem] text-white/50 font-sans">
+                          {scheduleForm.prorateMonthlyBase
+                            ? "On: A ₱25,000 monthly salary pays ₱12,500 each half."
+                            : "Off: Full monthly salary is paid on each half-month payday."}
+                        </span>
+                      </div>
+                    </div>
+                    <Badge
+                      variant={scheduleForm.prorateMonthlyBase ? "emerald" : "outline"}
+                      className="text-[0.625rem] font-mono shrink-0"
+                    >
+                      {scheduleForm.prorateMonthlyBase ? "SPLIT 50/50" : "FULL AMOUNT"}
+                    </Badge>
+                  </div>
+                )}
+              </div>
             </Card>
           )}
 
@@ -588,10 +790,10 @@ export default function CeoPayrollPolicyPage() {
             <IconAdjustments size={20} stroke={1.5} className="text-sky-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-white block text-sm">
-                Executive Compensation Model Controls
+                How Pay Rates Work
               </span>
               <p className="text-white/80 mt-1 leading-relaxed">
-                As CEO, you define the compensation model for each employee role. You can choose whether specialists earn a fixed monthly salary, a percentage commission per study delivered, an hourly attendance rate, or a hybrid combination. Finance uses these active parameters to generate official employee payslips.
+                Set how each role gets paid — fixed monthly salary, a percentage per completed study, hourly rate, or a mix. Finance uses these settings to calculate payslips.
               </p>
             </div>
           </div>
@@ -716,7 +918,7 @@ export default function CeoPayrollPolicyPage() {
                                   </span>
                                 </div>
                                 <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
-                                  Specialist receives this percentage of the project contract value upon completion.
+                                  Staff earns this percentage of the study fee when the study is completed.
                                 </span>
                               </div>
 
@@ -741,7 +943,7 @@ export default function CeoPayrollPolicyPage() {
                                   />
                                 </div>
                                 <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
-                                  Extra fixed incentive credited on each delivered study.
+                                  Extra bonus paid for each completed study.
                                 </span>
                               </div>
                             </div>
@@ -795,7 +997,7 @@ export default function CeoPayrollPolicyPage() {
                                 <span className="absolute right-3 text-xs font-mono text-white/50">/ hour</span>
                               </div>
                               <span className="text-[0.688rem] text-white/40 font-sans mt-1.5 block">
-                                Calculated automatically from verified clock-in/out attendance logs in Module 18.
+                                Calculated from verified clock-in and clock-out records.
                               </span>
                             </div>
                           )}
@@ -804,7 +1006,7 @@ export default function CeoPayrollPolicyPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
                                 <label className="text-xs font-mono text-white/80 block mb-1.5 font-semibold">
-                                  Monthly Base Retainer (₱)
+                                  Monthly Base Salary (₱)
                                 </label>
                                 <div className="relative flex items-center">
                                   <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
@@ -822,7 +1024,7 @@ export default function CeoPayrollPolicyPage() {
                                   />
                                 </div>
                                 <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
-                                  Guaranteed baseline pay (<Peso className="text-[0.688rem] text-white/40" />{(formConfig.baseSalaryMonthly / 2).toLocaleString()} per 15-day cut-off).
+                                  Guaranteed base pay (<Peso className="text-[0.688rem] text-white/40" />{(formConfig.baseSalaryMonthly / 2).toLocaleString()} per half-month).
                                 </span>
                               </div>
 
@@ -861,7 +1063,7 @@ export default function CeoPayrollPolicyPage() {
                                 Monthly Allowance / Stipend (Optional)
                               </label>
                               <span className="text-[0.688rem] text-white/40 font-sans">
-                                Fixed connectivity, compute, or research allowance added each month.
+                                Extra monthly allowance for internet, tools, or other expenses.
                               </span>
                             </div>
                             <div className="relative flex items-center w-full sm:w-44 shrink-0">
@@ -962,7 +1164,7 @@ export default function CeoPayrollPolicyPage() {
                         <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
                             <span className="text-[0.625rem] uppercase font-mono text-white/40 block mb-1">
-                              Primary Compensation Model
+                              Pay Structure
                             </span>
                             <div className="font-sans font-bold text-sm text-white flex items-center gap-2">
                               {role.compensationType === "PERCENTAGE_PER_STUDY" && (
@@ -1006,8 +1208,8 @@ export default function CeoPayrollPolicyPage() {
                         </div>
 
                         <div className="p-3 bg-white/[0.02] border border-white/5 rounded-[2px] text-xs text-white/70 font-sans">
-                          <strong className="text-white">Active Rule: </strong>
-                          {role.notes || "Standard institutional compensation rule."}
+                          <strong className="text-white">Notes: </strong>
+                          {role.notes || "Using standard pay rates for this role."}
                         </div>
                       </div>
                     )}
@@ -1029,10 +1231,10 @@ export default function CeoPayrollPolicyPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
                 <h2 className="text-base font-bold text-white font-sans">
-                  Internal Specialists &amp; Custom Overrides
+                  Staff & Custom Pay Rates
                 </h2>
                 <p className="text-xs text-white/50 font-sans mt-0.5">
-                  View each team member&rsquo;s effective compensation structure. Apply bespoke contract terms to individual senior specialists without altering company-wide role baselines.
+                  View each team member&rsquo;s pay setup. You can set custom rates for individual staff without changing the default role rates.
                 </p>
               </div>
             </div>
@@ -1041,13 +1243,13 @@ export default function CeoPayrollPolicyPage() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem]">
-                    <th className="py-3 px-3">Specialist Name</th>
+                    <th className="py-3 px-3">Name</th>
                     <th className="py-3 px-3">Role</th>
-                    <th className="py-3 px-3">Pay Structure</th>
-                    <th className="py-3 px-3">Base Retainer</th>
+                    <th className="py-3 px-3">Pay Type</th>
+                    <th className="py-3 px-3">Base Salary</th>
                     <th className="py-3 px-3">Study %</th>
-                    <th className="py-3 px-3">Duty Wage</th>
-                    <th className="py-3 px-3">Override Status</th>
+                    <th className="py-3 px-3">Hourly Rate</th>
+                    <th className="py-3 px-3">Status</th>
                     <th className="py-3 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -1094,7 +1296,7 @@ export default function CeoPayrollPolicyPage() {
                         <td className="py-3 px-3">
                           {hasOverride ? (
                             <Badge variant="amber" className="text-[0.625rem] font-mono">
-                              Bespoke Override
+                              Custom Rate
                             </Badge>
                           ) : (
                             <Badge variant="sky" className="text-[0.625rem] font-mono">
@@ -1109,7 +1311,7 @@ export default function CeoPayrollPolicyPage() {
                             onClick={() => setSelectedStaffForOverride(staff)}
                             className="font-mono text-xs py-1 px-3 cursor-pointer"
                           >
-                            {hasOverride ? "Modify Terms" : "Set Override"}
+                            {hasOverride ? "Edit" : "Customize"}
                           </Button>
                         </td>
                       </tr>
@@ -1127,10 +1329,10 @@ export default function CeoPayrollPolicyPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
                 <h2 className="text-base font-bold text-white font-sans">
-                  Institutional Payslip Audit Ledger
+                  All Payslips
                 </h2>
                 <p className="text-xs text-white/50 font-sans mt-0.5">
-                  Executive oversight over all generated employee payslips, itemized study deliverables, and disbursement timestamps.
+                  View all generated payslips, study details, and payment dates.
                 </p>
               </div>
 
@@ -1143,29 +1345,29 @@ export default function CeoPayrollPolicyPage() {
                   className="gap-1.5 font-sans font-semibold cursor-pointer rounded-[2px]"
                 >
                   <IconReceipt size={14} stroke={2} />
-                  <span>Run Batch Cycle</span>
+                  <span>Generate Payslips</span>
                 </Button>
               </div>
             </div>
 
             {payslips.length === 0 ? (
               <div className="py-12 text-center text-xs text-white/40 italic font-sans">
-                Zero payslips generated for this cycle. Click &ldquo;Run Batch Cycle&rdquo; to calculate.
+                No payslips yet for this cycle. Click &ldquo;Generate Payslips&rdquo; to create them.
               </div>
             ) : (
               <div className="overflow-x-auto rounded-[2px] border border-white/10 bg-[#010D1F]/60 shadow-xl">
                 <table className="w-full text-left text-xs border-collapse">
                       <thead>
                         <tr className="bg-[#010D1F] border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
-                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Statement Ref</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[200px]">Specialist</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Payslip No.</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap min-w-[200px]">Staff</th>
                           <th className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Pay Period</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[100px]">Duty Hours</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[100px]">Hours</th>
                           <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[100px]">Studies</th>
                           <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[110px]">Gross Pay</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Take-Home</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[130px] text-emerald-400/90">Net Pay</th>
                           <th className="py-3.5 px-4 whitespace-nowrap text-center min-w-[120px]">Status</th>
-                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[150px]">Audit &amp; Preview</th>
+                          <th className="py-3.5 px-4 whitespace-nowrap text-right min-w-[150px]">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.06]">
@@ -1187,7 +1389,7 @@ export default function CeoPayrollPolicyPage() {
                           } else if (ps.cutOffCycle === "SECOND_HALF") {
                             cycleSub = "2nd Half (Days 16–End)";
                           } else if (ps.cutOffCycle === "FULL_MONTH") {
-                            cycleSub = "Full Month Cycle";
+                            cycleSub = "Full Month";
                           }
 
                           return (
@@ -1268,7 +1470,7 @@ export default function CeoPayrollPolicyPage() {
                                     onClick={() => setSelectedPayslipForView(ps)}
                                     className="h-7 text-xs font-sans px-2.5 bg-white/10 hover:bg-white/15 text-white cursor-pointer rounded-[2px]"
                                   >
-                                    Statement →
+                                    View →
                                   </Button>
                                 </div>
                               </td>
@@ -1292,8 +1494,8 @@ export default function CeoPayrollPolicyPage() {
           onSuccess={async () => {
             setToast({
               variant: "success",
-              message: "Specialist Terms Saved",
-              description: `Custom compensation override updated for ${selectedStaffForOverride.fullName}.`,
+              message: "Custom Rates Saved",
+              description: `Updated pay rates for ${selectedStaffForOverride.fullName}.`,
             });
             await loadData();
           }}

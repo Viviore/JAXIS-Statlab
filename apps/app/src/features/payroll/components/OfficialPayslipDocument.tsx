@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import {
   IconPrinter,
   IconShieldCheck,
@@ -8,7 +9,7 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import type { StaffPayslipDTO } from "../schemas";
-import { numberToWordsPesos } from "@/lib/formatters";
+import { numberToWordsPesos, normalizePersonName, formatSignatureName } from "@/lib/formatters";
 
 /** Format raw SCREAMING_SNAKE_CASE enum values into Title Case labels. */
 function formatEnumLabel(value: string): string {
@@ -68,14 +69,14 @@ export function OfficialPayslipDocument({
 
   const employerSignature =
     propEmployerSignature?.trim() ||
-    employerName;
+    formatSignatureName(employerName);
 
   // 2. Dynamic Preparer (HR Administrator for Finance Officer; Finance Officer for all others)
   const isEmployeeFinanceOfficer =
     payslip.staffRole === "FINANCE_OFFICER" ||
     payslip.staffName.toLowerCase().includes("finance");
 
-  const defaultPreparerName = isEmployeeFinanceOfficer ? "Prof. Sofia Benitez" : "Finance Officer";
+  const defaultPreparerName = isEmployeeFinanceOfficer ? "Operations Manager" : "Finance Officer";
 
   const preparedByName =
     propPreparedByName?.trim() ||
@@ -95,10 +96,10 @@ export function OfficialPayslipDocument({
 
   const preparerSignature =
     propPreparerSignature?.trim() ||
-    preparedByName;
+    formatSignatureName(preparedByName);
 
   const preparerTitle = isEmployeeFinanceOfficer
-    ? "HR & Operations Administrator"
+    ? "Operations Manager"
     : "Finance & Payroll Officer";
 
   // 3. Dynamic Employee (Recipient) resolution from KYC account name or staff profile
@@ -109,7 +110,7 @@ export function OfficialPayslipDocument({
 
   const employeeSignature =
     propEmployeeSignature?.trim() ||
-    employeeName;
+    formatSignatureName(employeeName);
 
   return (
     <div className={`flex flex-col gap-6 w-full max-w-4xl mx-auto print:max-w-none print:w-full print:m-0 print:p-0 ${className}`}>
@@ -154,10 +155,16 @@ export function OfficialPayslipDocument({
         <div className="border-b-2 border-slate-900 pb-4 mb-4 sm:pb-5 sm:mb-6 print-avoid-break">
           <div className="flex flex-col sm:flex-row print:flex-row sm:items-start print:items-start justify-between gap-3 sm:gap-4">
             <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-[2px] bg-slate-900 text-white flex items-center justify-center font-mono font-black text-xs sm:text-sm select-none shrink-0">
-                  JX
-                </div>
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <Image
+                  src="/jaxislogo.png"
+                  alt="JAXIS StatLab Logo"
+                  width={40}
+                  height={40}
+                  className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 select-none"
+                  priority
+                  unoptimized
+                />
                 <div className="min-w-0">
                   <h1 className="text-sm sm:text-base md:text-lg font-black tracking-wider text-slate-950 uppercase font-sans leading-tight">
                     JAXIS STATLAB PHILIPPINES
@@ -478,13 +485,13 @@ export function OfficialPayslipDocument({
           {/* Prepared By */}
           <div className="flex flex-col items-center">
             <div className="h-10 sm:h-14 w-full flex items-end justify-center overflow-visible pb-1">
-              <p className="font-signature text-3xl sm:text-4xl text-[#0c2340] print:text-black leading-none select-none tracking-normal transform -rotate-2 scale-105 pointer-events-none">
+              <p className="font-signature text-3xl sm:text-4xl text-[#0c2340] print:text-black leading-none select-none tracking-normal transform -rotate-2 scale-105 pointer-events-none whitespace-nowrap">
                 {preparerSignature}
               </p>
             </div>
             <div className="w-full border-t border-slate-900 pt-2">
               <p className="font-sans font-bold text-xs text-slate-900">
-                {preparedByName}
+                {normalizePersonName(preparedByName)}
               </p>
               <p className="text-[0.625rem] text-slate-600 font-sans font-medium mt-0.5">
                 {preparerTitle}
@@ -498,13 +505,13 @@ export function OfficialPayslipDocument({
           {/* Approved By (Employer) */}
           <div className="flex flex-col items-center">
             <div className="h-10 sm:h-14 w-full flex items-end justify-center overflow-visible pb-1">
-              <p className="font-signature text-3xl sm:text-4xl text-[#0c2340] print:text-black leading-none select-none tracking-normal transform -rotate-1 scale-105 pointer-events-none">
+              <p className="font-signature text-3xl sm:text-4xl text-[#0c2340] print:text-black leading-none select-none tracking-normal transform -rotate-1 scale-105 pointer-events-none whitespace-nowrap">
                 {employerSignature}
               </p>
             </div>
             <div className="w-full border-t border-slate-900 pt-2">
               <p className="font-sans font-bold text-xs text-slate-900">
-                {employerName}
+                {normalizePersonName(employerName)}
               </p>
               <p className="text-[0.625rem] text-slate-600 font-sans font-medium mt-0.5">
                 CEO / Executive Director
@@ -518,13 +525,13 @@ export function OfficialPayslipDocument({
           {/* Acknowledged By (Employee) */}
           <div className="flex flex-col items-center">
             <div className="h-10 sm:h-14 w-full flex items-end justify-center overflow-visible pb-1">
-              <p className="font-signature text-3xl sm:text-4xl text-[#0c2340] print:text-black leading-none select-none tracking-normal transform -rotate-2 scale-105 pointer-events-none">
+              <p className="font-signature text-3xl sm:text-4xl text-[#0c2340] print:text-black leading-none select-none tracking-normal transform -rotate-2 scale-105 pointer-events-none whitespace-nowrap">
                 {employeeSignature}
               </p>
             </div>
             <div className="w-full border-t border-slate-900 pt-2">
               <p className="font-sans font-bold text-xs text-slate-900">
-                {employeeName}
+                {normalizePersonName(employeeName)}
               </p>
               <p className="text-[0.625rem] text-slate-600 font-sans font-medium mt-0.5">
                 {formatEnumLabel(payslip.staffRole)}

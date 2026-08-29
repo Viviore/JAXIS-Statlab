@@ -44,20 +44,20 @@ export default function DashboardOverviewPage() {
     >
       {/* ── Breadcrumb & Page Header ── */}
       <PageHeader
-        title="Operations & Statistical Governance"
-        description="Real-time multi-role command center connecting intake queues, statistical computation desks, QA peer verification, and escrow payment release gates."
+        title="Workspace Overview"
+        description="Overview of active research studies, quality reviews, payments, and team activity."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "Command & Control" },
+          { label: "Overview" },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button variant="secondary" size="md">
               <IconUpload size={16} stroke={1.5} className="text-white/70" />
-              <span>Upload Survey Data</span>
+              <span>Upload Data</span>
             </Button>
             <Button variant="primary" size="md">
-              <span>+ New Project Intake</span>
+              <span>+ New Study Request</span>
             </Button>
           </div>
         }
@@ -78,7 +78,7 @@ export default function DashboardOverviewPage() {
             <Card variant="kpi"><LoadingState variant="card" label="Loading studies..." /></Card>
             <Card variant="kpi"><LoadingState variant="card" label="Loading revisions..." /></Card>
             <Card variant="kpi"><LoadingState variant="card" label="Loading QA queue..." /></Card>
-            <Card variant="kpi"><LoadingState variant="card" label="Loading escrow..." /></Card>
+            <Card variant="kpi"><LoadingState variant="card" label="Loading payments..." /></Card>
           </>
         ) : (
           <div key="kpi-loaded" className="contents animate-content-fade">
@@ -91,42 +91,42 @@ export default function DashboardOverviewPage() {
               description={
                 <span className="flex items-center gap-1.5 font-mono text-xs text-white/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  <span>{projects.filter((p) => p.status === "ANALYSIS_IN_PROGRESS").length} Modeling</span>
+                  <span>{projects.filter((p) => p.status === "ANALYSIS_IN_PROGRESS").length} In Progress</span>
                   <span className="text-white/25">·</span>
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
                   <span>{kpis?.underEvaluationCount ?? 2} Intake</span>
                   <span className="text-white/25">·</span>
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  <span>{kpis?.qaReviewGateCount ?? 2} Review</span>
+                  <span>{kpis?.qaReviewGateCount ?? 2} In Review</span>
                 </span>
               }
             />
 
             {/* KPI 2 */}
             <KpiCard
-              label="QA Audit Queue"
+              label="In QA Review"
               value={kpis?.qaReviewGateCount ?? 3}
-              badge="Dual-Blind"
+              badge="Active"
               badgeColor="sky"
-              description="Dual-blind reviewer assignment active"
+              description="Studies waiting for QA quality check"
             />
 
             {/* KPI 3 */}
             <KpiCard
-              label="Payment Vault"
+              label="Pending Payments"
               value={projects.filter((p) => p.paymentStatus !== "FULLY_PAID").length}
-              badge="Escrow Locked"
+              badge="Unpaid"
               badgeColor="amber"
-              description="Milestone escrow release gate active"
+              description="Studies with pending balance"
             />
 
             {/* KPI 4 */}
             <KpiCard
-              label="Released Deliverables"
+              label="Completed Studies"
               value={kpis?.fullyPaidReleasedCount ?? 64}
-              badge="100% Defense Pass"
+              badge="100% Pass"
               badgeColor="emerald"
-              description="APA 7th verified statistical deliverables"
+              description="Delivered and approved research studies"
             />
           </div>
         )}
@@ -138,10 +138,10 @@ export default function DashboardOverviewPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-base font-bold text-white tracking-tight font-sans" style={{ fontSize: "1rem" }}>
-                Active Research Studies &amp; Statistical Workspaces
+                Active Research Studies
               </h2>
               <p className="text-sm text-white/50 mt-1 font-sans" style={{ fontSize: "0.875rem" }}>
-                Click any research study to open its instant inspection drawer and dataset telemetry.
+                Click any research study to view its details and dataset files.
               </p>
             </div>
             <div className="flex items-center gap-2.5">
@@ -154,7 +154,7 @@ export default function DashboardOverviewPage() {
               >
                 <option value="ALL">All Studies ({projects.length})</option>
                 <option value="UNDER_EVALUATION">Under Evaluation</option>
-                <option value="ANALYSIS_IN_PROGRESS">Analysis In Progress</option>
+                <option value="ANALYSIS_IN_PROGRESS">In Progress</option>
                 <option value="IN_REVIEW">In Review</option>
                 <option value="APPROVED">Approved / Ready</option>
               </select>
@@ -174,7 +174,7 @@ export default function DashboardOverviewPage() {
                   <th className="py-3.5 px-3" style={{ width: "17%" }}>Client &amp; Field</th>
                   <th className="py-3.5 px-3" style={{ width: "21%" }}>Methodology</th>
                   <th className="py-3.5 px-3" style={{ width: "14%" }}>Statistician</th>
-                  <th className="py-3.5 px-2" style={{ width: "9%" }}>QA Gate</th>
+                  <th className="py-3.5 px-2" style={{ width: "9%" }}>QA Status</th>
                   <th className="py-3.5 px-2" style={{ width: "9%" }}>Payment</th>
                   <th className="py-3.5 pl-2 pr-1 text-right" style={{ width: "10%" }}>Actions</th>
                 </tr>
@@ -264,12 +264,12 @@ export default function DashboardOverviewPage() {
                         </div>
                       </td>
 
-                      {/* QA Gate */}
+                      {/* QA Status */}
                       <td className="py-4 px-2" style={{ width: "9%" }}>
                         <StatusBadge status={proj.qaStatus} pulse={proj.qaStatus === "FOR_QA"} />
                       </td>
 
-                      {/* Payment Gate (RULE_REL_01) */}
+                      {/* Payment Status */}
                       <td className="py-4 px-2" style={{ width: "9%" }}>
                         <StatusBadge status={proj.paymentStatus} />
                       </td>
@@ -277,7 +277,7 @@ export default function DashboardOverviewPage() {
                       {/* Action */}
                       <td className="py-4 pl-2 pr-1 text-right" style={{ width: "10%" }}>
                         <span className="inline-flex items-center text-xs font-mono text-[#CC6600] group-hover:text-white transition-colors gap-1 justify-end font-semibold" style={{ fontSize: "0.75rem" }}>
-                          Inspect →
+                          View →
                         </span>
                       </td>
                     </tr>
@@ -291,17 +291,17 @@ export default function DashboardOverviewPage() {
 
       {/* ── Operational Intelligence & System Status ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Release Integrity Compliance Card */}
+        {/* Important Platform Rules Card */}
         <Card
           header={
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 <h3 className="text-sm font-bold text-white font-sans" style={{ fontSize: "0.875rem" }}>
-                  Operational Business Rules Enforcement
+                  Important Platform Rules
                 </h3>
               </div>
-              <span className="text-xs font-mono text-emerald-400 font-semibold" style={{ fontSize: "0.75rem" }}>STRICT COMPLIANCE</span>
+              <span className="text-xs font-mono text-emerald-400 font-semibold" style={{ fontSize: "0.75rem" }}>ACTIVE</span>
             </div>
           }
         >
@@ -313,11 +313,11 @@ export default function DashboardOverviewPage() {
               <IconLock size={16} stroke={1.5} className="text-emerald-400 flex-shrink-0 mt-0.5" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-white text-xs" style={{ padding: "0.15rem 0.4rem", borderRadius: "2px", backgroundColor: "rgba(255, 255, 255, 0.1)", fontSize: "0.75rem" }}>RULE_REL_01</span>
-                  <span className="text-xs text-emerald-400 uppercase font-sans font-semibold" style={{ fontSize: "0.75rem" }}>Payment Release Gate</span>
+                  <span className="font-mono font-bold text-white text-xs" style={{ padding: "0.15rem 0.4rem", borderRadius: "2px", backgroundColor: "rgba(255, 255, 255, 0.1)", fontSize: "0.75rem" }}>PAYMENT RULE</span>
+                  <span className="text-xs text-emerald-400 uppercase font-sans font-semibold" style={{ fontSize: "0.75rem" }}>File Downloads</span>
                 </div>
                 <span className="text-xs text-white/60 mt-1 leading-relaxed" style={{ fontSize: "0.75rem" }}>
-                  Final chapter deliverables and raw datasets remain server-locked until escrow payment status is confirmed <code className="text-emerald-300 font-mono">FULLY_PAID</code> by Finance.
+                  Final chapter results and datasets stay locked until payment is confirmed by Finance.
                 </span>
               </div>
             </div>
@@ -329,18 +329,18 @@ export default function DashboardOverviewPage() {
               <IconShieldCheck size={16} stroke={1.5} className="text-[#CC6600] flex-shrink-0 mt-0.5" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-white text-xs" style={{ padding: "0.15rem 0.4rem", borderRadius: "2px", backgroundColor: "rgba(255, 255, 255, 0.1)", fontSize: "0.75rem" }}>RULE_QUO_01</span>
-                  <span className="text-xs text-[#CC6600] uppercase font-sans font-semibold" style={{ fontSize: "0.75rem" }}>Pricing &amp; Scope Boundary</span>
+                  <span className="font-mono font-bold text-white text-xs" style={{ padding: "0.15rem 0.4rem", borderRadius: "2px", backgroundColor: "rgba(255, 255, 255, 0.1)", fontSize: "0.75rem" }}>SCOPE RULE</span>
+                  <span className="text-xs text-[#CC6600] uppercase font-sans font-semibold" style={{ fontSize: "0.75rem" }}>Pricing &amp; Scope</span>
                 </div>
                 <span className="text-xs text-white/60 mt-1 leading-relaxed" style={{ fontSize: "0.75rem" }}>
-                  Statisticians are restricted from altering quotes or fee schedules. New hypotheses outside SOW require Admin/CEO supplemental quotes.
+                  Statisticians cannot alter quoted prices. Extra requests outside agreed scope require an updated quotation from Admin.
                 </span>
               </div>
             </div>
           </div>
         </Card>
 
-        {/* Live Operational Audit Stream */}
+        {/* Recent Activity Log */}
         <Card
           header={
             <div className="flex items-center justify-between">
@@ -375,7 +375,7 @@ export default function DashboardOverviewPage() {
         </Card>
       </div>
 
-      {/* ── Center Study Inspection Modal (Command & Control Focus) ── */}
+      {/* ── Center Study Inspection Modal ── */}
       <Modal
         open={Boolean(selectedStudy)}
         onClose={() => setSelectedStudy(null)}
@@ -390,7 +390,7 @@ export default function DashboardOverviewPage() {
                 {selectedStudy.id}
               </span>
               <span className="text-base font-bold text-white tracking-tight" style={{ fontSize: "1.063rem" }}>
-                Study Inspection Desk
+                Study Details
               </span>
             </div>
           ) : null
@@ -399,29 +399,29 @@ export default function DashboardOverviewPage() {
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setSelectedStudy(null)}>
-              Close Dialog
+              Close
             </Button>
             <Button variant="primary" size="md">
-              <span>Launch Statistical Desk →</span>
+              <span>Open Study →</span>
             </Button>
           </>
         }
       >
         {selectedStudy && (
           <div className="flex flex-col gap-6 text-sm font-sans" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {/* Top Governance & Release Status Bar */}
+            {/* Top Status Bar */}
             <div
               className="px-4 py-3 rounded-[4px] bg-[#01142B] border border-white/10 flex flex-wrap items-center justify-between gap-3"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
-                  QA Review Gate:
+                  QA Status:
                 </span>
                 <StatusBadge status={selectedStudy.qaStatus} pulse={selectedStudy.qaStatus === "FOR_QA"} />
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
-                  Payment Gate:
+                  Payment Status:
                 </span>
                 <StatusBadge status={selectedStudy.paymentStatus} />
               </div>
@@ -431,21 +431,21 @@ export default function DashboardOverviewPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
               {/* Left Column: Context & Methodology */}
               <div className="flex flex-col gap-5">
-                {/* Researcher & Institutional Affiliation */}
+                {/* Researcher & School */}
                 <div className="flex flex-col gap-2">
                   <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
-                    Researcher &amp; Institution
+                    Researcher &amp; School
                   </span>
                   <div
                     className="p-4 rounded-[4px] bg-[#01142B] border border-white/10 flex flex-col gap-2.5"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-white/50">Primary Researcher</span>
+                      <span className="text-xs text-white/50">Lead Researcher</span>
                       <span className="text-sm font-semibold text-white">{selectedStudy.client}</span>
                     </div>
                     <div className="h-px bg-white/[0.05]" />
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-white/50">University / Affiliation</span>
+                      <span className="text-xs text-white/50">School / University</span>
                       <span className="text-sm font-medium text-white/90">{selectedStudy.university}</span>
                     </div>
                     <div className="h-px bg-white/[0.05]" />
@@ -456,10 +456,10 @@ export default function DashboardOverviewPage() {
                   </div>
                 </div>
 
-                {/* Methodology Matrix */}
+                {/* Methodology */}
                 <div className="flex flex-col gap-2">
                   <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
-                    Methodology &amp; Computational Model
+                    Analysis Method
                   </span>
                   <div
                     className="p-4 rounded-[4px] bg-[#01142B] border border-white/10 flex items-start gap-3"
@@ -472,12 +472,12 @@ export default function DashboardOverviewPage() {
                 </div>
               </div>
 
-              {/* Right Column: Desk & Cloudflare R2 Artifacts */}
+              {/* Right Column: Desk & Artifacts */}
               <div className="flex flex-col gap-5">
-                {/* Assigned Desk */}
+                {/* Assigned Statistician */}
                 <div className="flex flex-col gap-2">
                   <span className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">
-                    Assigned Statistical Desk
+                    Assigned Statistician
                   </span>
                   <div
                     className="p-3.5 rounded-[4px] bg-[#01142B] border border-white/10 flex items-center justify-between"
@@ -490,21 +490,21 @@ export default function DashboardOverviewPage() {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold text-white">{selectedStudy.statisticians}</span>
-                        <span className="text-xs text-white/45">Senior Statistical Lead</span>
+                        <span className="text-xs text-white/45">Statistician</span>
                       </div>
                     </div>
                     <span
                       className="text-xs font-sans font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-[3px] border border-emerald-500/25"
                     >
-                      Active Desk
+                      Active
                     </span>
                   </div>
                 </div>
 
-                {/* Cloudflare R2 Dataset Artifacts */}
+                {/* Dataset Files */}
                 <div className="flex flex-col gap-2">
                   <span className="text-xs font-mono font-semibold uppercase tracking-wider text-white/45" style={{ fontSize: "0.688rem" }}>
-                    Cloudflare R2 Dataset Artifacts
+                    Uploaded Files
                   </span>
                   <div className="flex flex-col gap-2.5">
                     <div

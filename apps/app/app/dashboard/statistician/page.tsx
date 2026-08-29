@@ -193,10 +193,15 @@ export default function StatisticianDashboardPage() {
   };
 
   const handleRequestLeave = () => {
-    if (!leaveReasonInput || leaveReasonInput.trim().length < 3) {
-      setLeaveError("Please specify a reason for your leave (at least 3 characters).");
+    if (!leaveReasonInput.trim()) {
+      setLeaveError("Please state a reason for your leave request.");
       return;
     }
+    const today = new Date().toISOString().split("T")[0]!;
+    const isStartInPast = Boolean(leaveFromInput && leaveFromInput < today);
+    const isReturnBeforeStart = Boolean(
+      leaveFromInput && leaveUntilInput && leaveUntilInput < leaveFromInput
+    );
     if (isStartInPast) {
       setLeaveError("Leave start date cannot be in the past.");
       return;
@@ -219,7 +224,7 @@ export default function StatisticianDashboardPage() {
         loadWorkload();
         setToastMessage({
           message: "Leave Request Submitted",
-          description: "Your request is queued for Finance Officer (HR) / Administrator review.",
+          description: "Your request has been sent for HR review.",
           variant: "info",
         });
       } else {
@@ -234,8 +239,8 @@ export default function StatisticianDashboardPage() {
       if (res.success) {
         loadWorkload();
         setToastMessage({
-          message: profileStatus === "LEAVE_PENDING" ? "Leave Request Withdrawn" : "Welcome Back to Active Duty",
-          description: profileStatus === "LEAVE_PENDING" ? "Your pending leave request has been cancelled." : "Your availability is restored in the specialist assignment directory.",
+          message: profileStatus === "LEAVE_PENDING" ? "Leave Request Cancelled" : "Welcome Back",
+          description: profileStatus === "LEAVE_PENDING" ? "Your pending leave request has been cancelled." : "You are now marked as available for assignments.",
           variant: "success",
         });
       } else {
@@ -256,11 +261,11 @@ export default function StatisticianDashboardPage() {
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Page Header */}
       <PageHeader
-        title="Statistician Computational Workbench"
-        description="Dataset intake processing, statistical code execution (R / Python / SPSS), and draft deliverable submission to QA Lead review."
+        title="Statistician Workbench"
+        description="View assigned research studies, run analysis, and submit results for QA review."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
-          { label: "Statistician Lab" },
+          { label: "My Projects" },
         ]}
         actions={
           <div className="flex items-center gap-3">
@@ -282,7 +287,7 @@ export default function StatisticianDashboardPage() {
                 className="font-sans text-xs font-semibold rounded-[2px] bg-emerald-600/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-600/30 gap-1.5 cursor-pointer"
               >
                 <IconUserCheck size={14} stroke={2} />
-                <span>Return to Active Duty</span>
+                <span>Return to Work</span>
               </Button>
             ) : profileStatus === "LEAVE_PENDING" ? (
               <Button
