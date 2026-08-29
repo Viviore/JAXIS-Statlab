@@ -118,7 +118,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 return (
                   <span className="inline-flex items-baseline font-mono">
                     {parts[0] && <span>{parts[0]}</span>}
-                    <span className="font-sans font-normal text-[0.8em] opacity-80 mr-0.5 select-none">
+                    <span className="peso-symbol font-sans font-normal text-[0.8em] opacity-85 mr-0.5 select-none">
                       ₱
                     </span>
                     <span>{parts.slice(1).join("₱")}</span>

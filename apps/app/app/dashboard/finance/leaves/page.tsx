@@ -317,8 +317,8 @@ export default function SpecialistLeaveApprovalsPage() {
         title="Specialist Leave & HR Approvals"
         description="Formal human resources administration desk for reviewing absence submissions, authorizing leave windows, and governing specialist capacity across statistical pipelines."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Finance & HR Console", href: "/dashboard/finance" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Finance & HR", href: "/dashboard/finance" },
           { label: "Leave Approvals" },
         ]}
         actions={
@@ -438,27 +438,41 @@ export default function SpecialistLeaveApprovalsPage() {
             </div>
 
             {/* Role Filter */}
-            <select
-              value={roleFilter}
-              onChange={(e) => { setRoleFilter(e.target.value as typeof roleFilter); setCurrentPage(1); }}
-              className="bg-[#010D1F] border border-white/15 rounded-[2px] px-2.5 py-1.5 text-xs text-white/80 focus:border-[#CC6600] outline-none cursor-pointer font-sans"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="STATISTICIAN">Statisticians</option>
-              <option value="SENIOR_QA_LEAD">Senior QA Leads</option>
-            </select>
+            <div className="relative">
+              <select
+                value={roleFilter}
+                onChange={(e) => { setRoleFilter(e.target.value as typeof roleFilter); setCurrentPage(1); }}
+                className="bg-[#010D1F] border border-white/15 rounded-[2px] pl-2.5 pr-8 py-1.5 text-xs text-white/80 focus:border-[#CC6600] outline-none cursor-pointer font-sans appearance-none hover:border-white/25 transition-colors"
+              >
+                <option value="ALL">All Roles</option>
+                <option value="STATISTICIAN">Statisticians</option>
+                <option value="SENIOR_QA_LEAD">Senior QA Leads</option>
+              </select>
+              <IconChevronDown
+                size={14}
+                stroke={2}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+              />
+            </div>
 
             {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value as typeof statusFilter); setCurrentPage(1); }}
-              className="bg-[#010D1F] border border-white/15 rounded-[2px] px-2.5 py-1.5 text-xs text-white/80 focus:border-[#CC6600] outline-none cursor-pointer font-sans"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="LEAVE_PENDING">Leave Pending</option>
-              <option value="ON_LEAVE">On Leave</option>
-            </select>
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value as typeof statusFilter); setCurrentPage(1); }}
+                className="bg-[#010D1F] border border-white/15 rounded-[2px] pl-2.5 pr-8 py-1.5 text-xs text-white/80 focus:border-[#CC6600] outline-none cursor-pointer font-sans appearance-none hover:border-white/25 transition-colors"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="LEAVE_PENDING">Leave Pending</option>
+                <option value="ON_LEAVE">On Leave</option>
+              </select>
+              <IconChevronDown
+                size={14}
+                stroke={2}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+              />
+            </div>
           </div>
         </div>
 

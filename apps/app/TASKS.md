@@ -279,6 +279,22 @@
 - [x] Created `docs/playbook/04-specialist-statistician-guide.md` (Timeclock, workbench & payslips)
 - [x] Created `docs/playbook/05-client-journey-guide.md` (Intake, SOW & deliverable downloads)
 
+### Task 5 — Philippine Peso (`₱`) Currency Symbol Harmonization
+- [x] Standardized `<Peso />` component in `@repo/ui` with clean `font-sans font-normal opacity-85 select-none inline-block mr-0.5`
+- [x] Added `formatPeso(amount)` and `formatPesoCompact(amount)` helpers in `@/lib/formatters`
+- [x] Normalized global CSS rules in `globals.css` (`.peso-symbol`, `.peso-sign`, `[data-peso]`)
+- [x] Replaced all raw/mismatched bold monospace `₱` occurrences across Quotations, SOW, Finance, CEO, and Staff HR pages
+- [x] Documented strict typography standard in `AGENTS.md`, `.agents/AGENTS.md`, and `docs/design-system.md`
+
+### Task 6 — Standardized PageHeader & Navigation Breadcrumbs Architecture
+- [x] Refactored canonical `<PageHeader />` in `@repo/ui` with Next.js client-side `<Link>` SPA routing
+- [x] Standardized root breadcrumbs to `{ label: "WORKSPACE", href: "/dashboard" }` across all 32 pages
+- [x] Replaced ad-hoc raw `<h1>` divs with canonical `<PageHeader />` across Finance Attendance Review Desk
+- [x] Harmonized 3-tier hierarchy: (1) Breadcrumbs, (2) Title & Badge, (3) Description, (4) Responsive Actions
+- [x] Documented strict PageHeader standard in `AGENTS.md`, `.agents/AGENTS.md`, and `docs/design-system.md`
+
+
+
 ---
 
 ## Roadmap Status Matrix

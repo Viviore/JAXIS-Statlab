@@ -138,18 +138,18 @@ export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CL
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         {/* On Leave Indicator */}
         {shiftStatus?.isOnLeave ? (
-          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-semibold rounded-[2px] bg-purple-950/50 text-purple-300 border border-purple-500/30 whitespace-nowrap">
+          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-semibold rounded-[2px] bg-purple-950/50 text-purple-300 border border-purple-500/30 whitespace-nowrap shrink-0">
             <IconCalendarOff size={13} stroke={2} />
             <span>On Leave</span>
           </span>
         ) : shiftStatus?.isOnDuty ? (
           /* Active Duty Live Timer Pill */
-          <div className="flex items-center bg-[#01142B] border border-emerald-500/40 rounded-[2px] p-1 gap-2 shadow-sm">
-            <div className="flex items-center gap-1.5 px-2 py-0.5">
-              <span className="relative flex h-2 w-2">
+          <div className="flex items-center bg-[#01142B] border border-emerald-500/40 rounded-[2px] p-0.5 sm:p-1 gap-1 sm:gap-1.5 shadow-sm shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5">
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
@@ -162,10 +162,12 @@ export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CL
               type="button"
               disabled={isPunching}
               onClick={() => setIsClockOutModalOpen(true)}
-              className="px-2.5 py-1 text-[0.688rem] font-sans font-semibold rounded-[2px] bg-red-950/60 hover:bg-red-900/80 text-red-300 border border-red-500/30 hover:border-red-500/50 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              className="px-2 sm:px-2.5 py-1 text-[0.688rem] font-sans font-semibold rounded-[2px] bg-red-950/60 hover:bg-red-900/80 text-red-300 border border-red-500/30 hover:border-red-500/50 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              title="Conclude active shift"
             >
               <IconPlayerStop size={12} stroke={2} />
-              <span>Conclude Shift</span>
+              <span className="hidden min-[480px]:inline">Conclude Shift</span>
+              <span className="min-[480px]:hidden">End</span>
             </button>
           </div>
         ) : (
@@ -175,14 +177,16 @@ export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CL
             variant="secondary"
             disabled={isPunching}
             onClick={handleClockIn}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/50 rounded-[2px] transition-colors cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 text-xs font-semibold px-2 sm:px-3 py-1 sm:py-1.5 min-h-[32px] sm:min-h-[36px] bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/50 rounded-[2px] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            title="Clock In to commence duty shift"
           >
             {isPunching ? (
-              <IconLoader2 size={14} stroke={2.5} className="animate-spin text-emerald-300" />
+              <IconLoader2 size={13} stroke={2.5} className="animate-spin text-emerald-300" />
             ) : (
-              <IconPlayerPlay size={13} stroke={2} />
+              <IconPlayerPlay size={12} stroke={2} />
             )}
-            <span>Clock In</span>
+            <span className="hidden min-[420px]:inline">Clock In</span>
+            <span className="min-[420px]:hidden">In</span>
           </Button>
         )}
       </div>

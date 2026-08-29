@@ -38,7 +38,7 @@ export function DashboardShell({
 
       {/* Main Workspace Body */}
       <div
-        className="flex flex-1 h-[calc(100dvh-72px)] max-h-[calc(100dvh-72px)] w-full overflow-hidden relative print:h-auto print:max-h-none print:overflow-visible"
+        className="flex flex-1 h-[calc(100dvh-64px)] sm:h-[calc(100dvh-72px)] max-h-[calc(100dvh-64px)] sm:max-h-[calc(100dvh-72px)] w-full overflow-hidden relative print:h-auto print:max-h-none print:overflow-visible"
       >
         {/* Mobile Backdrop */}
         {isMobileSidebarOpen && (
@@ -64,7 +64,7 @@ export function DashboardShell({
 
         {/* Content Area with Guaranteed Consistent Responsive Padding */}
         <main
-          className="flex-1 min-w-0 h-full max-h-full bg-[#010114] overflow-y-auto overflow-x-hidden p-[clamp(2rem,4vw,3.5rem)] flex flex-col print:p-0 print:h-auto print:max-h-none print:overflow-visible print:bg-white"
+          className="flex-1 min-w-0 h-full max-h-full bg-[#010114] overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 md:p-[clamp(2rem,4vw,3.5rem)] flex flex-col print:p-0 print:h-auto print:max-h-none print:overflow-visible print:bg-white"
         >
           <div
             className="w-full max-w-7xl mx-auto flex-1 min-h-full flex flex-col print:max-w-none print:w-full print:m-0"

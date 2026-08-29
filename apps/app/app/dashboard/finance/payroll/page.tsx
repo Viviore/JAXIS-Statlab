@@ -10,7 +10,9 @@ import {
   PageHeader,
   Toast,
   Pagination,
+  Peso,
 } from "@repo/ui";
+import Link from "next/link";
 import {
   IconReceipt,
   IconClock,
@@ -20,6 +22,8 @@ import {
   IconSparkles,
   IconShieldCheck,
   IconSearch,
+  IconPrinter,
+  IconChevronDown,
 } from "@tabler/icons-react";
 import {
   getCompanyPayslips,
@@ -212,21 +216,28 @@ export default function FinancePayrollOperationsPage() {
         title="Finance &amp; HR: Staff Payroll &amp; Payslips Desk"
         description="Execute monthly staff payroll runs using CEO-authorized compensation formulas, verify duty hours and completed studies, and record GCash and bank disbursements."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Finance Console", href: "/dashboard/finance" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Finance & HR", href: "/dashboard/finance" },
           { label: "Staff Payroll & Payslips" },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={selectedBatchCycle}
-              onChange={(e) => setSelectedBatchCycle(e.target.value as CutOffCycle)}
-              className="bg-[#010D1F] border border-white/10 rounded-[2px] px-2.5 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-            >
-              <option value="FIRST_HALF">First Half (Days 1–15)</option>
-              <option value="SECOND_HALF">Second Half (Days 16–End)</option>
-              <option value="FULL_MONTH">Full Calendar Month</option>
-            </select>
+            <div className="relative">
+              <select
+                value={selectedBatchCycle}
+                onChange={(e) => setSelectedBatchCycle(e.target.value as CutOffCycle)}
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] pl-3 pr-9 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer appearance-none hover:border-white/25 transition-colors"
+              >
+                <option value="FIRST_HALF">First Half (Days 1–15)</option>
+                <option value="SECOND_HALF">Second Half (Days 16–End)</option>
+                <option value="FULL_MONTH">Full Calendar Month</option>
+              </select>
+              <IconChevronDown
+                size={14}
+                stroke={2}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+              />
+            </div>
 
             <Button
               variant="primary"
@@ -247,49 +258,72 @@ export default function FinancePayrollOperationsPage() {
       />
 
       {/* Active CEO Policy Banner */}
-      <div className="p-4 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
+      <div className="p-3.5 sm:p-4 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
           <div className="p-2 bg-[#CC6600]/15 border border-[#CC6600]/40 rounded-[2px] text-[#FFA040] shrink-0 mt-0.5">
             <IconShieldCheck size={18} stroke={1.5} />
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span className="font-semibold text-white text-xs">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <span className="font-bold text-white text-xs sm:text-sm">
                 CEO Authorized Compensation &amp; Settlement Policy Active
               </span>
-              <Badge variant="emerald" className="text-[0.625rem] font-mono">
-                Verified Formula
-              </Badge>
-              {scheduleConfig && (
-                <Badge variant="amber" className="text-[0.625rem] font-mono">
-                  {scheduleConfig.frequency === "SEMI_MONTHLY"
-                    ? "Schedule: Semi-Monthly (Days 1–15 & 16–End)"
-                    : scheduleConfig.frequency === "MONTHLY"
-                    ? "Schedule: Monthly (Full Calendar Month)"
-                    : "Schedule: Bi-Weekly (Every 14 Days)"}
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                <Badge variant="emerald" className="text-[0.625rem] font-mono shrink-0">
+                  Verified Formula
                 </Badge>
-              )}
+                {scheduleConfig && (
+                  <Badge variant="amber" className="text-[0.625rem] font-mono truncate max-w-full">
+                    {scheduleConfig.frequency === "SEMI_MONTHLY" ? (
+                      <>
+                        <span className="hidden sm:inline">Schedule: </span>Semi-Monthly (1–15 &amp; 16–End)
+                      </>
+                    ) : scheduleConfig.frequency === "MONTHLY" ? (
+                      <>
+                        <span className="hidden sm:inline">Schedule: </span>Monthly (Calendar Month)
+                      </>
+                    ) : (
+                      <>
+                        <span className="hidden sm:inline">Schedule: </span>Bi-Weekly (14 Days)
+                      </>
+                    )}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <p className="text-xs text-white/60 font-sans">
+            <p className="text-[0.688rem] sm:text-xs text-white/60 font-sans mt-1.5 leading-relaxed">
               All payroll numbers are governed by the executive rate matrix configured by the CEO Office.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 text-xs font-mono">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-1.5 sm:gap-2 w-full lg:w-auto shrink-0 text-xs font-mono">
           {roleConfigs.map((rc) => (
             <span
               key={rc.roleName}
-              className="px-2 py-1 bg-[#010D1F] border border-white/10 rounded-[2px] text-white/80 text-[0.688rem]"
+              className="px-2.5 py-1.5 bg-[#010D1F] border border-white/10 rounded-[2px] text-white/80 text-[0.688rem] flex items-center justify-between sm:justify-start gap-2"
             >
-              <strong className="text-white">{rc.roleName}:</strong>{" "}
-              {rc.compensationType === "PERCENTAGE_PER_STUDY"
-                ? `${rc.commissionPercentagePerStudy}% / study`
-                : rc.compensationType === "FIXED_SALARY"
-                ? `₱${rc.baseSalaryMonthly.toLocaleString()} Base`
-                : rc.compensationType === "HYBRID"
-                ? `₱${rc.baseSalaryMonthly.toLocaleString()} + ${rc.commissionPercentagePerStudy}%`
-                : `₱${rc.hourlyDutyRate}/h`}
+              <strong className="text-white font-sans">{rc.roleName.replace(/_/g, " ")}:</strong>{" "}
+              <span className="inline-flex items-baseline font-mono text-white/90">
+                {rc.compensationType === "PERCENTAGE_PER_STUDY" ? (
+                  `${rc.commissionPercentagePerStudy}% / study`
+                ) : rc.compensationType === "FIXED_SALARY" ? (
+                  <>
+                    <Peso className="text-[0.625rem] mr-0.5" />
+                    {rc.baseSalaryMonthly.toLocaleString()} Base
+                  </>
+                ) : rc.compensationType === "HYBRID" ? (
+                  <>
+                    <Peso className="text-[0.625rem] mr-0.5" />
+                    {rc.baseSalaryMonthly.toLocaleString()} + {rc.commissionPercentagePerStudy}%
+                  </>
+                ) : (
+                  <>
+                    <Peso className="text-[0.625rem] mr-0.5" />
+                    {rc.hourlyDutyRate}/h
+                  </>
+                )}
+              </span>
             </span>
           ))}
         </div>
@@ -347,18 +381,25 @@ export default function FinancePayrollOperationsPage() {
           <div className="flex flex-wrap items-center gap-3">
             {/* Period Selector */}
             {availablePeriods.length > 0 && (
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="bg-[#010D1F] border border-white/10 rounded-[2px] px-3 py-2 text-xs text-white font-mono outline-none focus:border-[#CC6600]"
-              >
-                <option value="ALL">All Pay Periods</option>
-                {availablePeriods.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="bg-[#010D1F] border border-white/10 rounded-[2px] pl-3 pr-9 py-2 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer appearance-none hover:border-white/25 transition-colors"
+                >
+                  <option value="ALL">All Pay Periods</option>
+                  {availablePeriods.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+                <IconChevronDown
+                  size={14}
+                  stroke={2}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+                />
+              </div>
             )}
 
             <div className="relative w-full sm:w-60">
@@ -509,13 +550,13 @@ export default function FinancePayrollOperationsPage() {
 
                       {/* Gross Pay */}
                       <td className="py-2.5 px-2 font-mono text-right text-white/70 text-xs whitespace-nowrap">
-                        ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                        <span className="inline-flex items-baseline"><Peso />{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                       </td>
 
                       {/* Net Take-Home */}
                       <td className="py-2.5 px-2 font-mono text-right whitespace-nowrap">
-                        <span className="inline-block font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px]">
-                          ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                        <span className="inline-flex items-baseline font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-[2px]">
+                          <Peso className="text-emerald-400/80 text-xs" />{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                         </span>
                       </td>
 
@@ -576,6 +617,14 @@ export default function FinancePayrollOperationsPage() {
                           >
                             View
                           </Button>
+                          <Link
+                            href={`/dashboard/finance/payroll/payslips/${ps.id}/print`}
+                            target="_blank"
+                            className="h-6 px-1.5 flex items-center text-white/60 hover:text-white border border-white/10 hover:border-white/20 rounded-[2px] hover:bg-white/[0.06] transition-colors"
+                            title="Print Official Voucher / PDF"
+                          >
+                            <IconPrinter size={13} stroke={2} />
+                          </Link>
                         </div>
                       </td>
                     </tr>

@@ -52,32 +52,27 @@ export const Topbar: React.FC<TopbarProps> = ({
 
   return (
     <header
-      className={`h-16 sm:h-18 w-full bg-[#010114] border-b border-white/10 px-6 sm:px-10 lg:px-14 flex items-center justify-between z-30 select-none ${className}`}
-      style={{
-        height: "4.5rem",
-        paddingLeft: "clamp(1.5rem, 4vw, 3.5rem)",
-        paddingRight: "clamp(1.5rem, 4vw, 3.5rem)",
-      }}
+      className={`h-16 sm:h-18 w-full bg-[#010114] border-b border-white/10 px-3.5 sm:px-6 lg:px-10 flex items-center justify-between z-30 select-none ${className}`}
     >
       {/* Brand logo mark & title */}
-      <div className="flex items-center gap-4 sm:gap-6">
-        <Link href="/dashboard" className="flex items-center gap-3 text-decoration-none group py-1">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
+        <Link href="/dashboard" className="flex items-center gap-2 sm:gap-2.5 text-decoration-none group py-1 shrink-0">
           <Image
             src="/jaxislogo.png"
             alt="JAXIS Logo"
             width={28}
             height={28}
-            className="h-7 w-auto transition-transform group-hover:scale-105"
+            className="h-6.5 sm:h-7 w-auto transition-transform group-hover:scale-105 shrink-0"
             priority
           />
-          <div className="flex items-center gap-2 font-sans">
-            <span className="font-extrabold text-base tracking-wider text-white">
+          <div className="flex items-center gap-1.5 sm:gap-2 font-sans shrink-0">
+            <span className="font-extrabold text-sm sm:text-base tracking-wider text-white">
               JAXIS
             </span>
-            <span className="font-extrabold text-base tracking-wider text-[#CC6600]">
+            <span className="font-extrabold text-sm sm:text-base tracking-wider text-[#CC6600] hidden min-[360px]:inline">
               STATLAB
             </span>
-            <span className="hidden sm:inline-flex items-center text-xs font-sans uppercase px-2.5 py-0.5 rounded-[4px] bg-white/[0.08] border border-white/15 text-white/70 font-semibold tracking-wider ml-1">
+            <span className="hidden md:inline-flex items-center text-[0.688rem] font-sans uppercase px-2 py-0.5 rounded-[4px] bg-white/[0.08] border border-white/15 text-white/70 font-semibold tracking-wider ml-0.5">
               Studio
             </span>
           </div>
@@ -85,7 +80,7 @@ export const Topbar: React.FC<TopbarProps> = ({
       </div>
 
       {/* Right Controls: Duty Clock Widget + User Profile + Mobile Hamburger */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Topbar Duty Clock Widget for internal staff */}
         <DutyClockWidget userRole={userRole} />
 

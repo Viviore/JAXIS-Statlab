@@ -97,8 +97,8 @@ export default function AdminAssignmentsPage() {
         title="Expert Assignment & Workload Desk"
         description="Assign qualified Lead Statisticians and Senior QA Leads to paid studies, monitor staff capacity, and govern contractual SLA timelines."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Admin Operations", href: "/dashboard/admin" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Admin Command", href: "/dashboard/admin" },
           { label: "Expert Assignments" },
         ]}
         actions={

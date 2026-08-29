@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Modal, ModalFooter, Button, Toast } from "@repo/ui";
+import { Modal, ModalFooter, Button, Toast, Peso } from "@repo/ui";
 import {
   IconSend,
   IconAlertTriangle,
@@ -42,10 +42,6 @@ interface QuotationBuilderModalProps {
   existingQuotation?: QuotationDetailItem | null;
   customCatalog?: CommercialCatalogData;
   onSuccess?: () => void;
-}
-
-function Peso({ className = "" }: { className?: string }) {
-  return <span className={`font-sans font-normal opacity-85 select-none inline-block ${className}`}>₱</span>;
 }
 
 export function QuotationBuilderModal({

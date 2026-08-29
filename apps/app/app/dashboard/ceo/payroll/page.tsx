@@ -13,6 +13,7 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
+  Peso,
 } from "@repo/ui";
 import {
   IconSettings,
@@ -338,9 +339,9 @@ export default function CeoPayrollPolicyPage() {
         title="Corporate Payroll Policies &amp; Compensation Desk"
         description="Configure institutional compensation models by employee role (fixed salary, study percentage, or duty wages), customize specialist terms, and oversee company-wide payslip generation."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Executive Oversight", href: "/dashboard/ceo" },
-          { label: "Payroll & Compensation" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "CEO Console", href: "/dashboard/ceo" },
+          { label: "Executive Payroll Policy" },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -724,7 +725,7 @@ export default function CeoPayrollPolicyPage() {
                                   Optional Deliverable Bonus (₱)
                                 </label>
                                 <div className="relative flex items-center">
-                                  <span className="absolute left-3 text-xs font-mono text-white/50">₱</span>
+                                  <span className="absolute left-3"><Peso className="text-xs text-white/50" /></span>
                                   <input
                                     type="number"
                                     step={100}
@@ -752,7 +753,7 @@ export default function CeoPayrollPolicyPage() {
                                 Monthly Base Salary (₱)
                               </label>
                               <div className="relative flex items-center max-w-md">
-                                <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                                <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
                                 <input
                                   type="number"
                                   step={500}
@@ -767,7 +768,7 @@ export default function CeoPayrollPolicyPage() {
                                 />
                               </div>
                               <span className="text-[0.688rem] text-white/40 font-sans mt-1.5 block">
-                                In a semi-monthly schedule, this pays ₱{(formConfig.baseSalaryMonthly / 2).toLocaleString()} every 15-day cut-off.
+                                In a semi-monthly schedule, this pays <Peso className="text-[0.688rem] text-white/40" />{(formConfig.baseSalaryMonthly / 2).toLocaleString()} every 15-day cut-off.
                               </span>
                             </div>
                           )}
@@ -778,7 +779,7 @@ export default function CeoPayrollPolicyPage() {
                                 Hourly Duty Rate (₱ / hour)
                               </label>
                               <div className="relative flex items-center max-w-md">
-                                <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                                <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
                                 <input
                                   type="number"
                                   step={25}
@@ -806,7 +807,7 @@ export default function CeoPayrollPolicyPage() {
                                   Monthly Base Retainer (₱)
                                 </label>
                                 <div className="relative flex items-center">
-                                  <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                                  <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
                                   <input
                                     type="number"
                                     step={500}
@@ -821,7 +822,7 @@ export default function CeoPayrollPolicyPage() {
                                   />
                                 </div>
                                 <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
-                                  Guaranteed baseline pay (₱{(formConfig.baseSalaryMonthly / 2).toLocaleString()} per 15-day cut-off).
+                                  Guaranteed baseline pay (<Peso className="text-[0.688rem] text-white/40" />{(formConfig.baseSalaryMonthly / 2).toLocaleString()} per 15-day cut-off).
                                 </span>
                               </div>
 
@@ -864,7 +865,7 @@ export default function CeoPayrollPolicyPage() {
                               </span>
                             </div>
                             <div className="relative flex items-center w-full sm:w-44 shrink-0">
-                              <span className="absolute left-3 text-xs font-mono text-white/50">₱</span>
+                              <span className="absolute left-3"><Peso className="text-xs text-white/50" /></span>
                               <input
                                 type="number"
                                 step={250}
@@ -892,27 +893,37 @@ export default function CeoPayrollPolicyPage() {
                             {formConfig.compensationType === "PERCENTAGE_PER_STUDY" && (
                               <span>
                                 Specialist earns <strong>{formConfig.commissionPercentagePerStudy}%</strong> of the project fee for every completed study
-                                {formConfig.fixedPerStudyBonus > 0 ? ` + ₱${formConfig.fixedPerStudyBonus.toLocaleString()} bonus` : ""}
-                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} monthly allowance` : ""}.
+                                {formConfig.fixedPerStudyBonus > 0 ? (
+                                  <span> + <Peso />{formConfig.fixedPerStudyBonus.toLocaleString()} bonus</span>
+                                ) : ""}
+                                {formConfig.allowancesMonthly > 0 ? (
+                                  <span> + <Peso />{formConfig.allowancesMonthly.toLocaleString()} monthly allowance</span>
+                                ) : ""}.
                               </span>
                             )}
                             {formConfig.compensationType === "FIXED_SALARY" && (
                               <span>
-                                Fixed salary of <strong>₱{formConfig.baseSalaryMonthly.toLocaleString()} / month</strong>
-                                {" "}(paid as ₱{(formConfig.baseSalaryMonthly / 2).toLocaleString()} every 15 days)
-                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} monthly allowance` : ""}.
+                                Fixed salary of <strong><Peso />{formConfig.baseSalaryMonthly.toLocaleString()} / month</strong>
+                                {" "}(paid as <Peso />{(formConfig.baseSalaryMonthly / 2).toLocaleString()} every 15 days)
+                                {formConfig.allowancesMonthly > 0 ? (
+                                  <span> + <Peso />{formConfig.allowancesMonthly.toLocaleString()} monthly allowance</span>
+                                ) : ""}.
                               </span>
                             )}
                             {formConfig.compensationType === "HOURLY_DUTY" && (
                               <span>
-                                Paid <strong>₱{formConfig.hourlyDutyRate.toLocaleString()} / hour</strong> based on verified duty attendance
-                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} monthly allowance` : ""}.
+                                Paid <strong><Peso />{formConfig.hourlyDutyRate.toLocaleString()} / hour</strong> based on verified duty attendance
+                                {formConfig.allowancesMonthly > 0 ? (
+                                  <span> + <Peso />{formConfig.allowancesMonthly.toLocaleString()} monthly allowance</span>
+                                ) : ""}.
                               </span>
                             )}
                             {formConfig.compensationType === "HYBRID" && (
                               <span>
-                                Base salary of <strong>₱{formConfig.baseSalaryMonthly.toLocaleString()} / month</strong> + <strong>{formConfig.commissionPercentagePerStudy}%</strong> per completed study
-                                {formConfig.allowancesMonthly > 0 ? ` + ₱${formConfig.allowancesMonthly.toLocaleString()} allowance` : ""}.
+                                Base salary of <strong><Peso />{formConfig.baseSalaryMonthly.toLocaleString()} / month</strong> + <strong>{formConfig.commissionPercentagePerStudy}%</strong> per completed study
+                                {formConfig.allowancesMonthly > 0 ? (
+                                  <span> + <Peso />{formConfig.allowancesMonthly.toLocaleString()} allowance</span>
+                                ) : ""}.
                               </span>
                             )}
                           </div>
@@ -960,21 +971,21 @@ export default function CeoPayrollPolicyPage() {
                                 </span>
                               )}
                               {role.compensationType === "FIXED_SALARY" && (
-                                <span className="text-white font-mono text-base">
-                                  ₱{role.baseSalaryMonthly.toLocaleString()} / month
-                                  <span className="text-xs text-white/50 font-sans font-normal ml-1.5">
-                                    (₱{(role.baseSalaryMonthly / 2).toLocaleString()} every 15 days)
+                                <span className="text-white font-mono text-base inline-flex items-baseline">
+                                  <Peso />{role.baseSalaryMonthly.toLocaleString()} / month
+                                  <span className="text-xs text-white/50 font-sans font-normal ml-1.5 inline-flex items-baseline">
+                                    (<Peso className="text-white/50" />{(role.baseSalaryMonthly / 2).toLocaleString()} every 15 days)
                                   </span>
                                 </span>
                               )}
                               {role.compensationType === "HOURLY_DUTY" && (
-                                <span className="text-purple-300 font-mono text-base">
-                                  ₱{role.hourlyDutyRate.toFixed(2)} / hour
+                                <span className="text-purple-300 font-mono text-base inline-flex items-baseline">
+                                  <Peso className="text-purple-300/80" />{role.hourlyDutyRate.toFixed(2)} / hour
                                 </span>
                               )}
                               {role.compensationType === "HYBRID" && (
-                                <span className="text-sky-400 font-mono text-sm">
-                                  ₱{role.baseSalaryMonthly.toLocaleString()} Base + {role.commissionPercentagePerStudy}% Commission
+                                <span className="text-sky-400 font-mono text-sm inline-flex items-baseline">
+                                  <Peso className="text-sky-400/80" />{role.baseSalaryMonthly.toLocaleString()} Base + {role.commissionPercentagePerStudy}% Commission
                                 </span>
                               )}
                             </div>
@@ -982,13 +993,13 @@ export default function CeoPayrollPolicyPage() {
 
                           <div className="flex flex-wrap items-center gap-2">
                             {role.fixedPerStudyBonus > 0 && (
-                              <span className="px-2 py-1 bg-amber-950/40 border border-amber-500/30 text-amber-300 rounded-[2px] text-xs font-mono">
-                                +₱{role.fixedPerStudyBonus.toLocaleString()} Bonus
+                              <span className="px-2 py-1 bg-amber-950/40 border border-amber-500/30 text-amber-300 rounded-[2px] text-xs font-mono inline-flex items-baseline">
+                                +<Peso className="text-amber-300/80" />{role.fixedPerStudyBonus.toLocaleString()} Bonus
                               </span>
                             )}
                             {role.allowancesMonthly > 0 && (
-                              <span className="px-2 py-1 bg-sky-950/40 border border-sky-500/30 text-sky-300 rounded-[2px] text-xs font-mono">
-                                +₱{role.allowancesMonthly.toLocaleString()} Allowance
+                              <span className="px-2 py-1 bg-sky-950/40 border border-sky-500/30 text-sky-300 rounded-[2px] text-xs font-mono inline-flex items-baseline">
+                                +<Peso className="text-sky-300/80" />{role.allowancesMonthly.toLocaleString()} Allowance
                               </span>
                             )}
                           </div>
@@ -1070,13 +1081,15 @@ export default function CeoPayrollPolicyPage() {
                           {cfg.compensationType.replace(/_/g, " ")}
                         </td>
                         <td className="py-3 px-3 font-mono text-white">
-                          {cfg.baseSalaryMonthly > 0 ? `₱${cfg.baseSalaryMonthly.toLocaleString()}` : "--"}
+                          {cfg.baseSalaryMonthly > 0 ? (
+                            <span className="inline-flex items-baseline"><Peso />{cfg.baseSalaryMonthly.toLocaleString()}</span>
+                          ) : "--"}
                         </td>
                         <td className="py-3 px-3 font-mono text-emerald-400 font-semibold">
                           {cfg.commissionPercentagePerStudy > 0 ? `${cfg.commissionPercentagePerStudy}%` : "--"}
                         </td>
                         <td className="py-3 px-3 font-mono text-white/70">
-                          ₱{cfg.hourlyDutyRate.toFixed(2)}/h
+                          <span className="inline-flex items-baseline"><Peso />{cfg.hourlyDutyRate.toFixed(2)}/h</span>
                         </td>
                         <td className="py-3 px-3">
                           {hasOverride ? (
@@ -1213,11 +1226,11 @@ export default function CeoPayrollPolicyPage() {
                                 )}
                               </td>
                               <td className="py-3.5 px-4 font-mono text-right text-white/70 text-xs whitespace-nowrap">
-                                ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                                <span className="inline-flex items-baseline"><Peso />{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                               </td>
                               <td className="py-3.5 px-4 font-mono text-right whitespace-nowrap">
-                                <span className="inline-block font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-[2px]">
-                                  ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                                <span className="inline-flex items-baseline font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-[2px]">
+                                  <Peso className="text-emerald-400/80 text-xs" />{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                                 </span>
                               </td>
                               <td className="py-3.5 px-4 text-center whitespace-nowrap">

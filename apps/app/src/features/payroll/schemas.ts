@@ -140,6 +140,9 @@ export interface StaffPayslipDTO {
   disbursedAt?: string | null;
   disbursedBy?: string | null;
   disbursedByName?: string | null;
+  employerName?: string | null;
+  approvedByName?: string | null;
+  preparedByName?: string | null;
   payoutDetails?: StaffPayoutDetailsDTO | null;
   generatedBy: string;
   notes?: string | null;

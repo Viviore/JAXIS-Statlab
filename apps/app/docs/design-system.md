@@ -90,10 +90,12 @@ Every dashboard page and future module (`/dashboard/*`) runs inside the unified 
 
 ## 4. Reusable Page Components (`@repo/ui`)
 
-### 4.1. PageHeader Component
-Standardized 3-tier vertical hierarchy for all future pages:
+### 4.1. Standardized PageHeader Component (`<PageHeader />`)
+Every page route across JAXIS StatLab **MUST** use the canonical `<PageHeader />` from `@repo/ui` with a unified hierarchy, breadcrumb standard, and action bar alignment:
 
 ```tsx
+import { PageHeader, Button, Badge } from "@repo/ui";
+
 <PageHeader
   title="Statistician Modeling Workbench"
   description="Execute analytical models, inspect cleaned dataset vectors, and upload verified R syntax."
@@ -101,21 +103,25 @@ Standardized 3-tier vertical hierarchy for all future pages:
     { label: "WORKSPACE", href: "/dashboard" },
     { label: "Statistician Lab" },
   ]}
-  badge={<StatusBadge status="ACTIVE" />}
+  badge={<Badge variant="emerald">ACTIVE</Badge>}
   actions={
     <>
-      <Button variant="outline" size="sm">EXPORT SYNTAX</Button>
-      <Button variant="primary" size="sm">+ NEW RUN</Button>
+      <Button variant="secondary" size="sm">Export Syntax</Button>
+      <Button variant="primary" size="sm">+ New Run</Button>
     </>
   }
 />
 ```
 
-**Order of Elements:**
-1. **Breadcrumbs** (Optional navigation crumbs)
-2. **Header** (`title` + optional `badge`)
-3. **Description** (Summary paragraph explaining the page/desk)
-4. **Actions** (Action buttons with `flex-wrap gap-2 sm:gap-3` positioned underneath)
+#### Canonical Structure & Layout Directives:
+1. **Root Breadcrumb**: Every page must begin with `{ label: "WORKSPACE", href: "/dashboard" }`.
+2. **Intermediate Crumbs**: Role hubs link to their top-level desks (e.g. `{ label: "CEO Console", href: "/dashboard/ceo" }`, `{ label: "Finance & HR", href: "/dashboard/finance" }`, `{ label: "Admin Command", href: "/dashboard/admin" }`).
+3. **Active Leaf Crumb**: Clean Title Case font-sans text with no `href`.
+4. **Title**: `text-xl sm:text-2xl font-bold tracking-tight text-white font-sans`.
+5. **Description**: `text-sm text-white/60 leading-relaxed max-w-3xl font-sans`.
+6. **Divider & Spacing**: `pb-6 sm:pb-8 border-b border-white/10 w-full`.
+7. **Client-Side SPA Routing**: Uses `next/link` for instantaneous zero-reload navigation.
+
 
 ---
 
@@ -217,6 +223,25 @@ Modal dialogs (`Modal.tsx`) enforce responsive containment:
 1. **Viewport Constraints**: `max-w-[94vw] sm:max-w-xl md:max-w-2xl lg:max-w-4xl`.
 2. **Body Scroll**: Content container has `max-h-[70vh] overflow-y-auto` so large dataset inspectors or questionnaires never push modal headers/footers off-screen.
 3. **Keyboard & Backdrop Cleanup**: Automatic `Escape` key listener cleanup on unmount (`RULE_MEM_01`).
+
+---
+
+### 4.6. Philippine Peso (`₱`) Currency & Monetary Display Standard
+To prevent visual distortion and inconsistent boldness across pages, all financial numbers strictly follow the Peso typography standard:
+
+1. **The Root Cause**: Monospace fonts (`Disket Mono`) lack a native glyph for `₱` (Unicode `U+20B1`). When rendered directly inside `font-mono font-bold`, operating systems fall back to generic system glyphs with thick, double-stroke blockiness.
+2. **Canonical `<Peso />` Component**: Always import `<Peso />` from `@repo/ui`.
+   ```tsx
+   import { Peso } from "@repo/ui";
+
+   <span className="font-mono text-emerald-400 font-bold inline-flex items-baseline">
+     <Peso />{netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+   </span>
+   ```
+   - Standard styling: `font-sans font-normal opacity-85 select-none inline-block mr-0.5`.
+   - Guarantees uniform optical weight and alignment alongside tabular monospace digits.
+3. **Canonical `<MoneyDisplay />`**: Standard primitive for financial ledger balances.
+4. **String Formatter**: Use `formatPeso(amount)` from `@/lib/formatters`.
 
 ---
 

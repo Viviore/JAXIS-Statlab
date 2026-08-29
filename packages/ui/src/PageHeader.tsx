@@ -1,4 +1,8 @@
+"use client";
+
 import React from "react";
+import Link from "next/link";
+import { cn } from "./utils";
 
 export interface PageHeaderBreadcrumb {
   label: string;
@@ -24,22 +28,25 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col gap-3 pb-8 border-b border-white/10 ${className}`}
+      className={cn("flex flex-col gap-3 pb-6 sm:pb-8 border-b border-white/10 w-full", className)}
     >
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav
           aria-label="Breadcrumb"
-          className="flex items-center gap-2 text-xs font-sans text-white/50 mb-1"
+          className="flex items-center gap-2 text-xs font-sans text-white/50 mb-0.5 select-none flex-wrap"
         >
           {breadcrumbs.map((item, idx) => (
             <React.Fragment key={idx}>
-              {idx > 0 && <span className="text-white/30">/</span>}
+              {idx > 0 && <span className="text-white/30 select-none">/</span>}
               {item.href ? (
-                <a href={item.href} className="hover:text-white transition-colors">
+                <Link
+                  href={item.href}
+                  className="hover:text-white transition-colors duration-150"
+                >
                   {item.label}
-                </a>
+                </Link>
               ) : (
-                <span className="text-white/80 font-medium">{item.label}</span>
+                <span className="text-white/90 font-medium">{item.label}</span>
               )}
             </React.Fragment>
           ))}
@@ -48,7 +55,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
       {/* Header Container: Title, Description & Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-sans">
               {title}
@@ -64,7 +71,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </div>
 
         {actions && (
-          <div className="flex flex-wrap items-center gap-3 shrink-0 pt-1 sm:pt-0">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 pt-1 sm:pt-0">
             {actions}
           </div>
         )}
@@ -72,3 +79,4 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     </div>
   );
 };
+

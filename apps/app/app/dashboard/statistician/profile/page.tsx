@@ -133,8 +133,8 @@ export default function StatisticianProfilePage() {
         title="Statistician Profile & Specializations"
         description="Configure your quantitative research specialties, computational methodology domains, and institutional background."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Statistician Workbench", href: "/dashboard/statistician" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Statistician Lab", href: "/dashboard/statistician" },
           { label: "Profile Settings" },
         ]}
         actions={

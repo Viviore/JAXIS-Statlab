@@ -59,8 +59,8 @@ export default function AdminDashboardPage() {
         title="Admin Operations & Governance Desk"
         description="System-wide command console for stakeholder orchestration, live pipeline audit enforcement, and global deliverable verification."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Admin Operations" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Admin Command" },
         ]}
         actions={
           <div className="flex items-center gap-3">

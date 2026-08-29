@@ -7,6 +7,7 @@ import {
   StatusBadge,
   Button,
   ProgressBar,
+  Peso,
 } from "@repo/ui";
 import {
   IconReceipt,
@@ -92,9 +93,13 @@ export function PaymentLedgerCard({
               <MoneyDisplay amount={summary.verifiedPaid} />
             </div>
             <p className="font-sans text-xs text-white/50 mt-1">
-              {summary.pendingVerification > 0
-                ? `+ ₱${summary.pendingVerification.toLocaleString("en-PH", { minimumFractionDigits: 2 })} pending verification`
-                : "All submitted deposits cleared"}
+              {summary.pendingVerification > 0 ? (
+                <span className="inline-flex items-baseline">
+                  + <Peso className="text-white/50" />{summary.pendingVerification.toLocaleString("en-PH", { minimumFractionDigits: 2 })} pending verification
+                </span>
+              ) : (
+                "All submitted deposits cleared"
+              )}
             </p>
           </div>
         </Card>
@@ -127,11 +132,15 @@ export function PaymentLedgerCard({
               Project Milestone Activation Status
             </h3>
             <p className="font-sans text-xs text-white/50 mt-0.5">
-              {summary.isFullyPaid
-                ? "100% Contract Fee Settled. All deliverable release gates are fully unlocked."
-                : summary.isDownpaymentCleared
-                ? "Downpayment Cleared. Statistical modeling & QA reviews are currently active."
-                : `Awaiting ₱${Math.max(0, summary.downpaymentRequired - summary.verifiedPaid).toLocaleString("en-PH", { minimumFractionDigits: 2 })} downpayment clearance to activate study.`}
+              {summary.isFullyPaid ? (
+                "100% Contract Fee Settled. All deliverable release gates are fully unlocked."
+              ) : summary.isDownpaymentCleared ? (
+                "Downpayment Cleared. Statistical modeling & QA reviews are currently active."
+              ) : (
+                <span className="inline-flex items-baseline">
+                  Awaiting&nbsp;<Peso className="text-white/50" />{Math.max(0, summary.downpaymentRequired - summary.verifiedPaid).toLocaleString("en-PH", { minimumFractionDigits: 2 })}&nbsp;downpayment clearance to activate study.
+                </span>
+              )}
             </p>
           </div>
 

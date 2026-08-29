@@ -9,6 +9,7 @@ import {
   IconShieldCheck,
   IconChevronLeft,
   IconChevronRight,
+  IconChevronDown,
   IconPlus,
   IconLoader2,
   IconClockPlay,
@@ -27,6 +28,7 @@ import {
   IconEdit,
 } from "@tabler/icons-react";
 import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, Peso, PageHeader } from "@repo/ui";
+import Link from "next/link";
 import { getMyHrPortalData, fileAttendanceCorrection } from "@/features/attendance/actions";
 import { requestLeave } from "@/features/staff/actions";
 import { getMyOfficialPayslip, getMyPayoutDetails, updateMyPayoutDetails } from "@/features/payroll/actions";
@@ -103,9 +105,11 @@ export default function StaffHrPortalPage() {
         setPayoutDetails(payoutRes.data);
         setPayoutChannel(payoutRes.data.payoutChannel);
         setAccountNumber(payoutRes.data.accountNumber);
-        setAccountName(payoutRes.data.accountName);
+        setAccountName(payoutRes.data.accountName || res.user.fullName);
         setBankName(payoutRes.data.bankName || "BDO Unibank");
         setPayoutNotes(payoutRes.data.notes || "");
+      } else if (res?.user?.fullName) {
+        setAccountName(res.user.fullName);
       }
       // Default selected day to today if in current month
       const todayEvt = res.currentMonthEvents.find((e) => e.isToday) || res.currentMonthEvents[0] || null;
@@ -310,8 +314,8 @@ export default function StaffHrPortalPage() {
         title="HR & People Operations Portal"
         description="Manage your daily attendance calendar, leave entitlements, overtime filings, and monthly compensation payslips."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "HR & Staff Portal" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "HR & People Operations" },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2.5">
@@ -523,26 +527,26 @@ export default function StaffHrPortalPage() {
       {activeTab === "CALENDAR" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Calendar Grid (8 Cols) */}
-          <Card className="lg:col-span-8 p-6 sm:p-8 bg-[#01142B] border-white/10 flex flex-col gap-6">
+          <Card className="lg:col-span-8 p-3.5 sm:p-6 md:p-8 bg-[#01142B] border-white/10 flex flex-col gap-4 sm:gap-6">
             {/* Month Header & Controls */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-black/40 border border-white/10 rounded-[2px] text-white">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 sm:pb-4 gap-2">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="p-2 sm:p-2.5 bg-black/40 border border-white/10 rounded-[2px] text-white shrink-0">
                   <IconCalendar size={18} stroke={1.5} />
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-white font-sans">{monthTitle}</h2>
-                  <span className="text-[0.688rem] text-white/50 font-mono">
-                    {portalData.payslip.totalDutyHours} verified duty hours recorded this cycle
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-white font-sans truncate">{monthTitle}</h2>
+                  <span className="text-[0.625rem] sm:text-[0.688rem] text-white/50 font-mono block truncate">
+                    {portalData.payslip.totalDutyHours} verified duty hours recorded
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 bg-black/40 p-1 border border-white/10 rounded-[2px]">
+              <div className="flex items-center gap-1 bg-black/40 p-0.5 sm:p-1 border border-white/10 rounded-[2px] shrink-0">
                 <button
                   type="button"
                   onClick={handlePrevMonth}
-                  className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
                   title="Previous Month"
                 >
                   <IconChevronLeft size={16} stroke={2} />
@@ -550,7 +554,7 @@ export default function StaffHrPortalPage() {
                 <button
                   type="button"
                   onClick={handleNextMonth}
-                  className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
+                  className="p-1 sm:p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition-colors cursor-pointer"
                   title="Next Month"
                 >
                   <IconChevronRight size={16} stroke={2} />
@@ -559,29 +563,30 @@ export default function StaffHrPortalPage() {
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center gap-4 text-[0.688rem] font-mono text-white/60">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:gap-4 text-[0.625rem] sm:text-[0.688rem] font-mono text-white/60">
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Present / Clocked
+                <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" /> Present
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#38BDF8]" /> Overtime Shift
+                <span className="h-2 w-2 rounded-full bg-[#38BDF8] shrink-0" /> Overtime
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-purple-500" /> Authorized Leave
+                <span className="h-2 w-2 rounded-full bg-purple-500 shrink-0" /> Leave
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-amber-500" /> Missed Punch
+                <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" /> Missed Punch
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-white/20" /> Rest Day / Holiday
+                <span className="h-2 w-2 rounded-full bg-white/20 shrink-0" /> Rest / Holiday
               </span>
             </div>
 
             {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className="text-center text-[0.688rem] font-mono uppercase text-white/40 py-1 font-semibold">
-                  {day}
+                <div key={day} className="text-center text-[0.625rem] sm:text-[0.688rem] font-mono uppercase text-white/40 py-1 font-semibold">
+                  <span className="sm:hidden">{day.charAt(0)}</span>
+                  <span className="hidden sm:inline">{day}</span>
                 </div>
               ))}
 
@@ -606,39 +611,57 @@ export default function StaffHrPortalPage() {
                     key={evt.date}
                     type="button"
                     onClick={() => setSelectedDayEvent(evt)}
-                    className={`min-h-[72px] p-2 rounded-[2px] border text-left transition-all cursor-pointer flex flex-col justify-between ${bgStyle} ${
-                      isSelected ? "ring-2 ring-[#CC6600] border-transparent shadow-lg scale-[1.02]" : "hover:border-white/20"
+                    className={`min-h-[50px] sm:min-h-[72px] p-1 sm:p-2 rounded-[2px] border text-left transition-all cursor-pointer flex flex-col justify-between overflow-hidden ${bgStyle} ${
+                      isSelected ? "ring-1.5 sm:ring-2 ring-[#CC6600] border-transparent shadow-lg scale-[1.02]" : "hover:border-white/20"
                     } ${evt.isToday ? "border-t-2 border-t-[#CC6600]" : ""}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-mono font-bold ${evt.isToday ? "text-[#CC6600]" : "text-white"}`}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className={`text-[0.688rem] sm:text-xs font-mono font-bold ${evt.isToday ? "text-[#CC6600]" : "text-white"}`}>
                         {evt.dayOfMonth}
                       </span>
                       {evt.isHoliday && (
-                        <span className="text-[0.562rem] font-mono uppercase px-1 py-0.2 rounded-[2px] bg-white/10 text-white/80">
-                          Holiday
-                        </span>
+                        <>
+                          <span className="text-[0.5rem] font-mono uppercase px-1 py-0.2 rounded-[2px] bg-white/10 text-white/80 hidden sm:inline truncate max-w-[42px]">
+                            Holiday
+                          </span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 sm:hidden shrink-0" title="Holiday" />
+                        </>
                       )}
                     </div>
 
-                    <div className="text-[0.625rem] font-mono leading-tight truncate">
+                    <div className="text-[0.562rem] sm:text-[0.625rem] font-mono leading-tight truncate w-full">
                       {evt.status === "PRESENT" && (
                         <span>{evt.totalHours}</span>
                       )}
                       {evt.status === "OVERTIME" && (
-                        <span className="text-sky-300 font-bold">{evt.totalHours} (OT)</span>
+                        <span className="text-sky-300 font-bold">
+                          {evt.totalHours}
+                          <span className="hidden sm:inline"> (OT)</span>
+                        </span>
                       )}
                       {evt.status === "ON_LEAVE" && (
-                        <span className="text-purple-300 truncate">Leave</span>
+                        <span className="text-purple-300">
+                          <span className="sm:hidden">Off</span>
+                          <span className="hidden sm:inline">Leave</span>
+                        </span>
                       )}
                       {evt.status === "IN_PROGRESS" && (
-                        <span className="text-emerald-300 font-bold">On Duty</span>
+                        <span className="text-emerald-300 font-bold">
+                          <span className="sm:hidden">Duty</span>
+                          <span className="hidden sm:inline">On Duty</span>
+                        </span>
                       )}
                       {evt.status === "MISSED_PUNCH" && (
-                        <span className="text-amber-400">No Punch</span>
+                        <span className="text-amber-400">
+                          <span className="sm:hidden">Miss</span>
+                          <span className="hidden sm:inline">No Punch</span>
+                        </span>
                       )}
                       {evt.status === "REST_DAY" && !evt.isHoliday && (
-                        <span className="text-white/30">Rest</span>
+                        <span className="text-white/30">
+                          <span className="sm:hidden">—</span>
+                          <span className="hidden sm:inline">Rest</span>
+                        </span>
                       )}
                     </div>
                   </button>
@@ -935,23 +958,23 @@ export default function StaffHrPortalPage() {
       {/* TAB 4: PAYSLIP & MONTHLY EARNINGS */}
       {activeTab === "PAYSLIP" && portalData && (
         <div className="flex flex-col gap-6">
-          <Card className="p-6 sm:p-10 bg-[#01142B] border-white/10 flex flex-col gap-6">
+          <Card className="p-4 sm:p-8 lg:p-10 bg-[#01142B] border-white/10 flex flex-col gap-6">
             {/* Header / Pay Period */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <Badge variant="emerald" className="text-xs font-mono">
+            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5 border-b border-white/10 pb-5 sm:pb-6">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-2 flex-wrap">
+                  <Badge variant="emerald" className="text-[0.688rem] sm:text-xs font-mono">
                     Official Compensation Summary
                   </Badge>
                   {(activeDisplayPayslip?.payslipNumber || portalData.payslip.payslipNumber) && (
-                    <Badge variant="sky" className="text-xs font-mono">
+                    <Badge variant="sky" className="text-[0.688rem] sm:text-xs font-mono">
                       {activeDisplayPayslip?.payslipNumber || portalData.payslip.payslipNumber}
                     </Badge>
                   )}
                   {(activeDisplayPayslip?.status || portalData.payslip.status) && (
                     <Badge
                       variant={(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED" ? "emerald" : "amber"}
-                      className="text-xs font-mono"
+                      className="text-[0.688rem] sm:text-xs font-mono"
                     >
                       {(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED"
                         ? `Disbursed (${activeDisplayPayslip?.disbursementMethod || "Paid"})`
@@ -959,7 +982,7 @@ export default function StaffHrPortalPage() {
                     </Badge>
                   )}
                   {activeDisplayPayslip?.cutOffCycle && (
-                    <Badge variant="amber" className="text-xs font-mono">
+                    <Badge variant="amber" className="text-[0.688rem] sm:text-xs font-mono">
                       {activeDisplayPayslip.cutOffCycle === "FIRST_HALF"
                         ? "1st Cut-Off (Days 1–15)"
                         : activeDisplayPayslip.cutOffCycle === "SECOND_HALF"
@@ -973,57 +996,87 @@ export default function StaffHrPortalPage() {
                     </span>
                   )}
                 </div>
-                <h2 className="text-2xl font-extrabold text-white font-sans">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white font-sans tracking-tight leading-snug">
                   Statement of Duty Earnings — {activeDisplayPayslip?.payPeriodMonth || portalData.payslip.payPeriod}
                 </h2>
-                <span className="text-xs text-white/50 font-sans">
+                <span className="text-xs text-white/50 font-sans mt-1 block">
                   Employee: <strong className="text-white">{activeDisplayPayslip?.staffName || portalData.user.fullName}</strong> ({activeDisplayPayslip?.staffRole || portalData.user.role})
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center lg:flex-col lg:items-end xl:flex-row xl:items-center gap-2.5 w-full lg:w-auto shrink-0">
                 {/* Past Months / Cycles Dropdown Selector */}
                 {allMyPayslips.length > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono text-white/50">History:</span>
-                    <select
-                      value={activeDisplayPayslip?.id || ""}
-                      onChange={(e) => {
-                        const found = allMyPayslips.find((p) => p.id === e.target.value);
-                        if (found) setSelectedPayslip(found);
-                      }}
-                      className="bg-[#010D1F] border border-white/15 rounded-[2px] px-2.5 py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer"
-                    >
-                      {allMyPayslips.map((ps) => (
-                        <option key={ps.id} value={ps.id}>
-                          {ps.payPeriodMonth} — ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })} [{ps.status}]
-                        </option>
-                      ))}
-                    </select>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                    <span className="text-[0.688rem] sm:text-xs font-mono uppercase text-white/60 font-semibold tracking-wider shrink-0">
+                      Cycle History:
+                    </span>
+                    <div className="relative w-full sm:w-72 md:w-80 min-w-0">
+                      <select
+                        value={activeDisplayPayslip?.id || ""}
+                        onChange={(e) => {
+                          const found = allMyPayslips.find((p) => p.id === e.target.value);
+                          if (found) setSelectedPayslip(found);
+                        }}
+                        className="w-full bg-[#010D1F] border border-white/15 rounded-[2px] pl-3 pr-10 py-2 sm:py-1.5 text-xs text-white font-mono outline-none focus:border-[#CC6600] cursor-pointer truncate appearance-none transition-colors hover:border-white/25"
+                      >
+                        {allMyPayslips.map((ps) => {
+                          const monthMatch = ps.payPeriodMonth.match(/([A-Za-z]+)\s+(\d{4})/);
+                          const monthStr =
+                            monthMatch?.[1] && monthMatch?.[2]
+                              ? `${monthMatch[1].slice(0, 3)} ${monthMatch[2]}`
+                              : ps.payPeriodMonth.split("(")[0]?.trim() || ps.payPeriodMonth;
+                          const cycleStr =
+                            ps.cutOffCycle === "FIRST_HALF" || ps.payPeriodMonth.includes("First") || ps.payPeriodMonth.includes("1–15")
+                              ? "1st Cut-Off"
+                              : ps.cutOffCycle === "SECOND_HALF" || ps.payPeriodMonth.includes("Second") || ps.payPeriodMonth.includes("16–")
+                              ? "2nd Cut-Off"
+                              : "Full Month";
+
+                          return (
+                            <option key={ps.id} value={ps.id} className="bg-[#010D1F] text-white">
+                              {monthStr} ({cycleStr}) · ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })} [{ps.status}]
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <IconChevronDown
+                        size={15}
+                        stroke={2}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+                      />
+                    </div>
                   </div>
                 )}
 
                 {activeDisplayPayslip && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedPayslipForModal(activeDisplayPayslip)}
-                    className="flex items-center gap-1.5 cursor-pointer text-xs font-sans"
-                  >
-                    <IconFileText size={14} stroke={1.5} />
-                    <span>View Official Statement</span>
-                  </Button>
-                )}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedPayslipForModal(activeDisplayPayslip)}
+                      className="w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer text-xs font-sans rounded-[2px] py-2 sm:py-1.5"
+                    >
+                      <IconFileText size={14} stroke={1.5} />
+                      <span>Inspect Official Statement</span>
+                    </Button>
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => window.print()}
-                  className="flex items-center gap-1.5 cursor-pointer text-xs"
-                >
-                  <IconPrinter size={14} stroke={1.5} />
-                  <span>Print Statement</span>
-                </Button>
+                    <Link
+                      href={`/dashboard/staff/hr/payslips/${activeDisplayPayslip.id}/print`}
+                      target="_blank"
+                      className="w-full sm:w-auto"
+                    >
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer text-xs font-semibold rounded-[2px] py-2 sm:py-1.5"
+                      >
+                        <IconPrinter size={14} stroke={2} />
+                        <span>Print Official Voucher / PDF</span>
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1067,25 +1120,48 @@ export default function StaffHrPortalPage() {
             </div>
 
             {/* Total Net Take-Home */}
-            <div className="p-6 bg-[#011B38] border border-[#10B981]/40 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-[2px]">
-                  <IconBuildingBank size={24} stroke={1.5} />
+            <div className="p-4 sm:p-6 bg-[#011B38] border border-[#10B981]/40 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
+                {/* Mobile Top Row: Icon + Disbursed Status Badge */}
+                <div className="flex items-center justify-between sm:justify-start gap-3">
+                  <div className="p-2.5 sm:p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-[2px] shrink-0">
+                    <IconBuildingBank size={22} stroke={1.5} />
+                  </div>
+
+                  <div className="sm:hidden">
+                    <Badge
+                      variant={(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED" ? "emerald" : "sky"}
+                      className="font-mono text-[0.688rem] px-2.5 py-1"
+                    >
+                      {(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED"
+                        ? `Disbursed (${activeDisplayPayslip?.disbursementMethod || "Cleared"})`
+                        : (activeDisplayPayslip?.status || "Disbursement Ready")}
+                    </Badge>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[0.688rem] uppercase font-mono text-white/50 block">
-                    Estimated Net Disbursement ({activeDisplayPayslip?.payPeriodMonth || "This Pay Cycle"})
-                  </span>
-                  <div className="flex items-baseline gap-1.5">
-                    <Peso className="text-2xl text-white/80 font-normal" />
-                    <span className="text-3xl font-mono font-extrabold text-white">
+
+                {/* Content: Labels & Big Currency Value */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[0.688rem] uppercase font-mono text-white/50 tracking-wider">
+                      Estimated Net Disbursement
+                    </span>
+                    <span className="text-xs text-white/60 font-sans truncate max-w-full">
+                      {activeDisplayPayslip?.payPeriodMonth || "This Pay Cycle"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-baseline gap-1.5 mt-1.5 flex-wrap">
+                    <Peso className="text-xl sm:text-2xl text-white/80 font-normal" />
+                    <span className="text-2xl sm:text-3xl font-mono font-extrabold text-white tracking-tight">
                       {(activeDisplayPayslip?.netPay ?? portalData.payslip.netPay).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Desktop Disbursed Status Badge */}
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
                 <Badge
                   variant={(activeDisplayPayslip?.status || portalData.payslip.status) === "DISBURSED" ? "emerald" : "sky"}
                   className="font-mono text-xs px-3 py-1"
@@ -1098,12 +1174,12 @@ export default function StaffHrPortalPage() {
             </div>
 
             {/* Registered Disbursement Destination Banner */}
-            <div className="p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#CC6600]/15 border border-[#CC6600]/30 text-[#FFA040] rounded-[2px]">
+            <div className="p-3.5 sm:p-4 bg-[#010D1F] border border-white/10 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-[#CC6600]/15 border border-[#CC6600]/30 text-[#FFA040] rounded-[2px] shrink-0">
                   <IconBuildingBank size={18} stroke={1.5} />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                   <span className="text-xs uppercase font-mono font-semibold text-white/50">
                     Disbursement Payout Destination
                   </span>
@@ -1120,7 +1196,7 @@ export default function StaffHrPortalPage() {
                           ({payoutDetails.bankName})
                         </span>
                       )}
-                      <span className="text-xs text-white/60 font-sans">
+                      <span className="text-xs text-white/60 font-sans truncate">
                         &bull; {payoutDetails.accountName}
                       </span>
                     </div>
@@ -1136,7 +1212,7 @@ export default function StaffHrPortalPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setActiveTab("PAYOUT")}
-                className="cursor-pointer text-xs flex items-center gap-1.5 rounded-[2px] shrink-0"
+                className="cursor-pointer text-xs flex items-center justify-center gap-1.5 rounded-[2px] w-full sm:w-auto shrink-0 py-1.5"
               >
                 <IconEdit size={14} stroke={1.5} />
                 <span>{payoutDetails ? "Update Payout Details" : "Configure Settlement Account"}</span>
@@ -1230,11 +1306,11 @@ export default function StaffHrPortalPage() {
                                 {ps.verifiedDutyHours > 0 ? `${ps.verifiedDutyHours}h` : "—"}
                               </td>
                               <td className="py-3.5 px-4 font-mono text-right text-white/70 text-xs whitespace-nowrap">
-                                ₱{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                                <span className="inline-flex items-baseline"><Peso />{ps.grossEarnings.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                               </td>
                               <td className="py-3.5 px-4 font-mono text-right whitespace-nowrap">
-                                <span className="inline-block font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-[2px]">
-                                  ₱{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                                <span className="inline-flex items-baseline font-mono font-bold text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-[2px]">
+                                  <Peso className="text-emerald-400/80 text-xs" />{ps.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                                 </span>
                               </td>
                               <td className="py-3.5 px-4 text-center whitespace-nowrap font-mono">
@@ -1262,16 +1338,15 @@ export default function StaffHrPortalPage() {
                                   >
                                     <span>Statement →</span>
                                   </Button>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedPayslip(ps);
-                                    }}
-                                    className="h-7 text-xs font-sans px-2.5 bg-white/10 hover:bg-white/15 text-white cursor-pointer rounded-[2px]"
+                                  <Link
+                                    href={`/dashboard/staff/hr/payslips/${ps.id}/print`}
+                                    target="_blank"
+                                    className="h-7 px-2 flex items-center gap-1 text-xs font-sans text-white/70 hover:text-white border border-white/10 hover:border-white/20 rounded-[2px] hover:bg-white/[0.06] transition-colors"
+                                    title="Print Official Document Voucher / PDF"
                                   >
-                                    <span>Inspect</span>
-                                  </Button>
+                                    <IconPrinter size={13} stroke={2} />
+                                    <span className="hidden sm:inline">Voucher</span>
+                                  </Link>
                                 </div>
                               </td>
                             </tr>
@@ -1365,25 +1440,32 @@ export default function StaffHrPortalPage() {
                   <label className="text-xs font-mono uppercase text-white/70 font-semibold">
                     Philippine Bank Name *
                   </label>
-                  <select
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer font-sans"
-                    required
-                  >
-                    <option value="BDO Unibank">BDO Unibank (Banco de Oro)</option>
-                    <option value="Bank of the Philippine Islands (BPI)">Bank of the Philippine Islands (BPI)</option>
-                    <option value="Metrobank">Metropolitan Bank & Trust Co. (Metrobank)</option>
-                    <option value="UnionBank of the Philippines">UnionBank of the Philippines</option>
-                    <option value="Security Bank">Security Bank Corporation</option>
-                    <option value="RCBC">Rizal Commercial Banking Corporation (RCBC)</option>
-                    <option value="Landbank">Land Bank of the Philippines</option>
-                    <option value="GoTyme Bank">GoTyme Bank</option>
-                    <option value="Maya Bank">Maya Bank</option>
-                    <option value="Philippine National Bank (PNB)">Philippine National Bank (PNB)</option>
-                    <option value="China Banking Corporation">China Banking Corporation (China Bank)</option>
-                    <option value="Other Philippine Bank">Other Philippine Commercial Bank</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      className="w-full bg-[#010D1F] border border-white/10 focus:border-[#CC6600] rounded-[2px] pl-3 pr-10 py-2.5 text-xs text-white outline-none cursor-pointer font-sans appearance-none hover:border-white/20 transition-colors"
+                      required
+                    >
+                      <option value="BDO Unibank">BDO Unibank (Banco de Oro)</option>
+                      <option value="Bank of the Philippine Islands (BPI)">Bank of the Philippine Islands (BPI)</option>
+                      <option value="Metrobank">Metropolitan Bank & Trust Co. (Metrobank)</option>
+                      <option value="UnionBank of the Philippines">UnionBank of the Philippines</option>
+                      <option value="Security Bank">Security Bank Corporation</option>
+                      <option value="RCBC">Rizal Commercial Banking Corporation (RCBC)</option>
+                      <option value="Landbank">Land Bank of the Philippines</option>
+                      <option value="GoTyme Bank">GoTyme Bank</option>
+                      <option value="Maya Bank">Maya Bank</option>
+                      <option value="Philippine National Bank (PNB)">Philippine National Bank (PNB)</option>
+                      <option value="China Banking Corporation">China Banking Corporation (China Bank)</option>
+                      <option value="Other Philippine Bank">Other Philippine Commercial Bank</option>
+                    </select>
+                    <IconChevronDown
+                      size={15}
+                      stroke={2}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -1562,7 +1644,7 @@ export default function StaffHrPortalPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono uppercase text-white/40">Holder</span>
                   <span className="text-xs font-sans text-white font-medium">
-                    {accountName || "—"}
+                    {accountName || portalData?.user?.fullName || "—"}
                   </span>
                 </div>
 
@@ -1621,16 +1703,22 @@ export default function StaffHrPortalPage() {
         <form onSubmit={handleSubmitLeave} className="flex flex-col gap-4 text-xs font-sans text-white/90">
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-white/90">Leave Category / Purpose</label>
-            <select
-              value={leaveReason}
-              onChange={(e) => setLeaveReason(e.target.value)}
-              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer"
-            >
-              <option value="Annual Paid Specialist Leave">Annual Paid Specialist Vacation Leave</option>
-              <option value="Medical & Health Recovery">Medical & Health Recovery (Doctor&apos;s Note Attached)</option>
-              <option value="Academic Conference & Defense Panel">Academic Defense / University Conference</option>
-              <option value="Emergency Family Leave">Family Emergency Leave</option>
-            </select>
+            <div className="relative">
+              <select
+                value={leaveReason}
+                onChange={(e) => setLeaveReason(e.target.value)}
+                className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] pl-3 pr-10 py-2.5 text-xs text-white outline-none cursor-pointer font-sans appearance-none hover:border-white/20 transition-colors"
+              >
+                <option value="Annual Paid Specialist Leave">Annual Paid Specialist Vacation Leave</option>
+                <option value="Medical & Health Recovery">Medical & Health Recovery (Doctor&apos;s Note Attached)</option>
+                <option value="Emergency Family Leave">Family Emergency Leave</option>
+              </select>
+              <IconChevronDown
+                size={15}
+                stroke={2}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -1702,20 +1790,27 @@ export default function StaffHrPortalPage() {
         <form onSubmit={handleSubmitAdj} className="flex flex-col gap-4 text-xs font-sans text-white/90">
           <div className="flex flex-col gap-1.5">
             <label className="font-semibold text-white/90">Filing Classification</label>
-            <select
-              value={adjType}
-              onChange={(e) =>
-                setAdjType(
-                  e.target.value as "OVERTIME_CLAIM" | "MISSED_CLOCK_IN" | "MISSED_CLOCK_OUT" | "MISSED_FULL_SHIFT"
-                )
-              }
-              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer"
-            >
-              <option value="OVERTIME_CLAIM">Approved Overtime / Emergency Compute Run</option>
-              <option value="MISSED_CLOCK_IN">Forgot to Clock In (Worked on time)</option>
-              <option value="MISSED_CLOCK_OUT">Forgot to Clock Out (Shift ran open)</option>
-              <option value="MISSED_FULL_SHIFT">Missed Full Shift (Worked full shift without punch)</option>
-            </select>
+            <div className="relative">
+              <select
+                value={adjType}
+                onChange={(e) =>
+                  setAdjType(
+                    e.target.value as "OVERTIME_CLAIM" | "MISSED_CLOCK_IN" | "MISSED_CLOCK_OUT" | "MISSED_FULL_SHIFT"
+                  )
+                }
+                className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] pl-3 pr-10 py-2.5 text-xs text-white outline-none cursor-pointer font-sans appearance-none hover:border-white/20 transition-colors"
+              >
+                <option value="OVERTIME_CLAIM">Approved Overtime / Emergency Compute Run</option>
+                <option value="MISSED_CLOCK_IN">Forgot to Clock In (Worked on time)</option>
+                <option value="MISSED_CLOCK_OUT">Forgot to Clock Out (Shift ran open)</option>
+                <option value="MISSED_FULL_SHIFT">Missed Full Shift (Worked full shift without punch)</option>
+              </select>
+              <IconChevronDown
+                size={15}
+                stroke={2}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -1757,7 +1852,7 @@ export default function StaffHrPortalPage() {
               <select
                 value={adjBreakMins}
                 onChange={(e) => setAdjBreakMins(Number(e.target.value))}
-                className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2 text-xs text-white outline-none font-mono cursor-pointer"
+                className="bg-[#010D1F] border border-white/10 rounded-[2px] px-3 pr-10 py-2 text-xs text-white outline-none font-mono cursor-pointer"
               >
                 <option value={0}>0 mins (No break)</option>
                 <option value={30}>30 mins</option>

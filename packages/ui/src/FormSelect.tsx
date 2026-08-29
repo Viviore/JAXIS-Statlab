@@ -59,6 +59,7 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
             ref={ref}
             id={selectId}
             required={required}
+            data-no-bg-chevron="true"
             className={cn(
               "w-full h-11 sm:h-12 px-4 pr-10 text-sm rounded-[4px] text-white bg-[#01142B] border border-white/15 hover:border-white/25 focus:border-[#CC6600] focus:outline-none focus:ring-1 focus:ring-[#CC6600]/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans box-border appearance-none cursor-pointer",
               error && "!border-[#EF4444] focus:!border-[#EF4444] focus:!ring-[#EF4444]",

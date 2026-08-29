@@ -259,8 +259,8 @@ export default function StatisticianDashboardPage() {
         title="Statistician Computational Workbench"
         description="Dataset intake processing, statistical code execution (R / Python / SPSS), and draft deliverable submission to QA Lead review."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Statistician Workbench" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Statistician Lab" },
         ]}
         actions={
           <div className="flex items-center gap-3">

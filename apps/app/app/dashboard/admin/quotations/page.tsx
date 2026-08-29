@@ -14,6 +14,7 @@ import {
   LoadingState,
   EmptyState,
   Pagination,
+  Peso,
 } from "@repo/ui";
 import {
   IconCopy,
@@ -360,14 +361,16 @@ export default function AdminQuotationsPage() {
                               <span className="text-[0.5625rem] font-mono uppercase px-1.5 py-0.2 rounded-[2px] bg-white/[0.04] text-white/60 border border-white/[0.08]">
                                 {pkgInfo.badge}
                               </span>
-                              <span className="text-xs font-mono font-bold text-[#38BDF8]">
-                                ₱{quote.totalAmount.toLocaleString()}
+                              <span className="text-xs font-mono font-bold text-[#38BDF8] inline-flex items-baseline">
+                                <Peso className="text-[#38BDF8]/80 text-xs" />
+                                {quote.totalAmount.toLocaleString()}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-white/80 font-sans">
                               <span className="truncate max-w-[120px]">{pkgInfo.name}</span>
-                              <span className="text-emerald-400 font-mono text-[0.6875rem] font-semibold">
-                                ₱{quote.downpaymentRequired.toLocaleString()} DP
+                              <span className="text-emerald-400 font-mono text-[0.6875rem] font-semibold inline-flex items-baseline">
+                                <Peso className="text-emerald-400/80 text-[0.6875rem]" />
+                                {quote.downpaymentRequired.toLocaleString()} DP
                               </span>
                             </div>
                             {hasAddOns && (

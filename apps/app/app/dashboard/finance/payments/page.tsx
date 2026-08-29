@@ -120,9 +120,9 @@ export default function FinancePaymentsQueuePage() {
         title="Deposit Verification Queue & Historical Ledger"
         description="Inspect client GCash and bank transfer receipts, reconcile transaction reference numbers, and review historical cleared payments."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard/finance" },
-          { label: "Finance Console", href: "/dashboard/finance" },
-          { label: "Deposit Queue" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Finance & HR", href: "/dashboard/finance" },
+          { label: "Deposit Verification & Ledger" },
         ]}
         actions={
           <div className="flex items-center gap-2.5">

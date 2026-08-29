@@ -221,7 +221,7 @@ export default function QALeadDashboardPage() {
         title="Senior QA Lead Studio & Verification Desk"
         description="Dual-blind recalculation verification, hypothesis reproducibility audits, APA 7th compliance seals, and deliverable release authorization."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
+          { label: "WORKSPACE", href: "/dashboard" },
           { label: "QA Studio" },
         ]}
         actions={

@@ -11,6 +11,7 @@ import {
   ModalFooter,
   Toast,
   LoadingState,
+  Peso,
 } from "@repo/ui";
 import {
   IconArrowLeft,
@@ -42,10 +43,6 @@ import {
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 import type { QuotationDetailItem } from "@/features/quotations/schemas";
 import type { AddOnName } from "@prisma/client";
-
-function Peso() {
-  return <span className="font-sans font-normal opacity-85 select-none inline-block">₱</span>;
-}
 
 interface PageProps {
   params: Promise<{ id: string }>;

@@ -134,3 +134,120 @@ export function formatSettlementAccountNumber(
   // CASH or fallback
   return value.slice(0, 60);
 }
+
+/**
+ * Standardized Philippine Peso Currency Formatter.
+ * Formats a numeric value as '₱XX,XXX.XX' with consistent localized digits.
+ */
+export function formatPeso(
+  amount: number | string | null | undefined,
+  options: { minimumFractionDigits?: number; maximumFractionDigits?: number } = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }
+): string {
+  const num = typeof amount === "number" ? amount : Number(amount || 0);
+  if (isNaN(num)) return "₱0.00";
+
+  return `₱${num.toLocaleString("en-PH", {
+    minimumFractionDigits: options.minimumFractionDigits ?? 2,
+    maximumFractionDigits: options.maximumFractionDigits ?? 2,
+  })}`;
+}
+
+/**
+ * Compact Peso formatter (e.g. ₱35K or ₱1.2M) for tight telemetry badges.
+ */
+export function formatPesoCompact(amount: number | string | null | undefined): string {
+  const num = typeof amount === "number" ? amount : Number(amount || 0);
+  if (isNaN(num)) return "₱0";
+
+  if (num >= 1_000_000) {
+    return `₱${(num / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  if (num >= 1_000) {
+    return `₱${(num / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  }
+  return `₱${num.toLocaleString("en-PH")}`;
+}
+
+/**
+ * Converts a numeric Philippine Peso amount into formal legal English words.
+ * E.g., 23734.72 -> 'Twenty-Three Thousand Seven Hundred Thirty-Four Pesos and 72/100'
+ */
+export function numberToWordsPesos(amount: number): string {
+  if (isNaN(amount) || amount === 0) return "Zero Pesos Only";
+
+  const units = [
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+  const tens = [
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
+  ];
+
+  function convertHundreds(n: number): string {
+    let str = "";
+    if (n >= 100) {
+      str += units[Math.floor(n / 100)] + " Hundred ";
+      n %= 100;
+    }
+    if (n >= 20) {
+      str += tens[Math.floor(n / 10)] + (n % 10 !== 0 ? "-" + units[n % 10] : "") + " ";
+    } else if (n > 0) {
+      str += units[n] + " ";
+    }
+    return str.trim();
+  }
+
+  const integerPart = Math.floor(Math.abs(amount));
+  const cents = Math.round((Math.abs(amount) - integerPart) * 100);
+
+  let result = "";
+  if (integerPart >= 1_000_000) {
+    result += convertHundreds(Math.floor(integerPart / 1_000_000)) + " Million ";
+  }
+  const thousands = Math.floor((integerPart % 1_000_000) / 1000);
+  if (thousands > 0) {
+    result += convertHundreds(thousands) + " Thousand ";
+  }
+  const remainder = integerPart % 1000;
+  if (remainder > 0) {
+    result += convertHundreds(remainder) + " ";
+  }
+
+  result = result.trim();
+  if (!result) result = "Zero";
+
+  const centsText = cents > 0 ? ` and ${cents.toString().padStart(2, "0")}/100` : " Exactly";
+  return `${result} Pesos${centsText}`;
+}
+
+

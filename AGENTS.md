@@ -14,3 +14,7 @@ All AI coding assistants and developers MUST inspect and strictly follow [.agent
 7. **Zero Double Slashes**: Never use `//` in copy or loading states.
 8. **Toast Notification Protocol**: Trigger standard toasts on server action mutations, 1-click clipboard copies, and file operations.
 9. **Canonical KPI Cards**: All metric and telemetry cards must exclusively use `<KpiCard />` from `@repo/ui` with uppercase mono labels (`text-xs font-mono text-white/50 tracking-wider font-semibold`), bold mono metrics (`font-mono font-bold text-2xl sm:text-3xl`), unit suffixes (`text-xs text-white/40 font-mono`), and sans-serif descriptions (`text-xs font-sans text-white/50`). Zero ad-hoc raw cards or divergent typography.
+10. **Philippine Peso (₱) Symbol Harmonization**: Always use `<Peso />` from `@repo/ui` or `formatPeso()` from `@/lib/formatters`. Never render raw `₱` inside `font-mono font-bold` (renders clunky/heavy monospace fallback glyph). The peso symbol must always use `font-sans font-normal opacity-85 select-none inline-block mr-0.5`.
+11. **Standardized PageHeader & Navigation Breadcrumbs**: All inner pages must exclusively use `<PageHeader />` from `@repo/ui` with the canonical hierarchy: (1) Breadcrumbs starting with `{ label: "WORKSPACE", href: "/dashboard" }` via `next/link`, (2) Authoritative Title (`font-sans font-bold text-xl sm:text-2xl`), (3) Description (`font-sans text-sm text-white/60`), and (4) Right-aligned action buttons with a bottom border divider (`border-b border-white/10 pb-6 sm:pb-8`). Zero raw `<h1>` divs.
+
+

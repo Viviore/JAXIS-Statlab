@@ -15,6 +15,7 @@ import {
   IconDeviceMobile,
   IconDeviceDesktop,
   IconBolt,
+  IconChevronDown,
 } from "@tabler/icons-react";
 import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader } from "@repo/ui";
 import { getMyAttendanceHistory, fileAttendanceCorrection } from "@/features/attendance/actions";
@@ -156,7 +157,7 @@ export default function StaffAttendancePage() {
         title="My Duty Attendance & Timesheets"
         description="Review your digital punch history, break deductions, and file missed-punch corrections for payroll settlement."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
+          { label: "WORKSPACE", href: "/dashboard" },
           { label: "Attendance & Timesheets" },
         ]}
         actions={
@@ -442,21 +443,28 @@ export default function StaffAttendancePage() {
             <label className="font-semibold text-white/90">
               Adjustment Type / Situation
             </label>
-            <select
-              value={correctionType}
-              onChange={(e) =>
-                setCorrectionType(
-                  e.target.value as "MISSED_CLOCK_IN" | "MISSED_CLOCK_OUT" | "MISSED_FULL_SHIFT" | "BREAK_ADJUSTMENT" | "OVERTIME_CLAIM"
-                )
-              }
-              className="bg-[#010D1F] border border-white/10 rounded-[2px] p-2.5 text-xs text-white outline-none cursor-pointer"
-            >
-              <option value="MISSED_CLOCK_IN">Forgot to Clock In (Worked scheduled shift, clocked out late)</option>
-              <option value="MISSED_CLOCK_OUT">Forgot to Clock Out (Session stayed open / auto-closed)</option>
-              <option value="MISSED_FULL_SHIFT">Missed Full Shift (Worked full shift without digital punches)</option>
-              <option value="OVERTIME_CLAIM">Approved Overtime / Emergency Compute Run</option>
-              <option value="BREAK_ADJUSTMENT">Break Deduction Correction</option>
-            </select>
+            <div className="relative">
+              <select
+                value={correctionType}
+                onChange={(e) =>
+                  setCorrectionType(
+                    e.target.value as "MISSED_CLOCK_IN" | "MISSED_CLOCK_OUT" | "MISSED_FULL_SHIFT" | "BREAK_ADJUSTMENT" | "OVERTIME_CLAIM"
+                  )
+                }
+                className="w-full bg-[#010D1F] border border-white/10 rounded-[2px] pl-3 pr-10 py-2.5 text-xs text-white outline-none cursor-pointer font-sans appearance-none hover:border-white/20 transition-colors"
+              >
+                <option value="MISSED_CLOCK_IN">Forgot to Clock In (Worked scheduled shift, clocked out late)</option>
+                <option value="MISSED_CLOCK_OUT">Forgot to Clock Out (Session stayed open / auto-closed)</option>
+                <option value="MISSED_FULL_SHIFT">Missed Full Shift (Worked full shift without digital punches)</option>
+                <option value="OVERTIME_CLAIM">Approved Overtime / Emergency Compute Run</option>
+                <option value="BREAK_ADJUSTMENT">Break Deduction Correction</option>
+              </select>
+              <IconChevronDown
+                size={15}
+                stroke={2}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none"
+              />
+            </div>
           </div>
 
           {/* Date & Times Row */}

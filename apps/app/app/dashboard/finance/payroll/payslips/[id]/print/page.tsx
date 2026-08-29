@@ -1,0 +1,91 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { LoadingState, Button, Alert } from "@repo/ui";
+import { IconArrowLeft, IconPrinter } from "@tabler/icons-react";
+import { getPayslipById } from "@/features/payroll/actions";
+import type { StaffPayslipDTO } from "@/features/payroll/schemas";
+import { OfficialPayslipDocument } from "@/features/payroll/components/OfficialPayslipDocument";
+import Link from "next/link";
+
+export default function FinancePayslipPrintPage() {
+  const params = useParams();
+  const payslipId = params.id as string;
+
+  const [payslip, setPayslip] = useState<StaffPayslipDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setIsLoading(true);
+        const data = await getPayslipById(payslipId);
+        if (!data) {
+          setError("The requested official payslip voucher could not be located in internal records.");
+        } else {
+          setPayslip(data);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load payslip voucher.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, [payslipId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#010114] text-white flex items-center justify-center p-8">
+        <LoadingState variant="page" label="Loading Official Payslip Document..." />
+      </div>
+    );
+  }
+
+  if (error || !payslip) {
+    return (
+      <div className="min-h-screen bg-[#010114] text-white flex flex-col items-center justify-center p-8 max-w-lg mx-auto">
+        <Alert variant="danger">{error || "Document not found"}</Alert>
+        <Link href="/dashboard/finance/payroll" className="mt-4">
+          <Button variant="secondary" size="md">
+            ← Return to Finance Payroll Desk
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-900 py-8 px-4 sm:px-6 lg:px-8 print:p-0 print:m-0 print:bg-white animate-content-fade">
+      {/* ── Top Floating Navigation Toolbar (Hidden in Print) ── */}
+      <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between print:hidden">
+        <Link href="/dashboard/finance/payroll">
+          <Button variant="secondary" size="sm" className="gap-2 font-sans text-xs">
+            <IconArrowLeft size={14} stroke={2} />
+            <span>Return to Finance Payroll Desk</span>
+          </Button>
+        </Link>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-white/50 hidden sm:inline-block">
+            Document ID: {payslip.payslipNumber}
+          </span>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => window.print()}
+            className="gap-2 font-sans font-semibold text-xs"
+          >
+            <IconPrinter size={15} stroke={2} />
+            <span>Print Official Document / PDF</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Official Document Render ── */}
+      <OfficialPayslipDocument payslip={payslip} showPrintToolbar={false} />
+    </div>
+  );
+}

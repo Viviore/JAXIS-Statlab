@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Badge } from "@repo/ui";
+import { Modal, Button, Badge, Peso } from "@repo/ui";
 import { IconLoader2, IconCheck, IconBuildingBank, IconDeviceMobile } from "@tabler/icons-react";
 import { saveStaffCompensationOverride, deleteStaffCompensationOverride } from "../actions";
 import type { InternalStaffMember } from "../actions";
@@ -261,7 +261,7 @@ export function SpecialistOverrideModal({
                   Deliverable Bonus (Optional)
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-3 text-xs font-mono text-white/50">₱</span>
+                  <span className="absolute left-3"><Peso className="text-xs text-white/50" /></span>
                   <input
                     type="number"
                     step={100}
@@ -282,7 +282,7 @@ export function SpecialistOverrideModal({
                 Monthly Base Salary (₱)
               </label>
               <div className="relative flex items-center max-w-sm">
-                <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
                 <input
                   type="number"
                   step={500}
@@ -293,7 +293,7 @@ export function SpecialistOverrideModal({
                 />
               </div>
               <span className="text-[0.688rem] text-white/40 font-sans mt-1 block">
-                Prorates to ₱{(baseSalary / 2).toLocaleString()} per 15-day cut-off cycle.
+                Prorates to <Peso className="text-[0.688rem] text-white/40" />{(baseSalary / 2).toLocaleString()} per 15-day cut-off cycle.
               </span>
             </div>
           )}
@@ -304,7 +304,7 @@ export function SpecialistOverrideModal({
                 Hourly Duty Rate (₱ / hr)
               </label>
               <div className="relative flex items-center max-w-sm">
-                <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
                 <input
                   type="number"
                   step={25}
@@ -325,7 +325,7 @@ export function SpecialistOverrideModal({
                   Monthly Base Retainer (₱)
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-3 text-sm font-mono text-white/50">₱</span>
+                  <span className="absolute left-3"><Peso className="text-sm text-white/50" /></span>
                   <input
                     type="number"
                     step={500}
@@ -360,7 +360,7 @@ export function SpecialistOverrideModal({
           <div className="pt-2.5 border-t border-white/[0.08] flex items-center justify-between gap-3">
             <span className="text-xs font-mono text-white/70">Monthly Allowance / Stipend (Optional)</span>
             <div className="relative flex items-center w-36 shrink-0">
-              <span className="absolute left-3 text-xs font-mono text-white/50">₱</span>
+              <span className="absolute left-3"><Peso className="text-xs text-white/50" /></span>
               <input
                 type="number"
                 step={250}
@@ -381,13 +381,13 @@ export function SpecialistOverrideModal({
             <span>{staff.fullName} earns <strong>{commissionPct}%</strong> on each completed research study.</span>
           )}
           {compensationType === "FIXED_SALARY" && (
-            <span>{staff.fullName} earns a fixed <strong>₱{baseSalary.toLocaleString()} / month</strong> (₱{(baseSalary / 2).toLocaleString()} every 15 days).</span>
+            <span>{staff.fullName} earns a fixed <strong><Peso />{baseSalary.toLocaleString()} / month</strong> (<Peso />{(baseSalary / 2).toLocaleString()} every 15 days).</span>
           )}
           {compensationType === "HOURLY_DUTY" && (
-            <span>{staff.fullName} is paid <strong>₱{hourlyRate.toLocaleString()} / hour</strong> for verified platform hours.</span>
+            <span>{staff.fullName} is paid <strong><Peso />{hourlyRate.toLocaleString()} / hour</strong> for verified platform hours.</span>
           )}
           {compensationType === "HYBRID" && (
-            <span>{staff.fullName} receives <strong>₱{baseSalary.toLocaleString()} monthly base</strong> + <strong>{commissionPct}% commission</strong> per study.</span>
+            <span>{staff.fullName} receives <strong><Peso />{baseSalary.toLocaleString()} monthly base</strong> + <strong>{commissionPct}% commission</strong> per study.</span>
           )}
         </div>
 

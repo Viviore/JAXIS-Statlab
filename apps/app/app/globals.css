@@ -137,6 +137,31 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/* ==========================================================================
+   Global Select & Dropdown Input Standards
+   Ensures every native <select> has an elegant SVG chevron with balanced
+   inset from the right border matching the left padding.
+   ========================================================================== */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important; /* 12px / 0.75rem from right border */
+  background-size: 14px 14px !important;
+  padding-right: 2.5rem !important; /* Reserves 40px so text never collides with chevron */
+  cursor: pointer;
+}
+
+/* Suppress CSS background chevron when a custom manual chevron element is already provided */
+select[data-no-bg-chevron],
+.has-custom-chevron select,
+div:has(> svg.pointer-events-none) > select,
+div:has(> .pointer-events-none) > select {
+  background-image: none !important;
+}
+
 *, ::before, ::after {
   box-sizing: border-box;
 }
@@ -354,55 +379,112 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 15mm;
+    margin: 10mm 12mm;
   }
 
   html,
   body {
     background-color: #ffffff !important;
+    background: #ffffff !important;
     color: #0f172a !important;
     height: auto !important;
     min-height: 100% !important;
     max-height: none !important;
     overflow: visible !important;
-    font-size: 11pt !important;
+    font-size: 10pt !important;
   }
 
-  /* Hide app navigation, headers, sidebars, toast portals, and interactive buttons */
+  /* 1. When printing, completely hide all dashboard background content and UI chrome */
+  body:has(.official-payslip-sheet) main:not(:has(.official-payslip-sheet)),
+  body:has([role="dialog"]) main,
+  body:has(.sow-print-container) main:not(:has(.sow-print-container)),
+  body:has(.official-payslip-sheet) > div:not(:has(.official-payslip-sheet)):not([role="dialog"]),
   header,
   nav,
   aside,
+  .topbar,
+  .sidebar,
+  .dashboard-shell,
   .print\:hidden,
   button,
-  [role="dialog"] {
+  .toast-container,
+  .fixed.inset-0.bg-black\/80,
+  .backdrop-blur-sm,
+  .bg-black\/80,
+  [aria-hidden="true"] {
     display: none !important;
+  }
+
+  /* 2. Modal container transformation for clean document print */
+  [role="dialog"] {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Hide modal backdrop, header, footer, and sticky navigation */
+  [role="dialog"] > div.fixed,
+  [role="dialog"] .modal-header,
+  [role="dialog"] .modal-footer,
+  [role="dialog"] .sticky,
+  [role="dialog"] button,
+  [role="dialog"] [class*="bg-black"],
+  [role="dialog"] [class*="backdrop-blur"] {
+    display: none !important;
+  }
+
+  /* Strip dark background, shadows, and borders from modal cards during print */
+  [role="dialog"] > div:not(.fixed),
+  [role="dialog"] .modal-body-child-wrapper {
+    background: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
   }
 
   /* Reset layout constraints for natural multi-page flow */
   div,
-  main,
   section {
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
+    background-color: transparent !important;
   }
 
-  /* Target SOW Document Container */
+  /* Target Official Payslip & SOW Document Containers */
+  .official-payslip-sheet,
   .sow-print-container {
     background: #ffffff !important;
     color: #0f172a !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    position: static !important;
   }
 
-  /* Avoid orphan headers and broken cards across page boundaries */
+  /* Avoid orphan headers and broken tables across page boundaries */
   .sow-print-section,
   .print-avoid-break,
-  .sow-print-container > div {
+  .official-payslip-sheet > div,
+  .sow-print-container > div,
+  table,
+  tr {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
@@ -412,3 +494,22 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover {
     print-color-adjust: exact !important;
   }
 }
+
+/* ==========================================================================
+   Canonical Philippine Peso (₱) Glyph & Typography Normalization
+   Ensures ₱ symbol maintains clean, consistent optical weight across all 
+   monospace, bold, and telemetry display contexts without heavy fallback blocks.
+   ========================================================================== */
+.peso-symbol,
+.peso-sign,
+[data-peso] {
+  font-family: var(--font-sans) !important;
+  font-weight: 400 !important;
+  opacity: 0.85;
+  user-select: none;
+  display: inline-block;
+  margin-right: 0.125em;
+  font-style: normal;
+  letter-spacing: normal;
+}
+

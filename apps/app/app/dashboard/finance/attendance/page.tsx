@@ -11,7 +11,7 @@ import {
   IconUserCheck,
   IconLock,
 } from "@tabler/icons-react";
-import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader } from "@repo/ui";
 import {
   getAttendanceReviewDeskData,
   reviewAttendanceCorrection,
@@ -151,22 +151,21 @@ export default function FinanceAttendanceReviewPage() {
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="amber" className="text-xs font-mono">
-              Institutional HR & Payroll Governance
-            </Badge>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-sans tracking-tight">
-            Staff Attendance & Missed-Punch Review Desk
-          </h1>
-          <p className="text-xs sm:text-sm text-white/60 mt-1 font-sans">
-            Audit missed punch filings, verify computational deliverables, and credit approved hours under Segregation of Duties.
-          </p>
-        </div>
-      </div>
+      {/* ── Page Header ── */}
+      <PageHeader
+        title="Staff Attendance & Missed-Punch Review Desk"
+        description="Audit missed punch filings, verify computational deliverables, and credit approved hours under Segregation of Duties."
+        breadcrumbs={[
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Finance & HR", href: "/dashboard/finance" },
+          { label: "Attendance Review" },
+        ]}
+        badge={
+          <Badge variant="amber" className="text-xs font-mono">
+            Institutional HR & Payroll Governance
+          </Badge>
+        }
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

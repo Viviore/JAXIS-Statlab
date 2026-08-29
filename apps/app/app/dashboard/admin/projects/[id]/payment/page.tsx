@@ -108,8 +108,9 @@ export default function AdminProjectPaymentPage() {
         title={`Financial Audit & Ledger: ${project.intakeId}`}
         description={`Audit commercial deposit records, inspect verified receipts, and monitor contract balance fulfillment for ${project.client?.fullName || "Client"}.`}
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard/admin" },
-          { label: "Projects", href: `/dashboard/admin/projects/${project.id}` },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Admin Command", href: "/dashboard/admin" },
+          { label: project.intakeId, href: `/dashboard/admin/projects/${project.id}` },
           { label: "Payment Ledger" },
         ]}
         actions={

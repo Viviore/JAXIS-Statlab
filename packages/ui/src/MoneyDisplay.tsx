@@ -30,7 +30,11 @@ const colorVariants = {
 };
 
 export function Peso({ className = "" }: { className?: string }) {
-  return <span className={cn("font-sans font-normal opacity-80 select-none inline-block", className)}>₱</span>;
+  return (
+    <span className={cn("peso-symbol font-sans font-normal opacity-85 select-none inline-block mr-0.5", className)}>
+      ₱
+    </span>
+  );
 }
 
 export function MoneyDisplay({

@@ -13,6 +13,7 @@ import {
   LoadingState,
   EmptyState,
   Pagination,
+  Peso,
 } from "@repo/ui";
 import {
   IconCopy,
@@ -339,15 +340,17 @@ export default function ClientQuotationsPage() {
                           {quotation ? (
                             <div className="flex flex-col gap-0.5">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-mono text-[#38BDF8] font-bold">
-                                  ₱{quotation.totalAmount.toLocaleString()}
+                                <span className="text-xs font-mono text-[#38BDF8] font-bold inline-flex items-baseline">
+                                  <Peso className="text-[#38BDF8]/80 text-xs" />
+                                  {quotation.totalAmount.toLocaleString()}
                                 </span>
-                                <span className="text-[0.625rem] font-mono text-white/40">
-                                  (Base: ₱{quotation.basePrice.toLocaleString()})
+                                <span className="text-[0.625rem] font-mono text-white/40 inline-flex items-baseline">
+                                  (Base: <Peso className="text-white/40 text-[0.625rem]" />{quotation.basePrice.toLocaleString()})
                                 </span>
                               </div>
-                              <span className="text-[0.6875rem] font-mono text-emerald-400 font-medium">
-                                ₱{quotation.downpaymentRequired.toLocaleString()} Due ({quotation.isUpfrontEnforced ? "100%" : `${quotation.downpaymentPercentage}%`})
+                              <span className="text-[0.6875rem] font-mono text-emerald-400 font-medium inline-flex items-baseline">
+                                <Peso className="text-emerald-400/80 text-[0.6875rem]" />
+                                {quotation.downpaymentRequired.toLocaleString()} Due ({quotation.isUpfrontEnforced ? "100%" : `${quotation.downpaymentPercentage}%`})
                               </span>
                             </div>
                           ) : (

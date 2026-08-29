@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { PageHeader, LoadingState, Toast, Button } from "@repo/ui";
+import { PageHeader, LoadingState, Toast, Button, Peso } from "@repo/ui";
 import {
   IconArrowLeft,
   IconShieldCheck,
@@ -115,10 +115,11 @@ export default function ClientProjectPaymentPage() {
         title={`Payment & Milestone Escrow: ${project.intakeId}`}
         description="Submit official GCash or bank transfer deposit receipts to unlock research assignment and track contract balances."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard/client" },
-          { label: "Studies", href: "/dashboard/client/projects" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "Client Portal", href: "/dashboard/client" },
+          { label: "Projects", href: "/dashboard/client/projects" },
           { label: project.intakeId, href: `/dashboard/client/projects/${project.id}` },
-          { label: "Payment Portal" },
+          { label: "Payment & Escrow" },
         ]}
         actions={
           <div className="flex items-center gap-2.5">
@@ -153,8 +154,8 @@ export default function ClientProjectPaymentPage() {
             <h4 className="text-xs font-sans font-semibold text-white">
               Official Statement of Work Executed
             </h4>
-            <p className="text-[0.688rem] font-sans text-white/50 mt-0.5">
-              Package: {project.packageName || "JX-03 Core"} · Total Fee: ₱
+            <p className="text-[0.688rem] font-sans text-white/50 mt-0.5 inline-flex items-baseline">
+              Package: {project.packageName || "JX-03 Core"} · Total Fee:&nbsp;<Peso className="text-white/50" />
               {summary.totalAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })} · SOW Signed
             </p>
           </div>

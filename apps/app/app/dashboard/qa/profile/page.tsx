@@ -129,8 +129,8 @@ export default function QAProfilePage() {
         title="Senior QA Review Lead Profile"
         description="Configure your methodology audit domains, peer review credentials, and dual-blind verification standards."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "QA Review Desk", href: "/dashboard/qa" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "QA Studio", href: "/dashboard/qa" },
           { label: "Profile Settings" },
         ]}
         actions={

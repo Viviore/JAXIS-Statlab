@@ -61,5 +61,14 @@
     "bankName": "",
     "notes": "Maya Business KYC Verified",
     "updatedAt": "2026-08-28T21:22:49.761Z"
+  },
+  "cmt5plt6q0002lrrkr5jnsghs": {
+    "userId": "cmt5plt6q0002lrrkr5jnsghs",
+    "payoutChannel": "BANK_TRANSFER",
+    "accountNumber": "0042-9918-22",
+    "accountName": "Finance Officer",
+    "bankName": "Bank of the Philippine Islands (BPI)",
+    "notes": "Institutional payroll disbursement destination.",
+    "updatedAt": "2026-08-28T21:30:00.000Z"
   }
 }

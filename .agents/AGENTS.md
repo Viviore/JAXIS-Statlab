@@ -81,3 +81,24 @@ All AI coding assistants and developers MUST strictly follow the design system a
 - Shared UI components belong in `packages/ui` and must be exported from `packages/ui/src/index.ts`.
 - `apps/app` uses Next.js 16 (Turbopack, Tailwind CSS v4, React 19).
 - After any edits, run `npm run check-types` and `npm run lint` across the monorepo to ensure zero errors and zero warnings.
+
+---
+
+## 9. Philippine Peso (`₱`) Currency Typography & Harmonization Standard (CRITICAL)
+- **Problem**: Monospace font stacks (`font-mono` / `Disket Mono`) lack custom glyphs for `₱` (U+20B1), causing operating systems to fall back to clunky, disproportionately bolded or double-stroke glyphs.
+- **Mandatory Policy**:
+  1. Never render a raw `₱` character directly inside a `font-mono font-bold` container.
+  2. Always use the canonical `<Peso className="..." />` component from `@repo/ui` or `<MoneyDisplay amount={...} />`.
+  3. The `₱` symbol must always be rendered in **Sans-Serif (`font-sans font-normal opacity-85 select-none inline-block mr-0.5`)** to ensure consistent, balanced optical weight alongside monospace numerals.
+  4. In numeric formatters, use `formatPeso(amount)` from `@/lib/formatters`.
+
+---
+
+## 10. Standardized PageHeader & Navigation Breadcrumbs (CRITICAL)
+- **Mandatory Policy**:
+  1. All pages across `apps/app` **MUST** exclusively use the canonical `<PageHeader />` from `@repo/ui`. Raw `<h1>` tags or ad-hoc unstyled headers are strictly forbidden.
+  2. **Breadcrumb Hierarchy**: The root breadcrumb must always be `{ label: "WORKSPACE", href: "/dashboard" }`.
+  3. **Fast Client-Side Routing**: Breadcrumbs must use Next.js `<Link>` for instantaneous SPA navigation.
+  4. **Order of Elements**: (1) Breadcrumbs, (2) Title & optional Status Badge, (3) Informative Description, and (4) Responsive Action Toolbar.
+
+

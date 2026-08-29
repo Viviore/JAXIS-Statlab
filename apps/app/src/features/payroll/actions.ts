@@ -198,6 +198,96 @@ function findPayoutDetailsForStaff(
   return null;
 }
 
+export async function getSignatoryDetails(): Promise<{ ceoName: string; financeName: string; adminName: string }> {
+  let ceoName = "CEO Owner";
+  let financeName = "Finance Officer";
+  let adminName = "Prof. Sofia Benitez";
+
+  const payoutStorage = readPayoutDetailsStorage();
+  for (const entry of Object.values(payoutStorage)) {
+    if (entry.userId === "cmt5pluuu0001lrrk1qu1ul1t" || entry.accountName.toLowerCase().includes("ceo")) {
+      ceoName = entry.accountName;
+    }
+    if (
+      entry.userId === "cmt5plt6q0002lrrkr5jnsghs" ||
+      entry.userId === "cmt5pluuu0005lrrk6qu6ul2t" ||
+      entry.accountName.toLowerCase().includes("finance")
+    ) {
+      financeName = entry.accountName;
+    }
+    if (
+      entry.userId === "usr_dev_admin_001" ||
+      entry.userId === "cmt5plsb20001lrrk0w684oz0" ||
+      entry.notes?.toLowerCase().includes("admin") ||
+      entry.accountName.includes("Sofia")
+    ) {
+      adminName = entry.accountName;
+    }
+  }
+
+  try {
+    const ceo = await withDbTimeout(
+      db.user.findFirst({
+        where: {
+          userRoles: {
+            some: {
+              role: {
+                name: "CEO",
+              },
+            },
+          },
+        },
+        select: { fullName: true },
+      }),
+      1500
+    );
+    if (ceo?.fullName) ceoName = ceo.fullName;
+
+    const fin = await withDbTimeout(
+      db.user.findFirst({
+        where: {
+          userRoles: {
+            some: {
+              role: {
+                name: "FINANCE_OFFICER",
+              },
+            },
+          },
+        },
+        select: { fullName: true },
+      }),
+      1500
+    );
+    if (fin?.fullName) financeName = fin.fullName;
+
+    const adm = await withDbTimeout(
+      db.user.findFirst({
+        where: {
+          userRoles: {
+            some: {
+              role: {
+                name: "ADMIN",
+              },
+            },
+          },
+        },
+        select: { fullName: true },
+      }),
+      1500
+    );
+    if (adm?.fullName) adminName = adm.fullName;
+  } catch {
+    const devUsers = getDevUsers();
+    const ceoDev = Object.values(devUsers).find((u) => u.role === "CEO");
+    if (ceoDev) ceoName = ceoDev.fullName;
+    const finDev = Object.values(devUsers).find((u) => u.role === "FINANCE_OFFICER");
+    if (finDev) financeName = finDev.fullName;
+    const admDev = Object.values(devUsers).find((u) => u.role === "ADMIN");
+    if (admDev) adminName = admDev.fullName;
+  }
+  return { ceoName, financeName, adminName };
+}
+
 export interface InternalStaffMember {
   id: string;
   fullName: string;
@@ -451,6 +541,7 @@ export async function generateBatchPayslips(
 
   // Load existing payslips
   const existingPayslips = readPayslipsStorage();
+  const { ceoName } = await getSignatoryDetails();
 
   // Load attendance logs for duty hours
   let attendanceLogs: { userId: string; totalMinutes: number | null; status: string; clockInAt: Date }[] = [];
@@ -642,6 +733,8 @@ export async function generateBatchPayslips(
       disbursedAt: existingIndex >= 0 ? existingPayslips[existingIndex]!.disbursedAt : null,
       disbursedBy: existingIndex >= 0 ? existingPayslips[existingIndex]!.disbursedBy : null,
       disbursedByName: existingIndex >= 0 ? existingPayslips[existingIndex]!.disbursedByName : null,
+      employerName: existingIndex >= 0 ? existingPayslips[existingIndex]!.employerName || ceoName : ceoName,
+      approvedByName: existingIndex >= 0 ? existingPayslips[existingIndex]!.approvedByName || ceoName : ceoName,
       generatedBy: session.user.fullName || "Finance / Executive Officer",
       notes: config.notes || null,
       createdAt: existingIndex >= 0 ? existingPayslips[existingIndex]!.createdAt : nowStr,
@@ -714,8 +807,12 @@ export async function getCompanyPayslips(filters?: {
   const activeStaffCount = new Set(filtered.map((p) => p.userId)).size;
 
   const payoutStorage = readPayoutDetailsStorage();
+  const { ceoName, financeName, adminName } = await getSignatoryDetails();
   const enhancedPayslips = filtered.map((p) => ({
     ...p,
+    employerName: p.employerName || ceoName,
+    approvedByName: p.approvedByName || ceoName,
+    preparedByName: p.preparedByName || (p.staffRole === "FINANCE_OFFICER" ? adminName : financeName),
     payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName) || p.payoutDetails || null,
   }));
 
@@ -838,8 +935,12 @@ export async function getMyOfficialPayslip(
   myPayslips.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const payoutStorage = readPayoutDetailsStorage();
+  const { ceoName, financeName, adminName } = await getSignatoryDetails();
   myPayslips = myPayslips.map((p) => ({
     ...p,
+    employerName: p.employerName || ceoName,
+    approvedByName: p.approvedByName || ceoName,
+    preparedByName: p.preparedByName || (p.staffRole === "FINANCE_OFFICER" ? adminName : financeName),
     payoutDetails: findPayoutDetailsForStaff(payoutStorage, p.userId, p.staffName) || p.payoutDetails || null,
   }));
 
@@ -873,11 +974,31 @@ export async function getMyPayoutDetails(): Promise<{ success: boolean; data: St
   }
 
   const storage = readPayoutDetailsStorage();
-  const details = storage[session.user.id] || null;
+  const details =
+    findPayoutDetailsForStaff(storage, session.user.id, session.user.fullName) ||
+    storage[session.user.id] ||
+    null;
+
+  if (details) {
+    return {
+      success: true,
+      data: {
+        ...details,
+        accountName: details.accountName || session.user.fullName || "",
+      },
+    };
+  }
 
   return {
     success: true,
-    data: details,
+    data: {
+      userId: session.user.id,
+      payoutChannel: "GCASH",
+      accountNumber: "",
+      accountName: session.user.fullName || "",
+      bankName: "BDO Unibank",
+      notes: "",
+    },
   };
 }
 
@@ -923,3 +1044,29 @@ export async function getStaffPayoutDetails(userId: string): Promise<StaffPayout
   const storage = readPayoutDetailsStorage();
   return storage[userId] || null;
 }
+
+/**
+ * 13. Get individual payslip document by ID or payslip reference number.
+ */
+export async function getPayslipById(payslipIdOrNumber: string): Promise<StaffPayslipDTO | null> {
+  const payslips = readPayslipsStorage();
+  const found = payslips.find(
+    (p) => p.id === payslipIdOrNumber || p.payslipNumber === payslipIdOrNumber
+  );
+
+  if (!found) return null;
+
+  const payoutStorage = readPayoutDetailsStorage();
+  const { ceoName, financeName, adminName } = await getSignatoryDetails();
+  return {
+    ...found,
+    employerName: found.employerName || ceoName,
+    approvedByName: found.approvedByName || ceoName,
+    preparedByName: found.preparedByName || (found.staffRole === "FINANCE_OFFICER" ? adminName : financeName),
+    payoutDetails:
+      findPayoutDetailsForStaff(payoutStorage, found.userId, found.staffName) ||
+      found.payoutDetails ||
+      null,
+  };
+}
+

@@ -176,8 +176,8 @@ export default function CeoAttendanceAuditPage() {
         title="Institutional Attendance & Duty Audit Ledger"
         description="Comprehensive platform telemetry across all raw punches, server timestamps, IP footprints, and company-wide labor policy controls."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Executive Oversight", href: "/dashboard/ceo" },
+          { label: "WORKSPACE", href: "/dashboard" },
+          { label: "CEO Console", href: "/dashboard/ceo" },
           { label: "Attendance & Duty Ledger" },
         ]}
         actions={

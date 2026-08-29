@@ -12,6 +12,7 @@ import {
   EmptyState,
   Badge,
   Pagination,
+  Peso,
 } from "@repo/ui";
 import {
   IconSettings,
@@ -81,7 +82,7 @@ export default function FinanceDashboardPage() {
         title="Finance & HR Operations: Receivables & Escrow Vault"
         description="Monitor institutional study revenue, track downpayment clearances, manage specialist leave authorizations, and audit cleared client proofs."
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
+          { label: "WORKSPACE", href: "/dashboard" },
           { label: "Finance & HR Console" },
         ]}
         actions={
@@ -284,8 +285,8 @@ export default function FinanceDashboardPage() {
                       <div className="font-sans text-[0.688rem]">
                         {study.totalContractAmount > 0 ? (
                           study.isOverpaid ? (
-                            <span className="text-amber-400 font-medium">
-                              Exceeds Quote (+₱{(study.overpaidAmount || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })})
+                            <span className="text-amber-400 font-medium inline-flex items-baseline">
+                              Exceeds Quote (+<Peso className="text-amber-400" />{(study.overpaidAmount || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })})
                             </span>
                           ) : (
                             <span className="text-white/40">
@@ -302,8 +303,8 @@ export default function FinanceDashboardPage() {
                     <td className="py-4 px-5 whitespace-nowrap">
                       {study.isOverpaid ? (
                         <div>
-                          <div className="font-mono text-xs font-bold text-amber-400">
-                            +₱{(study.overpaidAmount || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                          <div className="font-mono text-xs font-bold text-amber-400 inline-flex items-baseline">
+                            +<Peso className="text-amber-400" />{(study.overpaidAmount || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                           </div>
                           <div className="font-sans text-[0.688rem] text-amber-300/70">
                             Overpaid / Reconcile
@@ -321,7 +322,7 @@ export default function FinanceDashboardPage() {
                       ) : (
                         <div className="font-mono text-xs text-emerald-400 font-semibold flex items-center gap-1">
                           <IconCheck size={14} stroke={2.5} />
-                          <span>₱0.00 Due</span>
+                          <span className="inline-flex items-baseline"><Peso className="text-emerald-400/80 text-xs" />0.00 Due</span>
                         </div>
                       )}
                     </td>

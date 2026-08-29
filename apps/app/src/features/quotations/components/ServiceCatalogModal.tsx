@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, ModalFooter, Button } from "@repo/ui";
+import { Modal, ModalFooter, Button, Peso } from "@repo/ui";
 import {
   IconPackage,
   IconBolt,
@@ -573,7 +573,7 @@ export function ServiceCatalogModal({
                         <div className="flex flex-col gap-2">
                           <span className="text-[11px] font-sans text-white/50 font-medium">Min (₱)</span>
                           <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-white/15 px-2.5 py-1.5 focus-within:border-[#CC6600]">
-                            <span className="text-white/40 text-xs font-mono mr-1 select-none">₱</span>
+                            <Peso className="text-white/40 text-xs" />
                             <input
                               type="number"
                               value={pkg.minPrice}
@@ -589,7 +589,7 @@ export function ServiceCatalogModal({
                         <div className="flex flex-col gap-2">
                           <span className="text-[11px] font-sans text-white/50 font-medium">Max (₱)</span>
                           <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-white/15 px-2.5 py-1.5 focus-within:border-[#CC6600]">
-                            <span className="text-white/40 text-xs font-mono mr-1 select-none">₱</span>
+                            <Peso className="text-white/40 text-xs" />
                             <input
                               type="number"
                               placeholder="Uncapped"
@@ -610,7 +610,7 @@ export function ServiceCatalogModal({
                         <div className="flex flex-col gap-2">
                           <span className="text-[11px] font-sans text-[#FFA040] font-semibold">Default (₱)</span>
                           <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-[#CC6600]/50 px-2.5 py-1.5 focus-within:border-[#CC6600]">
-                            <span className="text-[#FFA040] text-xs font-mono mr-1 select-none font-bold">₱</span>
+                            <Peso className="text-[#FFA040] text-xs" />
                             <input
                               type="number"
                               value={pkg.defaultPrice}
@@ -793,7 +793,7 @@ export function ServiceCatalogModal({
                         Default Fee Rate
                       </span>
                       <div className="flex items-center rounded-[4px] bg-[#010D1F] border border-[#CC6600]/40 px-3 py-1.5 focus-within:border-[#CC6600]">
-                        <span className="text-[#FFA040] text-xs font-mono font-bold mr-1 select-none">₱</span>
+                        <Peso className="text-[#FFA040] text-xs" />
                         <input
                           type="number"
                           value={addon.defaultPrice}
