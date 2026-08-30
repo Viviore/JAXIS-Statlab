@@ -2,6 +2,7 @@ export type ProjectStatus =
   | "DRAFT"
   | "NEW_REQUEST"
   | "UNDER_EVALUATION"
+  | "AWAITING_INFORMATION"
   | "QUOTE_SENT"
   | "SOW_PENDING"
   | "AWAITING_PAYMENT"
@@ -10,10 +11,17 @@ export type ProjectStatus =
   | "IN_PROGRESS"
   | "IN_REVIEW"
   | "FOR_QA"
+  | "QA_REVISION"
   | "QA_APPROVED"
+  | "CLIENT_REVIEW"
+  | "REVISION_REQUESTED"
   | "APPROVED"
   | "DELIVERED"
   | "CLOSED"
+  | "CANCELLED"
+  | "HALTED"
+  | "ETHICAL_BREACH"
+  | "EXPIRED"
   | "ARCHIVED";
 
 export type QAStatus = "QA_APPROVED" | "FOR_QA" | "IN_QA_REVIEW" | "REVISION_REQUESTED";
