@@ -85,19 +85,19 @@ export default function DashboardOverviewPage() {
             {/* KPI 1 */}
             <KpiCard
               label="Active Studies"
-              value={kpis?.totalActiveStudies ?? projects.length}
-              badge={kpis?.totalActiveStudiesTrend || "+12% MoM"}
+              value={projects.length}
+              badge={`${projects.length} Total`}
               badgeColor="emerald"
               description={
                 <span className="flex items-center gap-1.5 font-mono text-xs text-white/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                  <span>{projects.filter((p) => p.status === "ANALYSIS_IN_PROGRESS").length} In Progress</span>
+                  <span>{projects.filter((p) => p.status === "ANALYSIS_IN_PROGRESS" || p.status === "IN_PROGRESS").length} Active</span>
                   <span className="text-white/25">·</span>
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                  <span>{kpis?.underEvaluationCount ?? 2} Intake</span>
+                  <span>{projects.filter((p) => p.status === "UNDER_EVALUATION" || p.status === "NEW_REQUEST").length} Intake</span>
                   <span className="text-white/25">·</span>
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  <span>{kpis?.qaReviewGateCount ?? 2} In Review</span>
+                  <span>{projects.filter((p) => p.status === "FOR_QA" || p.status === "QA_REVISION").length} In QA</span>
                 </span>
               }
             />
@@ -105,7 +105,7 @@ export default function DashboardOverviewPage() {
             {/* KPI 2 */}
             <KpiCard
               label="In QA Review"
-              value={kpis?.qaReviewGateCount ?? 3}
+              value={projects.filter((p) => p.status === "FOR_QA" || p.status === "QA_REVISION").length}
               badge="Active"
               badgeColor="sky"
               description="Studies waiting for QA quality check"
@@ -123,7 +123,7 @@ export default function DashboardOverviewPage() {
             {/* KPI 4 */}
             <KpiCard
               label="Completed Studies"
-              value={kpis?.fullyPaidReleasedCount ?? 64}
+              value={projects.filter((p) => p.status === "DELIVERED" || p.status === "CLOSED").length}
               badge="100% Pass"
               badgeColor="emerald"
               description="Delivered and approved research studies"

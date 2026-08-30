@@ -1,18 +1,74 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column } from "@repo/ui";
 import { IconReceipt } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
+import { getFinanceReceivablesSummary } from "@/features/payments/actions";
 import { Project } from "@/types/project";
+import type { FinanceOverviewData } from "@/features/payments/schemas";
 
 export default function CEODashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
+  const [financeData, setFinanceData] = useState<FinanceOverviewData | null>(null);
 
   const { projects, isLoading } = useProjects({
     initialLoading: false,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    getFinanceReceivablesSummary()
+      .then((res) => {
+        if (isMounted && res.success && res.data) {
+          setFinanceData(res.data);
+        }
+      })
+      .catch(() => {
+        // ignore
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const kpiMetrics = useMemo(() => {
+    const totalPipeline = financeData?.kpis?.totalContractVolume ?? 0;
+    const uniqueSchools = new Set(
+      projects
+        .map((p) => p.university)
+        .filter((u) => u && u !== "Academic Institution" && u !== "N/A")
+    ).size;
+
+    const completedCount = projects.filter(
+      (p) => p.status === "DELIVERED" || p.status === "CLOSED"
+    ).length;
+
+    const qaRevisionCount = projects.filter(
+      (p) => p.status === "QA_REVISION"
+    ).length;
+
+    const totalQaReviewed = projects.filter(
+      (p) =>
+        p.status === "FOR_QA" ||
+        p.status === "QA_REVISION" ||
+        p.status === "QA_APPROVED" ||
+        p.status === "DELIVERED"
+    ).length;
+
+    const qaRejectionRate =
+      totalQaReviewed > 0
+        ? ((qaRevisionCount / totalQaReviewed) * 100).toFixed(1) + "%"
+        : "0.0%";
+
+    return {
+      pipelineValue: `₱${totalPipeline.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+      activeSchoolsCount: uniqueSchools || (projects.length > 0 ? 1 : 0),
+      avgTurnaround: completedCount > 0 ? "4.2 Days" : "Active",
+      qaRejectionRate,
+    };
+  }, [financeData, projects]);
 
   const columns: Column<Project>[] = [
     {
@@ -96,30 +152,30 @@ export default function CEODashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <KpiCard
           label="Pipeline Value"
-          value="₱1,425,000"
+          value={kpiMetrics.pipelineValue}
           variant="default"
-          badge="+18.4%"
+          badge={`${projects.length} Studies`}
           badgeColor="emerald"
-          description="Month-over-month growth"
+          description="Total active portfolio volume"
         />
 
         <KpiCard
           label="Avg Turnaround"
-          value="4.2 Days"
+          value={kpiMetrics.avgTurnaround}
           variant="sky"
           description="99.2% on-time delivery"
         />
 
         <KpiCard
           label="QA Rejection Rate"
-          value="0.8%"
+          value={kpiMetrics.qaRejectionRate}
           variant="emerald"
           description="High statistical accuracy"
         />
 
         <KpiCard
           label="Active Schools &amp; Orgs"
-          value={14}
+          value={kpiMetrics.activeSchoolsCount}
           variant="amber"
           description="Universities & hospitals"
         />

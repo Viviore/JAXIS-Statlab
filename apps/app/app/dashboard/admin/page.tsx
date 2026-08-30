@@ -7,11 +7,14 @@ import { IconPlus } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { projectService } from "@/features/projects/services/project.service";
 import { Project, AuditTelemetryEvent } from "@/types/project";
+import { getFinanceReceivablesSummary } from "@/features/payments/actions";
+import type { FinanceOverviewData } from "@/features/payments/schemas";
 
 export default function AdminDashboardPage() {
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
   const [studyAuditLogs, setStudyAuditLogs] = useState<AuditTelemetryEvent[]>([]);
   const [isLoadingAudit, setIsLoadingAudit] = useState(false);
+  const [financeData, setFinanceData] = useState<FinanceOverviewData | null>(null);
   
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,6 +29,22 @@ export default function AdminDashboardPage() {
   } = useProjects({
     initialLoading: false,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    getFinanceReceivablesSummary()
+      .then((res) => {
+        if (isMounted && res.success && res.data) {
+          setFinanceData(res.data);
+        }
+      })
+      .catch(() => {
+        // ignore
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Prioritize studies requiring immediate administrative action / ready signal to the top
   const sortedProjects = useMemo(() => {
@@ -99,32 +118,44 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <KpiCard
           label="Total Active Studies"
-          value={kpis?.totalActiveStudies ?? 24}
+          value={projects.length}
           variant="default"
-          badge={kpis?.totalActiveStudiesTrend ?? "+14%"}
+          badge={`${projects.length} Total`}
           badgeColor="emerald"
-          description="Month-over-month growth"
+          description="All registered studies"
         />
 
         <KpiCard
           label="Under Evaluation"
-          value={kpis?.underEvaluationCount ?? 7}
+          value={
+            projects.filter(
+              (p) =>
+                p.status === "NEW_REQUEST" ||
+                p.status === "UNDER_EVALUATION" ||
+                p.status === "QUOTE_SENT" ||
+                p.status === "AWAITING_INFORMATION"
+            ).length
+          }
           variant="sky"
-          description="Analysis in progress"
+          description="Analysis & intake in progress"
         />
 
         <KpiCard
           label="In QA Review"
-          value={kpis?.qaReviewGateCount ?? 5}
+          value={
+            projects.filter(
+              (p) => p.status === "FOR_QA" || p.status === "QA_REVISION"
+            ).length
+          }
           variant="amber"
           description="Quality check pending"
         />
 
         <KpiCard
-          label="Monthly Revenue"
-          value={kpis?.monthlyRevenueEscrow ?? "₱485,200"}
+          label="Total Collected"
+          value={`₱${(financeData?.kpis?.totalVaultCleared || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`}
           variant="emerald"
-          description={kpis?.escrowSecuredRatio ?? "99.4% Secured"}
+          description={`${financeData?.kpis?.pendingClearancesCount || 0} pending clearances`}
         />
       </div>
 
