@@ -126,6 +126,14 @@ export interface InfrastructureHealthDTO {
     totalRows: number;
     latencyMs: number;
     connectionPoolStatus: string;
+    tableBreakdown?: {
+      projects: number;
+      users: number;
+      deliverables: number;
+      messages: number;
+      auditLogs: number;
+      notificationLogs: number;
+    };
   };
   cloudflare: {
     status: "HEALTHY" | "WARNING" | "CRITICAL";
@@ -135,6 +143,8 @@ export interface InfrastructureHealthDTO {
     percentageUsed: number;
     purgedFilesCount: number;
     purgedSavingsMB: number;
+    bucketName?: string;
+    region?: string;
   };
   resend: {
     status: "HEALTHY" | "WARNING" | "CRITICAL";
@@ -143,12 +153,34 @@ export interface InfrastructureHealthDTO {
     sentThisMonth: number;
     monthlyLimit: number;
     dailyPercentageUsed: number;
+    monthlyPercentageUsed: number;
     deliverySuccessRate: number;
+    failedCount: number;
     mode: "PRODUCTION_API" | "LOCAL_SIMULATION";
+  };
+  triggerDev: {
+    status: "HEALTHY" | "WARNING" | "CRITICAL";
+    runsThisMonth: number;
+    monthlyLimit: number;
+    percentageUsed: number;
+    activeJobsCount: number;
+    queuedJobsCount: number;
+    failedRunsCount: number;
+    successRate: number;
+    mode: "PRODUCTION_CLOUD" | "LOCAL_DEV_ENGINE";
+    endpointUrl: string;
+    registeredJobs: Array<{
+      id: string;
+      name: string;
+      schedule: string;
+      lastRunStatus: "SUCCESS" | "RUNNING" | "QUEUED" | "FAILED";
+    }>;
   };
   overallStatus: "HEALTHY" | "WARNING" | "CRITICAL";
   hasActiveWarning: boolean;
   warningDetails: string[];
+  lastCheckedAt: string;
 }
+
 
 
