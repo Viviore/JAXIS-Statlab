@@ -19,7 +19,7 @@
     "@repo/ui": "*",
     "@supabase/supabase-js": "^2.112.3",
     "@tabler/icons-react": "^3.46.0",
-    "@trigger.dev/sdk": "^4.5.12",
+    "@trigger.dev/sdk": "^4.5.14",
     "bcryptjs": "^3.0.3",
     "next": "16.2.0",
     "next-auth": "^5.0.0-beta.32",

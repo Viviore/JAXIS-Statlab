@@ -37,7 +37,7 @@ export async function sendEmail(payload: EmailPayload): Promise<{
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "JAXIS StatLab <noreply@jaxis.dev>",
+            from: process.env.RESEND_FROM_EMAIL || "JAXIS StatLab <onboarding@resend.dev>",
             to,
             subject,
             html,
