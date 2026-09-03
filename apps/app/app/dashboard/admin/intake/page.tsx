@@ -28,6 +28,7 @@ import {
   IconInbox,
   IconShieldCheck,
   IconCalculator,
+  IconFileCertificate,
 } from "@tabler/icons-react";
 import {
   getProjects,
@@ -544,15 +545,28 @@ export default function AdminIntakeTriagePage() {
                         {/* Actions */}
                         <td className="text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Link href={`/dashboard/admin/projects/${p.id}`}>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="font-sans text-xs font-semibold py-1 px-2.5 rounded-[2px]"
-                              >
-                                <span>Inspect</span>
-                              </Button>
-                            </Link>
+                            {p.masterStatus === "CLIENT_APPROVED" ? (
+                              <Link href={`/dashboard/admin/projects/${p.id}/sow`}>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  className="font-sans text-xs font-semibold py-1 px-2.5 rounded-[2px] bg-[#CC6600] text-white hover:bg-[#E67300] flex items-center gap-1"
+                                >
+                                  <IconFileCertificate size={13} stroke={2} />
+                                  <span>Draft SOW →</span>
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Link href={`/dashboard/admin/projects/${p.id}`}>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="font-sans text-xs font-semibold py-1 px-2.5 rounded-[2px]"
+                                >
+                                  <span>Inspect</span>
+                                </Button>
+                              </Link>
+                            )}
 
                             <DropdownMenu
                               trigger={
@@ -565,6 +579,18 @@ export default function AdminIntakeTriagePage() {
                                 </Button>
                               }
                               items={[
+                                ...(p.masterStatus === "CLIENT_APPROVED"
+                                  ? [
+                                      {
+                                        label: "Draft Statement of Work",
+                                        subtitle: "Compile SOW and issue to client",
+                                        icon: <IconFileCertificate size={16} stroke={1.5} />,
+                                        onClick: () => {
+                                          window.location.href = `/dashboard/admin/projects/${p.id}/sow`;
+                                        },
+                                      },
+                                    ]
+                                  : []),
                                 {
                                   label: "Open Inspection Desk",
                                   subtitle: "Full study workspace & telemetry",

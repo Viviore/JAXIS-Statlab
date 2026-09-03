@@ -12,16 +12,16 @@ import {
   LoadingState,
   FormTextarea,
   EmptyState,
+  Peso,
 } from "@repo/ui";
 import {
   IconArrowLeft,
   IconFileText,
-  IconSparkles,
   IconShieldCheck,
+  IconFileCertificate,
+  IconCheck,
   IconLock,
   IconCreditCard,
-  IconChevronDown,
-  IconChevronUp,
 } from "@tabler/icons-react";
 import { getSOWByProject, generateSOW } from "@/features/sow/actions";
 import { getProjectById } from "@/features/projects/actions";
@@ -40,7 +40,6 @@ export default function AdminSowPage() {
   const [quotation, setQuotation] = useState<QuotationDetailItem | null>(null);
   const [sow, setSow] = useState<SOWDetailItem | null>(null);
   const [customTerms, setCustomTerms] = useState("");
-  const [isOverrideOpen, setIsOverrideOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
@@ -190,15 +189,25 @@ export default function AdminSowPage() {
         <div className="flex flex-col gap-6">
           <Card className="p-8 sm:p-10 bg-[#01142B]/95 border border-white/15 rounded-[6px] flex flex-col gap-6 shadow-2xl">
             <div className="flex items-start gap-4 border-b border-white/10 pb-6">
-              <div className="h-12 w-12 rounded-[4px] bg-sky-500/20 border border-sky-500/40 flex items-center justify-center shrink-0">
-                <IconSparkles size={24} stroke={1.5} className="text-sky-400" />
+              <div className="h-12 w-12 rounded-[4px] bg-[#CC6600]/20 border border-[#CC6600]/40 flex items-center justify-center shrink-0">
+                <IconFileCertificate size={24} stroke={1.5} className="text-[#FFA040]" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white font-sans">
-                  Statement of Work Auto-Generation
-                </h3>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h3 className="text-lg font-bold text-white font-sans">
+                    Statement of Work (SOW) Drafting Desk
+                  </h3>
+                  {quotation?.status === "CLIENT_APPROVED" && (
+                    <span className="text-xs font-sans text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-[2px] uppercase font-bold flex items-center gap-1">
+                      <IconCheck size={12} stroke={2.5} />
+                      Quote Approved by Client
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-white/70 font-sans leading-relaxed">
-                  The formal Statement of Work is automatically compiled and dispatched to the client as soon as they accept the commercial quotation. No manual administrative action is needed.
+                  {quotation?.status === "CLIENT_APPROVED"
+                    ? "The client has formally accepted the commercial quote. Review the scope below, add any custom clauses or university requirements, and compile the official Statement of Work for client signature."
+                    : "Review commercial quotation details, add any customized terms or scope boundaries, and compile the official Statement of Work."}
                 </p>
               </div>
             </div>
@@ -214,7 +223,7 @@ export default function AdminSowPage() {
                       Commercial Quotation Basis
                     </span>
                     <span className="text-xs font-mono px-2.5 py-1 rounded-[2px] bg-white/10 text-white/80 font-semibold uppercase">
-                      Status: {quotation.status}
+                      Status: {quotation.status.replace(/_/g, " ")}
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
@@ -227,65 +236,48 @@ export default function AdminSowPage() {
                     <div className="space-y-1">
                       <span className="text-xs font-sans text-white/40 block">Total Contract Sum</span>
                       <strong className="text-sm sm:text-base font-bold text-amber-400 font-mono block">
-                        ₱{Number(quotation.totalAmount).toLocaleString()}
+                        <Peso className="text-amber-400 text-sm sm:text-base" />{Number(quotation.totalAmount).toLocaleString()}
                       </strong>
                     </div>
                     <div className="space-y-1">
                       <span className="text-xs font-sans text-white/40 block">Initial Downpayment</span>
                       <strong className="text-sm sm:text-base font-bold text-emerald-400 font-mono block">
-                        ₱{Number(quotation.downpaymentRequired).toLocaleString()}
+                        <Peso className="text-emerald-400 text-sm sm:text-base" />{Number(quotation.downpaymentRequired).toLocaleString()}
                       </strong>
                     </div>
                   </div>
                 </div>
 
-                {/* Collapsible Administrative Manual Override */}
-                <div className="border border-white/10 rounded-[4px] bg-[#01142B]/60 overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setIsOverrideOpen(!isOverrideOpen)}
-                    className="w-full p-4 flex items-center justify-between text-left hover:bg-white/[0.03] transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <IconFileText size={16} stroke={1.5} className="text-white/60" />
-                      <span className="text-xs font-sans font-semibold text-white/80 uppercase tracking-wider">
-                        Manual SOW Compile (Administrative Override)
-                      </span>
-                    </div>
-                    {isOverrideOpen ? (
-                      <IconChevronUp size={16} className="text-white/60" />
-                    ) : (
-                      <IconChevronDown size={16} className="text-white/60" />
-                    )}
-                  </button>
-
-                  {isOverrideOpen && (
-                    <div className="p-6 pt-2 border-t border-white/10 flex flex-col gap-4">
-                      <p className="text-xs text-white/60 font-sans leading-relaxed">
-                        Use this only if you need to manually force SOW generation before client acceptance or inject special contractual clauses.
-                      </p>
-                      <FormTextarea
-                        label="Special Terms & Non-Standard Scope Boundaries (Optional)"
-                        placeholder="e.g., Client to supply raw SPSS (.sav) matrix by Friday. Analysis excludes structural equation modeling."
-                        value={customTerms}
-                        onChange={(e) => setCustomTerms(e.target.value)}
-                        rows={3}
-                        className="font-sans text-sm"
-                      />
-                      <div className="flex items-center justify-end gap-3 pt-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          loading={isPending}
-                          onClick={handleManualCompile}
-                          className="font-sans font-semibold text-xs text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
-                        >
-                          <IconSparkles size={15} stroke={1.5} className="mr-1.5" />
-                          <span>Force Compile SOW (Override)</span>
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                {/* Custom Contractual Clauses */}
+                <div className="p-6 border border-white/10 rounded-[4px] bg-[#01142B]/60 flex flex-col gap-4">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-white font-sans">
+                      Special Terms & Scope Boundaries (Optional)
+                    </h4>
+                    <p className="text-xs text-white/60 font-sans leading-relaxed">
+                      Inject any bespoke clauses, university guidelines, client data commitments, or boundary conditions into the legal snapshot.
+                    </p>
+                  </div>
+                  <FormTextarea
+                    label="Custom Terms & Conditions"
+                    placeholder="e.g., Client to supply raw survey matrix (.xlsx) with clean demographic labels. Scope includes Chapter 4 descriptive and inferential tests, excluding structural equation modeling."
+                    value={customTerms}
+                    onChange={(e) => setCustomTerms(e.target.value)}
+                    rows={4}
+                    className="font-sans text-sm"
+                  />
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      loading={isPending}
+                      onClick={handleManualCompile}
+                      className="font-sans font-semibold text-xs bg-[#CC6600] hover:bg-[#E67300] text-white flex items-center gap-2 px-5 py-2.5"
+                    >
+                      <IconFileCertificate size={16} stroke={2} />
+                      <span>Compile & Issue Statement of Work to Client →</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             ) : (

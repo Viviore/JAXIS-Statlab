@@ -145,6 +145,24 @@ export function getProjectDisplayStatus(project: {
     };
   }
 
+  if (project.masterStatus === "CLIENT_APPROVED") {
+    return {
+      status: "CLIENT_APPROVED",
+      label: "Awaiting SOW",
+      pulse: true,
+      description: "Quote accepted by client. Admin is compiling the formal Statement of Work.",
+    };
+  }
+
+  if (project.masterStatus === "SOW_PENDING") {
+    return {
+      status: "SOW_PENDING",
+      label: "SOW Ready to Sign",
+      pulse: true,
+      description: "Statement of Work issued. Waiting for client digital signature.",
+    };
+  }
+
   return {
     status: project.masterStatus,
     label: PROJECT_STATUS_LABELS[project.masterStatus as ProjectStatus] || project.masterStatus,

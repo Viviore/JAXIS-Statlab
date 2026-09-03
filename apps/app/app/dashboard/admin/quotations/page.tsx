@@ -22,6 +22,7 @@ import {
   IconExternalLink,
   IconCalculator,
   IconReceiptOff,
+  IconFileCertificate,
 } from "@tabler/icons-react";
 import { getQuotationsRoster, getCommercialCatalog } from "@/features/quotations/actions";
 import { QuotationBuilderModal } from "@/features/quotations/components/QuotationBuilderModal";
@@ -397,7 +398,18 @@ export default function AdminQuotationsPage() {
                         {/* 5. Actions */}
                         <td className="text-right whitespace-nowrap">
                           <div className="relative inline-flex items-center justify-end gap-2">
-                            {(quote.status === "DRAFT" || quote.status === "QUOTE_DECLINED") ? (
+                            {quote.status === "CLIENT_APPROVED" ? (
+                              <Link href={`/dashboard/admin/projects/${quote.projectId}/sow`}>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  className="py-1.5 px-3 h-auto whitespace-nowrap font-mono text-xs tracking-wider bg-[#CC6600] text-white hover:bg-[#E67300] flex items-center gap-1.5"
+                                >
+                                  <IconFileCertificate size={14} stroke={2} />
+                                  <span>DRAFT SOW →</span>
+                                </Button>
+                              </Link>
+                            ) : (quote.status === "DRAFT" || quote.status === "QUOTE_DECLINED") ? (
                               <Button
                                 variant="primary"
                                 size="sm"
@@ -420,6 +432,18 @@ export default function AdminQuotationsPage() {
 
                             <DropdownMenu
                               items={[
+                                ...(quote.status === "CLIENT_APPROVED"
+                                  ? [
+                                      {
+                                        label: "Draft Statement of Work",
+                                        subtitle: "Compile SOW and issue to client",
+                                        icon: <IconFileCertificate size={16} stroke={1.5} />,
+                                        onClick: () => {
+                                          window.location.href = `/dashboard/admin/projects/${quote.projectId}/sow`;
+                                        },
+                                      },
+                                    ]
+                                  : []),
                                 {
                                   label: "Configure / Edit Quote",
                                   subtitle: "Open proposal builder drawer",

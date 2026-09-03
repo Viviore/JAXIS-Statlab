@@ -22,7 +22,6 @@ import {
   sendQuotationAcceptedNotification,
   sendQuotationDeclinedNotification,
 } from "./notifications";
-import { createOrUpdateSOWInternal } from "@/features/sow/actions";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 import {
   CreateQuotationSchema,
@@ -1012,18 +1011,8 @@ export async function respondQuotation(
     revalidatePath(`/dashboard/client/projects/${updated.projectId}`);
     revalidatePath(`/dashboard/client/projects/${updated.projectId}/quote`);
 
-    // Auto-generate formal Statement of Work immediately upon client acceptance
+    // Note: SOW is intentionally drafted and compiled by Operations Admin (Module 06)
     if (decision === "ACCEPT") {
-      try {
-        await createOrUpdateSOWInternal({
-          projectId: updated.projectId,
-          quotationId: updated.id,
-          generatedBy: session.user.id,
-        });
-      } catch (sowErr) {
-        console.warn("[respondQuotation] Auto SOW generation error:", sowErr);
-      }
-
       await sendQuotationAcceptedNotification({
         quotationId: result.id,
         intakeId: result.projectIntakeId || "Study",
@@ -1092,19 +1081,7 @@ export async function respondQuotation(
         }
       }
 
-      // Auto-generate SOW in dev fallback mode
-      if (isAccept) {
-        try {
-          await createOrUpdateSOWInternal({
-            projectId: existing.projectId,
-            quotationId: existing.id,
-            generatedBy: session.user.id,
-          });
-        } catch (sowErr) {
-          console.warn("[respondQuotation] Dev SOW auto-generation error:", sowErr);
-        }
-      }
-
+      // Note: SOW is intentionally compiled by Operations Admin (Module 06)
       revalidatePath(`/dashboard/admin/projects/${existing.projectId}`);
       revalidatePath(`/dashboard/admin/quotations`);
       revalidatePath(`/dashboard/client/projects/${existing.projectId}`);

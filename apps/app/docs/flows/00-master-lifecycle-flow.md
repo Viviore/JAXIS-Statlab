@@ -23,10 +23,11 @@ This document explains the complete, verified lifecycle of a research study insi
      Status: QUOTE_SENT (or AWAITING_INFORMATION if files missing)
               │
               ▼
- [3] SIGN & PAY 50% DEPOSIT ──────────► CLIENT & FINANCE OFFICER
-     Sidebar (Client): "Quotes & Proposals" ──► Digital SOW & touch signature pad
-     Sidebar (Finance): "Transactions" ───────► GCash/Bank check & Escrow Vault lock
-     Status: SOW_SIGNED ──► AWAITING_CONFIRMATION ──► ACTIVE
+ [3] ACCEPT QUOTE, ADMIN ISSUES SOW & SIGN ──► CLIENT & ADMIN
+     Sidebar (Client): "Quotes & Proposals" ──► Accept Quote (CLIENT_APPROVED)
+     Sidebar (Admin): "Intake Desk" / "SOW Desk" ──► Draft & Issue SOW (SOW_PENDING)
+     Sidebar (Client): "Quotes & Proposals" ──► Review & Sign SOW (SOW_SIGNED)
+     Sidebar (Finance): "Transactions" ───────► GCash/Bank check & Escrow Vault lock (ACTIVE)
               │
               ▼
  [4] WE ASSIGN YOUR STATISTICIAN ─────► ADMIN (Operations Manager)
@@ -99,21 +100,28 @@ This document explains the complete, verified lifecycle of a research study insi
 
 ---
 
-### [3] SIGN & PAY 50% DEPOSIT
-- **Who Acts:** Client ➔ Finance Officer
+### [3] ACCEPT QUOTE, ADMIN DRAFTS SOW, SIGN & PAY 50% DEPOSIT
+- **Who Acts:** Client ➔ Operations Admin ➔ Client ➔ Finance Officer
 - **Sidebar Menu:**
   - Client: `Quotes & Proposals` (`/dashboard/client/quotations`)
+  - Admin: `Intake Review` / `SOW Desk` (`/dashboard/admin/intake` & `/dashboard/admin/projects/[id]/sow`)
   - Finance: `Transactions Desk` (`/dashboard/finance/transactions`)
 - **Tools on Screen:**
-  1. **Client Side:**
-     - Digital Statement of Work (SOW) viewer with deliverables breakdown.
-     - Canvas signature pad to draw legal signature (`SOW_SIGNED`).
-     - Payment modal showing official GCash QR and BDO/BPI bank account details.
-     - Receipt screenshot uploader with reference number field (`AWAITING_CONFIRMATION`).
-  2. **Finance Side:**
-     - Verification modal showing uploaded receipt slip side-by-side with reference number.
-     - "Approve & Lock Funds" button locks deposit into the **JAXIS Escrow Vault** (`ESCROW_LOCKED`).
-- **System Status:** `ACTIVE`
+  1. **Client Accepts Quote:**
+     - Client clicks "Confirm & Accept Proposal" on `/dashboard/client/projects/[id]/quote`.
+     - System Status: `CLIENT_APPROVED`.
+  2. **Admin Drafts & Issues SOW:**
+     - Admin opens `/dashboard/admin/projects/[id]/sow`.
+     - Admin reviews scope, adds custom terms or university requirements, and clicks "Compile & Issue SOW to Client".
+     - System Status: `SOW_PENDING`.
+  3. **Client Reviews & Signs SOW:**
+     - Client views compiled agreement at `/dashboard/client/projects/[id]/sow`.
+     - Client signs with typed full legal name and clicks "Sign & Execute Agreement".
+     - System Status: `SOW_SIGNED` ➔ `AWAITING_PAYMENT`.
+  4. **Client Submits 50% Deposit & Finance Verifies:**
+     - Client views official GCash QR & bank details, then uploads payment slip.
+     - Finance verifies cleared funds and locks deposit into **JAXIS Escrow Vault**.
+- **System Status:** `ACTIVE` (Ready for specialist staffing)
 
 ---
 

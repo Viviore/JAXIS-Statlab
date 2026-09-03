@@ -94,6 +94,19 @@ Here you set the pricing for the study:
 
 ---
 
+### Screen 2.5: Statement of Work Desk (`/dashboard/admin/projects/[id]/sow`)
+
+When the client accepts your quote, you compile and issue the official agreement:
+
+1. In your Intake or Quotations queue, you will see the study marked **"AWAITING SOW"** with a button **[ Draft SOW → ]**.
+2. Click **"Draft SOW →"** to open the Statement of Work Desk.
+3. Review the agreed package, total fee, 50% deposit, and delivery deadline.
+4. *(Optional)* In the **"Special Terms & Scope Boundaries"** box, type any specific notes (e.g., *"Client will provide questionnaire scoring key; analysis covers Chapter 4 descriptive and regression tests."*).
+5. Click **"Compile & Issue Statement of Work to Client →"**.
+6. The client is immediately notified to review and sign online!
+
+---
+
 ### Screen 3: Assigning a Statistician (`/dashboard/admin/assignments`)
 
 Once Finance verifies the client's 50% deposit, the study enters **"Pending Assignment"**:

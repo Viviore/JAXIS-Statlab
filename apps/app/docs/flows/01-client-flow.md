@@ -117,15 +117,17 @@ When you click **"+ Submit New Study Request"**, you will see a simple 3-step fo
 
 ---
 
-### Step [3]: Signing the Agreement & Paying 50% Deposit
+### Step [3]: Accepting Quote, SOW Issuance & Paying 50% Deposit
 
 1. Click **"Accept Quote"**.
-2. The agreement (Statement of Work) will open. Read it, draw your signature with your mouse or phone screen, and click **"Sign Contract"**.
-3. Click **"Pay Deposit"**:
+2. Our operations team is instantly notified to draft and compile your official Statement of Work (SOW) contract with your university requirements and scope details.
+3. Once compiled, you will receive an alert: *"Your SOW is ready to review and sign"*.
+4. Click **"Sign Statement of Work Now →"**, review the contract terms, type your legal full name to sign, and click **"Sign & Execute Agreement"**.
+5. Click **"Pay Deposit"**:
    - You will see our official **GCash QR Code** and **Bank Transfer details** (BDO / BPI).
    - Send the 50% downpayment.
    - Take a screenshot of the receipt and upload it with the reference number.
-4. **Your Money is 100% Protected:** Finance verifies the receipt and locks your deposit safely in the **JAXIS Escrow Vault**. It is never released to the specialist until our Senior QA Lead checks the math and passes your paper!
+6. **Your Money is 100% Protected:** Finance verifies the receipt and locks your deposit safely in the **JAXIS Escrow Vault**. It is never released to the specialist until our Senior QA Lead checks the math and passes your paper!
 
 ---
 

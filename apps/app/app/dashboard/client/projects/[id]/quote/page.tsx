@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useTransition, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   PageHeader,
   Card,
@@ -51,7 +50,6 @@ interface PageProps {
 export default function ClientQuotationReviewPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
-  const router = useRouter();
 
   const [project, setProject] = useState<ProjectDetailItem | null>(null);
   const [quotation, setQuotation] = useState<QuotationDetailItem | null>(null);
@@ -120,11 +118,11 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
         if (res.success) {
           setToastMessage({
             message: "Proposal Accepted",
-            description: "Your proposal is confirmed. Redirecting to Statement of Work agreement...",
+            description: "Thank you! Our operations admin has been notified to draft your formal Statement of Work.",
             variant: "success",
           });
           setIsAcceptModalOpen(false);
-          router.push(`/dashboard/client/projects/${projectId}/sow`);
+          loadData();
         } else {
           setToastMessage({
             message: "Acceptance Failed",
@@ -579,39 +577,68 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
               </div>
             ) : quotation.status === "CLIENT_APPROVED" ? (
               <div className="space-y-4">
-                <div className="p-5 rounded-[2px] bg-emerald-950/20 border border-emerald-500/30 text-left space-y-1.5">
-                  <div className="text-xs font-sans text-emerald-400 font-bold flex items-center gap-2">
-                    <IconCheck size={16} stroke={2} />
-                    <span>Proposal Accepted</span>
-                  </div>
-                  <p className="text-xs text-white/70 font-sans leading-relaxed">
-                    Commercial terms approved. Your formal Statement of Work (SOW) agreement is ready for digital signature.
-                  </p>
-                </div>
+                {project.masterStatus === "CLIENT_APPROVED" ? (
+                  <>
+                    <div className="p-5 rounded-[2px] bg-emerald-950/20 border border-emerald-500/30 text-left space-y-1.5">
+                      <div className="text-xs font-sans text-emerald-400 font-bold flex items-center gap-2">
+                        <IconCheck size={16} stroke={2} />
+                        <span>Proposal Accepted</span>
+                      </div>
+                      <p className="text-xs text-white/70 font-sans leading-relaxed">
+                        Commercial terms accepted! Our operations team has been notified and is preparing your formal Statement of Work (SOW). You will be notified as soon as it is ready for your signature.
+                      </p>
+                    </div>
 
-                <div className="space-y-2.5">
-                  <Link href={`/dashboard/client/projects/${projectId}/sow`} className="block w-full">
-                    <Button
-                      variant="primary"
-                      size="md"
-                      className="w-full min-h-[42px] font-sans text-xs font-semibold flex items-center justify-center gap-2 bg-[#CC6600] hover:bg-[#E67300] text-white"
-                    >
-                      <IconFileCertificate size={16} stroke={2} />
-                      <span>Sign Statement of Work Now →</span>
-                    </Button>
-                  </Link>
+                    <div className="space-y-2.5">
+                      <Link href={`/dashboard/client/projects/${projectId}`} className="block w-full">
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          className="w-full min-h-[38px] font-sans text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <IconArrowLeft size={15} stroke={1.5} />
+                          <span>Return to Study Details</span>
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-5 rounded-[2px] bg-emerald-950/20 border border-emerald-500/30 text-left space-y-1.5">
+                      <div className="text-xs font-sans text-emerald-400 font-bold flex items-center gap-2">
+                        <IconCheck size={16} stroke={2} />
+                        <span>SOW Ready for Signing</span>
+                      </div>
+                      <p className="text-xs text-white/70 font-sans leading-relaxed">
+                        Your formal Statement of Work (SOW) agreement has been compiled by our admin team and is ready for your digital signature.
+                      </p>
+                    </div>
 
-                  <Link href={`/dashboard/client/projects/${projectId}`} className="block w-full">
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      className="w-full min-h-[38px] font-sans text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <IconArrowLeft size={15} stroke={1.5} />
-                      <span>Return to Study Details</span>
-                    </Button>
-                  </Link>
-                </div>
+                    <div className="space-y-2.5">
+                      <Link href={`/dashboard/client/projects/${projectId}/sow`} className="block w-full">
+                        <Button
+                          variant="primary"
+                          size="md"
+                          className="w-full min-h-[42px] font-sans text-xs font-semibold flex items-center justify-center gap-2 bg-[#CC6600] hover:bg-[#E67300] text-white"
+                        >
+                          <IconFileCertificate size={16} stroke={2} />
+                          <span>Sign Statement of Work Now →</span>
+                        </Button>
+                      </Link>
+
+                      <Link href={`/dashboard/client/projects/${projectId}`} className="block w-full">
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          className="w-full min-h-[38px] font-sans text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <IconArrowLeft size={15} stroke={1.5} />
+                          <span>Return to Study Details</span>
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
+                )}
               </div>
             ) : quotation.status === "QUOTE_DECLINED" ? (
               <div className="space-y-4">
