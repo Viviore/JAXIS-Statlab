@@ -22,6 +22,7 @@ import {
   IconLoader2,
   IconAlertCircle,
   IconQrcode,
+  IconLock,
 } from "@tabler/icons-react";
 import { uploadFileToR2 } from "@/lib/storage-client";
 import { submitPaymentProof, getPaymentChannels } from "../actions";
@@ -416,9 +417,11 @@ export function PaymentProofUploadModal({
             step="0.01"
             min="1"
             required
+            readOnly
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            helper="Auto-adjusted based on selection. You may edit if fees differ."
+            rightIcon={<IconLock size={15} stroke={1.5} className="text-white/40" />}
+            className="bg-white/[0.04] text-white/70 border-white/10 cursor-not-allowed font-mono font-bold select-none focus:border-white/10 focus:ring-0"
+            helper="Locked to the exact milestone amount required by your contract."
           />
         </div>
 
