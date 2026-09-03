@@ -52,77 +52,89 @@ export async function assignExperts(
   const { projectId, statisticianId, qaLeadId, turnaroundDays: customDays } = parsed.data;
 
   try {
+    // 1. Fetch project details and turnaround basis outside the transaction
+    const project = await db.project.findFirst({
+      where: { OR: [{ id: projectId }, { intakeId: projectId }] },
+      include: { sows: { orderBy: { generatedAt: "desc" }, take: 1 } },
+    });
+
+    if (!project) {
+      return { success: false, error: { code: "NOT_FOUND", message: "Research study not found." } };
+    }
+
+    assertCanBeAssigned(project.masterStatus);
+
+    // 2. Pre-compute SLA due date outside the transaction
+    const turnaround = customDays || project.sows[0]?.turnaroundDays || 5;
+    const now = new Date();
+    const slaDueAt = await computeSlaDueDate(now, turnaround);
+
+    // 3. Fast atomic transaction with high timeout budget (30s)
     const result = await withDbTimeout(
-      db.$transaction(async (tx) => {
-        const project = await tx.project.findFirst({
-          where: { OR: [{ id: projectId }, { intakeId: projectId }] },
-          include: { sows: { orderBy: { generatedAt: "desc" }, take: 1 } },
-        });
+      db.$transaction(
+        async (tx) => {
+          // Verify selected specialists are not currently on leave in parallel
+          const [statUser, qaUser] = await Promise.all([
+            tx.user.findUnique({ where: { id: statisticianId } }),
+            tx.user.findUnique({ where: { id: qaLeadId } }),
+          ]);
 
-        if (!project) {
-          throw new Error("NOT_FOUND: Research study not found.");
+          if (statUser?.status === "ON_LEAVE") {
+            throw new Error("CONFLICT: Selected Lead Statistician is currently on leave and unavailable for assignments.");
+          }
+          if (qaUser?.status === "ON_LEAVE") {
+            throw new Error("CONFLICT: Selected Senior QA Lead is currently on leave and unavailable for assignments.");
+          }
+
+          // Create or update active assignment
+          const assignment = await tx.assignment.upsert({
+            where: { projectId: project.id },
+            create: {
+              projectId: project.id,
+              statisticianId,
+              qaLeadId,
+              assignedBy: session.user.id,
+              assignedAt: now,
+              slaStartAt: now,
+              slaDueAt,
+              isActive: true,
+            },
+            update: {
+              statisticianId,
+              qaLeadId,
+              assignedBy: session.user.id,
+              assignedAt: now,
+              slaStartAt: now,
+              slaDueAt,
+              slaPausedAt: null,
+              slaPauseReason: null,
+              slaPausedBy: null,
+              slaApprovedBy: null,
+              isActive: true,
+            },
+            include: {
+              project: true,
+              statistician: true,
+              qaLead: true,
+            },
+          });
+
+          // Transition project to EXPERT_ASSIGNED
+          await tx.project.update({
+            where: { id: project.id },
+            data: {
+              masterStatus: "EXPERT_ASSIGNED",
+            },
+          });
+
+          return assignment;
+        },
+        {
+          maxWait: 15000,
+          timeout: 30000,
         }
-
-        assertCanBeAssigned(project.masterStatus);
-
-        // Verify selected specialists are not currently on leave
-        const statUser = await tx.user.findUnique({ where: { id: statisticianId } });
-        if (statUser?.status === "ON_LEAVE") {
-          throw new Error("CONFLICT: Selected Lead Statistician is currently on leave and unavailable for assignments.");
-        }
-        const qaUser = await tx.user.findUnique({ where: { id: qaLeadId } });
-        if (qaUser?.status === "ON_LEAVE") {
-          throw new Error("CONFLICT: Selected Senior QA Lead is currently on leave and unavailable for assignments.");
-        }
-
-        // Turnaround days: SOW turnaround days > custom days > default 5 business days
-        const turnaround = customDays || project.sows[0]?.turnaroundDays || 5;
-        const now = new Date();
-        const slaDueAt = await computeSlaDueDate(now, turnaround);
-
-        // Create or update active assignment
-        const assignment = await tx.assignment.upsert({
-          where: { projectId: project.id },
-          create: {
-            projectId: project.id,
-            statisticianId,
-            qaLeadId,
-            assignedBy: session.user.id,
-            assignedAt: now,
-            slaStartAt: now,
-            slaDueAt,
-            isActive: true,
-          },
-          update: {
-            statisticianId,
-            qaLeadId,
-            assignedBy: session.user.id,
-            assignedAt: now,
-            slaStartAt: now,
-            slaDueAt,
-            slaPausedAt: null,
-            slaPauseReason: null,
-            slaPausedBy: null,
-            slaApprovedBy: null,
-            isActive: true,
-          },
-          include: {
-            project: true,
-            statistician: true,
-            qaLead: true,
-          },
-        });
-
-        // Transition project to EXPERT_ASSIGNED
-        await tx.project.update({
-          where: { id: project.id },
-          data: {
-            masterStatus: "EXPERT_ASSIGNED",
-          },
-        });
-
-        return assignment;
-      })
+      ),
+      35000
     );
 
     revalidatePath("/dashboard/admin/assignments");
@@ -201,62 +213,68 @@ export async function reassignExperts(
 
   try {
     const result = await withDbTimeout(
-      db.$transaction(async (tx) => {
-        const existing = await tx.assignment.findFirst({
-          where: {
-            OR: [{ projectId }, { project: { intakeId: projectId } }],
-          },
-          include: { project: true, statistician: true, qaLead: true },
-        });
+      db.$transaction(
+        async (tx) => {
+          const existing = await tx.assignment.findFirst({
+            where: {
+              OR: [{ projectId }, { project: { intakeId: projectId } }],
+            },
+            include: { project: true, statistician: true, qaLead: true },
+          });
 
-        if (!existing) {
-          throw new Error("NOT_FOUND: Active assignment not found for this study.");
-        }
+          if (!existing) {
+            throw new Error("NOT_FOUND: Active assignment not found for this study.");
+          }
 
-        const now = new Date();
+          const now = new Date();
 
-        // 1. Record archive history
-        await tx.assignmentHistory.create({
-          data: {
-            projectId: existing.projectId,
-            statisticianId: existing.statisticianId,
-            qaLeadId: existing.qaLeadId,
-            assignedAt: existing.assignedAt,
-            reassignedAt: now,
-            reason,
-            payoutVoided: true,
-          },
-        });
+          // 1. Record archive history
+          await tx.assignmentHistory.create({
+            data: {
+              projectId: existing.projectId,
+              statisticianId: existing.statisticianId,
+              qaLeadId: existing.qaLeadId,
+              assignedAt: existing.assignedAt,
+              reassignedAt: now,
+              reason,
+              payoutVoided: true,
+            },
+          });
 
-        // 2. Validate replacement specialists are not on leave
-        if (newStatisticianId) {
-          const statUser = await tx.user.findUnique({ where: { id: newStatisticianId } });
+          // 2. Validate replacement specialists are not on leave in parallel
+          const [statUser, qaUser] = await Promise.all([
+            newStatisticianId ? tx.user.findUnique({ where: { id: newStatisticianId } }) : null,
+            newQaLeadId ? tx.user.findUnique({ where: { id: newQaLeadId } }) : null,
+          ]);
+
           if (statUser?.status === "ON_LEAVE") {
             throw new Error("CONFLICT: Target Lead Statistician is currently on leave and unavailable for assignments.");
           }
-        }
-        if (newQaLeadId) {
-          const qaUser = await tx.user.findUnique({ where: { id: newQaLeadId } });
           if (qaUser?.status === "ON_LEAVE") {
             throw new Error("CONFLICT: Target Senior QA Lead is currently on leave and unavailable for assignments.");
           }
+
+          // 3. Update active assignment
+          const updated = await tx.assignment.update({
+            where: { id: existing.id },
+            data: {
+              statisticianId: newStatisticianId || existing.statisticianId,
+              qaLeadId: newQaLeadId || existing.qaLeadId,
+              reassignedAt: now,
+              reassignedBy: session.user.id,
+              reassignReason: reason,
+            },
+            include: { project: true, statistician: true, qaLead: true },
+          });
+
+          return updated;
+        },
+        {
+          maxWait: 15000,
+          timeout: 30000,
         }
-
-        // 3. Update active assignment
-        const updated = await tx.assignment.update({
-          where: { id: existing.id },
-          data: {
-            statisticianId: newStatisticianId || existing.statisticianId,
-            qaLeadId: newQaLeadId || existing.qaLeadId,
-            reassignedAt: now,
-            reassignedBy: session.user.id,
-            reassignReason: reason,
-          },
-          include: { project: true, statistician: true, qaLead: true },
-        });
-
-        return updated;
-      })
+      ),
+      35000
     );
 
     revalidatePath("/dashboard/admin/assignments");

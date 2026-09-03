@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 /**
  * Normalizes a date to YYYY-MM-DD string for comparison against holiday records
@@ -14,13 +15,18 @@ function toDateKey(d: Date): string {
  * Computes the contractual SLA due date starting from assignment timestamp.
  * Skips weekends (Saturday, Sunday) and official Philippine holidays.
  */
-export async function computeSlaDueDate(startAt: Date, turnaroundDays: number): Promise<Date> {
-  const holidays = await db.philippineHoliday.findMany({
+export async function computeSlaDueDate(
+  startAt: Date,
+  turnaroundDays: number,
+  client?: Prisma.TransactionClient | typeof db
+): Promise<Date> {
+  const prismaClient = client || db;
+  const holidays = await prismaClient.philippineHoliday.findMany({
     where: { date: { gte: startAt } },
     select: { date: true },
   });
 
-  const holidayDates = new Set(holidays.map((h) => toDateKey(h.date)));
+  const holidayDates = new Set(holidays.map((h: { date: Date }) => toDateKey(h.date)));
 
   let daysAdded = 0;
   const current = new Date(startAt);
