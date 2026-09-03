@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useTransition, use } from "react";
+import React, { useState, useEffect, useCallback, useTransition, use, useMemo } from "react";
 import Link from "next/link";
 import {
   PageHeader,
@@ -38,6 +38,7 @@ import {
 import {
   PACKAGES_CATALOG,
   ADDONS_CATALOG,
+  calculateQuotationTotals,
 } from "@/lib/pricing-rules";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 import type { QuotationDetailItem } from "@/features/quotations/schemas";
@@ -53,6 +54,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
 
   const [project, setProject] = useState<ProjectDetailItem | null>(null);
   const [quotation, setQuotation] = useState<QuotationDetailItem | null>(null);
+  const [selectedAddOnCodes, setSelectedAddOnCodes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,6 +86,12 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
       }
 
       setQuotation(quoteRes);
+      if (quoteRes) {
+        const initialCodes = quoteRes.lineItems
+          .filter((li) => li.itemType === "ADDON")
+          .map((li) => li.itemName);
+        setSelectedAddOnCodes(initialCodes);
+      }
     } catch {
       setError("Failed to load commercial quotation proposal.");
     } finally {
@@ -113,6 +121,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
         const res = await respondQuotation({
           quotationId: quotation.id,
           decision: "ACCEPT",
+          selectedAddOnCodes,
         });
 
         if (res.success) {
@@ -190,6 +199,134 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
         return <IconSparkles size={20} stroke={1.5} className="text-amber-400" />;
     }
   };
+
+  // Master available add-ons (combining quotation line items and master catalog)
+  const availableAddOns = useMemo(() => {
+    if (!quotation) return [];
+
+    // If quotation is already approved by client, only show the add-ons that were approved and agreed upon
+    if (quotation.status === "CLIENT_APPROVED") {
+      return quotation.lineItems
+        .filter((li) => li.itemType === "ADDON")
+        .map((li) => {
+          const catalogDef = ADDONS_CATALOG[li.itemName as AddOnName];
+          return {
+            code: li.itemName,
+            name: li.description || catalogDef?.name || li.itemName,
+            amount: Number(li.amount),
+            tagline: catalogDef?.tagline || "Agreed priority add-on service",
+            badge: catalogDef?.badge || "PRIORITY ADD-ON",
+            isSpeedRider: ["RUSH", "EXPRESS", "EMERGENCY"].includes(li.itemName),
+          };
+        });
+    }
+
+    // When quote is open for review: combine quote's attached add-ons + full catalog
+    const catalogKeys = Object.keys(ADDONS_CATALOG) as AddOnName[];
+    const map = new Map<
+      string,
+      { code: string; name: string; amount: number; tagline: string; badge: string; isSpeedRider: boolean }
+    >();
+
+    catalogKeys.forEach((key) => {
+      const def = ADDONS_CATALOG[key];
+      map.set(key, {
+        code: key,
+        name: def.name,
+        amount: def.defaultPrice,
+        tagline: def.tagline,
+        badge: def.badge,
+        isSpeedRider: ["RUSH", "EXPRESS", "EMERGENCY"].includes(key),
+      });
+    });
+
+    quotation.lineItems
+      .filter((li) => li.itemType === "ADDON")
+      .forEach((li) => {
+        const existing = map.get(li.itemName);
+        map.set(li.itemName, {
+          code: li.itemName,
+          name: li.description || existing?.name || li.itemName,
+          amount: Number(li.amount),
+          tagline: existing?.tagline || "Priority statistical add-on service",
+          badge: existing?.badge || "PRIORITY ADD-ON",
+          isSpeedRider: ["RUSH", "EXPRESS", "EMERGENCY"].includes(li.itemName),
+        });
+      });
+
+    return Array.from(map.values());
+  }, [quotation]);
+
+  // Toggle add-on selection
+  const toggleAddOn = (code: string) => {
+    if (quotation?.status !== "QUOTE_SENT" || quotation?.isExpired) return;
+
+    setSelectedAddOnCodes((prev) => {
+      const isSelected = prev.includes(code);
+      const isSpeedRider = ["RUSH", "EXPRESS", "EMERGENCY"].includes(code);
+
+      if (isSelected) {
+        return prev.filter((k) => k !== code);
+      } else {
+        if (isSpeedRider) {
+          // A study can only have 1 active turnaround speed rider at a time
+          return [...prev.filter((k) => !["RUSH", "EXPRESS", "EMERGENCY"].includes(k)), code];
+        } else {
+          return [...prev, code];
+        }
+      }
+    });
+  };
+
+  // Real-time calculation based on selected add-ons
+  const currentPricing = useMemo(() => {
+    if (!quotation) {
+      return {
+        totalAmount: 0,
+        downpaymentRequired: 0,
+        releaseBalance: 0,
+        downpaymentPercentage: 50,
+      };
+    }
+
+    if (quotation.status !== "QUOTE_SENT" || quotation.isExpired) {
+      return {
+        totalAmount: quotation.totalAmount,
+        downpaymentRequired: quotation.downpaymentRequired,
+        releaseBalance: quotation.releaseBalance,
+        downpaymentPercentage: quotation.downpaymentPercentage,
+      };
+    }
+
+    const selectedItems = availableAddOns
+      .filter((a) => selectedAddOnCodes.includes(a.code))
+      .map((a) => ({
+        name: a.code as AddOnName,
+        amount: a.amount,
+        description: a.name,
+      }));
+
+    try {
+      const breakdown = calculateQuotationTotals({
+        packageName: quotation.packageName,
+        basePrice: quotation.basePrice,
+        addOns: selectedItems,
+      });
+      return {
+        totalAmount: breakdown.totalAmount,
+        downpaymentRequired: breakdown.downpaymentRequired,
+        releaseBalance: breakdown.releaseBalance,
+        downpaymentPercentage: breakdown.downpaymentPercentage,
+      };
+    } catch {
+      return {
+        totalAmount: quotation.totalAmount,
+        downpaymentRequired: quotation.downpaymentRequired,
+        releaseBalance: quotation.releaseBalance,
+        downpaymentPercentage: quotation.downpaymentPercentage,
+      };
+    }
+  }, [quotation, availableAddOns, selectedAddOnCodes]);
 
   if (isLoading) {
     return (
@@ -277,7 +414,6 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
   }
 
   const pkgDef = PACKAGES_CATALOG[quotation.packageName] || PACKAGES_CATALOG.JX_03_CORE;
-  const activeAddOns = quotation.lineItems.filter((li) => li.itemType === "ADDON");
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
@@ -404,22 +540,30 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
 
           <Card className="p-6 sm:p-8 bg-[#01142B]/90 border border-white/10 rounded-[4px] flex flex-col gap-5 shadow-xl">
             <div className="border-b border-white/10 pb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-white font-sans flex items-center gap-2.5">
-                <IconReceipt size={18} stroke={1.5} className="text-[#CC6600]" />
-                <span>Itemized Commercial Schedule</span>
-              </h3>
-              <span className="text-xs font-sans text-white/60 uppercase font-semibold px-2.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10">
+              <div>
+                <h3 className="text-base font-bold text-white font-sans flex items-center gap-2.5">
+                  <IconReceipt size={18} stroke={1.5} className="text-[#CC6600]" />
+                  <span>Itemized Commercial Schedule</span>
+                </h3>
+                {quotation.status === "QUOTE_SENT" && !quotation.isExpired && (
+                  <p className="text-xs text-white/60 font-sans mt-1">
+                    Select the optional priority add-ons or speed delivery riders you wish to include in your scope:
+                  </p>
+                )}
+              </div>
+              <span className="text-xs font-sans text-white/60 uppercase font-semibold px-2.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 flex-shrink-0">
                 {quotation.isUpfrontEnforced ? "100% Upfront" : "50% Milestone"}
               </span>
             </div>
 
             <div className="space-y-3">
+              {/* Base Service Package */}
               <div className="p-4 sm:p-5 rounded-[2px] bg-[#010D1F] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-semibold text-white font-sans">{pkgDef?.name || quotation.packageName}</span>
                     <span className="text-[0.6875rem] font-sans uppercase px-2 py-0.5 rounded-[2px] bg-sky-500/10 text-sky-300 border border-sky-500/20 font-semibold">
-                      Base Service
+                      Base Service (Included)
                     </span>
                   </div>
                   <p className="text-xs text-white/60 font-sans leading-relaxed">
@@ -431,34 +575,77 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
                 </div>
               </div>
 
-              {activeAddOns.map((addon) => {
-                const addDef = ADDONS_CATALOG[addon.itemName as AddOnName];
+              {/* Add-ons List with Interactive Selection */}
+              {availableAddOns.map((addon) => {
+                const isSelected = selectedAddOnCodes.includes(addon.code);
+                const isInteractive = quotation.status === "QUOTE_SENT" && !quotation.isExpired;
+
                 return (
                   <div
-                    key={addon.id}
-                    className="p-4 sm:p-5 rounded-[2px] bg-[#010D1F] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    key={addon.code}
+                    onClick={() => isInteractive && toggleAddOn(addon.code)}
+                    className={`p-4 sm:p-5 rounded-[2px] border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none ${
+                      isInteractive ? "cursor-pointer" : "cursor-default"
+                    } ${
+                      isSelected
+                        ? "bg-[#011B38] border-emerald-500/40 ring-1 ring-emerald-500/20 shadow-sm"
+                        : "bg-[#010D1F] border-white/10 hover:border-white/20 opacity-75 hover:opacity-100"
+                    }`}
                   >
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {getAddOnIcon(addon.itemName)}
-                        <span className="text-sm font-semibold text-white font-sans">
-                          {addDef?.name || addon.itemName}
-                        </span>
-                        <span className="text-[0.6875rem] font-sans uppercase px-2 py-0.5 rounded-[2px] bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
-                          Priority Add-on
-                        </span>
+                    <div className="flex items-start gap-3.5">
+                      {isInteractive && (
+                        <div className="pt-0.5 flex-shrink-0">
+                          <div
+                            className={`w-5 h-5 rounded-[3px] border flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? "bg-emerald-500 border-emerald-400 text-white"
+                                : "border-white/30 bg-white/[0.04]"
+                            }`}
+                          >
+                            {isSelected && <IconCheck size={13} stroke={3} />}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {getAddOnIcon(addon.code)}
+                          <span className={`text-sm font-semibold font-sans ${isSelected ? "text-white" : "text-white/85"}`}>
+                            {addon.name}
+                          </span>
+                          <span className="text-[0.6875rem] font-sans uppercase px-2 py-0.5 rounded-[2px] bg-white/[0.06] text-white/60 border border-white/10 font-semibold">
+                            {addon.badge}
+                          </span>
+                          {isInteractive && (
+                            <span
+                              className={`text-[0.6875rem] font-sans uppercase px-2 py-0.5 rounded-[2px] font-bold ${
+                                isSelected
+                                  ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                                  : "bg-white/[0.04] text-white/40 border border-white/10"
+                              }`}
+                            >
+                              {isSelected ? "Selected" : "Optional"}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-white/60 font-sans leading-relaxed">
+                          {addon.tagline}
+                        </p>
                       </div>
-                      <p className="text-xs text-white/60 font-sans leading-relaxed">
-                        {addon.description || addDef?.tagline || "Optional Priority Service"}
-                      </p>
                     </div>
-                    <div className="text-base sm:text-lg font-mono font-bold text-amber-300 flex-shrink-0 self-end sm:self-auto">
+
+                    <div
+                      className={`text-base sm:text-lg font-mono font-bold flex-shrink-0 self-end sm:self-auto ${
+                        isSelected ? "text-amber-300" : "text-white/40"
+                      }`}
+                    >
                       +<Peso />{addon.amount.toLocaleString()}
                     </div>
                   </div>
                 );
               })}
 
+              {/* Dynamically Recalculated Total */}
               <div className="p-5 sm:p-6 rounded-[2px] bg-[#010D1F] border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm mt-3">
                 <div className="space-y-0.5">
                   <span className="text-xs font-sans font-semibold uppercase text-sky-400 tracking-wider block">
@@ -469,7 +656,7 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
                   </p>
                 </div>
                 <div className="text-2xl sm:text-3xl font-mono font-bold text-[#38BDF8] flex-shrink-0 self-end sm:self-auto">
-                  <Peso />{quotation.totalAmount.toLocaleString()}
+                  <Peso />{currentPricing.totalAmount.toLocaleString()}
                 </div>
               </div>
             </div>
@@ -509,24 +696,24 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
                     <span>1. Escrow Deposit</span>
                   </span>
                   <span className="text-base font-mono font-bold text-emerald-400">
-                    <Peso />{quotation.downpaymentRequired.toLocaleString()}
+                    <Peso />{currentPricing.downpaymentRequired.toLocaleString()}
                   </span>
                 </div>
                 <p className="text-xs text-white/60 font-sans leading-relaxed">
                   {quotation.isUpfrontEnforced
                     ? "100% Upfront deposit required to activate analysis queue."
-                    : `Initial ${quotation.downpaymentPercentage}% deposit due upon SOW signing to commence computation.`}
+                    : `Initial ${currentPricing.downpaymentPercentage}% deposit due upon SOW signing to commence computation.`}
                 </p>
               </div>
 
-              {!quotation.isUpfrontEnforced && quotation.releaseBalance > 0 && (
+              {!quotation.isUpfrontEnforced && currentPricing.releaseBalance > 0 && (
                 <div className="p-4 sm:p-5 rounded-[2px] bg-[#010D1F] border border-white/10 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-sans uppercase text-white/50 font-semibold tracking-wider">
                       2. Deliverable Release
                     </span>
                     <span className="text-base font-mono font-bold text-[#38BDF8]">
-                      <Peso />{quotation.releaseBalance.toLocaleString()}
+                      <Peso />{currentPricing.releaseBalance.toLocaleString()}
                     </span>
                   </div>
                   <p className="text-xs text-white/60 font-sans leading-relaxed">
@@ -701,24 +888,55 @@ export default function ClientQuotationReviewPage({ params }: PageProps) {
         <div className="space-y-5 text-sm font-sans text-white/80 p-2">
           <p className="leading-relaxed">
             By accepting this commercial proposal for study{" "}
-            <strong className="text-white font-mono">{project.intakeId}</strong>, you approve the selected{" "}
+            <strong className="text-white font-mono">{project.intakeId}</strong>, you approve the{" "}
             <strong className="text-emerald-400">{pkgDef?.name || quotation.packageName}</strong> scope and total contract sum of{" "}
-            <strong className="text-[#38BDF8] font-mono"><Peso />{quotation.totalAmount.toLocaleString()}</strong>.
+            <strong className="text-[#38BDF8] font-mono"><Peso />{currentPricing.totalAmount.toLocaleString()}</strong>.
           </p>
 
-          <div className="p-5 rounded-[4px] bg-[#011735]/60 border border-white/10 space-y-3 font-sans text-sm">
-            <div className="flex justify-between">
-              <span className="text-white/50">Initial Downpayment:</span>
-              <span className="text-emerald-400 font-mono font-bold"><Peso />{quotation.downpaymentRequired.toLocaleString()}</span>
+          <div className="p-4 rounded-[4px] bg-[#011735]/60 border border-white/10 space-y-3 font-sans text-sm">
+            <div className="text-xs uppercase font-semibold text-white/50 tracking-wider">
+              Selected Services &amp; Scope:
             </div>
-            <div className="flex justify-between">
-              <span className="text-white/50">Delivery Balance:</span>
-              <span className="text-[#38BDF8] font-mono font-bold"><Peso />{quotation.releaseBalance.toLocaleString()}</span>
+            <div className="space-y-1.5 pl-1">
+              <div className="text-xs text-white/90 flex items-center justify-between">
+                <span>{pkgDef?.name || quotation.packageName} (Base Package)</span>
+                <span className="font-mono text-white/70"><Peso />{quotation.basePrice.toLocaleString()}</span>
+              </div>
+              {availableAddOns
+                .filter((a) => selectedAddOnCodes.includes(a.code))
+                .map((a) => (
+                  <div key={a.code} className="text-xs text-amber-300 flex items-center justify-between">
+                    <span>+ {a.name}</span>
+                    <span className="font-mono text-amber-300/90">+<Peso />{a.amount.toLocaleString()}</span>
+                  </div>
+                ))}
+              {selectedAddOnCodes.length === 0 && (
+                <div className="text-xs text-white/40 italic">
+                  Standard 5–7 business days turnaround (No add-ons selected)
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-white/10 pt-2.5 space-y-2">
+              <div className="flex justify-between font-semibold">
+                <span className="text-white/80">Total Contract Sum:</span>
+                <span className="text-[#38BDF8] font-mono font-bold"><Peso />{currentPricing.totalAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/50">Initial Downpayment ({currentPricing.downpaymentPercentage}%):</span>
+                <span className="text-emerald-400 font-mono font-bold"><Peso />{currentPricing.downpaymentRequired.toLocaleString()}</span>
+              </div>
+              {!quotation.isUpfrontEnforced && currentPricing.releaseBalance > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-white/50">Final Deliverable Balance:</span>
+                  <span className="text-[#38BDF8] font-mono font-bold"><Peso />{currentPricing.releaseBalance.toLocaleString()}</span>
+                </div>
+              )}
             </div>
           </div>
 
           <p className="text-xs text-white/50 italic leading-relaxed">
-            Upon confirmation, your project will advance to Statement of Work (SOW) agreement generation.
+            Upon confirmation, our operations admin will prepare your formal Statement of Work (SOW) agreement.
           </p>
 
           <ModalFooter>
