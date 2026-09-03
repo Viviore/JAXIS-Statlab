@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader, Card, LoadingState, Badge, StatusBadge } from "@repo/ui";
 import { getMyProjectThreads } from "@/features/messaging/actions";
 import type { ProjectThreadSummaryDTO } from "@/features/messaging/schemas";
@@ -14,11 +15,21 @@ import {
   IconLock,
 } from "@tabler/icons-react";
 
-export default function ClientMessagesPage() {
+function ClientMessagesContent() {
+  const searchParams = useSearchParams();
+  const queryProjectId = searchParams.get("projectId");
+
   const [threads, setThreads] = useState<ProjectThreadSummaryDTO[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(queryProjectId);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [mobileView, setMobileView] = useState<"list" | "chat">(queryProjectId ? "chat" : "list");
+
+  useEffect(() => {
+    if (queryProjectId) {
+      setSelectedProjectId(queryProjectId);
+      setMobileView("chat");
+    }
+  }, [queryProjectId]);
 
   const loadThreads = useCallback(async () => {
     setIsLoading(true);
@@ -27,7 +38,7 @@ export default function ClientMessagesPage() {
       if (res.success && res.data) {
         setThreads(res.data);
         if (res.data.length > 0 && !selectedProjectId) {
-          setSelectedProjectId(res.data[0]!.projectId);
+          setSelectedProjectId(queryProjectId || res.data[0]!.projectId);
         }
       }
     } catch (err) {
@@ -35,7 +46,7 @@ export default function ClientMessagesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedProjectId]);
+  }, [selectedProjectId, queryProjectId]);
 
   useEffect(() => {
     loadThreads();
@@ -251,5 +262,19 @@ export default function ClientMessagesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClientMessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="h-full flex-1 flex items-center justify-center">
+          <LoadingState variant="page" label="Loading messages..." />
+        </div>
+      }
+    >
+      <ClientMessagesContent />
+    </Suspense>
   );
 }

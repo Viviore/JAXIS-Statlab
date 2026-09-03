@@ -85,38 +85,27 @@ const Icons = {
 const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
   CLIENT: [
     {
-      groupTitle: "RESEARCH DESK",
+      groupTitle: "RESEARCH WORKSPACE",
       items: [
         {
-          label: "Client Overview",
+          label: "My Studies",
           href: "/dashboard/client",
           icon: Icons.Overview,
         },
         {
-          label: "Active Studies",
-          href: "/dashboard/client/projects",
-          icon: Icons.Studies,
-        },
-        {
-          label: "Submit New Intake",
+          label: "Submit New Request",
           href: "/dashboard/client/projects/new",
           icon: Icons.Intake,
-          badge: "+ NEW",
-          badgeColor: "orange",
         },
         {
-          label: "Quotations & SOW",
+          label: "Quotes & Proposals",
           href: "/dashboard/client/quotations",
           icon: Icons.Receipt,
-          badge: "PROPOSALS",
-          badgeColor: "orange",
         },
         {
-          label: "DefenseLab Rehearsals",
+          label: "DefenseLab Practice",
           href: "/dashboard/client/defenselab",
           icon: Icons.Terminal,
-          badge: "DEFENSELAB",
-          badgeColor: "orange",
         },
       ],
     },
@@ -129,14 +118,12 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           icon: Icons.Feedback,
         },
         {
-          label: "Disputes & Claims",
+          label: "Revisions & Help",
           href: "/dashboard/client/disputes",
           icon: Icons.ShieldCheck,
-          badge: "7-DAY",
-          badgeColor: "orange",
         },
         {
-          label: "School & Contact Info",
+          label: "School & Profile",
           href: "/dashboard/client/profile",
           icon: Icons.Users,
         },
