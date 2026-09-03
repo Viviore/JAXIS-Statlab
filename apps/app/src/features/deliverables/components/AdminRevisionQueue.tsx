@@ -13,6 +13,7 @@ import {
   Badge,
   Modal,
   Toast,
+  Pagination,
 } from "@repo/ui";
 import {
   IconRotateClockwise,
@@ -42,11 +43,19 @@ export function AdminRevisionQueue({ revisions }: AdminRevisionQueueProps) {
     variant: "info" | "success" | "warning" | "danger";
   } | null>(null);
 
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
   const filteredRevisions = revisions.filter((r) => {
     if (filterTab === "PENDING") return r.status === "PENDING_REVIEW";
     if (filterTab === "CLASSIFIED") return r.status !== "PENDING_REVIEW";
     return true;
   });
+
+  // Reset page when filter tab changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filterTab]);
 
   const pendingCount = revisions.filter((r) => r.status === "PENDING_REVIEW").length;
   const includedCount = revisions.filter((r) => r.classification === "INCLUDED").length;
@@ -183,7 +192,8 @@ export function AdminRevisionQueue({ revisions }: AdminRevisionQueueProps) {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 font-mono">
@@ -196,7 +206,7 @@ export function AdminRevisionQueue({ revisions }: AdminRevisionQueueProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-sans">
-                  {filteredRevisions.map((rev) => (
+                  {filteredRevisions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((rev) => (
                     <tr key={rev.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="py-3.5 px-4">
                         <div>
@@ -255,7 +265,20 @@ export function AdminRevisionQueue({ revisions }: AdminRevisionQueueProps) {
                 </tbody>
               </table>
             </div>
-          )}
+
+            {filteredRevisions.length > 0 && (
+              <div className="border-t border-white/10 p-3 sm:px-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredRevisions.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
+          </>
+        )}
         </Card>
       </div>
 

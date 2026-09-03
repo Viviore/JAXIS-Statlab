@@ -17,7 +17,7 @@ import {
   IconBolt,
   IconChevronDown,
 } from "@tabler/icons-react";
-import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader, Pagination } from "@repo/ui";
 import { getMyAttendanceHistory, fileAttendanceCorrection } from "@/features/attendance/actions";
 import type { StaffAttendanceItem, AttendanceCorrectionItem } from "@/features/attendance/schemas";
 
@@ -30,6 +30,8 @@ export default function StaffAttendancePage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logPage, setLogPage] = useState<number>(1);
+  const [logPageSize, setLogPageSize] = useState<number>(10);
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
 
   // Form State
@@ -219,7 +221,8 @@ export default function StaffAttendancePage() {
             Zero attendance logs recorded yet. Use the topbar Clock In button to commence your shift.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem]">
@@ -233,7 +236,7 @@ export default function StaffAttendancePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {logs.map((log) => (
+                {logs.slice((logPage - 1) * logPageSize, logPage * logPageSize).map((log) => (
                   <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-3 px-3 font-mono font-semibold text-white">
                       {new Date(log.clockInAt).toLocaleDateString("en-PH", {
@@ -318,7 +321,20 @@ export default function StaffAttendancePage() {
               </tbody>
             </table>
           </div>
-        )}
+
+          {logs.length > 0 && (
+            <div className="border-t border-white/10 p-3 sm:px-6">
+              <Pagination
+                currentPage={logPage}
+                totalItems={logs.length}
+                pageSize={logPageSize}
+                onPageChange={setLogPage}
+                onPageSizeChange={setLogPageSize}
+              />
+            </div>
+          )}
+        </>
+      )}
       </Card>
 
       {/* Section 2: Filed Attendance Correction Requests */}

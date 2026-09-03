@@ -89,8 +89,8 @@ export function QuickProfileModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Institutional Affiliation Verification"
-      description="Provide your academic credentials to unlock research intake and quantitative statistical services."
+      title="Tell Us About Your University"
+      description="Tell us your school and degree program so your assigned statistician can format your tables to match your university's exact thesis guidelines."
       size="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 pt-2">
@@ -98,7 +98,7 @@ export function QuickProfileModal({
         <div className="p-3.5 bg-sky-500/[0.06] border border-sky-500/20 rounded-[4px] flex items-start gap-3">
           <IconShieldCheck size={18} stroke={1.5} className="text-[#38BDF8] flex-shrink-0 mt-0.5" />
           <div className="text-xs text-white/70 font-sans leading-relaxed">
-            Academic affiliations ensure your assigned statistical team adheres to your institution&apos;s methodology guidelines and APA 7th standards.
+            Your university details ensure your assigned statistician follows your school&apos;s specific Chapter 4 table formatting and defense criteria.
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export function QuickProfileModal({
         <div className="flex flex-col gap-5">
           <FormInput
             label="University / Institution / College"
-            placeholder="e.g. University of the Philippines Diliman"
+            placeholder="e.g. University of Santo Tomas, UP Diliman"
             value={institutionSchool}
             onChange={(e) => setInstitutionSchool(e.target.value)}
             required
@@ -119,7 +119,7 @@ export function QuickProfileModal({
 
           <FormInput
             label="Degree Program / Field of Study"
-            placeholder="e.g. MS in Data Science / PhD in Management"
+            placeholder="e.g. Master of Science in Nursing, PhD in Education"
             value={academicProgram}
             onChange={(e) => setAcademicProgram(e.target.value)}
             required
@@ -137,7 +137,7 @@ export function QuickProfileModal({
             />
 
             <FormSelect
-              label="Campus / Geographic Region"
+              label="Region / Location"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
               options={PHILIPPINE_REGIONS}
@@ -162,9 +162,9 @@ export function QuickProfileModal({
             variant="primary"
             size="sm"
             disabled={isPending}
-            className="bg-[#CC6600] text-white hover:bg-[#E67300] font-mono text-xs font-bold tracking-wider"
+            className="bg-[#CC6600] text-white hover:bg-[#E67300] font-sans text-xs font-bold tracking-wider"
           >
-            {isPending ? "VERIFYING & SAVING..." : "SAVE & UNLOCK INTAKE →"}
+            {isPending ? "Saving..." : "Save & Continue →"}
           </Button>
         </ModalFooter>
       </form>

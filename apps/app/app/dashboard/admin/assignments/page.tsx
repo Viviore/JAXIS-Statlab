@@ -10,6 +10,7 @@ import {
   KpiCard,
   LoadingState,
   Toast,
+  Pagination,
 } from "@repo/ui";
 import {
   IconUserCheck,
@@ -35,6 +36,8 @@ export default function AdminAssignmentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProjectForAssign, setSelectedProjectForAssign] = useState<ProjectDetailItem | null>(null);
   const [expandedStaffIds, setExpandedStaffIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const toggleExpandStaff = (id: string) => {
     setExpandedStaffIds((prev) => {
@@ -179,7 +182,8 @@ export default function AdminAssignmentsPage() {
                 <span className="text-xs text-white/40">There are no pending studies waiting for staffing right now.</span>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 text-xs uppercase tracking-wider font-semibold">
@@ -191,7 +195,7 @@ export default function AdminAssignmentsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 text-sm">
-                    {unassignedProjects.map((proj) => (
+                    {unassignedProjects.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((proj) => (
                       <tr key={proj.id} className="hover:bg-white/[0.02] transition-colors">
                         <td className="py-4 px-6 font-mono text-xs text-[#CC6600] font-semibold">
                           {proj.intakeId}
@@ -230,7 +234,20 @@ export default function AdminAssignmentsPage() {
                   </tbody>
                 </table>
               </div>
-            )}
+
+              {unassignedProjects.length > 0 && (
+                <div className="border-t border-white/10 p-3 sm:px-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalItems={unassignedProjects.length}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={setPageSize}
+                  />
+                </div>
+              )}
+            </>
+          )}
           </Card>
 
           {/* Section 2: Workload Distribution & Burnout Analytics Visual Chart */}

@@ -13,12 +13,14 @@ import {
   Toast,
   LoadingState,
   EmptyState,
+  Pagination,
 } from "@repo/ui";
 import {
   IconPlus,
   IconLayoutList,
   IconTable,
   IconSearch,
+  IconHelp,
 } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
@@ -26,6 +28,8 @@ import { QuickProfileModal } from "@/features/client-profile/components/QuickPro
 import { getProjectDisplayStatus } from "@/lib/project-rules";
 import { triggerFileDownload } from "@/lib/file-utils";
 import { ClientStudyCard } from "@/features/projects/components/ClientStudyCard";
+import { HowToUseModal } from "@/features/client-onboarding/components/HowToUseModal";
+import { ClientWelcomeBanner } from "@/features/client-onboarding/components/ClientWelcomeBanner";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
 function ClientDashboardContent() {
@@ -35,9 +39,12 @@ function ClientDashboardContent() {
   const [selectedStudy, setSelectedStudy] = useState<ProjectDetailItem | null>(null);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isHowToUseModalOpen, setIsHowToUseModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTION_REQUIRED" | "IN_PROGRESS" | "COMPLETED">("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [toast, setToast] = useState<{
     variant: "success" | "danger" | "warning" | "info";
     message: string;
@@ -163,6 +170,17 @@ function ClientDashboardContent() {
     });
   }, [projects, statusFilter, searchQuery]);
 
+  // Reset page on filter or search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchQuery]);
+
+  // Paginated studies for table view
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredProjects.slice(start, start + pageSize);
+  }, [filteredProjects, currentPage, pageSize]);
+
   const handleProfileSuccess = async () => {
     const profile = await getClientProfile();
     if (profile && profile.institutionSchool && profile.contactNumber) {
@@ -202,38 +220,60 @@ function ClientDashboardContent() {
           { label: "Client Portal" },
         ]}
         actions={
-          isProfileComplete === null ? (
+          <div className="flex items-center gap-3">
             <Button
-              variant="primary"
+              variant="outline"
               size="md"
-              disabled
-              className="font-bold tracking-wider font-sans text-xs sm:text-sm opacity-50 cursor-wait pointer-events-none px-5 py-2.5"
+              onClick={() => setIsHowToUseModalOpen(true)}
+              className="font-sans text-xs sm:text-sm font-semibold flex items-center gap-2 border-white/20 hover:bg-white/[0.08] text-white"
+              title="How to Use JAXIS Guide"
             >
-              <LoadingState variant="inline" label="Loading..." />
+              <IconHelp size={16} className="text-sky-400" />
+              <span>How It Works</span>
             </Button>
-          ) : isProfileComplete === false ? (
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => setIsProfileModalOpen(true)}
-              className="font-bold tracking-wider font-sans text-xs sm:text-sm px-5 py-2.5 animate-content-fade"
-            >
-              Setup Profile First →
-            </Button>
-          ) : (
-            <Link href="/dashboard/client/projects/new" className="animate-content-fade">
+
+            {isProfileComplete === null ? (
               <Button
                 variant="primary"
                 size="md"
-                className="font-bold tracking-wider font-sans text-xs sm:text-sm px-5 py-2.5 flex items-center gap-2"
+                disabled
+                className="font-bold tracking-wider font-sans text-xs sm:text-sm opacity-50 cursor-wait pointer-events-none"
               >
-                <IconPlus size={16} stroke={2.5} />
-                <span>Submit New Study Request</span>
+                <LoadingState variant="inline" label="Loading..." />
               </Button>
-            </Link>
-          )
+            ) : isProfileComplete === false ? (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setIsProfileModalOpen(true)}
+                className="font-bold tracking-wider font-sans text-xs sm:text-sm animate-content-fade bg-[#CC6600] hover:bg-[#E67300] text-white"
+              >
+                1. Setup School First →
+              </Button>
+            ) : (
+              <Link href="/dashboard/client/projects/new" className="animate-content-fade">
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="font-bold tracking-wider font-sans text-xs sm:text-sm flex items-center gap-2 bg-[#CC6600] hover:bg-[#E67300]"
+                >
+                  <IconPlus size={16} stroke={2.5} />
+                  <span>Submit New Study Request</span>
+                </Button>
+              </Link>
+            )}
+          </div>
         }
       />
+
+      {/* ── First-Time Onboarding Guide (When No Active Studies or Profile Incomplete) ── */}
+      {(projects.length === 0 || isProfileComplete === false) && (
+        <ClientWelcomeBanner
+          isProfileComplete={isProfileComplete}
+          onOpenProfileModal={() => setIsProfileModalOpen(true)}
+          onOpenHowToUseModal={() => setIsHowToUseModalOpen(true)}
+        />
+      )}
 
       {/* ── High-Priority Pending Quotation Alert Banner ── */}
       {pendingQuoteProjects.length > 0 && (
@@ -323,33 +363,24 @@ function ClientDashboardContent() {
         </div>
       )}
 
-      {/* ── Quick Start Consultation Hero Card (Facebook 'What's on your mind?' Style) ── */}
-      <Card className="p-6 sm:p-8 border border-white/10 bg-[#01142B]/90 rounded-[4px] shadow-xl relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="flex flex-col gap-2 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2.5 py-0.5 rounded-[2px] uppercase">
-                New Research Request
-              </span>
+      {/* ── Quick Start Consultation Hero Card (When Studies Already Exist) ── */}
+      {projects.length > 0 && (
+        <Card className="p-6 sm:p-8 border border-white/10 bg-[#01142B]/90 rounded-[4px] shadow-xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex flex-col gap-2 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-[#FF9433] bg-[#CC6600]/15 border border-[#CC6600]/30 px-2.5 py-0.5 rounded-[2px] uppercase">
+                  New Research Request
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-white font-sans">
+                Need statistical analysis for another thesis or dissertation?
+              </h2>
+              <p className="text-sm text-white/70 font-sans leading-relaxed">
+                Submit your research questions, raw dataset, or survey questionnaire. Our expert team will review your methodology and assign a dedicated PhD statistician.
+              </p>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-white font-sans">
-              Need statistical analysis for your thesis or dissertation?
-            </h2>
-            <p className="text-sm text-white/70 font-sans leading-relaxed">
-              Submit your research questions, raw dataset, or survey questionnaire. Our expert team will review your methodology and assign a dedicated PhD statistician.
-            </p>
-          </div>
-          <div className="shrink-0 self-start md:self-center">
-            {isProfileComplete === false ? (
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => setIsProfileModalOpen(true)}
-                className="font-sans text-xs sm:text-sm font-bold tracking-wider px-5 py-2.5"
-              >
-                Setup Profile First →
-              </Button>
-            ) : (
+            <div className="shrink-0 self-start md:self-center">
               <Link href="/dashboard/client/projects/new">
                 <Button
                   variant="primary"
@@ -360,10 +391,10 @@ function ClientDashboardContent() {
                   <span>Start New Request →</span>
                 </Button>
               </Link>
-            )}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       {/* ── Actionable KPI Metric Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 items-stretch">
@@ -589,7 +620,7 @@ function ClientDashboardContent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProjects.map((study) => (
+                  {paginatedProjects.map((study) => (
                     <tr
                       key={study.id}
                       className="group hover:bg-white/[0.02] transition-colors"
@@ -666,6 +697,19 @@ function ClientDashboardContent() {
                 </tbody>
               </table>
             </div>
+
+            {/* ── Table Pagination ── */}
+            {filteredProjects.length > 0 && (
+              <div className="border-t border-white/10 p-3 sm:px-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredProjects.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </Card>
         )}
       </div>
@@ -726,6 +770,17 @@ function ClientDashboardContent() {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         onSuccess={handleProfileSuccess}
+      />
+
+      {/* ── How to Use JAXIS Interactive Guide Modal ── */}
+      <HowToUseModal
+        isOpen={isHowToUseModalOpen}
+        onClose={() => setIsHowToUseModalOpen(false)}
+        isProfileComplete={isProfileComplete === true}
+        onSetupProfile={() => setIsProfileModalOpen(true)}
+        onStartRequest={() => {
+          window.location.href = "/dashboard/client/projects/new";
+        }}
       />
 
       {/* ── Floating Responsive Toast Notification ── */}

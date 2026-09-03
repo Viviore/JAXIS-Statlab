@@ -1,159 +1,179 @@
-# 00 — How a Research Study Moves from Start to Finish
+# 00 — Master Study Lifecycle: Start to Finish
 
-This document explains the full life story of a research study inside JAXIS StatLab, from the first day a client signs up to the day they download their finished thesis tables.
+This document explains the complete, verified lifecycle of a research study inside JAXIS StatLab, detailing the **role, sidebar menu item, and screen tools** used at every step.
 
 ---
 
-## 1. The 7 Simple Steps (ASCII Flowchart)
+## 1. The Master Study Lifecycle (Verified ASCII Flowchart)
 
 ```
-STEP 1: CLIENT SIGNS UP & SUBMITS REQUEST
-┌─────────────────────────────────────────────────────────┐
-│ • Client creates account & tells us their school name   │
-│ • Client submits research questions and raw data files  │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 2: ADMIN CHECKS THE REQUEST & GIVES A PRICE
-┌─────────────────────────────────────────────────────────┐
-│ • Admin reads the questions and looks at the data files │
-│ • Admin sends a price quote (e.g., ₱12,000)             │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 3: CLIENT SIGNS CONTRACT & PAYS 50% DEPOSIT
-┌─────────────────────────────────────────────────────────┐
-│ • Client clicks "Accept Quote" and signs online         │
-│ • Client sends 50% downpayment via GCash or Bank        │
-│ • Finance confirms payment and locks money safely       │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 4: ADMIN ASSIGNS A LEAD STATISTICIAN
-┌─────────────────────────────────────────────────────────┐
-│ • Admin picks the best analyst for the client's topic   │
-│ • Specialist gets the study on their computer screen    │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 5: STATISTICIAN CLEANS DATA & RUNS THE FORMULAS
-┌─────────────────────────────────────────────────────────┐
-│ • Statistician clocks in on the topbar timer            │
-│ • Cleans Excel sheet, fixes missing numbers             │
-│ • Runs formulas in R or SPSS, formats neat APA tables   │
-│ • Chats with the client if anything needs clarifying    │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 6: SENIOR QA CHECKS ALL THE MATH (QUALITY CONTROL)
-┌─────────────────────────────────────────────────────────┐
-│ • Senior reviewer re-runs the code to ensure 100% truth │
-│ • If something is wrong: sends back to analyst to fix   │
-│ • If 100% perfect: gives official stamp of approval     │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 7: FINAL PAYMENT & DELIVERABLES UNLOCKED
-┌─────────────────────────────────────────────────────────┐
-│ • Client sees preview and pays remaining 50% balance    │
-│ • Clean Word report and Excel data unlock for download  │
-│ • Statistician gets paid their commission               │
-└─────────────────────────────────────────────────────────┘
+========================================================================================
+                              YOUR STUDY, START TO FINISH
+========================================================================================
+
+ [1] SUBMIT REQUEST ──────────────────► CLIENT (Student / Researcher)
+     Sidebar: "Submit New Request"
+     Tools: 3-step intake form, file dropzone, calendar deadline picker
+     Status: NEW_REQUEST
+              │
+              ▼
+ [2] GET YOUR QUOTE ──────────────────► ADMIN (Operations Manager)
+     Sidebar: "Intake Review"
+     Tools: Scope inspector, package pricing calculator, quote dispatch engine
+     Status: QUOTE_SENT (or AWAITING_INFORMATION if files missing)
+              │
+              ▼
+ [3] SIGN & PAY 50% DEPOSIT ──────────► CLIENT & FINANCE OFFICER
+     Sidebar (Client): "Quotes & Proposals" ──► Digital SOW & touch signature pad
+     Sidebar (Finance): "Transactions" ───────► GCash/Bank check & Escrow Vault lock
+     Status: SOW_SIGNED ──► AWAITING_CONFIRMATION ──► ACTIVE
+              │
+              ▼
+ [4] WE ASSIGN YOUR STATISTICIAN ─────► ADMIN (Operations Manager)
+     Sidebar: "Assignments Desk"
+     Tools: Specialist topic matching matrix, workload capacity gauge (< 4 studies)
+     Status: EXPERT_ASSIGNED
+              │
+              ▼
+ [5] ANALYSIS IN PROGRESS ────────────► STATISTICIAN & CLIENT
+     Sidebar (Statistician): "Workbench" + Topbar Duty Clock Widget
+     Sidebar (Client): "Messages" ────► Direct private chat thread
+     Tools: R / SPSS syntax modeling, data cleaning, APA 7th table builder
+     Status: IN_PROGRESS
+              │
+              ▼
+ [6] QUALITY CHECK ───────────────────► SENIOR QA LEAD (Quality Reviewer)
+     Sidebar: "QA Review Queue"
+     Tools: Side-by-side inspection desk, code re-run console, 4-point checklist
+     Status: FOR_QA (Errors ──► QA_REVISION; 100% Verified ──► Approved!)
+              │
+              ▼
+ [7] PAY BALANCE & DOWNLOAD ──────────► CLIENT & FINANCE OFFICER
+     Sidebar (Client): "My Studies" ──► Watermarked preview & download package
+     Sidebar (Finance): "Transactions" ➔ Final settlement clearance
+     Bonus Tools: 3-day free warranty revisions, "DefenseLab Practice" booking
+     Status: DELIVERED ──► CLOSED & ARCHIVED
+========================================================================================
 ```
 
 ---
 
-## 2. Detailed Walkthrough of Each Step
+## 2. Sidebar Items & Tools Used at Every Step
 
-### Step 1: Client Signs Up & Submits Request
-- **What the client does:**
-  1. Opens the portal, clicks "Submit New Study Request".
-  2. Types the thesis title, the specific questions the thesis wants to answer, and the date the thesis must be finished.
-  3. Uploads raw data (like survey responses in Excel or Google Sheets) and the survey questionnaire.
-- **What happens next:** The system gives the request a tracking number (for example: `JAXIS-202608-5622`) and puts it on the Admin's desk.
-
----
-
-### Step 2: Admin Checks the Request & Sends a Quote
-- **What the Admin does:**
-  1. Opens the new request and reads it carefully.
-  2. Checks if the files can be opened and if all survey questions are clear.
-  3. Chooses the fair price package based on how complex the math is (simple correlations vs. advanced medical predictive models).
-  4. Clicks "Dispatch Quotation".
-- **What happens next:** The client gets an email and a notification on their dashboard: *"Your quote is ready to review"*.
+| Step | Role in Charge | Sidebar Menu Item | Screen Tools & Sidetools Used |
+|:---:|:---|:---|:---|
+| **[1] Submit Request** | **Client** *(Student / Researcher)* | **`Submit New Request`**<br>`/dashboard/client/projects/new` | • **3-Step Intake Wizard:** Title & research questions (SOPs).<br>• **File Dropzone:** Drag & drop raw survey Excel (`.xlsx`, `.csv`, `.sav`) + questionnaire.<br>• **Calendar Picker:** Select required delivery deadline. |
+| **[2] Get Your Quote** | **Admin** *(Operations Manager)* | **`Intake Review`**<br>`/dashboard/admin/intake` | • **Scope Inspector:** Verify questions and open attached files.<br>• **"Request Info" Modal:** Triggers if files are corrupted (`AWAITING_INFORMATION`).<br>• **Pricing Calculator:** Selects package tier & turnaround speed.<br>• **Quote Dispatcher:** Generates digital SOW agreement with 7-day timer. |
+| **[3] Sign & 50% Deposit** | **Client** & **Finance Officer** | Client: **`Quotes & Proposals`**<br>Finance: **`Transactions`** | • **Digital Contract Viewer:** Inspect legal scope & terms.<br>• **Touch Signature Pad:** Sign agreement using mouse or finger.<br>• **GCash QR & Bank Details:** Official payment instructions.<br>• **Verification Modal:** Finance inspects slip & locks funds into **Escrow Vault**. |
+| **[4] Assign Statistician** | **Admin** *(Operations Manager)* | **`Assignments Desk`**<br>`/dashboard/admin/assignments` | • **Specialist Topic Matcher:** Filters experts by field (Health, Business, Education, etc.).<br>• **Workload Capacity Gauge:** Live load tracker (strictly capped at max 4 studies).<br>• **1-Click Dispatcher:** Opens private message room and queues study in Workbench. |
+| **[5] Analysis in Progress** | **Statistician** & **Client** | Specialist: **`Workbench`**<br>Client: **`Messages`** | • **Topbar Duty Clock Widget:** Clock In, Break, Clock Out timer.<br>• **Data Cleaning Checklist:** Missing value imputation, reverse-coding.<br>• **Analysis Software:** RStudio / IBM SPSS / SmartPLS script generation.<br>• **In-App Messenger:** Direct chat between client and specialist with file sharing. |
+| **[6] Quality Check** | **Senior QA Lead** *(Quality Reviewer)* | **`QA Review Queue`**<br>`/dashboard/qa` | • **Side-by-Side Inspection Desk:** Compare report against raw script.<br>• **Code Re-run Console:** Re-execute script to verify math reproducibility.<br>• **APA 7th Audit Checklist:** Verify 3 horizontal rules, italic symbols, decimals.<br>• **Revision Loop Modal:** Return with specific line notes (`QA_REVISION`). |
+| **[7] Pay Balance & Download** | **Client** & **Finance Officer** | Client: **`My Studies`**<br>Finance: **`Transactions`** | • **Watermarked Previewer:** Review draft results before final payment.<br>• **1-Click Download Button:** Unlocks clean Word (`.docx`), Excel, and R code.<br>• **Free Revision Desk:** 3-day warranty button for thesis adviser tweaks.<br>• **DefenseLab Practice:** Sidebar link to book 45-min mock defense rehearsal. |
 
 ---
 
-### Step 3: Client Approves, Signs & Deposits
-- **What the client does:**
-  1. Reviews the price and turnaround days.
-  2. Clicks "Accept Quote", reads the simple agreement, and signs with their mouse or finger.
-  3. Sends the 50% deposit using GCash or online bank transfer and uploads a screenshot of the receipt.
-- **What Finance does:**
-  - Finance checks that the money actually arrived in the bank.
-  - Finance clicks "Approve". The money is now locked safely in the **JAXIS Escrow Vault**.
-- **What happens next:** Work is officially cleared to start!
+## 3. Super Accurate Step-by-Step Breakdown
+
+### [1] SUBMIT REQUEST
+- **Who Acts:** Client (Student / Researcher)
+- **Sidebar Menu:** `Submit New Request` (`/dashboard/client/projects/new`)
+- **Tools on Screen:**
+  1. 3-step stepper header (1. Scope ➔ 2. Attachments ➔ 3. Review).
+  2. Research study title and research questions text area.
+  3. Drag-and-drop file upload zone accepting `.xlsx`, `.csv`, `.sav`, `.docx`, `.pdf`.
+  4. Interactive calendar deadline selector.
+- **System Status:** `NEW_REQUEST`
 
 ---
 
-### Step 4: Admin Assigns the Statistician
-- **What the Admin does:**
-  1. Looks at the list of available statisticians.
-  2. Checks who is good at the specific topic (for example: nursing studies vs. business marketing).
-  3. Checks that the specialist is not too busy (no specialist is allowed to take more than 4 studies at the same time, so they never rush or do sloppy work).
-  4. Clicks "Assign Specialist".
-- **What happens next:** A private message room opens between the client and the specialist, and the study appears in the specialist's workbench.
+### [2] GET YOUR QUOTE
+- **Who Acts:** Operations Admin
+- **Sidebar Menu:** `Intake Review` (`/dashboard/admin/intake`)
+- **Tools on Screen:**
+  1. Intake table with status filters and quick search.
+  2. Document viewer to preview client survey files.
+  3. Package selector (Descriptive & Correlations, Regression & ANOVA, Advanced SEM).
+  4. Turnaround speed toggle (Standard: 7–10 days, Rush: 3–5 days, Emergency: 24–48 hours).
+  5. If files are missing: "Request Missing Info" button transitions status to `AWAITING_INFORMATION`.
+- **System Status:** `QUOTE_SENT`
 
 ---
 
-### Step 5: Statistician Does the Work & Chats with Client
-- **What the statistician does:**
-  1. Clicks the "Clock In" button on the topbar to track their work hours.
-  2. Downloads the client's Excel file and cleans up typos, missing answers, or bad columns.
-  3. Runs the exact formulas needed to answer the client's thesis questions.
-  4. Types out the results in clean Word tables following university APA 7th standards.
-  5. If anything is confusing in the survey, the specialist clicks "Message Client" to ask directly.
-- **What happens next:** When the report is completely finished, the specialist clicks "Submit for QA Review".
+### [3] SIGN & PAY 50% DEPOSIT
+- **Who Acts:** Client ➔ Finance Officer
+- **Sidebar Menu:**
+  - Client: `Quotes & Proposals` (`/dashboard/client/quotations`)
+  - Finance: `Transactions Desk` (`/dashboard/finance/transactions`)
+- **Tools on Screen:**
+  1. **Client Side:**
+     - Digital Statement of Work (SOW) viewer with deliverables breakdown.
+     - Canvas signature pad to draw legal signature (`SOW_SIGNED`).
+     - Payment modal showing official GCash QR and BDO/BPI bank account details.
+     - Receipt screenshot uploader with reference number field (`AWAITING_CONFIRMATION`).
+  2. **Finance Side:**
+     - Verification modal showing uploaded receipt slip side-by-side with reference number.
+     - "Approve & Lock Funds" button locks deposit into the **JAXIS Escrow Vault** (`ESCROW_LOCKED`).
+- **System Status:** `ACTIVE`
 
 ---
 
-### Step 6: Senior QA Double Checks the Math
-- **What the Senior QA Lead does:**
-  1. Picks up the finished report.
-  2. Re-runs the math from scratch using the raw data to see if the answers match 100%.
-  3. Checks that the tables look clean and pretty (no messy vertical lines, clear titles, correct decimals).
-  4. **If there is any mistake:** Sends it back to the specialist with clear notes on what to fix.
-  5. **If everything is correct:** Clicks "Approve & Release".
-- **What happens next:** A watermarked preview copy is prepared so the client can inspect the results.
+### [4] WE ASSIGN YOUR STATISTICIAN
+- **Who Acts:** Operations Admin
+- **Sidebar Menu:** `Assignments Desk` (`/dashboard/admin/assignments`)
+- **Tools on Screen:**
+  1. Study assignment card showing topic methodology (e.g. Healthcare, Regression).
+  2. Specialist dropdown list filtered by matching subject expertise.
+  3. Workload capacity meter showing current active studies per specialist (strictly capped at 4/4).
+  4. "Assign Specialist" button: dispatches study to analyst and opens private chat thread.
+- **System Status:** `EXPERT_ASSIGNED`
 
 ---
 
-### Step 7: Final Payment & Download
-- **What happens:**
-  1. Client looks at the preview to see that all their questions were answered.
-  2. Client pays the second half (50%) of the fee.
-  3. Finance confirms the payment.
-  4. The client can now click **"Download Deliverables"** to get the clean Word file (`.docx`), the clean Excel sheet (`.xlsx`), and the math code.
-  5. The statistician gets their study earnings added to their payday statement.
-  6. The client has **3 days of free warranty revisions** if their thesis adviser requests minor formatting tweaks.
+### [5] ANALYSIS IN PROGRESS
+- **Who Acts:** Assigned Lead Statistician & Client
+- **Sidebar Menu:**
+  - Specialist: `Statistician Workbench` (`/dashboard/statistician`) & Topbar
+  - Client: `My Studies` (`/dashboard/client`) & `Messages` (`/dashboard/client/messages`)
+- **Tools on Screen:**
+  1. **Topbar Duty Clock Widget:** Active duty timer (`[ 🟢 Duty: 02h 15m ]`, Break, Clock Out).
+  2. **Workbench Desk:** Raw data download button, data cleaning protocol checklist.
+  3. **External Statistical Software:** Specialist runs RStudio, IBM SPSS, or SmartPLS.
+  4. **In-App Messaging Window:** Secure Messenger-style chat for client questions with zero personal cell number exchange.
+  5. **QA Package Submission Modal:** Uploader for Word Report (`.docx`), Clean Data (`.xlsx`), and Syntax (`.R` / `.sps`).
+- **System Status:** `IN_PROGRESS`
 
 ---
 
-## 3. Simple Status Guide (What the Tags on Screen Mean)
+### [6] QUALITY CHECK
+- **Who Acts:** Senior QA Lead (Quality Reviewer)
+- **Sidebar Menu:** `QA Review Queue` (`/dashboard/qa`)
+- **Tools on Screen:**
+  1. QA Queue list showing submitted studies awaiting verification.
+  2. Side-by-side inspection console (`/dashboard/qa/[id]/inspect`).
+  3. 4-Pillar QA Verification Checklist:
+     - Math code re-execution (confirming 100% numerical match).
+     - APA 7th table standards (3 horizontal rules, italic symbols, exact p-values).
+     - Scope check (all research questions answered).
+     - Narrative logic and clarity.
+  4. "Request Revisions" modal: returns study to analyst with specific line notes (`QA_REVISION`).
+  5. "Approve & Stamp" button: applies official quality seal and generates watermarked preview (`DELIVERABLE_WATERMARKED`).
+- **System Status:** `FOR_QA` ➔ Approved
 
-When you look at a study on your screen, you will see a status badge. Here is what every badge means in plain English:
+---
 
-| Status Badge | What it Means in Plain English | Who Needs to Act? |
-|:---|:---|:---|
-| **New Request** | Client just submitted the study. Waiting for Admin to read it. | Admin |
-| **Awaiting Information** | Admin or Statistician needs an extra file or clarification from the client. | Client |
-| **Quote Sent** | Price quote is ready for the client to review and sign. | Client |
-| **Awaiting Payment** | Client signed the contract. Waiting for 50% deposit. | Client |
-| **Awaiting Confirmation** | Client uploaded payment receipt. Waiting for Finance to verify funds. | Finance Officer |
-| **Pending Assignment** | Payment verified! Waiting for Admin to assign the right specialist. | Admin |
-| **In Progress** | Statistician is actively cleaning data and running the calculations. | Statistician |
-| **For QA Review** | Specialist finished the work. Senior reviewer is checking the math. | Senior QA Lead |
-| **QA Revision** | QA found a small typo or math issue. Specialist is fixing it. | Statistician |
-| **Delivered** | QA passed 100%! Ready for client to download final clean files. | Client |
-| **Closed** | Everything is finished and verified. Payouts released. | Archive |
-| **Disputed** | Client or staff reported a problem. Management is reviewing it. | Admin / CEO |
+### [7] PAY BALANCE & DOWNLOAD
+- **Who Acts:** Client ➔ Finance Officer
+- **Sidebar Menu:**
+  - Client: `My Studies` (`/dashboard/client`)
+  - Finance: `Transactions Desk` (`/dashboard/finance/transactions`)
+- **Tools on Screen:**
+  1. **Client Side:**
+     - Watermarked draft previewer to inspect findings before final payment.
+     - Final 50% payment modal (GCash / Bank).
+     - "Download Deliverables" button: downloads clean Word file, clean Excel, and R code.
+     - "Request Free Revision" button: unlocks 3-day warranty period for panel feedback.
+     - `DefenseLab Practice` link: sidebar link to book mock defense rehearsal with a panelist.
+  2. **Finance Side:**
+     - Settlement verification button.
+     - Specialist commission credit to 15th/30th payday statement.
+- **System Status:** `DELIVERED` ➔ `CLOSED`

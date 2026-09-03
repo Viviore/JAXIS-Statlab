@@ -22,6 +22,7 @@ import {
   Modal,
   Toast,
   Peso,
+  Pagination,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -60,6 +61,8 @@ export function AdminDeliverablesDesk({ data }: AdminDeliverablesDeskProps) {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const [toast, setToast] = useState<{
     message: string;
@@ -459,7 +462,8 @@ export function AdminDeliverablesDesk({ data }: AdminDeliverablesDeskProps) {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 font-mono">
@@ -472,7 +476,7 @@ export function AdminDeliverablesDesk({ data }: AdminDeliverablesDeskProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-sans">
-                  {deliverables.map((item) => {
+                  {deliverables.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((item) => {
                     const catMeta = DELIVERABLE_CATEGORY_METADATA[item.category];
                     return (
                       <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
@@ -555,7 +559,20 @@ export function AdminDeliverablesDesk({ data }: AdminDeliverablesDeskProps) {
                 </tbody>
               </table>
             </div>
-          )}
+
+            {deliverables.length > 0 && (
+              <div className="border-t border-white/10 p-3 sm:px-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={deliverables.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
+          </>
+        )}
         </Card>
       </div>
 

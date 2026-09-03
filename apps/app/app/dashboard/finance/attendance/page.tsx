@@ -11,7 +11,7 @@ import {
   IconUserCheck,
   IconLock,
 } from "@tabler/icons-react";
-import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader } from "@repo/ui";
+import { Button, Card, KpiCard, Badge, Modal, Toast, LoadingState, PageHeader, Pagination } from "@repo/ui";
 import {
   getAttendanceReviewDeskData,
   reviewAttendanceCorrection,
@@ -33,6 +33,8 @@ export default function FinanceAttendanceReviewPage() {
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [declineModalItem, setDeclineModalItem] = useState<AttendanceCorrectionItem | null>(null);
   const [declineNotes, setDeclineNotes] = useState<string>("");
+  const [auditPage, setAuditPage] = useState<number>(1);
+  const [auditPageSize, setAuditPageSize] = useState<number>(10);
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
 
   const loadData = useCallback(async () => {
@@ -357,7 +359,8 @@ export default function FinanceAttendanceReviewPage() {
             Zero historical adjustment records.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem]">
@@ -371,7 +374,7 @@ export default function FinanceAttendanceReviewPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {processedAudit.map((audit) => (
+                {processedAudit.slice((auditPage - 1) * auditPageSize, auditPage * auditPageSize).map((audit) => (
                   <tr key={audit.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-3 px-3 font-mono font-semibold text-white">
                       {audit.targetDate}
@@ -410,7 +413,20 @@ export default function FinanceAttendanceReviewPage() {
               </tbody>
             </table>
           </div>
-        )}
+
+          {processedAudit.length > 0 && (
+            <div className="border-t border-white/10 p-3 sm:px-6">
+              <Pagination
+                currentPage={auditPage}
+                totalItems={processedAudit.length}
+                pageSize={auditPageSize}
+                onPageChange={setAuditPage}
+                onPageSizeChange={setAuditPageSize}
+              />
+            </div>
+          )}
+        </>
+      )}
       </Card>
 
       {/* Decline Feedback Modal */}

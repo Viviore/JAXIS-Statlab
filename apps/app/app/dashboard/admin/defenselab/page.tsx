@@ -1,37 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import Link from "next/link";
 import {
   PageHeader,
   Card,
   Button,
-  Badge,
   KpiCard,
   Modal,
   Toast,
   LoadingState,
   Peso,
+  Pagination,
 } from "@repo/ui";
 import {
   IconVideo,
-  IconCalendar,
-  IconClock,
-  IconAlertTriangle,
-  IconCheck,
-  IconChevronRight,
   IconDownload,
-  IconInfoCircle,
-  IconLoader2,
-  IconMicrophone,
-  IconPlus,
-  IconCalendarEvent,
-  IconBrandZoom,
-  IconShieldCheck,
-  IconEdit,
-  IconGavel,
-  IconLink,
-  IconUser,
 } from "@tabler/icons-react";
 import {
   getAdminDefenseLabData,
@@ -40,7 +23,7 @@ import {
   uploadDefenseLabRecording,
   applyDefenseLabPenalty,
 } from "@/features/defenselab/actions";
-import type { DefenseLabSessionDTO, DefenseLabStatusType } from "@/features/defenselab/schemas";
+import type { DefenseLabSessionDTO } from "@/features/defenselab/schemas";
 
 type FilterTab = "ALL" | "SCHEDULED" | "COMPLETED" | "NO_SHOW_CLIENT" | "PENALTIES";
 
@@ -58,6 +41,8 @@ export default function AdminDefenseLabPage() {
 
   const [activeTab, setActiveTab] = useState<FilterTab>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   // Modals state
   const [activeModalSession, setActiveModalSession] = useState<DefenseLabSessionDTO | null>(null);
@@ -124,6 +109,17 @@ export default function AdminDefenseLabPage() {
       return true;
     });
   }, [sessions, activeTab, searchQuery]);
+
+  // Reset page on filter or search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
+
+  // Paginated sessions
+  const paginatedSessions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredSessions.slice(start, start + pageSize);
+  }, [filteredSessions, currentPage, pageSize]);
 
   // Open modals helper
   const handleOpenMeetingModal = (session: DefenseLabSessionDTO) => {
@@ -388,7 +384,8 @@ export default function AdminDefenseLabPage() {
                 No DefenseLab rehearsal sessions match the selected filter.
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-sans">
                   <thead>
                     <tr className="border-b border-white/10 text-white/50 font-mono uppercase text-[0.688rem] tracking-wider">
@@ -402,7 +399,7 @@ export default function AdminDefenseLabPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.06]">
-                    {filteredSessions.map((s) => {
+                    {paginatedSessions.map((s) => {
                       const sessionDate = new Date(s.scheduledAt);
                       const isUpcoming = s.status === "SCHEDULED" || s.status === "RESCHEDULED";
 
@@ -575,7 +572,20 @@ export default function AdminDefenseLabPage() {
                   </tbody>
                 </table>
               </div>
-            )}
+
+              {filteredSessions.length > 0 && (
+                <div className="border-t border-white/10 p-3 sm:px-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalItems={filteredSessions.length}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={setPageSize}
+                  />
+                </div>
+              )}
+            </>
+          )}
           </Card>
         </>
       )}

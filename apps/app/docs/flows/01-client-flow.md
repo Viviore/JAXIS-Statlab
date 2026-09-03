@@ -1,51 +1,47 @@
 # 01 — Simple Client Guide (For Thesis Students & Researchers)
 
-Welcome to your client guide! If you are writing a thesis, dissertation, or research paper, this step-by-step handbook will guide you through using the JAXIS portal with zero confusion.
+Welcome to your client guide! If you are writing a thesis, dissertation, or research paper, this handbook explains the exact 7-step journey of your study inside the JAXIS portal with zero confusion.
 
 ---
 
-## 1. What You Will Experience (ASCII Flowchart)
+## 1. Your Study, Start to Finish (ASCII Flowchart)
 
 ```
-STEP 1: SUBMIT YOUR PAPER
-┌─────────────────────────────────────────────────────────┐
-│ • Click "+ Submit New Study Request"                    │
-│ • Type your research title and questions                │
-│ • Upload your survey answers (Excel) & questionnaire    │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 2: REVIEW YOUR PRICE QUOTE
-┌─────────────────────────────────────────────────────────┐
-│ • Receive an alert when your quote is ready             │
-│ • Check the price and delivery date                     │
-│ • Click "Accept Quote" and sign on your screen          │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 3: PAY 50% DEPOSIT TO START
-┌─────────────────────────────────────────────────────────┐
-│ • Scan the GCash QR code or send via Bank Transfer      │
-│ • Upload screenshot of the receipt                      │
-│ • Finance locks your money safely in escrow             │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 4: TRACK PROGRESS & CHAT WITH YOUR STATISTICIAN
-┌─────────────────────────────────────────────────────────┐
-│ • See your study card with 5 progress dots              │
-│ • Click "Message Statistician" to ask questions         │
-│ • Relax while your expert cleans data and runs formulas │
-└────────────────────────────┬────────────────────────────┘
-                             │
-                             ▼
-STEP 5: PAY FINAL BALANCE & DOWNLOAD CLEAN FILES
-┌─────────────────────────────────────────────────────────┐
-│ • Quality Checker reviews the math to ensure 100% truth │
-│ • Review watermarked preview copy                       │
-│ • Pay remaining 50% and click "Download Deliverables"   │
-│ • Receive Word tables, clean Excel file, and write-up   │
-└─────────────────────────────────────────────────────────┘
+===========================================================================
+                       YOUR STUDY, START TO FINISH
+===========================================================================
+
+ [1] SUBMIT REQUEST
+     You upload your questions + raw data
+              │
+              ▼
+ [2] GET YOUR QUOTE
+     We review it and send you a price
+              │
+              ▼
+ [3] SIGN & PAY 50% DEPOSIT
+     Accept quote, sign online, send deposit
+     (Money is locked safely in the JAXIS Escrow Vault)
+              │
+              ▼
+ [4] WE ASSIGN YOUR STATISTICIAN
+     Matched to your topic, work begins
+              │
+              ▼
+ [5] ANALYSIS IN PROGRESS
+     Data cleaned, formulas run, tables built
+     (we'll message you if anything's unclear)
+              │
+              ▼
+ [6] QUALITY CHECK
+     A senior reviewer double-checks the math
+              │
+              ▼
+ [7] PAY BALANCE & DOWNLOAD
+     Preview your results, pay the rest,
+     download your Word + Excel files
+     (Includes 3 days of free warranty revisions!)
+===========================================================================
 ```
 
 ---
@@ -87,7 +83,7 @@ When you log in, you will see your **"My Studies"** page:
 
 ---
 
-### Screen 2: How to Submit a New Request (3 Easy Steps)
+### Step [1]: Submitting Your Study Request (3 Easy Steps)
 
 When you click **"+ Submit New Study Request"**, you will see a simple 3-step form:
 
@@ -109,55 +105,68 @@ When you click **"+ Submit New Study Request"**, you will see a simple 3-step fo
 
 ---
 
-### Screen 3: Reviewing Your Price Quote & Signing
+### Step [2]: Getting Your Price Quote
 
-1. When your quote is ready, click **"Review Proposal & Scope →"**.
-2. You will see a clear price breakdown:
-   - What statistical tests will be performed.
+1. Within 4 business hours, our operations team reviews your study scope.
+2. When your quote is ready, you will see a notification: *"Proposal Ready for Review"*.
+3. Click **"Review Proposal & Scope →"**.
+4. You will see a clear breakdown:
+   - Exactly which statistical tests will be performed.
    - Total cost and the 50% deposit needed to begin.
-3. Click **"Accept Quote"**.
-4. The agreement (Statement of Work) will open. Read it, draw your signature with your mouse or phone screen, and click **"Sign Contract"**.
+   - Guaranteed turnaround deadline.
 
 ---
 
-### Screen 4: Paying Your Deposit Safely
+### Step [3]: Signing the Agreement & Paying 50% Deposit
 
-1. Click **"Pay Deposit"**.
-2. You will see:
-   - Official **GCash QR Code** (or GCash number).
-   - Official **Bank Account Details** (BDO / BPI).
-3. Open your GCash or Banking app and send the exact 50% amount.
-4. Take a screenshot of the receipt.
-5. Upload the screenshot on the page and type the Reference Number.
-6. Click **"Submit Payment Proof"**.
-7. **Your money is 100% safe:** JAXIS holds your money in our safe escrow vault. It is not handed over until our Senior Quality Checker reviews the math and approves the output.
+1. Click **"Accept Quote"**.
+2. The agreement (Statement of Work) will open. Read it, draw your signature with your mouse or phone screen, and click **"Sign Contract"**.
+3. Click **"Pay Deposit"**:
+   - You will see our official **GCash QR Code** and **Bank Transfer details** (BDO / BPI).
+   - Send the 50% downpayment.
+   - Take a screenshot of the receipt and upload it with the reference number.
+4. **Your Money is 100% Protected:** Finance verifies the receipt and locks your deposit safely in the **JAXIS Escrow Vault**. It is never released to the specialist until our Senior QA Lead checks the math and passes your paper!
 
 ---
 
-### Screen 5: Chatting with Your Statistician
+### Step [4]: Assigning Your Lead Statistician
 
-1. On your study card, click **"💬 Message Statistician"**.
-2. A private chat room opens (just like Facebook Messenger):
-   - You can chat directly with your assigned expert.
-   - You can send extra files or tell them about any suggestions your thesis adviser made.
-3. **Important Safety Rule:** Keep all messages inside this chat room. Never exchange personal cell numbers or private GCash accounts. Keeping chat inside JAXIS ensures our QA team can back you up if any issues occur.
+1. Our operations admin reviews your topic (e.g. Nursing, Business, Psychology, Education).
+2. We match your paper to an expert who specializes in that field and your chosen software (SPSS, R, Stata, or SmartPLS).
+3. **Capacity Guarantee:** No specialist is ever allowed to take more than 4 studies at the same time. You will always have an unhurried, dedicated expert.
 
 ---
 
-### Screen 6: Downloading Your Finished Deliverables
+### Step [5]: Analysis in Progress & Direct Messaging
 
-1. Once our Senior Quality Checker verifies the math, you will receive an alert: *"Your deliverables are ready!"*
-2. Inspect the watermarked preview to see that your questions are answered.
-3. Pay the remaining 50% balance.
+1. Your assigned statistician cleans your Excel data, runs the formulas, and formats clean Word tables.
+2. On your study card, click **"💬 Message Statistician"**:
+   - A private chat opens (just like Facebook Messenger).
+   - Chat directly with your expert, ask questions, or share notes from your thesis adviser.
+3. **Safety Rule:** Keep all messages inside this chat room. Never exchange personal phone numbers or private GCash. Keeping all chat in JAXIS ensures our QA team can back you up if your adviser asks for adjustments!
+
+---
+
+### Step [6]: Quality Check (Senior QA Review)
+
+1. When the analyst finishes your Chapter 4 write-up, they submit it to our Senior QA Lead.
+2. The Senior QA reviewer re-runs the math script from scratch:
+   - Confirms zero math errors or formula typos.
+   - Checks that tables follow university APA 7th standards (clean borders, correct decimals, italicized letters).
+   - Verifies that every single research question in your contract was completely answered.
+3. If an error is found, the analyst fixes it before you ever see it!
+
+---
+
+### Step [7]: Paying Balance & Downloading Deliverables
+
+1. Once QA approves your study, you receive an alert: *"Your deliverables are ready!"*
+2. Inspect your watermarked preview to confirm your questions are answered.
+3. Pay the remaining 50% balance via GCash or Bank.
 4. Click the green button: **"Download Deliverables"**.
-5. You will receive:
+5. You receive:
    - **Summary Report (`.docx`):** Ready-to-use Chapter 4 write-up with formatted APA 7th tables.
    - **Cleaned Dataset (`.xlsx`):** Properly organized and coded Excel data.
-   - **Syntax File (`.R` / `.spv`):** The exact computer math script used to produce the tables.
-
----
-
-## 3. After Delivery: Free Revisions & Defense Practice
-
-- **3-Day Free Guarantee:** If your thesis adviser asks for minor adjustments to table layout or small descriptive sub-groups within the original scope, you have 3 days to click **"Request Free Revision"**.
-- **DefenseLab Practice:** Nervous about your oral defense? Go to **"DefenseLab Practice"** in the sidebar to book a 45-minute practice session where our senior panelist will ask you mock defense questions and teach you how to explain your Chapter 4 numbers confidently.
+   - **Syntax Script (`.R` / `.sps`):** The exact computer math script used to produce the tables.
+6. **3-Day Free Guarantee:** If your thesis adviser asks for minor adjustments to table layout or small descriptive sub-groups within your original scope, you have 3 days to click **"Request Free Revision"**.
+7. **DefenseLab Practice:** Want to practice explaining your numbers before facing your panel? Go to **"DefenseLab Practice"** in the sidebar to book a 45-minute practice session with a mock defense panelist.

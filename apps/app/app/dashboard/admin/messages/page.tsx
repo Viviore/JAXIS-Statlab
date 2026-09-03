@@ -11,6 +11,7 @@ import {
   FormInput,
   FormSelect,
   Toast,
+  Pagination,
 } from "@repo/ui";
 import { getBlockedMessages } from "@/features/messaging/actions";
 import type { BlockedMessageLogDTO } from "@/features/messaging/schemas";
@@ -42,6 +43,13 @@ export default function AdminFirewallMessagesPage() {
   const [selectedStatus, setSelectedStatus] = useState<
     "ALL" | "PENDING_REVIEW" | "REVIEWED"
   >("ALL");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedStatus]);
 
   // Review modal
   const [selectedLog, setSelectedLog] = useState<BlockedMessageLogDTO | null>(null);
@@ -59,8 +67,8 @@ export default function AdminFirewallMessagesPage() {
         search: searchQuery,
         category: selectedCategory,
         reviewedStatus: selectedStatus,
-        page: 1,
-        pageSize: 50,
+        page: currentPage,
+        pageSize: pageSize,
       });
 
       if (res.success && res.data) {
@@ -74,7 +82,7 @@ export default function AdminFirewallMessagesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, selectedCategory, selectedStatus]);
+  }, [searchQuery, selectedCategory, selectedStatus, currentPage, pageSize]);
 
   useEffect(() => {
     loadLogs();
@@ -328,6 +336,18 @@ export default function AdminFirewallMessagesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {totalCount > 0 && (
+          <div className="border-t border-white/10 p-3 sm:px-6">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalCount}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           </div>
         )}
       </Card>

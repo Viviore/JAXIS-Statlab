@@ -577,14 +577,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (item.href === "/dashboard/client/profile") {
           return {
             ...item,
-            badge: "REQUIRED",
+            badge: "1. START HERE",
             badgeColor: "orange" as const,
           };
         }
         if (item.href === "/dashboard/client/projects/new") {
           return {
             ...item,
-            badge: "SETUP REQ",
+            badge: "2. NEXT STEP",
             badgeColor: "amber" as const,
           };
         }
