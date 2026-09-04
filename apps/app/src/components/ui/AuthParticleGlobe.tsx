@@ -195,7 +195,24 @@ export default function AuthParticleGlobe() {
       colAttr.needsUpdate = true;
     }
 
-    // ── Animation loop (Pure Ambient Motion) ──────────────────────────────────
+    // ── Interactive Mouse Parallax ─────────────────────────────────────────────
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        const nx = (e.clientX - rect.left) / rect.width - 0.5;
+        const ny = (e.clientY - rect.top) / rect.height - 0.5;
+        targetMouseX = nx * 0.35;
+        targetMouseY = ny * 0.25;
+      }
+    };
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+
+    // ── Animation loop ────────────────────────────────────────────────────────
     let animId: number;
     const clock = new THREE.Clock();
 
@@ -212,12 +229,15 @@ export default function AuthParticleGlobe() {
       coreMat.opacity = eased;
       haloMat.opacity = eased * (HALO_BASE_OPACITY + Math.sin(t * 1.2) * 0.03);
 
-      // Smooth ambient axial spin
-      group.rotation.x = Math.sin(t * 0.05) * 0.04;
-      group.rotation.y = t * 0.08;
+      mouseX += (targetMouseX - mouseX) * 0.04;
+      mouseY += (targetMouseY - mouseY) * 0.04;
+
+      // Smooth ambient axial spin + interactive tilt
+      group.rotation.x = Math.sin(t * 0.05) * 0.04 + mouseY;
+      group.rotation.y = t * 0.08 + mouseX;
 
       const breathe = 1 + Math.sin(t * 0.8) * 0.01;
-      group.scale.setScalar(1.35 * breathe);
+      group.scale.setScalar(1.25 * breathe);
 
       updateParticles(t);
       renderer.render(scene, camera);
@@ -246,6 +266,7 @@ export default function AuthParticleGlobe() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("mousemove", onMouseMove);
       renderer.dispose();
       coreGeo.dispose(); coreMat.dispose(); coreTex.dispose();
       haloGeo.dispose(); haloMat.dispose(); haloTex.dispose();

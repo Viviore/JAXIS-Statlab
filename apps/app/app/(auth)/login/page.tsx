@@ -102,7 +102,7 @@ function LoginForm() {
           Sign In
         </h1>
         <p className="text-xs sm:text-sm text-white/60 leading-relaxed font-sans">
-          Enter your authorized credentials to access your stakeholder workbench.
+          Sign in to access your research desk, studies, and consultations.
         </p>
       </div>
 
@@ -116,8 +116,8 @@ function LoginForm() {
       {/* Stakeholder Preset Dropdown */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between font-mono uppercase tracking-wider text-xs">
-          <span className="font-semibold text-slate-200">Stakeholder Preset:</span>
-          <span className="text-[#CC6600] font-semibold">1-Click Autoload</span>
+          <span className="font-semibold text-slate-200">Demo Role:</span>
+          <span className="text-[#CC6600] font-semibold">1-Click Sign-In</span>
         </div>
         <div className="relative flex items-center w-full">
           <select
@@ -243,19 +243,18 @@ function LoginForm() {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full py-3.5 font-bold tracking-[0.10em]"
+            className="w-full py-3.5 font-bold tracking-wide"
             loading={isPending}
-
             disabled={isPending}
           >
-            {isPending ? "AUTHENTICATING..." : "SIGN IN TO WORKSPACE →"}
+            {isPending ? "Signing in..." : "Sign In to Workspace →"}
           </Button>
         </div>
       </form>
 
       {/* Footer Registration Link */}
       <div className="pt-2 text-center text-xs text-white/60 font-sans">
-        <span>New institutional researcher?</span>{" "}
+        <span>New to JAXIS StatLab?</span>{" "}
         <Link
           href="/register"
           className="text-[#CC6600] hover:text-[#E67300] font-semibold transition-colors ml-1"

@@ -19,7 +19,7 @@ export interface MockUser {
 
 export const DEV_USERS: Record<string, MockUser> = {
   "admin@jaxis.dev": {
-    id: "usr_dev_admin_001",
+    id: "cmt5plrh90000lrrkrk76bb0b",
     email: "admin@jaxis.dev",
     fullName: "Operations Manager",
     role: "ADMIN",
@@ -27,7 +27,7 @@ export const DEV_USERS: Record<string, MockUser> = {
     status: "ACTIVE",
   },
   "ceo@jaxis.dev": {
-    id: "usr_dev_ceo_001",
+    id: "cmt5plsb20001lrrk0w684oz0",
     email: "ceo@jaxis.dev",
     fullName: "CEO Owner",
     role: "CEO",
@@ -35,7 +35,7 @@ export const DEV_USERS: Record<string, MockUser> = {
     status: "ACTIVE",
   },
   "finance@jaxis.dev": {
-    id: "usr_dev_finance_001",
+    id: "cmt5plt6q0002lrrkr5jnsghs",
     email: "finance@jaxis.dev",
     fullName: "Finance Officer",
     role: "FINANCE_OFFICER",
@@ -48,7 +48,7 @@ export const DEV_USERS: Record<string, MockUser> = {
     },
   },
   "stat@jaxis.dev": {
-    id: "usr_dev_stat_001",
+    id: "cmt5plu1k0003lrrkl1kribvh",
     email: "stat@jaxis.dev",
     fullName: "Dr. Juan Reyes",
     role: "STATISTICIAN",
@@ -61,7 +61,7 @@ export const DEV_USERS: Record<string, MockUser> = {
     },
   },
   "qa@jaxis.dev": {
-    id: "usr_dev_qa_001",
+    id: "cmt5pluuu0004lrrk5qu5ul2t",
     email: "qa@jaxis.dev",
     fullName: "QA Lead Maria",
     role: "SENIOR_QA_LEAD",
@@ -74,7 +74,7 @@ export const DEV_USERS: Record<string, MockUser> = {
     },
   },
   "client@jaxis.dev": {
-    id: "usr_dev_client_001",
+    id: "cmt5plvqe0005lrrkcoiysc7j",
     email: "client@jaxis.dev",
     fullName: "Client Ana Cruz",
     role: "CLIENT",
@@ -82,7 +82,7 @@ export const DEV_USERS: Record<string, MockUser> = {
     status: "ACTIVE",
   },
   "suspended@jaxis.dev": {
-    id: "usr_dev_suspended_001",
+    id: "cmt5plwpt0006lrrk1vi05x2g",
     email: "suspended@jaxis.dev",
     fullName: "Suspended Test User",
     role: "CLIENT",

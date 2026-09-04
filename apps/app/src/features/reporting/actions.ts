@@ -1177,11 +1177,48 @@ export async function getInfrastructureHealthAction(): Promise<{
     // Automatic In-App Notification Trigger if warning threshold is reached (with 24h deduplication)
     if (hasActiveWarning) {
       try {
+        let recipientId = user.id;
+        const dbUser = await withDbTimeout(
+          db.user.findFirst({
+            where: {
+              OR: [
+                { id: user.id },
+                ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
+              ],
+            },
+            select: { id: true },
+          }),
+          1500
+        );
+
+        if (dbUser) {
+          recipientId = dbUser.id;
+        } else {
+          const fallbackUser = await withDbTimeout(
+            db.user.findFirst({
+              where: {
+                userRoles: {
+                  some: {
+                    role: {
+                      name: { in: ["CEO", "ADMIN"] },
+                    },
+                  },
+                },
+              },
+              select: { id: true },
+            }),
+            1500
+          );
+          if (fallbackUser) {
+            recipientId = fallbackUser.id;
+          }
+        }
+
         const lastDay = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const existingAlert = await withDbTimeout(
           db.inAppAlert.findFirst({
             where: {
-              recipientId: user.id,
+              recipientId,
               alertType: "SYSTEM_ALERT",
               createdAt: { gte: lastDay },
             },
@@ -1192,7 +1229,7 @@ export async function getInfrastructureHealthAction(): Promise<{
           await withDbTimeout(
             db.inAppAlert.create({
               data: {
-                recipientId: user.id,
+                recipientId,
                 recipientRole: user.role as any,
                 alertType: "SYSTEM_ALERT",
                 message: `Storage & Capacity Warning: ${warningDetails[0]} Consider running storage purge or reviewing quota limits.`,
@@ -1285,6 +1322,46 @@ export async function triggerStorageWarningAlertAction(serviceName: "Supabase" |
       return { success: false, error: { message: "Administrative authority required." } };
     }
 
+    // Resolve DB user safely to guarantee foreign key integrity
+    let recipientId = user.id;
+    const dbUser = await withDbTimeout(
+      db.user.findFirst({
+        where: {
+          OR: [
+            { id: user.id },
+            ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
+          ],
+        },
+        select: { id: true },
+      }),
+      2000
+    );
+
+    if (dbUser) {
+      recipientId = dbUser.id;
+    } else {
+      const fallbackUser = await withDbTimeout(
+        db.user.findFirst({
+          where: {
+            userRoles: {
+              some: {
+                role: {
+                  name: { in: ["CEO", "ADMIN"] },
+                },
+              },
+            },
+          },
+          select: { id: true },
+        }),
+        2000
+      );
+      if (fallbackUser) {
+        recipientId = fallbackUser.id;
+      } else {
+        return { success: false, error: { message: "No administrative user record found in the database." } };
+      }
+    }
+
     const alertMessage =
       serviceName === "Cloudflare"
         ? "Storage Threshold Warning: Cloudflare R2 storage has exceeded 80% quota (8,392 MB / 10,240 MB). Consider running storage purge."
@@ -1297,7 +1374,7 @@ export async function triggerStorageWarningAlertAction(serviceName: "Supabase" |
     await withDbTimeout(
       db.inAppAlert.create({
         data: {
-          recipientId: user.id,
+          recipientId,
           recipientRole: user.role as any,
           alertType: "SYSTEM_ALERT",
           message: alertMessage,

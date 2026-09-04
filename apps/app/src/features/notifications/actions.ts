@@ -31,11 +31,31 @@ export async function getInAppAlertsAction(): Promise<{
       return { success: false, error: { message: "Authentication required." } };
     }
 
+    let recipientId = user.id;
+    try {
+      const dbUser = await withDbTimeout(
+        db.user.findFirst({
+          where: {
+            OR: [
+              { id: user.id },
+              ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
+            ],
+          },
+          select: { id: true },
+        }),
+        1000
+      );
+      if (dbUser) recipientId = dbUser.id;
+    } catch {
+      // Ignore DB timeout and use user.id
+    }
+
     const alertsRaw = await withDbTimeout(
       db.inAppAlert.findMany({
         where: {
           OR: [
-            { recipientId: user.id },
+            { recipientId },
+            ...(recipientId !== user.id ? [{ recipientId: user.id }] : []),
             { recipientRole: user.role as any },
           ],
         },
@@ -90,11 +110,31 @@ export async function getUnreadAlertCountAction(): Promise<{
       return { success: true, count: 0 };
     }
 
+    let recipientId = user.id;
+    try {
+      const dbUser = await withDbTimeout(
+        db.user.findFirst({
+          where: {
+            OR: [
+              { id: user.id },
+              ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
+            ],
+          },
+          select: { id: true },
+        }),
+        1000
+      );
+      if (dbUser) recipientId = dbUser.id;
+    } catch {
+      // Ignore DB timeout and use user.id
+    }
+
     const count = await withDbTimeout(
       db.inAppAlert.count({
         where: {
           OR: [
-            { recipientId: user.id },
+            { recipientId },
+            ...(recipientId !== user.id ? [{ recipientId: user.id }] : []),
             { recipientRole: user.role as any },
           ],
           isRead: false,
@@ -154,11 +194,31 @@ export async function markAllAlertsReadAction(): Promise<{
       return { success: false, error: { message: "Authentication required." } };
     }
 
+    let recipientId = user.id;
+    try {
+      const dbUser = await withDbTimeout(
+        db.user.findFirst({
+          where: {
+            OR: [
+              { id: user.id },
+              ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
+            ],
+          },
+          select: { id: true },
+        }),
+        1000
+      );
+      if (dbUser) recipientId = dbUser.id;
+    } catch {
+      // Ignore DB timeout and use user.id
+    }
+
     await withDbTimeout(
       db.inAppAlert.updateMany({
         where: {
           OR: [
-            { recipientId: user.id },
+            { recipientId },
+            ...(recipientId !== user.id ? [{ recipientId: user.id }] : []),
             { recipientRole: user.role as any },
           ],
           isRead: false,
@@ -190,10 +250,42 @@ export async function createInAppAlertAction(rawInput: CreateInAppAlertInput): P
 
     const { recipientId, recipientRole, alertType, projectId, message, linkUrl } = parsed.data;
 
+    // Verify recipient user exists in DB to prevent foreign key violation
+    let targetRecipientId = recipientId;
+    const recipientExists = await withDbTimeout(
+      db.user.findUnique({
+        where: { id: recipientId },
+        select: { id: true },
+      }),
+      1500
+    );
+    if (!recipientExists) {
+      const fallbackUser = await withDbTimeout(
+        db.user.findFirst({
+          where: {
+            userRoles: {
+              some: {
+                role: {
+                  name: recipientRole,
+                },
+              },
+            },
+          },
+          select: { id: true },
+        }),
+        1500
+      );
+      if (fallbackUser) {
+        targetRecipientId = fallbackUser.id;
+      } else {
+        return { success: false, error: { message: "Recipient user not found in database." } };
+      }
+    }
+
     const alert = await withDbTimeout(
       db.inAppAlert.create({
         data: {
-          recipientId,
+          recipientId: targetRecipientId,
           recipientRole,
           alertType,
           projectId: projectId || null,
