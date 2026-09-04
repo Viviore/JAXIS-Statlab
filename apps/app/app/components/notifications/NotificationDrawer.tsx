@@ -31,8 +31,8 @@ export function NotificationDrawer() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD">("ALL");
 
-  const loadAlerts = useCallback(async () => {
-    setIsLoading(true);
+  const loadAlerts = useCallback(async (isInitial = false) => {
+    if (isInitial) setIsLoading(true);
     try {
       const res = await getInAppAlertsAction();
       if (res.success && res.data) {
@@ -42,15 +42,36 @@ export function NotificationDrawer() {
     } catch (err) {
       console.error("Failed to load alerts:", err);
     } finally {
-      setIsLoading(false);
+      if (isInitial) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadAlerts();
-    // Refresh alerts periodically (every 30 seconds)
-    const interval = setInterval(loadAlerts, 30000);
-    return () => clearInterval(interval);
+    loadAlerts(true);
+
+    const poll = () => {
+      // Sleep background poll if tab is hidden/minimized
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      loadAlerts(false);
+    };
+
+    // Refresh alerts periodically (every 45 seconds) when active
+    const interval = setInterval(poll, 45000);
+
+    // Refresh immediately when user returns to tab
+    const handleVisibilityChange = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadAlerts(false);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [loadAlerts]);
 
   // Handle ESC key to close drawer

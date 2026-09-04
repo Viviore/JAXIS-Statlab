@@ -1,7 +1,15 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import AuthParticleGlobe from "@/components/ui/AuthParticleGlobe";
+import dynamic from "next/dynamic";
+
+const AuthParticleGlobe = dynamic(
+  () => import("@/components/ui/AuthParticleGlobe"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 export default function AuthLayout({
   children,

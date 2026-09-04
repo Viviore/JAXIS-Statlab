@@ -29,7 +29,15 @@ import {
 import Link from "next/link";
 import { getFinancePaymentsQueue } from "@/features/payments/actions";
 import type { PaymentItem } from "@/features/payments/schemas";
-import { PaymentVerificationModal } from "@/features/payments/components/PaymentVerificationModal";
+import dynamic from "next/dynamic";
+
+const PaymentVerificationModal = dynamic(
+  () =>
+    import("@/features/payments/components/PaymentVerificationModal").then(
+      (m) => m.PaymentVerificationModal
+    ),
+  { ssr: false }
+);
 
 export default function FinancePaymentsQueuePage() {
   const [payments, setPayments] = useState<PaymentItem[]>([]);

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Mrs_Saint_Delafield } from "next/font/google";
 import "./globals.css";
+import { Suspense } from "react";
+import { RouteProgressBar } from "./components/layout/RouteProgressBar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,6 +45,9 @@ export default function RootLayout({
       style={{ backgroundColor: "#010114" }}
     >
       <body className="font-sans antialiased" style={{ backgroundColor: "#010114" }}>
+        <Suspense fallback={null}>
+          <RouteProgressBar />
+        </Suspense>
         {children}
       </body>
     </html>

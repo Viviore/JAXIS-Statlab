@@ -12,7 +12,15 @@ import Link from "next/link";
 import { getPaymentsByProject } from "@/features/payments/actions";
 import type { PaymentItem, ProjectPaymentsData } from "@/features/payments/schemas";
 import { PaymentLedgerCard } from "@/features/payments/components/PaymentLedgerCard";
-import { PaymentProofUploadModal } from "@/features/payments/components/PaymentProofUploadModal";
+import dynamic from "next/dynamic";
+
+const PaymentProofUploadModal = dynamic(
+  () =>
+    import("@/features/payments/components/PaymentProofUploadModal").then(
+      (m) => m.PaymentProofUploadModal
+    ),
+  { ssr: false }
+);
 import { getProjectById } from "@/features/projects/actions";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 

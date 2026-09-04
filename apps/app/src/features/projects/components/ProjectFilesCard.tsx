@@ -14,7 +14,12 @@ import {
   triggerFileDownload,
 } from "@/lib/file-utils";
 import type { ProjectFileItem } from "@/features/projects/schemas";
-import { DocumentViewerLightbox } from "./DocumentViewerLightbox";
+import dynamic from "next/dynamic";
+
+const DocumentViewerLightbox = dynamic(
+  () => import("./DocumentViewerLightbox").then((m) => m.DocumentViewerLightbox),
+  { ssr: false }
+);
 
 export interface ProjectFilesCardProps {
   files: ProjectFileItem[];

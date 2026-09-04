@@ -975,8 +975,6 @@ export async function requestLeave(
       registerDevUser(devUser);
     }
 
-    revalidatePath("/", "layout");
-    revalidatePath("/dashboard");
     revalidatePath("/dashboard/staff/hr");
     revalidatePath("/dashboard/finance");
     revalidatePath("/dashboard/finance/leaves");
@@ -1045,8 +1043,6 @@ export async function returnFromLeave(
         registerDevUser(devUser);
       }
 
-      revalidatePath("/", "layout");
-      revalidatePath("/dashboard");
       revalidatePath("/dashboard/staff/hr");
       revalidatePath("/dashboard/finance");
       revalidatePath("/dashboard/finance/leaves");
@@ -1072,8 +1068,6 @@ export async function returnFromLeave(
       devUser.status = "ACTIVE";
       registerDevUser(devUser);
 
-      revalidatePath("/", "layout");
-      revalidatePath("/dashboard");
       revalidatePath("/dashboard/staff/hr");
       revalidatePath("/dashboard/statistician");
       revalidatePath("/dashboard/qa");
@@ -1185,8 +1179,6 @@ export async function approveLeave(
       registerDevUser(devUser);
     }
 
-    revalidatePath("/", "layout");
-    revalidatePath("/dashboard");
     revalidatePath("/dashboard/staff/hr");
     revalidatePath("/dashboard/finance");
     revalidatePath("/dashboard/finance/leaves");
@@ -1243,8 +1235,6 @@ export async function rejectLeave(
       registerDevUser(devUser);
     }
 
-    revalidatePath("/", "layout");
-    revalidatePath("/dashboard");
     revalidatePath("/dashboard/staff/hr");
     revalidatePath("/dashboard/finance");
     revalidatePath("/dashboard/finance/leaves");

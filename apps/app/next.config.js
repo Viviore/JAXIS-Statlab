@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: false,
   experimental: {
     optimizePackageImports: [
-      "lucide-react",
+      "@tabler/icons-react",
       "@aws-sdk/client-s3",
       "@aws-sdk/s3-request-presigner",
       "@supabase/supabase-js",

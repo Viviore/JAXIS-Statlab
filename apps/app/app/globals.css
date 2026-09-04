@@ -513,3 +513,13 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover {
   letter-spacing: normal;
 }
 
+/* ==========================================================================
+   High-Performance Virtual Table Rows
+   Skips rendering and painting work for rows outside the viewport,
+   maintaining 60 FPS scrolling on large data tables without layout shift.
+   ========================================================================== */
+.virtual-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 48px;
+}
+

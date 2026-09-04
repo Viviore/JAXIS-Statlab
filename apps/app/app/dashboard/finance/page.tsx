@@ -23,12 +23,22 @@ import {
   IconCalendarTime,
   IconCoins,
 } from "@tabler/icons-react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { getFinanceReceivablesSummary } from "@/features/payments/actions";
-import { PaymentChannelSettingsModal } from "@/features/payments/components/PaymentChannelSettingsModal";
+
+const PaymentChannelSettingsModal = dynamic(
+  () =>
+    import("@/features/payments/components/PaymentChannelSettingsModal").then(
+      (m) => m.PaymentChannelSettingsModal
+    ),
+  { ssr: false }
+);
 import { PendingLeaveQueue } from "@/features/staff/components/PendingLeaveQueue";
 import type { FinanceOverviewData } from "@/features/payments/schemas";
 
 export default function FinanceDashboardPage() {
+  const router = useRouter();
   const [data, setData] = useState<FinanceOverviewData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -252,7 +262,13 @@ export default function FinanceDashboardPage() {
               </thead>
               <tbody className="divide-y divide-white/[0.06] text-white/80">
                 {paginatedReceivables.map((study) => (
-                  <tr key={study.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={study.id}
+                    className="hover:bg-white/[0.02] transition-colors virtual-row"
+                    onMouseEnter={() => {
+                      router.prefetch(`/dashboard/finance/projects/${study.id}/payment`);
+                    }}
+                  >
                     {/* Study & Title */}
                     <td className="py-4 px-5 whitespace-nowrap">
                       <Link

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState, Pagination } from "@repo/ui";
 import { IconPlus } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
@@ -11,6 +12,7 @@ import { getFinanceReceivablesSummary } from "@/features/payments/actions";
 import type { FinanceOverviewData } from "@/features/payments/schemas";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [selectedStudy, setSelectedStudy] = useState<Project | null>(null);
   const [studyAuditLogs, setStudyAuditLogs] = useState<AuditTelemetryEvent[]>([]);
   const [isLoadingAudit, setIsLoadingAudit] = useState(false);
@@ -25,7 +27,6 @@ export default function AdminDashboardPage() {
 
   const {
     projects,
-    kpis,
   } = useProjects({
     initialLoading: false,
   });
@@ -261,7 +262,13 @@ export default function AdminDashboardPage() {
                   </tr>
                 ) : (
                   sortedProjects.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((study) => (
-                    <tr key={study.id} className="group">
+                    <tr
+                      key={study.id}
+                      className="group virtual-row"
+                      onMouseEnter={() => {
+                        router.prefetch(`/dashboard/admin/projects/${study.rawId || study.id}`);
+                      }}
+                    >
                       <td className="font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
                         {study.id}
                       </td>
