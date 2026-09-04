@@ -89,8 +89,7 @@
 - [x] Fetch initial data on the server concurrently (`Promise.all([projectService.getProjects(), getFinanceReceivablesSummary()])`).
 - [x] Pass pre-fetched data into `AdminDashboardClient` (`initialProjects`, `initialFinanceData`).
 - [x] Eliminate initial blank loading spinner on admin overview entry.
-- [ ] Migrate `app/dashboard/finance/page.tsx`
-- [ ] Migrate `app/dashboard/client/page.tsx`
+- [x] Migrate `app/dashboard/client/page.tsx` to `async function ClientDashboardPage()` (RSC) with server pre-fetching into `ClientDashboardClient`.
 
 ### Task 3.2 — Transition Read Operations Away from POST Server Actions
 - [ ] Reserve Server Actions (`"use server"`) strictly for mutations (Create, Update, Delete).
