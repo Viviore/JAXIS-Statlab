@@ -150,7 +150,7 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-200 print:hidden ${
+        className={`fixed inset-0 bg-[#010114]/60 backdrop-blur-[3px] transition-opacity duration-200 print:hidden ${
           isVisible ? "animate-modal-backdrop-in" : "animate-modal-backdrop-out"
         }`}
         style={{
@@ -159,9 +159,9 @@ export const Modal: React.FC<ModalProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.82)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
+          backgroundColor: "rgba(1, 1, 20, 0.55)",
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
         }}
         onClick={onClose}
         aria-hidden="true"

@@ -6,6 +6,7 @@ import {
   MoneyDisplay,
   FormTextarea,
   StatusBadge,
+  LoadingState,
 } from "@repo/ui";
 import {
   IconCheck,
@@ -41,13 +42,15 @@ export function PaymentVerificationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
     setImageError(false);
+    setImageLoading(true);
     setIsRejecting(false);
     setRejectionReason("");
     setErrorMessage(null);
-  }, [payment]);
+  }, [payment, open]);
 
   if (!payment) return null;
 
@@ -110,9 +113,9 @@ export function PaymentVerificationModal({
       onClose={onClose}
       title={isReadOnly ? "Deposit Receipt & Audit Inspection" : "Deposit Receipt Verification Desk"}
       description={
-        isReadOnly
+          isReadOnly
           ? `Audit cleared deposit details and archived payment proof for Study ${payment.project?.intakeId || payment.projectId}.`
-          : `Inspect cleared institutional deposit claimed for Study ${payment.project?.intakeId || payment.projectId}.`
+          : `Inspect deposit details and archived payment proof for Study ${payment.project?.intakeId || payment.projectId}.`
       }
       size="2xl"
     >
@@ -198,7 +201,7 @@ export function PaymentVerificationModal({
           <div className="p-3.5 rounded-[2px] bg-red-500/10 border border-red-500/30 flex items-center gap-2.5 text-red-400 font-sans text-xs">
             <IconAlertCircle size={16} stroke={2} className="flex-shrink-0" />
             <span>
-              Rejection Reason: {payment.rejectionReason || "Proof does not match institutional records."}
+              Rejection Reason: {payment.rejectionReason || "Proof does not match official records."}
             </span>
           </div>
         )}
@@ -235,13 +238,29 @@ export function PaymentVerificationModal({
           {proof ? (
             <div className="p-4 rounded-[2px] bg-[#010915] border border-white/10 flex flex-col items-center justify-center min-h-[220px] max-h-[420px] overflow-auto">
               {isImage && !imageError ? (
-                <div className="relative flex items-center justify-center w-full">
+                <div className="relative flex items-center justify-center w-full min-h-[200px]">
+                  {imageLoading && (
+                    <div className="w-full py-10 flex flex-col items-center justify-center animate-content-fade">
+                      <LoadingState
+                        variant="card"
+                        size="md"
+                        label="Loading receipt..."
+                        description="Fetching uploaded proof of payment image"
+                      />
+                    </div>
+                  )}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={getFilePreviewUrl(proof.filePath)}
                     alt={proof.fileName}
-                    onError={() => setImageError(true)}
-                    className="max-h-[380px] w-auto max-w-full object-contain rounded-[2px] shadow-lg border border-white/10"
+                    onLoad={() => setImageLoading(false)}
+                    onError={() => {
+                      setImageLoading(false);
+                      setImageError(true);
+                    }}
+                    className={`max-h-[380px] w-auto max-w-full object-contain rounded-[2px] shadow-lg border border-white/10 transition-opacity duration-300 ${
+                      imageLoading ? "opacity-0 absolute pointer-events-none" : "opacity-100 relative"
+                    }`}
                   />
                 </div>
               ) : (

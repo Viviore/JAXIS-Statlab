@@ -116,21 +116,15 @@ export const authConfig: NextAuthConfig = {
             const primaryRole: RoleName =
               user.userRoles[0]?.role.name ?? "CLIENT";
 
-            try {
-              await withDbTimeout(
-                db.authAuditLog.create({
-                  data: {
-                    userId: user.id,
-                    email: user.email,
-                    event: "LOGIN_SUCCESS",
-                    metadata: { role: primaryRole },
-                  },
-                }),
-                1000
-              );
-            } catch (e) {
-              void e;
-            }
+            // Fire-and-forget: do not block the user login response on telemetry audit writes
+            db.authAuditLog.create({
+              data: {
+                userId: user.id,
+                email: user.email,
+                event: "LOGIN_SUCCESS",
+                metadata: { role: primaryRole },
+              },
+            }).catch(() => {});
 
             return {
               id: user.id,
@@ -174,22 +168,19 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   events: {
-    async signOut(message) {
+    signOut(message) {
       if ("token" in message && message.token?.email) {
         const userEmail = message.token.email as string;
         const userId = message.token.id as string | undefined;
 
-        try {
-          await db.authAuditLog.create({
-            data: {
-              userId: userId ?? null,
-              email: userEmail,
-              event: "LOGOUT",
-            },
-          });
-        } catch (e) {
-          void e;
-        }
+        // Fire-and-forget: never stall the HTTP logout response on audit log creation
+        db.authAuditLog.create({
+          data: {
+            userId: userId ?? null,
+            email: userEmail,
+            event: "LOGOUT",
+          },
+        }).catch(() => {});
       }
     },
   },

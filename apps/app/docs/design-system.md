@@ -378,7 +378,7 @@ setToastMessage({
 
 | Component | Architecture & Dimensions | Content Capacity | When to Use |
 | :--- | :--- | :--- | :--- |
-| **`Modal`** (`Modal.tsx`) | Centered dialog (`max-w-md` to `max-w-7xl` / `sm` to `5xl`) with scrollable body, backdrop blur (`bg-black/80`), and `Escape` key capture. | Focused, discrete task or inspection view. | • Study Specifications Inspector modal.<br>• Quotation calculation review popup.<br>• Destructive action confirmations (suspend staff, revoke access).<br>• File upload / preview or syntax modal. |
+| **`Modal`** (`Modal.tsx`) | Centered dialog (`max-w-md` to `max-w-7xl` / `sm` to `5xl`) with scrollable body, calibrated balanced dark backdrop blur (`bg-[#010114]/60 backdrop-blur-sm`), and `Escape` key capture. | Focused, discrete task or inspection view. | • Study Specifications Inspector modal.<br>• Quotation calculation review popup.<br>• Destructive action confirmations (suspend staff, revoke access).<br>• File upload / preview or syntax modal. |
 | **`ModalFooter`** (`Modal.tsx` / `@repo/ui`) | Standardized bottom action container with generous top spacing (`mt-6 pt-5`), hairline divider (`border-t border-white/[0.08]`), and responsive stacking. | Action buttons (`Cancel`, `Submit`, `Confirm`). | • Any modal containing interactive action buttons.<br>• Form submission footers inside modal dialogs. |
 | **`Drawer`** (`Drawer.tsx`) | Full-height off-canvas slide-out sheet from viewport edge. | Deep multi-section navigation or dense parameter configuration. | • Mobile navigation sidebar (`<lg`).<br>• Multi-variable statistical model setup sidebar.<br>• Live audit event stream panel. |
 

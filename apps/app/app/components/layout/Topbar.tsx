@@ -93,7 +93,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-2.5 sm:gap-3 py-1.5 px-2 sm:px-2.5 rounded-[4px] bg-transparent hover:bg-white/[0.06] transition-all duration-150 cursor-pointer focus:outline-none group select-none"
+              className="flex items-center gap-2.5 sm:gap-3 py-1.5 px-2 sm:px-2.5 rounded-[2px] bg-transparent hover:bg-white/[0.06] transition-all duration-150 cursor-pointer outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 group select-none"
             >
               <UserAvatar
                 name={userFullName}
@@ -115,7 +115,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           <DropdownMenuContent
             align="end"
-            className="w-64 p-2 bg-[#01142B] border border-white/15 shadow-2xl rounded-[4px] backdrop-blur-xl"
+            className="w-64 p-2 bg-[#01142B] border border-white/15 shadow-2xl rounded-[2px] backdrop-blur-xl"
           >
             {/* Header User Identity */}
             <div className="px-3 py-2 mb-1 flex flex-col gap-0.5">
@@ -133,7 +133,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             <DropdownMenuItem asChild>
               <Link
                 href="/dashboard#settings"
-                className="flex items-center gap-3 cursor-pointer w-full text-sm font-sans font-medium text-white/85 px-3 py-2.5 rounded-[4px] hover:bg-white/[0.06] hover:text-white transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0"
+                className="flex items-center gap-3 cursor-pointer w-full text-sm font-sans font-medium text-white/85 px-3 py-2.5 rounded-[2px] hover:bg-white/[0.06] hover:text-white transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0"
               >
                 <IconSettings size={18} stroke={1.5} className="text-white/60 shrink-0" />
                 <span>Account Settings</span>
@@ -146,7 +146,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             <DropdownMenuItem
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="flex items-center gap-3 cursor-pointer w-full text-sm font-sans font-semibold text-red-400 px-3 py-2.5 rounded-[4px] hover:bg-red-500/10 hover:text-red-300 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0"
+              className="flex items-center gap-3 cursor-pointer w-full text-sm font-sans font-semibold text-red-400 px-3 py-2.5 rounded-[2px] hover:bg-red-500/10 hover:text-red-300 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border-0 ring-0"
             >
               {isLoggingOut ? (
                 <span className="h-4 w-4 border-2 border-white/20 border-t-red-400 rounded-full animate-spin mr-1" />
@@ -162,7 +162,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         <button
           type="button"
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-2 rounded-md text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10"
+          className="lg:hidden p-2 rounded-[2px] text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer border border-white/10 outline-none focus:outline-none focus:ring-0 ring-0"
           aria-label="Toggle navigation menu"
         >
           <IconMenu2 size={22} stroke={1.5} />

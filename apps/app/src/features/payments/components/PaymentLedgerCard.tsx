@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   MoneyDisplay,
@@ -10,6 +10,7 @@ import {
   Peso,
   Modal,
   ModalFooter,
+  LoadingState,
 } from "@repo/ui";
 import {
   IconReceipt,
@@ -41,6 +42,12 @@ export function PaymentLedgerCard({
   const [viewingReceiptPayment, setViewingReceiptPayment] = useState<PaymentItem | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  useEffect(() => {
+    setImageError(false);
+    setImageLoading(true);
+  }, [viewingReceiptPayment]);
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -411,13 +418,31 @@ export function PaymentLedgerCard({
 
                   <div className="p-3 rounded-[2px] bg-[#010915] border border-white/10 flex flex-col items-center justify-center min-h-[220px] max-h-[420px] overflow-auto">
                     {isImage && !imageError ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={getFilePreviewUrl(proof.filePath)}
-                        alt={proof.fileName}
-                        onError={() => setImageError(true)}
-                        className="max-h-[380px] w-auto max-w-full object-contain rounded-[2px]"
-                      />
+                      <div className="relative flex items-center justify-center w-full min-h-[200px]">
+                        {imageLoading && (
+                          <div className="w-full py-10 flex flex-col items-center justify-center animate-content-fade">
+                            <LoadingState
+                              variant="card"
+                              size="md"
+                              label="Loading receipt..."
+                              description="Fetching uploaded proof of payment image"
+                            />
+                          </div>
+                        )}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getFilePreviewUrl(proof.filePath)}
+                          alt={proof.fileName}
+                          onLoad={() => setImageLoading(false)}
+                          onError={() => {
+                            setImageLoading(false);
+                            setImageError(true);
+                          }}
+                          className={`max-h-[380px] w-auto max-w-full object-contain rounded-[2px] transition-opacity duration-300 ${
+                            imageLoading ? "opacity-0 absolute pointer-events-none" : "opacity-100 relative"
+                          }`}
+                        />
+                      </div>
                     ) : (
                       <div className="p-8 text-center flex flex-col items-center gap-3">
                         <IconFileText size={42} stroke={1.5} className="text-sky-400" />

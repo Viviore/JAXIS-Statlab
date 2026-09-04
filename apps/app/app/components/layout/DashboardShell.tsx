@@ -44,7 +44,7 @@ export function DashboardShell({
         {isMobileSidebarOpen && (
           <div
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden animate-modal-backdrop-in print:hidden"
+            className="fixed inset-0 bg-[#010114]/60 backdrop-blur-sm z-40 lg:hidden animate-modal-backdrop-in print:hidden"
             aria-hidden="true"
           />
         )}

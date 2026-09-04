@@ -441,7 +441,7 @@ export default function CeoReportsPage() {
 
       {/* CEO Storage Retention & Data Purge Policy Modal */}
       {retentionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-[#010114]/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#01142B] border border-white/15 rounded-[4px] max-w-2xl w-full p-6 sm:p-8 flex flex-col gap-6 shadow-2xl animate-in fade-in zoom-in-95 font-sans max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">

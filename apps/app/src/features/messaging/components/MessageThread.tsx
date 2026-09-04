@@ -5,15 +5,21 @@ import type { MessageDTO } from "../schemas";
 import { getProjectMessages, syncNewMessages, sendMessage } from "../actions";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { LoadingState, Badge, StatusBadge } from "@repo/ui";
+import { LoadingState, Badge } from "@repo/ui";
 import {
   IconMessages,
   IconShieldCheck,
-  IconUsers,
   IconLoader2,
   IconHistory,
   IconArrowLeft,
   IconLock,
+  IconUser,
+  IconCalculator,
+  IconAward,
+  IconClock,
+  IconDatabase,
+  IconReportAnalytics,
+  IconArrowRight,
 } from "@tabler/icons-react";
 import { subscribeToProjectMessages } from "@/lib/messaging/realtime";
 
@@ -71,6 +77,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     }
     return null;
   });
+
+  const [presetPrompt, setPresetPrompt] = useState<string>("");
 
   // Only show skeleton if we have zero cached messages & zero projectInfo
   const [isLoading, setIsLoading] = useState<boolean>(() => {
@@ -356,76 +364,112 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
   return (
     <div className={`h-full min-h-0 flex flex-col bg-[#01142B] border border-white/10 rounded-[4px] overflow-hidden shadow-2xl ${className}`}>
-      {/* Thread Header — STATIC FIXED HEIGHT (Zero layout shift) */}
-      <div className="flex-shrink-0 p-3.5 sm:p-4 border-b border-white/10 bg-[#010114]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans">
-        <div className="flex items-start sm:items-center gap-2.5">
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="lg:hidden p-1.5 rounded-[2px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-white/80 hover:text-white cursor-pointer transition-colors shrink-0"
-              aria-label="Back to studies list"
-            >
-              <IconArrowLeft size={16} stroke={2} />
-            </button>
-          )}
-          <div className="p-2 rounded-[2px] bg-[#CC6600]/15 border border-[#CC6600]/30 text-[#CC6600] shrink-0">
-            <IconMessages size={18} stroke={1.5} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-semibold text-[#CC6600] tracking-wider">
+      {/* Thread Header — STATIC FIXED HEIGHT (Zero layout shift & Clean Minimalist Palette) */}
+      <div className="flex-shrink-0 px-4 py-3 border-b border-white/10 bg-[#010114]/90 flex flex-col gap-2 font-sans">
+        {/* Top Row: Study Identity & Security Badge */}
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="lg:hidden p-1.5 rounded-[2px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-white/80 hover:text-white cursor-pointer transition-colors shrink-0"
+                aria-label="Back to studies list"
+              >
+                <IconArrowLeft size={16} stroke={2} />
+              </button>
+            )}
+            <div className="p-1.5 rounded-[2px] bg-white/[0.04] border border-white/10 text-white/50 shrink-0">
+              <IconMessages size={16} stroke={1.5} />
+            </div>
+
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="text-xs font-mono font-semibold text-white/80 tracking-wider shrink-0 whitespace-nowrap select-all">
                 {projectInfo?.intakeId || "STUDY THREAD"}
               </span>
-              {!isAssigned || projectInfo?.masterStatus === "ACTIVE" ? (
-                <StatusBadge status="PENDING_ASSIGNMENT" label="PENDING ASSIGNMENT" />
-              ) : (
-                <Badge variant="sky" className="text-[0.625rem] font-mono">
-                  {projectInfo?.masterStatus.replace(/_/g, " ") || "ACTIVE"}
+
+              <div className="shrink-0 whitespace-nowrap">
+                <Badge variant="outline" className="text-[0.625rem] font-mono px-1.5 py-0 border-white/10 text-white/50 bg-white/[0.02]">
+                  {!isAssigned || projectInfo?.masterStatus === "ACTIVE"
+                    ? "PENDING ASSIGNMENT"
+                    : projectInfo?.masterStatus.replace(/_/g, " ") || "ACTIVE"}
                 </Badge>
-              )}
+              </div>
+
+              <span className="text-white/20 hidden sm:inline select-none">&bull;</span>
+
+              <h2 className="text-xs sm:text-sm font-semibold text-white/90 tracking-tight truncate min-w-0">
+                {projectInfo?.researchTitle || "Research Study Discussion"}
+              </h2>
             </div>
-            <h2 className="text-xs sm:text-sm font-bold text-white tracking-tight mt-0.5 line-clamp-1">
-              {projectInfo?.researchTitle || "Research Study Discussion"}
-            </h2>
+          </div>
+
+          {/* Security Status Pill */}
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] bg-white/[0.02] border border-white/10 text-white/40 text-[0.688rem] font-sans select-none shrink-0">
+            <IconShieldCheck size={13} stroke={1.5} className="text-white/40 shrink-0" />
+            <span>Encrypted Consultation</span>
           </div>
         </div>
 
-        {/* Participants Summary */}
-        {!isAssigned ? (
-          <div className="flex items-center gap-2 text-xs text-amber-400/90 bg-amber-500/10 px-2.5 py-1 rounded-[2px] border border-amber-500/25 shrink-0">
-            <IconLock size={13} stroke={1.5} className="text-amber-400 shrink-0" />
-            <span className="text-[0.688rem] font-mono">
-              Team: Awaiting Assignment
-            </span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2.5 text-xs text-white/60 bg-white/[0.03] px-2.5 py-1 rounded-[2px] border border-white/10 shrink-0">
-            <IconUsers size={14} stroke={1.5} className="text-sky-400 shrink-0" />
-            <div className="flex items-center gap-2 flex-wrap text-[0.688rem]">
-              <span><strong>Client:</strong> {projectInfo?.clientName}</span>
-              <span>&bull;</span>
-              <span><strong>Statistician:</strong> {projectInfo?.statisticianName || "Unassigned"}</span>
-              {projectInfo?.qaLeadName && (
-                <>
-                  <span>&bull;</span>
-                  <span><strong>QA:</strong> {projectInfo.qaLeadName}</span>
-                </>
-              )}
+        {/* Bottom Row: Team Participant Chips */}
+        <div className="flex items-center gap-2 flex-wrap min-w-0 pt-0.5">
+          {!isAssigned ? (
+            <div className="flex items-center gap-1.5 text-xs text-white/50 bg-white/[0.02] px-2.5 py-0.5 rounded-[2px] border border-white/10">
+              <IconLock size={12} stroke={1.5} className="text-white/40 shrink-0" />
+              <span className="text-[0.688rem] font-mono">
+                Team: Awaiting Specialist Assignment
+              </span>
             </div>
-          </div>
-        )}
+          ) : (
+            <>
+              <span className="text-[0.688rem] font-mono text-white/40 uppercase tracking-wider shrink-0 mr-1 select-none">
+                Consultation Team:
+              </span>
+
+              {/* Client Chip */}
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] bg-white/[0.03] border border-white/10 text-xs text-white/80 shrink-0">
+                <IconUser size={13} stroke={1.5} className="text-white/40 shrink-0" />
+                <span className="text-white/40 text-[0.688rem] font-mono">Client:</span>
+                <span className="font-medium text-white/90 truncate max-w-[140px]">
+                  {projectInfo?.clientName || "Client"}
+                </span>
+              </div>
+
+              {/* Statistician Chip */}
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] bg-white/[0.03] border border-white/10 text-xs text-white/80 shrink-0">
+                <IconCalculator size={13} stroke={1.5} className="text-white/40 shrink-0" />
+                <span className="text-white/40 text-[0.688rem] font-mono">Statistician:</span>
+                <span className="font-medium text-white/90 truncate max-w-[150px]">
+                  {projectInfo?.statisticianName || "Unassigned"}
+                </span>
+              </div>
+
+              {/* QA Lead Chip */}
+              {projectInfo?.qaLeadName && (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] bg-white/[0.03] border border-white/10 text-xs text-white/80 shrink-0">
+                  <IconAward size={13} stroke={1.5} className="text-white/40 shrink-0" />
+                  <span className="text-white/40 text-[0.688rem] font-mono">QA:</span>
+                  <span className="font-medium text-white/90 truncate max-w-[140px]">
+                    {projectInfo.qaLeadName}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Messages Stream Container — ONLY THIS SCROLLS */}
       <div
         ref={chatContainerRef}
         onScroll={handleScroll}
-        className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 flex flex-col gap-2 bg-[#010114]/30"
+        className={`flex-1 min-h-0 ${
+          messages.length === 0 ? "overflow-hidden" : "overflow-y-auto"
+        } p-3 sm:p-4 flex flex-col gap-2.5 bg-[#010114]/30 custom-scrollbar`}
       >
         {/* Older Messages Pagination Trigger / Indicator */}
         {isLoadingOlder ? (
-          <div className="py-2 flex items-center justify-center gap-2 text-xs text-sky-400 font-mono">
+          <div className="py-2 flex items-center justify-center gap-2 text-xs text-white/40 font-mono">
             <IconLoader2 size={14} className="animate-spin" />
             <span>Loading older messages...</span>
           </div>
@@ -436,57 +480,116 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
               onClick={loadOlderMessages}
               className="px-3 py-1 rounded-[2px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[0.688rem] font-mono text-white/60 hover:text-white flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
             >
-              <IconHistory size={13} stroke={1.5} className="text-[#38BDF8]" />
+              <IconHistory size={13} stroke={1.5} className="text-white/40" />
               <span>Load older messages</span>
             </button>
           </div>
         ) : messages.length > 0 ? (
-          <div className="py-2 flex items-center justify-center gap-3 text-[0.625rem] font-mono text-white/30 uppercase tracking-wider">
+          <div className="py-2 flex items-center justify-center gap-3 text-[0.625rem] font-mono text-white/30 uppercase tracking-wider select-none">
             <span className="h-px bg-white/10 flex-1" />
-            <span>Beginning of consultation history</span>
+            <span className="flex items-center gap-1.5">
+              <IconShieldCheck size={12} stroke={1.5} className="text-white/40" />
+              <span>Direct Consultation Channel • Protected</span>
+            </span>
             <span className="h-px bg-white/10 flex-1" />
           </div>
         ) : null}
 
-        {/* Security Assurance Banner */}
-        <div className="mb-2 p-2.5 rounded-[2px] bg-sky-950/30 border border-sky-500/20 flex items-center justify-between text-xs text-sky-200/90 font-sans flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <IconShieldCheck size={15} stroke={2} className="text-sky-400 shrink-0" />
-            <span className="text-[0.688rem] sm:text-xs">
-              All study communication is encrypted and monitored by the JAXIS Communication Firewall.
-            </span>
-          </div>
-          <span className="text-[0.625rem] text-white/40 hidden md:inline">
-            Direct off-platform contact is prohibited
-          </span>
-        </div>
-
         {/* Empty / Locked State */}
         {!isAssigned && messages.length === 0 ? (
-          <div className="my-auto py-10 px-6 max-w-md mx-auto rounded-[4px] bg-[#01142B]/90 border border-white/10 flex flex-col items-center justify-center text-center gap-3.5 shadow-xl">
-            <div className="h-12 w-12 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-amber-400">
-              <IconLock size={24} stroke={1.5} />
+          <div className="my-auto py-4 px-6 max-w-md mx-auto rounded-[2px] bg-[#01142B]/60 border border-white/10 flex flex-col items-center justify-center text-center gap-3 shadow-xl animate-content-fade">
+            <div className="h-9 w-9 rounded-[2px] bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/40">
+              <IconLock size={18} stroke={1.5} />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white">Consultation Channel Locked</h3>
-              <p className="text-xs text-white/60 leading-relaxed font-sans">
-                Your downpayment has been confirmed. This consultation thread will automatically open as soon as an administrator assigns your Lead Statistician and QA Lead.
+              <h3 className="text-sm font-semibold text-white">Consultation Channel Locked</h3>
+              <p className="text-xs text-white/50 leading-relaxed font-sans">
+                Your deposit has been verified. This consultation thread will automatically unlock as soon as an administrator assigns your Lead Statistician and QA Lead.
               </p>
             </div>
-            <div className="px-3 py-1 rounded-[2px] bg-white/[0.03] border border-white/[0.08] text-[0.688rem] font-mono text-amber-300/90 uppercase tracking-wider">
+            <div className="px-2.5 py-0.5 rounded-[2px] bg-white/[0.02] border border-white/[0.08] text-[0.688rem] font-mono text-white/40 tracking-wider">
               Status: Pending Specialist Assignment
             </div>
           </div>
         ) : messages.length === 0 ? (
-          <div className="my-auto py-8 flex flex-col items-center justify-center text-center gap-2.5">
-            <div className="h-10 w-10 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/40">
-              <IconMessages size={20} stroke={1.5} />
+          <div className="my-auto py-2 px-4 sm:px-6 max-w-md mx-auto flex flex-col items-center justify-center text-center gap-3 animate-content-fade">
+            <div className="h-9 w-9 rounded-[2px] bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/40">
+              <IconMessages size={18} stroke={1.5} />
             </div>
-            <div className="max-w-md">
-              <span className="text-xs font-semibold text-white block">No messages yet</span>
-              <p className="text-[0.688rem] text-white/50 mt-0.5 leading-relaxed">
-                Start the research consultation by typing a message below. Your assigned team will be notified immediately.
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-white tracking-tight">
+                Study Consultation Active
+              </h3>
+              <p className="text-xs text-white/50 leading-relaxed max-w-sm font-sans">
+                Communicate directly with your assigned research specialists regarding methodology, data format requirements, and timeline expectations.
               </p>
+            </div>
+
+            {/* Clickable Starter Prompts */}
+            <div className="w-full flex flex-col gap-1.5 pt-1 text-left">
+              <span className="text-[0.625rem] font-mono text-white/35 uppercase tracking-wider text-center block">
+                Suggested Consultation Inquiries
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPresetPrompt(
+                    "Hello team, I would like to inquire about our expected analysis timeline and upcoming review milestones."
+                  )
+                }
+                className="w-full p-2 rounded-[2px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-white/20 text-left text-xs text-white/70 hover:text-white flex items-center justify-between gap-2 transition-all cursor-pointer group select-none"
+              >
+                <div className="flex items-center gap-2">
+                  <IconClock size={13} stroke={1.5} className="text-white/40 shrink-0" />
+                  <span>Inquire about analysis timeline &amp; milestones</span>
+                </div>
+                <IconArrowRight
+                  size={12}
+                  stroke={1.5}
+                  className="text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all"
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPresetPrompt(
+                    "Hello team, could you please review my uploaded dataset to verify if the file format and variable coding meet all specifications?"
+                  )
+                }
+                className="w-full p-2 rounded-[2px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-white/20 text-left text-xs text-white/70 hover:text-white flex items-center justify-between gap-2 transition-all cursor-pointer group select-none"
+              >
+                <div className="flex items-center gap-2">
+                  <IconDatabase size={13} stroke={1.5} className="text-white/40 shrink-0" />
+                  <span>Confirm dataset format &amp; variable requirements</span>
+                </div>
+                <IconArrowRight
+                  size={12}
+                  stroke={1.5}
+                  className="text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all"
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPresetPrompt(
+                    "Hello team, I would like to clarify the statistical hypotheses and specific tests planned for this study."
+                  )
+                }
+                className="w-full p-2 rounded-[2px] bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-white/20 text-left text-xs text-white/70 hover:text-white flex items-center justify-between gap-2 transition-all cursor-pointer group select-none"
+              >
+                <div className="flex items-center gap-2">
+                  <IconReportAnalytics size={13} stroke={1.5} className="text-white/40 shrink-0" />
+                  <span>Clarify research hypothesis &amp; statistical tests</span>
+                </div>
+                <IconArrowRight
+                  size={12}
+                  stroke={1.5}
+                  className="text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all"
+                />
+              </button>
             </div>
           </div>
         ) : (
@@ -497,12 +600,14 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       </div>
 
       {/* Message Input Footer — PINNED AT BOTTOM */}
-      <div className="flex-shrink-0 p-3 sm:p-4 border-t border-white/10 bg-[#010114]/70">
+      <div className="flex-shrink-0 p-3 sm:p-4 border-t border-white/10 bg-[#010114]/80">
         <MessageInput
           onSendMessage={handleSendMessage}
           disabled={!isAssigned}
           disabledReason={!isAssigned ? "Channel locked • Waiting for administrator to assign research team" : undefined}
           placeholder={!isAssigned ? "Consultation channel will open once your research team is assigned..." : undefined}
+          externalText={presetPrompt}
+          onExternalTextConsumed={() => setPresetPrompt("")}
         />
       </div>
     </div>

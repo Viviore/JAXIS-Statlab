@@ -7,7 +7,7 @@
   --bg-base:          #010114;   /* Midnight Navy — page canvas (95% coverage)   */
   --bg-surface:       #011B38;   /* Deep Ocean Blue Glass — card / panel surface  */
   --bg-surface-hover: #01244A;   /* Surface hover lift                            */
-  --bg-overlay:       rgba(1, 1, 20, 0.85);  /* Modal / drawer backdrop           */
+  --bg-overlay:       rgba(1, 1, 20, 0.60);  /* Modal / drawer backdrop           */
 
   /* Glass / Border */
   --border-default:   rgba(255, 255, 255, 0.08);
@@ -521,5 +521,33 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover {
 .virtual-row {
   content-visibility: auto;
   contain-intrinsic-size: 0 48px;
+}
+
+/* ==========================================================================
+   Modern Sleek Dark Scrollbars
+   Replaces default clunky operating system scrollbars with calibrated,
+   ultra-thin dark tracks and subtle translucent thumbs.
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 

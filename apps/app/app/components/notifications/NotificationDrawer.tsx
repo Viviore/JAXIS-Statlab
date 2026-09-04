@@ -217,7 +217,7 @@ export function NotificationDrawer() {
 
   return (
     <>
-      {/* Bell Trigger Button with Cursor Pointer & Smooth Hover */}
+      {/* Sleek Precision Bell Trigger Button */}
       <button
         type="button"
         onClick={() => {
@@ -225,15 +225,20 @@ export function NotificationDrawer() {
           if (!isOpen) loadAlerts();
         }}
         aria-label="Notifications"
-        className="relative p-2 rounded-[4px] text-white/70 hover:text-white hover:bg-white/[0.08] active:scale-95 transition-all duration-150 focus:outline-none cursor-pointer group"
+        title="Notifications"
+        className={`relative h-9 w-9 rounded-[2px] flex items-center justify-center transition-all duration-150 cursor-pointer outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 group ${
+          isOpen
+            ? "bg-white/[0.08] border border-white/25 text-white"
+            : "bg-white/[0.02] hover:bg-white/[0.06] border border-white/10 hover:border-white/20 text-white/70 hover:text-white"
+        }`}
       >
         <IconBell
-          size={18}
-          stroke={1.5}
-          className="transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110"
+          size={17}
+          stroke={1.75}
+          className="transition-transform duration-200 group-hover:scale-105"
         />
         {optimisticState.unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-[#CC6600] text-white font-mono text-[0.625rem] font-bold ring-2 ring-[#010114] animate-pulse">
+          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[17px] h-4 px-1 rounded-[2px] bg-[#CC6600] text-white font-mono text-[0.625rem] font-bold tracking-tight shadow-sm border border-[#010114]">
             {optimisticState.unreadCount > 9 ? "9+" : optimisticState.unreadCount}
           </span>
         )}
@@ -247,7 +252,7 @@ export function NotificationDrawer() {
       >
         {/* Backdrop Fade In / Fade Out */}
         <div
-          className={`absolute inset-0 bg-black/70 backdrop-blur-xs transition-opacity duration-300 ease-in-out cursor-pointer ${
+          className={`absolute inset-0 bg-[#010114]/70 backdrop-blur-sm transition-opacity duration-300 ease-in-out cursor-pointer ${
             isOpen ? "opacity-100" : "opacity-0"
           }`}
           onClick={() => setIsOpen(false)}
@@ -255,20 +260,22 @@ export function NotificationDrawer() {
 
         {/* Drawer Container Slide In / Slide Out */}
         <div
-          className={`absolute inset-y-0 right-0 max-w-md w-full bg-[#01142B] border-l border-white/15 shadow-2xl flex flex-col justify-between font-sans transition-transform duration-300 ease-in-out will-change-transform ${
+          className={`absolute inset-y-0 right-0 max-w-md w-full bg-[#01142B] border-l border-white/10 shadow-2xl flex flex-col justify-between font-sans transition-transform duration-300 ease-in-out will-change-transform ${
             isOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
           {/* Header */}
-          <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#000E1F]">
+          <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-[#010E1F]/90">
             <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-[4px] bg-[#CC6600]/15 text-[#CC6600]">
-                <IconBell size={18} />
+              <div className="h-8 w-8 rounded-[2px] bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/70">
+                <IconBell size={16} stroke={1.75} />
               </div>
-              <div>
-                <h2 className="text-sm font-bold text-white leading-none">Notifications</h2>
-                <span className="text-[0.688rem] text-white/40">
-                  {optimisticState.unreadCount} unread {optimisticState.unreadCount === 1 ? "alert" : "alerts"}
+              <div className="flex flex-col">
+                <h2 className="text-sm font-bold text-white font-sans leading-none tracking-tight">Notifications</h2>
+                <span className="text-[0.688rem] text-white/40 font-sans mt-0.5">
+                  {optimisticState.unreadCount === 0
+                    ? "No unread alerts"
+                    : `${optimisticState.unreadCount} unread ${optimisticState.unreadCount === 1 ? "alert" : "alerts"}`}
                 </span>
               </div>
             </div>
@@ -278,7 +285,7 @@ export function NotificationDrawer() {
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="text-[0.688rem] text-sky-400 hover:text-sky-300 hover:underline px-2 py-1 cursor-pointer transition-colors"
+                  className="text-xs text-white/60 hover:text-white transition-colors px-2 py-1 rounded-[2px] hover:bg-white/[0.04] cursor-pointer outline-none focus:outline-none focus:ring-0 ring-0"
                 >
                   Mark all as read
                 </button>
@@ -286,59 +293,64 @@ export function NotificationDrawer() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-white/50 hover:text-white p-1 rounded-[2px] hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="Close drawer"
+                className="h-8 w-8 rounded-[2px] border border-transparent hover:border-white/10 text-white/40 hover:text-white hover:bg-white/[0.06] flex items-center justify-center transition-colors cursor-pointer outline-none focus:outline-none focus:ring-0 ring-0"
+                aria-label="Close notifications"
               >
-                <IconX size={18} />
+                <IconX size={16} stroke={2} />
               </button>
             </div>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="px-5 py-2.5 bg-black/20 border-b border-white/5 flex gap-2">
-            <button
-              type="button"
-              onClick={() => setFilterTab("ALL")}
-              className={`px-3 py-1 rounded-[2px] text-xs font-semibold cursor-pointer transition-all duration-150 ${
-                filterTab === "ALL"
-                  ? "bg-[#CC6600] text-white shadow-xs"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              All ({optimisticState.alerts.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterTab("UNREAD")}
-              className={`px-3 py-1 rounded-[2px] text-xs font-semibold cursor-pointer transition-all duration-150 ${
-                filterTab === "UNREAD"
-                  ? "bg-[#CC6600] text-white shadow-xs"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              Unread ({optimisticState.unreadCount})
-            </button>
+          {/* Segmented Filter Tabs */}
+          <div className="px-5 py-2.5 bg-[#010915]/60 border-b border-white/10">
+            <div className="flex items-center p-0.5 rounded-[2px] bg-[#010915] border border-white/10 text-xs font-mono">
+              {(["ALL", "UNREAD"] as const).map((tab) => {
+                const count = tab === "ALL" ? optimisticState.alerts.length : optimisticState.unreadCount;
+                const isActive = filterTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setFilterTab(tab)}
+                    className={`flex-1 py-1 px-3 text-[0.688rem] font-medium rounded-[2px] transition-colors cursor-pointer flex items-center justify-center gap-1.5 select-none border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 ring-0 ${
+                      isActive
+                        ? "bg-white/[0.08] text-white font-semibold"
+                        : "text-white/40 hover:text-white/70 hover:bg-white/[0.02]"
+                    }`}
+                  >
+                    <span>{tab === "ALL" ? "All" : "Unread"}</span>
+                    <span
+                      className={`text-[0.625rem] px-1 py-0.2 rounded font-mono ${
+                        isActive ? "bg-white/10 text-white/80" : "text-white/30"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Alerts List */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5 custom-scrollbar">
             {isLoading ? (
               <div className="flex-1 flex flex-col items-center justify-center min-h-[300px]">
                 <LoadingState variant="inline" label="Checking notifications..." />
               </div>
             ) : filteredAlerts.length === 0 ? (
-              <div className="flex-1 min-h-full my-auto flex flex-col items-center justify-center text-center text-xs text-white/40 gap-3 px-6 py-12">
-                <div className="p-3 rounded-full bg-white/[0.04] border border-white/10 text-white/30">
-                  <IconShieldCheck size={32} stroke={1.5} />
+              <div className="flex-1 min-h-full my-auto flex flex-col items-center justify-center text-center text-xs text-white/40 gap-3 px-6 py-16">
+                <div className="h-12 w-12 rounded-[2px] bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/30">
+                  <IconInbox size={24} stroke={1.5} />
                 </div>
-                <div className="flex flex-col gap-1 max-w-[240px]">
-                  <span className="font-semibold text-white/70 text-xs">
-                    {filterTab === "UNREAD" ? "All Caught Up" : "No Notifications"}
+                <div className="flex flex-col gap-1 max-w-[260px]">
+                  <span className="font-semibold text-white/70 text-xs font-sans">
+                    {filterTab === "UNREAD" ? "All Caught Up" : "No Notifications Yet"}
                   </span>
-                  <span className="text-[0.688rem] leading-relaxed text-white/40">
+                  <span className="text-[0.688rem] leading-relaxed text-white/40 font-sans">
                     {filterTab === "UNREAD"
                       ? "You have zero unread alerts right now."
-                      : "No notification history found for your account."}
+                      : "You will receive updates here regarding your research studies and review milestones."}
                   </span>
                 </div>
               </div>
@@ -346,20 +358,20 @@ export function NotificationDrawer() {
               filteredAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`p-3.5 rounded-[4px] border transition-all duration-150 flex flex-col gap-2 ${
+                  className={`p-3.5 rounded-[2px] transition-all duration-150 flex flex-col gap-2 select-none border ${
                     alert.isRead
-                      ? "bg-black/20 border-white/5 text-white/70 hover:border-white/10"
-                      : "bg-[#011B38] border-white/15 text-white shadow-sm hover:border-white/25"
+                      ? "bg-[#01142B]/70 border-white/[0.06] text-white/70 hover:border-white/15 hover:bg-[#01142B]"
+                      : "bg-[#011B38] border-l-[3px] border-l-[#CC6600] border-t-white/10 border-r-white/10 border-b-white/10 text-white shadow-sm hover:border-white/20"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       {getAlertIcon(alert.alertType)}
-                      <span className="font-mono text-[0.688rem] uppercase text-white/50 font-bold">
+                      <span className="font-mono text-[0.688rem] uppercase text-white/50 font-semibold tracking-wider">
                         {alert.alertType.replace(/_/g, " ")}
                       </span>
                       {alert.projectIntakeId && (
-                        <span className="font-mono text-[0.688rem] text-sky-400 font-semibold">
+                        <span className="font-mono text-[0.688rem] text-white/80 font-semibold">
                           {alert.projectIntakeId}
                         </span>
                       )}
@@ -377,15 +389,15 @@ export function NotificationDrawer() {
                           type="button"
                           onClick={() => handleMarkRead(alert.id)}
                           title="Mark as read"
-                          className="text-white/40 hover:text-emerald-400 p-0.5 transition-colors cursor-pointer"
+                          className="text-white/40 hover:text-emerald-400 p-0.5 transition-colors cursor-pointer outline-none focus:outline-none focus:ring-0 ring-0"
                         >
-                          <IconCheck size={14} />
+                          <IconCheck size={14} stroke={2} />
                         </button>
                       )}
                     </div>
                   </div>
 
-                  <p className="text-xs leading-relaxed text-white/90">
+                  <p className="text-xs leading-relaxed text-white/85 font-sans">
                     {alert.message}
                   </p>
 
@@ -397,7 +409,7 @@ export function NotificationDrawer() {
                           if (!alert.isRead) handleMarkRead(alert.id);
                           setIsOpen(false);
                         }}
-                        className="inline-flex items-center gap-1 text-[0.688rem] text-[#CC6600] hover:text-[#e67300] font-semibold transition-colors cursor-pointer group/link"
+                        className="inline-flex items-center gap-1 text-[0.688rem] text-white/70 hover:text-white font-medium transition-colors cursor-pointer group/link hover:underline"
                       >
                         <span>Open Workspace</span>
                         <IconArrowRight
@@ -413,12 +425,15 @@ export function NotificationDrawer() {
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-white/10 bg-[#000E1F] flex justify-between items-center text-[0.688rem] text-white/40">
-            <span>JAXIS Operational Notification Center</span>
+          <div className="px-5 py-3.5 border-t border-white/10 bg-[#010E1F]/90 flex justify-between items-center text-xs text-white/40 font-sans">
+            <span className="flex items-center gap-1.5">
+              <IconBell size={13} stroke={1.5} className="text-white/30" />
+              <span>Study updates and alerts</span>
+            </span>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-white/60 hover:text-white cursor-pointer transition-colors"
+              className="px-2.5 py-1 rounded-[2px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs text-white/60 hover:text-white font-sans transition-colors cursor-pointer outline-none focus:outline-none focus:ring-0 ring-0"
             >
               Close
             </button>

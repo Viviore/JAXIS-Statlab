@@ -71,8 +71,22 @@ function LoginForm() {
           return;
         }
 
-        // Redirect to callbackUrl / authorized desk
-        window.location.href = callbackUrl;
+        // Determine destination desk directly to avoid the intermediate /dashboard 307 redirect bounce
+        const roleHomeMap: Record<string, string> = {
+          ADMIN: "/dashboard/admin",
+          CLIENT: "/dashboard/client",
+          STATISTICIAN: "/dashboard/statistician",
+          SENIOR_QA_LEAD: "/dashboard/qa",
+          FINANCE_OFFICER: "/dashboard/finance",
+          CEO: "/dashboard/ceo",
+        };
+
+        const targetDestination =
+          callbackUrl && callbackUrl !== "/dashboard"
+            ? callbackUrl
+            : (activeRole && roleHomeMap[activeRole]) || "/dashboard";
+
+        window.location.href = targetDestination;
       } catch (err) {
         console.error("Login submission error:", err);
         setErrorMessage("An unexpected error occurred. Please try again.");

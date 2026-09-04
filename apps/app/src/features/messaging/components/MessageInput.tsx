@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@repo/ui";
 import {
   IconSend,
@@ -13,6 +13,8 @@ interface MessageInputProps {
   disabled?: boolean;
   disabledReason?: string;
   placeholder?: string;
+  externalText?: string;
+  onExternalTextConsumed?: () => void;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
@@ -20,10 +22,20 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   disabled = false,
   disabledReason,
   placeholder,
+  externalText,
+  onExternalTextConsumed,
 }) => {
   const [content, setContent] = useState<string>("");
   const [isSending, setIsSending] = useState<boolean>(false);
   const [firewallError, setFirewallError] = useState<string | null>(null);
+
+  // Synchronize external preset or quick prompt text if provided
+  useEffect(() => {
+    if (externalText) {
+      setContent(externalText);
+      onExternalTextConsumed?.();
+    }
+  }, [externalText, onExternalTextConsumed]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -63,8 +75,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full font-sans">
-      {/* Firewall Warning Alert Banner */}
+    <div className="flex flex-col gap-2.5 w-full font-sans">
+      {/* Firewall Block Notice */}
       {firewallError && (
         <div className="p-3.5 bg-red-950/50 border border-red-500/40 rounded-[2px] flex items-start justify-between gap-3 text-xs text-red-200 animate-content-fade">
           <div className="flex items-start gap-2.5">
@@ -85,9 +97,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         </div>
       )}
 
-      {/* Input Box */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <div className="relative">
+      {/* Unified Precision Composer Surface */}
+      <form onSubmit={handleSubmit} className="flex flex-col w-full">
+        <div
+          className={`rounded-[2px] bg-[#010915] border transition-colors flex flex-col shadow-inner ${
+            disabled
+              ? "border-white/10 opacity-60 cursor-not-allowed"
+              : "border-white/15 focus-within:border-[#CC6600]"
+          }`}
+        >
+          {/* Main Textarea */}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -100,28 +119,43 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             disabled={disabled || isSending}
             maxLength={5000}
             rows={3}
-            className={`w-full p-3.5 sm:p-4 rounded-[2px] bg-[#01142B] border text-sm text-white placeholder:text-white/30 focus:border-[#CC6600] focus:outline-none transition-colors resize-none font-sans ${
-              disabled ? "opacity-60 border-white/10 cursor-not-allowed bg-[#010915]" : "border-white/15"
-            }`}
+            className="w-full p-3.5 sm:p-4 bg-transparent border-0 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-0 ring-0 resize-none font-sans leading-relaxed"
           />
 
-          {/* Bottom Action Row inside/below textarea */}
-          <div className="flex items-center justify-between mt-2 px-1">
+          {/* Integrated Composer Action Toolbar */}
+          <div className="flex items-center justify-between px-3.5 py-2.5 border-t border-white/[0.06] bg-[#010B18]/70 flex-wrap gap-2">
             {disabled && disabledReason ? (
-              <div className="flex items-center gap-1.5 text-[0.688rem] text-amber-400/90 font-mono">
-                <IconLock size={13} stroke={1.5} />
+              <div className="flex items-center gap-1.5 text-xs text-white/40 font-mono">
+                <IconLock size={13} stroke={1.5} className="text-white/30" />
                 <span>{disabledReason}</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-[0.688rem] text-white/40 font-sans">
-                <IconShieldLock size={14} stroke={1.5} className="text-[#CC6600]" />
-                <span>In-app communication firewall active &bull; Max 5,000 characters</span>
+              <div className="flex items-center gap-2 text-xs text-white/40 font-sans">
+                <span className="hidden sm:inline-flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 text-[0.625rem] font-mono text-white/50">Enter</kbd>
+                  <span>to send</span>
+                  <span className="mx-1 text-white/20">&bull;</span>
+                  <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/[0.06] border border-white/10 text-[0.625rem] font-mono text-white/50">Shift+Enter</kbd>
+                  <span>new line</span>
+                </span>
+                <span className="sm:hidden flex items-center gap-1 text-[0.688rem]">
+                  <IconShieldLock size={13} stroke={1.5} className="text-white/40" />
+                  <span>Protected</span>
+                </span>
               </div>
             )}
 
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono text-white/40">
-                {content.length} / 5000
+            <div className="flex items-center gap-3 ml-auto">
+              <span
+                className={`text-xs font-mono transition-colors ${
+                  content.length > 4500
+                    ? "text-amber-400 font-semibold"
+                    : content.length > 0
+                    ? "text-white/60"
+                    : "text-white/30"
+                }`}
+              >
+                {content.length.toLocaleString()} / 5,000
               </span>
 
               <Button
@@ -130,16 +164,20 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 size="sm"
                 disabled={!content.trim() || disabled || isSending}
                 loading={isSending}
-                className="text-xs font-semibold rounded-[2px] px-4 py-2"
+                className={`text-xs font-medium rounded-[2px] px-4 py-2 gap-1.5 transition-all ${
+                  disabled
+                    ? "bg-white/[0.04] text-white/30 border border-white/10 cursor-not-allowed hover:bg-white/[0.04]"
+                    : "bg-[#CC6600] hover:bg-[#FFA040] text-white cursor-pointer shadow-sm"
+                }`}
               >
                 {disabled ? (
                   <>
-                    <IconLock size={14} stroke={1.5} className="mr-1.5" />
+                    <IconLock size={14} stroke={1.5} />
                     <span>Locked</span>
                   </>
                 ) : (
                   <>
-                    <IconSend size={15} stroke={2} className="mr-1.5" />
+                    <IconSend size={14} stroke={2} />
                     <span>Send</span>
                   </>
                 )}
