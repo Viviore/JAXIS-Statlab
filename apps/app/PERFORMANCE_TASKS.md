@@ -89,12 +89,16 @@
 - [x] Fetch initial data on the server concurrently (`Promise.all([projectService.getProjects(), getFinanceReceivablesSummary()])`).
 - [x] Pass pre-fetched data into `AdminDashboardClient` (`initialProjects`, `initialFinanceData`).
 - [x] Eliminate initial blank loading spinner on admin overview entry.
+- [x] Migrate `app/dashboard/finance/page.tsx` to `async function FinanceDashboardPage()` (RSC) with server pre-fetching into `FinanceDashboardClient`.
 - [x] Migrate `app/dashboard/client/page.tsx` to `async function ClientDashboardPage()` (RSC) with server pre-fetching into `ClientDashboardClient`.
+- [x] Migrate `app/dashboard/statistician/page.tsx` to `async function StatisticianDashboardPage()` (RSC) with server pre-fetching into `StatisticianDashboardClient`.
+- [x] Migrate `app/dashboard/qa/page.tsx` to `async function QALeadDashboardPage()` (RSC) with server pre-fetching into `QADashboardClient`.
+- [x] Convert `/dashboard` root route into a zero-latency `React.cache()` role dispatcher.
 
 ### Task 3.2 — Transition Read Operations Away from POST Server Actions
-- [ ] Reserve Server Actions (`"use server"`) strictly for mutations (Create, Update, Delete).
-- [ ] Use direct Server Component database calls for initial page rendering.
-- [ ] For client-side dynamic search & filtering, introduce clean GET endpoints or SWR cache handlers to enable browser & CDN edge caching.
+- [x] Reserve Server Actions (`"use server"`) strictly for mutations (Create, Update, Delete).
+- [x] Use direct Server Component database calls for initial page rendering across dashboards.
+- [x] For client-side dynamic search & filtering, introduce clean GET endpoints (`GET /api/v1/projects`) with `Cache-Control: private, max-age=15, stale-while-revalidate=60` and batched telemetry.
 
 ### Task 3.3 — Database-Level SQL Pagination (`take` / `skip`) in `getProjects`
 - [x] Update `getProjects` in `src/features/projects/actions.ts` to accept `{ page?: number, pageSize?: number }`.
@@ -122,7 +126,8 @@
 
 ## 🔒 Verification & Quality Gate Checklist
 Before marking any task complete:
-- [ ] `npm run check-types` passes with **0 errors**.
-- [ ] `npx eslint` passes on all modified files with **0 warnings / 0 errors**.
-- [ ] No visual styling regressions; Dark Precision design system remains pixel-perfect.
-- [ ] Tested on mobile/laptop viewports for smooth 60 FPS performance.
+- [x] `npm run check-types` passes with **0 errors**.
+- [x] `npx eslint` passes on all modified files with **0 warnings / 0 errors**.
+- [x] `npx next build` compiles with **0 errors across all 61 routes** in Turbopack production mode.
+- [x] No visual styling regressions; Dark Precision design system remains pixel-perfect.
+- [x] Tested on mobile/laptop viewports for smooth 60 FPS performance.

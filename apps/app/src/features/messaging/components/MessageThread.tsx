@@ -95,6 +95,12 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   const isInitialScrollDone = useRef<boolean>(false);
   const messagesRef = useRef<MessageDTO[]>([]);
   messagesRef.current = messages;
+  const projectInfoRef = useRef(projectInfo);
+  projectInfoRef.current = projectInfo;
+  const hasMoreRef = useRef(hasMore);
+  hasMoreRef.current = hasMore;
+  const nextCursorRef = useRef(nextCursor);
+  nextCursorRef.current = nextCursor;
 
   const scrollToBottom = useCallback((smooth = false) => {
     if (chatContainerRef.current) {
@@ -111,7 +117,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
   const loadInitialMessages = useCallback(async () => {
     // If no cache, mark loading
-    if (messages.length === 0 && !projectInfo) {
+    if (messagesRef.current.length === 0 && !projectInfoRef.current) {
       setIsLoading(true);
     }
     isInitialScrollDone.current = false;
@@ -146,7 +152,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, messages.length, projectInfo]);
+  }, [projectId]);
 
   const loadOlderMessages = useCallback(async () => {
     if (!hasMore || isLoadingOlder || !nextCursor) return;
@@ -167,7 +173,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
               sessionStorage.setItem(
                 `jaxis_chat_cache_${projectId}`,
                 JSON.stringify({
-                  project: projectInfo,
+                  project: projectInfoRef.current,
                   messages: updated,
                   hasMore: res.data!.hasMore,
                   nextCursor: res.data!.nextCursor,
@@ -196,7 +202,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     } finally {
       setIsLoadingOlder(false);
     }
-  }, [hasMore, isLoadingOlder, nextCursor, projectId, projectInfo]);
+  }, [hasMore, isLoadingOlder, nextCursor, projectId]);
 
   // Scroll listener for top reverse cursor pagination
   const handleScroll = () => {
@@ -241,10 +247,10 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 sessionStorage.setItem(
                   `jaxis_chat_cache_${projectId}`,
                   JSON.stringify({
-                    project: projectInfo,
+                    project: projectInfoRef.current,
                     messages: updated,
-                    hasMore,
-                    nextCursor,
+                    hasMore: hasMoreRef.current,
+                    nextCursor: nextCursorRef.current,
                   })
                 );
               } catch {
@@ -264,7 +270,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     return () => {
       cleanup();
     };
-  }, [projectId, scrollToBottom, projectInfo, hasMore, nextCursor]);
+  }, [projectId, scrollToBottom]);
 
   // Optimistic Message Sender (0ms instant bubble display)
   const handleSendMessage = async (content: string) => {

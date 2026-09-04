@@ -37,16 +37,15 @@ function ClientMessagesContent() {
       const res = await getMyProjectThreads();
       if (res.success && res.data) {
         setThreads(res.data);
-        if (res.data.length > 0 && !selectedProjectId) {
-          setSelectedProjectId(queryProjectId || res.data[0]!.projectId);
-        }
+        const firstId = queryProjectId || res.data[0]?.projectId || null;
+        setSelectedProjectId((prev) => prev || firstId);
       }
     } catch (err) {
       console.error("Failed to load message threads:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedProjectId, queryProjectId]);
+  }, [queryProjectId]);
 
   useEffect(() => {
     loadThreads();

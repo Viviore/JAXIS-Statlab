@@ -1,30 +1,61 @@
 import { NextResponse } from "next/server";
 import { projectService } from "@/features/projects/services/project.service";
+import { auth } from "@/lib/auth";
 
 export async function GET(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+            status: 401,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || undefined;
     const search = searchParams.get("search") || undefined;
     const statistician = searchParams.get("statistician") || undefined;
+    const pageParam = searchParams.get("page");
+    const pageSizeParam = searchParams.get("pageSize");
+    const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : undefined;
+    const pageSize = pageSizeParam
+      ? Math.max(1, Math.min(100, parseInt(pageSizeParam, 10)))
+      : undefined;
 
     const [projects, kpis, auditStream] = await Promise.all([
-      projectService.getProjects({ status, search, statistician }),
+      projectService.getProjects({ status, search, statistician, page, pageSize }),
       projectService.getKPIs(),
       projectService.getAuditStream(),
     ]);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        projects,
-        kpis,
-        auditStream,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          projects,
+          kpis,
+          auditStream,
+        },
       },
-    });
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, max-age=15, stale-while-revalidate=60",
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       {
+        success: false,
         error: {
           code: "INTERNAL_ERROR",
           message: error instanceof Error ? error.message : "Failed to fetch projects data",

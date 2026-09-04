@@ -29,6 +29,28 @@ export function useProjects(options?: UseProjectsOptions) {
       setError(null);
 
       try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams();
+          if (status && status !== "ALL") params.set("status", status);
+          if (search && search.trim()) params.set("search", search.trim());
+          if (statistician) params.set("statistician", statistician);
+          if (page) params.set("page", String(page));
+          if (pageSize) params.set("pageSize", String(pageSize));
+
+          const query = params.toString();
+          const endpoint = query ? `/api/v1/projects?${query}` : "/api/v1/projects";
+          const res = await fetch(endpoint);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              setProjects(json.data.projects || []);
+              setKpis(json.data.kpis || null);
+              setAuditStream(json.data.auditStream || []);
+              return;
+            }
+          }
+        }
+
         const [projectsData, kpisData, auditData] = await Promise.all([
           projectService.getProjects({ status, search, statistician, page, pageSize }),
           projectService.getKPIs(),
