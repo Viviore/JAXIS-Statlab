@@ -442,12 +442,11 @@ export function QADashboardClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 text-xs uppercase tracking-wider font-semibold">
-                  <th className="py-3.5 px-6">Study ID</th>
-                  <th className="py-3.5 px-6">Research Title &amp; Field</th>
-                  <th className="py-3.5 px-6">Lead Statistician</th>
-                  <th className="py-3.5 px-6">SLA Countdown</th>
-                  <th className="py-3.5 px-6">Master Status</th>
-                  <th className="py-3.5 px-6 text-right">Actions</th>
+                  <th className="py-3 px-4">Study ID</th>
+                  <th className="py-3 px-4">Research &amp; Statistician</th>
+                  <th className="py-3 px-4">SLA Countdown</th>
+                  <th className="py-3 px-4">Master Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-sm">
@@ -460,7 +459,7 @@ export function QADashboardClient({
                       key={item.id}
                       onMouseEnter={() =>
                         router.prefetch(
-                          isReadyForQa
+                           isReadyForQa
                             ? `/dashboard/qa/projects/${item.projectId}/review`
                             : `/dashboard/qa/projects/${item.projectId}/files`
                         )
@@ -473,7 +472,7 @@ export function QADashboardClient({
                           : "hover:bg-white/[0.02]"
                       }`}
                     >
-                      <td className="py-4 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {isReadyForQa && (
                             <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse shrink-0" />
@@ -481,20 +480,19 @@ export function QADashboardClient({
                           <span>{item.projectIntakeId}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-6 max-w-xs">
-                        <p className="font-semibold text-white text-sm line-clamp-1">
+                      <td className="py-3.5 px-4 min-w-0">
+                        <p className="font-semibold text-white text-sm line-clamp-1" title={item.projectTitle}>
                           {item.projectTitle}
                         </p>
-                        <p className="text-xs text-white/50 mt-0.5 truncate">
-                          {item.projectField || "Empirical Research"}
-                        </p>
+                        <div className="flex items-center gap-1.5 text-xs text-white/50 mt-0.5">
+                          <span className="truncate max-w-[160px] sm:max-w-[220px]">
+                            {item.projectField || "Empirical Research"}
+                          </span>
+                          <span className="text-white/20">•</span>
+                          <span className="text-white/70 truncate">{item.statistician.fullName}</span>
+                        </div>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
-                        <span className="text-xs text-white/90 font-semibold font-sans">
-                          {item.statistician.fullName}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Badge
                             variant={
@@ -506,13 +504,13 @@ export function QADashboardClient({
                                 ? "amber"
                                 : "emerald"
                             }
-                            className="font-mono text-xs py-0.5 px-2"
+                            className="font-mono text-[0.688rem] py-0.5 px-1.5"
                           >
                             {item.slaLabel}
                           </Badge>
                         </div>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {(() => {
                           if (item.masterStatus === "FOR_QA") {
                             return (
@@ -571,14 +569,14 @@ export function QADashboardClient({
                           );
                         })()}
                       </td>
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         {isReadyForQa ? (
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Link href={`/dashboard/qa/projects/${item.projectId}/files`}>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="font-sans text-xs rounded-[2px] cursor-pointer"
+                                className="font-sans text-xs h-7 px-2 rounded-[2px] cursor-pointer"
                               >
                                 <span>Files</span>
                               </Button>
@@ -587,35 +585,35 @@ export function QADashboardClient({
                               <Button
                                 variant="primary"
                                 size="sm"
-                                className="font-sans text-xs font-semibold rounded-[2px] gap-1.5 cursor-pointer bg-[#CC6600] hover:bg-[#CC6600]/90 text-white shadow-md shadow-[#CC6600]/20"
+                                className="font-sans text-xs font-semibold h-7 px-2.5 rounded-[2px] gap-1 cursor-pointer bg-[#CC6600] hover:bg-[#CC6600]/90 text-white shadow-sm"
                               >
                                 <span>Evaluate &amp; Score</span>
-                                <IconArrowRight size={13} stroke={2} />
+                                <IconArrowRight size={12} stroke={2} />
                               </Button>
                             </Link>
                           </div>
                         ) : isUnderRevision ? (
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Link href={`/dashboard/qa/projects/${item.projectId}/files`}>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="font-sans text-xs rounded-[2px] cursor-pointer"
+                                className="font-sans text-xs h-7 px-2 rounded-[2px] cursor-pointer"
                               >
-                                <span>Inspect Files</span>
+                                <span>Files</span>
                               </Button>
                             </Link>
-                            <span className="text-xs text-[#F59E0B] font-mono py-1 px-2 border border-[#F59E0B]/30 rounded-[2px]">
-                              Awaiting 24h Re-run
+                            <span className="text-[0.688rem] text-[#F59E0B] font-mono py-0.5 px-1.5 border border-[#F59E0B]/30 rounded-[2px]">
+                              Awaiting Re-run
                             </span>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => setSelectedStudy(item)}
-                              className="font-sans text-xs rounded-[2px]"
+                              className="font-sans text-xs h-7 px-2 rounded-[2px]"
                             >
                               <span>View Run</span>
                             </Button>
@@ -623,7 +621,7 @@ export function QADashboardClient({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="font-sans text-xs rounded-[2px] cursor-pointer"
+                                className="font-sans text-xs h-7 px-2 rounded-[2px] cursor-pointer"
                               >
                                 <span>Files</span>
                               </Button>

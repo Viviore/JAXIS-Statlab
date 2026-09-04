@@ -486,13 +486,11 @@ export function StatisticianDashboardClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 text-xs uppercase tracking-wider font-semibold">
-                  <th className="py-3.5 px-6">Study ID</th>
-                  <th className="py-3.5 px-6">Research Title &amp; Field</th>
-                  <th className="py-3.5 px-6">Methodology</th>
-                  <th className="py-3.5 px-6">SLA Countdown</th>
-                  <th className="py-3.5 px-6">Status</th>
-                  <th className="py-3.5 px-6">QA Lead</th>
-                  <th className="py-3.5 px-6 text-right">Actions</th>
+                  <th className="py-3 px-4">Study ID &amp; Package</th>
+                  <th className="py-3 px-4">Research &amp; Specialist</th>
+                  <th className="py-3 px-4">SLA Countdown</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-sm">
@@ -511,24 +509,30 @@ export function StatisticianDashboardClient({
                           : "hover:bg-white/[0.02]"
                       }`}
                     >
-                      <td className="py-4 px-6 font-mono text-xs text-[#CC6600] font-semibold whitespace-nowrap">
-                        {item.projectIntakeId}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="font-mono text-xs text-[#CC6600] font-semibold">
+                            {item.projectIntakeId}
+                          </span>
+                          <span className="text-[0.688rem] text-white/40 font-mono tracking-wide mt-0.5">
+                            {item.projectMethod || "JX 03 CORE"}
+                          </span>
+                        </div>
                       </td>
-                      <td className="py-4 px-6 max-w-xs">
-                        <p className="font-semibold text-white text-sm line-clamp-1">
+                      <td className="py-3.5 px-4 min-w-0">
+                        <p className="font-semibold text-white text-sm line-clamp-1" title={item.projectTitle}>
                           {item.projectTitle}
                         </p>
-                        <p className="text-xs text-white/50 mt-0.5 truncate">
-                          {item.projectField || "Empirical Research"}
-                        </p>
+                        <div className="flex items-center gap-1.5 text-xs text-white/50 mt-0.5">
+                          <span className="truncate max-w-[160px] sm:max-w-[220px]">
+                            {item.projectField || "Empirical Research"}
+                          </span>
+                          <span className="text-white/20">•</span>
+                          <span className="text-white/70 truncate">QA: {item.qaLead.fullName}</span>
+                        </div>
                       </td>
-                      <td className="py-4 px-6">
-                        <span className="text-xs text-white/80 font-sans">
-                          {item.projectMethod || "Statistical Analysis"}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
                           <Badge
                             variant={
                               item.isPaused
@@ -539,7 +543,7 @@ export function StatisticianDashboardClient({
                                 ? "amber"
                                 : "emerald"
                             }
-                            className="font-mono text-xs py-0.5 px-2"
+                            className="font-mono text-[0.688rem] py-0.5 px-1.5"
                           >
                             {item.slaLabel}
                           </Badge>
@@ -548,42 +552,38 @@ export function StatisticianDashboardClient({
                           </span>
                         </div>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <StatusBadge status={item.masterStatus} />
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
-                        <span className="text-xs text-white/70 font-sans">
-                          {item.qaLead.fullName}
-                        </span>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {!item.isPaused && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => setPauseTarget(item)}
+                              title="Request SLA Pause"
+                              className="font-sans text-xs h-7 px-2 rounded-[2px] text-amber-300 border-amber-500/30 hover:bg-amber-500/10 gap-1"
+                            >
+                              <IconPlayerPause size={12} stroke={2} />
+                              <span className="hidden sm:inline">Pause</span>
+                            </Button>
+                          )}
+                          <Link href={`/dashboard/statistician/projects/${item.projectId}/workbench`}>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="font-sans text-xs font-semibold h-7 px-2.5 rounded-[2px] gap-1 cursor-pointer bg-[#CC6600] hover:bg-[#CC6600]/90 text-white shadow-sm"
+                            >
+                              <span>Workbench</span>
+                              <IconArrowRight size={12} stroke={2} />
+                            </Button>
+                          </Link>
+                        </div>
                       </td>
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
-                        {!item.isPaused && (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setPauseTarget(item)}
-                            className="font-sans text-xs rounded-[2px] text-amber-300 border-amber-500/30 hover:bg-amber-500/10 gap-1"
-                          >
-                            <IconPlayerPause size={13} stroke={2} />
-                            <span>Request Pause</span>
-                          </Button>
-                        )}
-                        <Link href={`/dashboard/statistician/projects/${item.projectId}/workbench`}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="font-sans text-xs font-semibold rounded-[2px] gap-1 cursor-pointer"
-                          >
-                            <span>Open Workbench</span>
-                            <IconArrowRight size={13} stroke={2} />
-                          </Button>
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
