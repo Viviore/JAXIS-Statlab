@@ -27,6 +27,15 @@ import {
   IconClock,
   IconCalendarTime,
   IconX,
+  IconFileInvoice,
+  IconCalendarEvent,
+  IconRotate,
+  IconScale,
+  IconArchive,
+  IconChartBar,
+  IconShieldExclamation,
+  IconMailForward,
+  IconGavel,
 } from "@tabler/icons-react";
 
 export interface NavItem {
@@ -63,6 +72,7 @@ const Icons = {
   Intake: <IconFilePlus size={16} stroke={1.5} className="flex-shrink-0" />,
   Vault: <IconDatabase size={16} stroke={1.5} className="flex-shrink-0" />,
   Receipt: <IconReceipt size={16} stroke={1.5} className="flex-shrink-0" />,
+  Invoice: <IconFileInvoice size={16} stroke={1.5} className="flex-shrink-0" />,
   Terminal: <IconTerminal2 size={16} stroke={1.5} className="flex-shrink-0" />,
   Scripts: <IconCode size={16} stroke={1.5} className="flex-shrink-0" />,
   UploadCloud: <IconCloudUpload size={16} stroke={1.5} className="flex-shrink-0" />,
@@ -77,10 +87,17 @@ const Icons = {
   Activity: <IconActivity size={16} stroke={1.5} className="flex-shrink-0" />,
   Clock: <IconClock size={16} stroke={1.5} className="flex-shrink-0" />,
   LeaveDesk: <IconCalendarTime size={16} stroke={1.5} className="flex-shrink-0" />,
+  Schedule: <IconCalendarEvent size={16} stroke={1.5} className="flex-shrink-0" />,
+  Revisions: <IconRotate size={16} stroke={1.5} className="flex-shrink-0" />,
+  Claims: <IconScale size={16} stroke={1.5} className="flex-shrink-0" />,
+  Archive: <IconArchive size={16} stroke={1.5} className="flex-shrink-0" />,
+  Reports: <IconChartBar size={16} stroke={1.5} className="flex-shrink-0" />,
+  Firewall: <IconShieldExclamation size={16} stroke={1.5} className="flex-shrink-0" />,
+  Emails: <IconMailForward size={16} stroke={1.5} className="flex-shrink-0" />,
+  Gavel: <IconGavel size={16} stroke={1.5} className="flex-shrink-0" />,
 };
 
 // ─── Role-Specific Navigation Definitions ─────────────────────────────────────
-// Only fully functional/implemented modules are active; upcoming modules are greyed out with "SOON".
 
 const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
   CLIENT: [
@@ -100,7 +117,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         {
           label: "Quotes & Proposals",
           href: "/dashboard/client/quotations",
-          icon: Icons.Receipt,
+          icon: Icons.Invoice,
         },
         {
           label: "DefenseLab Practice",
@@ -120,7 +137,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         {
           label: "Revisions & Help",
           href: "/dashboard/client/disputes",
-          icon: Icons.ShieldCheck,
+          icon: Icons.Claims,
         },
         {
           label: "School & Profile",
@@ -154,15 +171,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Milestone Payouts",
           href: "/dashboard/statistician/payouts",
           icon: Icons.Award,
-          badge: "PAYOUTS",
-          badgeColor: "orange",
         },
         {
           label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
-          badge: "HR",
-          badgeColor: "orange",
         },
         {
           label: "My Profile",
@@ -196,15 +209,11 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "QA Audit Earnings",
           href: "/dashboard/qa/payouts",
           icon: Icons.Award,
-          badge: "PAYOUTS",
-          badgeColor: "orange",
         },
         {
           label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
-          badge: "HR",
-          badgeColor: "orange",
         },
         {
           label: "My Profile",
@@ -217,7 +226,7 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   FINANCE_OFFICER: [
     {
-      groupTitle: "PAYMENTS & FINANCES",
+      groupTitle: "PAYMENTS & ESCROW",
       items: [
         {
           label: "Finance Overview",
@@ -228,22 +237,16 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Deposit Queue",
           href: "/dashboard/finance/payments",
           icon: Icons.CheckQueue,
-          badge: "QUEUE",
-          badgeColor: "orange",
         },
         {
           label: "Milestone Payments",
           href: "/dashboard/finance/payouts",
           icon: Icons.Award,
-          badge: "ESCROW",
-          badgeColor: "orange",
         },
         {
           label: "Refunds & Disputes",
           href: "/dashboard/finance/disputes",
-          icon: Icons.Receipt,
-          badge: "CLAIMS",
-          badgeColor: "orange",
+          icon: Icons.Claims,
         },
       ],
     },
@@ -258,35 +261,27 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         {
           label: "Financial Reports",
           href: "/dashboard/finance/reports",
-          icon: Icons.Receipt,
-          badge: "REPORTS",
-          badgeColor: "orange",
+          icon: Icons.Reports,
         },
       ],
     },
     {
-      groupTitle: "HR & STAFF",
+      groupTitle: "HR & PAYROLL",
       items: [
-        {
-          label: "Leave Approvals",
-          href: "/dashboard/finance/leaves",
-          icon: Icons.LeaveDesk,
-          badge: "LEAVES",
-          badgeColor: "orange",
-        },
         {
           label: "Staff Timesheets",
           href: "/dashboard/finance/attendance",
           icon: Icons.Clock,
-          badge: "ATTENDANCE",
-          badgeColor: "orange",
         },
         {
           label: "Payroll & Payslips",
           href: "/dashboard/finance/payroll",
           icon: Icons.Receipt,
-          badge: "PAYROLL",
-          badgeColor: "orange",
+        },
+        {
+          label: "Leave Approvals",
+          href: "/dashboard/finance/leaves",
+          icon: Icons.LeaveDesk,
         },
       ],
     },
@@ -297,8 +292,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
-          badge: "HR",
-          badgeColor: "orange",
         },
         {
           label: "My Profile",
@@ -311,36 +304,32 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
 
   CEO: [
     {
-      groupTitle: "CEO OVERVIEW",
+      groupTitle: "EXECUTIVE OVERVIEW",
       items: [
         {
           label: "CEO Overview",
           href: "/dashboard/ceo",
-          icon: Icons.Activity,
+          icon: Icons.Overview,
         },
         {
           label: "Pricing & Quotations",
           href: "/dashboard/admin/quotations",
-          icon: Icons.Receipt,
-          badge: "PRICING",
-          badgeColor: "orange",
+          icon: Icons.Invoice,
+        },
+        {
+          label: "Treasury & Rates",
+          href: "/dashboard/ceo/finance",
+          icon: Icons.FinanceVault,
         },
       ],
     },
     {
-      groupTitle: "MANAGEMENT & AUDIT",
+      groupTitle: "OPERATIONS & GOVERNANCE",
       items: [
         {
           label: "Finance & Payments",
           href: "/dashboard/finance",
           icon: Icons.FinanceVault,
-        },
-        {
-          label: "Treasury & Rates",
-          href: "/dashboard/ceo/finance",
-          icon: Icons.Award,
-          badge: "RATES",
-          badgeColor: "orange",
         },
         {
           label: "QA Review Desk",
@@ -356,43 +345,36 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Staff Timesheets",
           href: "/dashboard/ceo/attendance",
           icon: Icons.Clock,
-          badge: "AUDIT",
-          badgeColor: "orange",
         },
         {
           label: "Payroll Settings",
           href: "/dashboard/ceo/payroll",
           icon: Icons.Receipt,
-          badge: "POLICY",
-          badgeColor: "orange",
         },
+      ],
+    },
+    {
+      groupTitle: "AUDIT & SECURITY",
+      items: [
         {
-          label: "Firewall Logs",
-          href: "/dashboard/admin/messages",
-          icon: Icons.ShieldCheck,
-          badge: "FIREWALL",
-          badgeColor: "orange",
+          label: "Intelligence Reports",
+          href: "/dashboard/ceo/reports",
+          icon: Icons.Reports,
         },
         {
           label: "Dispute Rulings",
           href: "/dashboard/ceo/disputes",
-          icon: Icons.ShieldCheck,
-          badge: "RULINGS",
-          badgeColor: "orange",
+          icon: Icons.Gavel,
         },
         {
-          label: "Intelligence Reports",
-          href: "/dashboard/ceo/reports",
-          icon: Icons.Activity,
-          badge: "REPORTS",
-          badgeColor: "orange",
+          label: "Firewall Logs",
+          href: "/dashboard/admin/messages",
+          icon: Icons.Firewall,
         },
         {
           label: "Storage & Purge Policy",
           href: "/dashboard/ceo/retention",
           icon: Icons.Vault,
-          badge: "STORAGE",
-          badgeColor: "orange",
         },
       ],
     },
@@ -403,8 +385,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
-          badge: "HR",
-          badgeColor: "orange",
         },
         {
           label: "My Profile",
@@ -427,42 +407,32 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
         {
           label: "New Study Requests",
           href: "/dashboard/admin/intake",
-          icon: Icons.CheckQueue,
-          badge: "INTAKE",
-          badgeColor: "orange",
+          icon: Icons.Intake,
         },
         {
           label: "Pricing & Quotations",
           href: "/dashboard/admin/quotations",
-          icon: Icons.Receipt,
-          badge: "PRICING",
-          badgeColor: "orange",
+          icon: Icons.Invoice,
         },
         {
           label: "Assign Experts",
           href: "/dashboard/admin/assignments",
           icon: Icons.KeyRelease,
-          badge: "ASSIGN",
-          badgeColor: "orange",
         },
         {
           label: "Client Revisions",
           href: "/dashboard/admin/revisions",
-          icon: Icons.Award,
-          badge: "REVISIONS",
-          badgeColor: "orange",
+          icon: Icons.Revisions,
         },
         {
           label: "DefenseLab Schedule",
           href: "/dashboard/admin/defenselab",
-          icon: Icons.LeaveDesk,
-          badge: "SESSIONS",
-          badgeColor: "orange",
+          icon: Icons.Schedule,
         },
       ],
     },
     {
-      groupTitle: "STAFF & TOOLS",
+      groupTitle: "TEAM & OPERATIONS",
       items: [
         {
           label: "Staff Directory",
@@ -473,50 +443,41 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "Staff Timesheets",
           href: "/dashboard/finance/attendance",
           icon: Icons.Clock,
-          badge: "ATTENDANCE",
-          badgeColor: "orange",
-        },
-        {
-          label: "Firewall Logs",
-          href: "/dashboard/admin/messages",
-          icon: Icons.ShieldCheck,
-          badge: "FIREWALL",
-          badgeColor: "orange",
         },
         {
           label: "Study Claims",
           href: "/dashboard/admin/disputes",
-          icon: Icons.ShieldCheck,
-          badge: "CLAIMS",
-          badgeColor: "orange",
+          icon: Icons.Claims,
         },
-        {
-          label: "Email Delivery Logs",
-          href: "/dashboard/admin/notifications",
-          icon: Icons.Receipt,
-          badge: "EMAILS",
-          badgeColor: "orange",
-        },
-        {
-          label: "Project Archive",
-          href: "/dashboard/admin/archive",
-          icon: Icons.Audit,
-          badge: "ARCHIVE",
-          badgeColor: "orange",
-        },
+      ],
+    },
+    {
+      groupTitle: "SYSTEM & AUDIT LOGS",
+      items: [
         {
           label: "Activity Log",
           href: "/dashboard/admin/audit",
           icon: Icons.Audit,
-          badge: "AUDIT",
-          badgeColor: "orange",
+        },
+        {
+          label: "Firewall Logs",
+          href: "/dashboard/admin/messages",
+          icon: Icons.Firewall,
+        },
+        {
+          label: "Email Delivery Logs",
+          href: "/dashboard/admin/notifications",
+          icon: Icons.Emails,
         },
         {
           label: "System Reports",
           href: "/dashboard/admin/reports",
-          icon: Icons.Activity,
-          badge: "REPORTS",
-          badgeColor: "orange",
+          icon: Icons.Reports,
+        },
+        {
+          label: "Project Archive",
+          href: "/dashboard/admin/archive",
+          icon: Icons.Archive,
         },
       ],
     },
@@ -527,8 +488,6 @@ const ROLE_NAV_GROUPS: Record<string, NavGroup[]> = {
           label: "My HR & Timeclock",
           href: "/dashboard/staff/hr",
           icon: Icons.LeaveDesk,
-          badge: "HR",
-          badgeColor: "orange",
         },
         {
           label: "My Profile",
@@ -567,6 +526,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     effectiveRole = "SENIOR_QA_LEAD";
   } else if (normalizedRole === "FINANCE" || normalizedRole === "FINANCE_OFFICER") {
     effectiveRole = "FINANCE_OFFICER";
+  } else if (normalizedRole === "OPERATIONS_MANAGER" || normalizedRole === "OPERATIONS") {
+    effectiveRole = "ADMIN";
   }
   let navGroups = ROLE_NAV_GROUPS[effectiveRole] || ROLE_NAV_GROUPS.ADMIN!;
 
@@ -597,7 +558,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside
       className={`
         fixed lg:static inset-y-0 left-0 z-50 lg:z-20
-        w-[19.5rem] min-w-[19.5rem] max-w-[19.5rem] h-full max-h-full
+        w-[18.5rem] min-w-[18.5rem] max-w-[18.5rem] h-full max-h-full
         bg-[#010114] border-r border-white/[0.08] flex flex-col justify-between
         select-none flex-shrink-0 overflow-hidden
         transition-transform duration-200 ease-out shadow-2xl lg:shadow-none
@@ -605,9 +566,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ${className}
       `}
       style={{
-        width: "19.5rem",
-        minWidth: "19.5rem",
-        maxWidth: "19.5rem",
+        width: "18.5rem",
+        minWidth: "18.5rem",
+        maxWidth: "18.5rem",
         height: "100%",
         maxHeight: "100%",
         flexShrink: 0,
@@ -622,12 +583,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Top Navigation Sections */}
       <div
-        className="p-5 sm:p-6 flex flex-col gap-6 overflow-y-auto flex-1"
+        className="p-4 sm:p-5 flex flex-col gap-5 overflow-y-auto flex-1 scrollbar-thin"
         style={{
-          padding: "1.5rem 1.25rem",
+          padding: "1.25rem 1rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.5rem",
+          gap: "1.25rem",
           overflowY: "auto",
           flex: 1,
         }}
@@ -658,36 +619,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Groups */}
-        <nav aria-label="Sidebar navigation" className="flex flex-col gap-5" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <nav aria-label="Sidebar navigation" className="flex flex-col gap-4" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {navGroups.map((group, gIdx) => (
-            <div key={gIdx} className="flex flex-col gap-1" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+            <div key={gIdx} className="flex flex-col gap-0.5" style={{ display: "flex", flexDirection: "column", gap: "0.125rem" }}>
               <span
-                className="text-xs font-sans font-semibold tracking-widest text-white/40 px-3 uppercase mb-1.5"
-                style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", marginBottom: "0.375rem", fontSize: "0.688rem" }}
+                className="text-[10px] font-sans font-semibold tracking-wider text-white/40 px-3 uppercase mb-1 mt-1.5 select-none"
+                style={{ paddingLeft: "0.75rem", paddingRight: "0.75rem", fontSize: "0.625rem" }}
               >
                 {group.groupTitle}
               </span>
               {group.items.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" &&
+                    item.href !== "/dashboard/admin" &&
+                    item.href !== "/dashboard/ceo" &&
+                    item.href !== "/dashboard/client" &&
+                    item.href !== "/dashboard/statistician" &&
+                    item.href !== "/dashboard/qa" &&
+                    item.href !== "/dashboard/finance" &&
+                    pathname.startsWith(item.href + "/"));
                 const isDisabled = Boolean(item.disabled);
 
                 if (isDisabled) {
                   return (
                     <div
                       key={item.href + item.label}
-                      className="flex items-center justify-between px-3 py-2 text-xs rounded-md select-none opacity-40 cursor-not-allowed"
+                      className="flex items-center justify-between px-3 py-1.5 text-xs rounded-md select-none opacity-40 cursor-not-allowed border-l-2 border-transparent"
                       style={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "0.5rem 0.75rem",
-                        borderRadius: "4px",
+                        padding: "0.45rem 0.75rem",
+                        borderRadius: "2px",
                         boxSizing: "border-box",
                         fontSize: "0.8125rem",
                       }}
                       title={`${item.label} (Under Active Development)`}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0, flex: 1, paddingRight: "0.5rem" }}>
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
                         <span className="text-white/30 flex-shrink-0">
                           {item.icon}
                         </span>
@@ -698,19 +668,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                       <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
                         <span
-                          className="text-xs font-sans px-1.5 py-0.5 rounded-[3px] border font-medium flex-shrink-0 bg-white/[0.04] text-white/30 border-white/[0.08]"
-                          style={{
-                            padding: "0.1rem 0.375rem",
-                            borderRadius: "3px",
-                            fontSize: "0.625rem",
-                            fontWeight: 600,
-                            height: "18px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            lineHeight: 1,
-                            letterSpacing: "0.025em",
-                          }}
+                          className="text-[10px] font-sans px-1.5 py-0.5 rounded-[2px] border font-medium flex-shrink-0 bg-white/[0.04] text-white/30 border-white/[0.08]"
                         >
                           {item.badge || "SOON"}
                         </span>
@@ -726,69 +684,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => {
                       if (onClose) onClose();
                     }}
-                    className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-md transition-colors duration-150 ease-out group ${
+                    className={`flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-r-[3px] rounded-l-[1px] transition-all duration-150 ease-out group border-l-2 ${
                       isActive
-                        ? "bg-[#CC6600]/15 text-white font-semibold"
-                        : "text-white/75 hover:text-white hover:bg-white/[0.05]"
+                        ? "bg-[#CC6600]/12 text-white font-semibold border-[#CC6600]"
+                        : "border-transparent text-white/65 hover:text-white hover:bg-white/[0.04]"
                     }`}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "0.55rem 0.75rem",
-                      borderRadius: "4px",
+                      padding: "0.45rem 0.75rem",
                       boxSizing: "border-box",
                       fontSize: "0.8125rem",
                     }}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2" style={{ display: "flex", alignItems: "center", gap: "0.625rem", minWidth: 0, flex: 1, paddingRight: "0.5rem" }}>
-                      <span className={`${isActive ? "text-[#CC6600]" : "text-white/60 group-hover:text-white"} transition-colors flex-shrink-0`}>
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+                      <span className={`${isActive ? "text-[#CC6600]" : "text-white/40 group-hover:text-white/80"} transition-colors flex-shrink-0`}>
                         {item.icon}
                       </span>
-                      <span className="font-sans font-medium text-[0.8125rem] truncate" title={item.label}>
+                      <span
+                        className={`font-sans text-[0.8125rem] truncate ${isActive ? "font-semibold text-white" : "font-normal text-white/70 group-hover:text-white"}`}
+                        title={item.label}
+                      >
                         {item.label}
                       </span>
                     </div>
 
-                    {/* Badges / Counters */}
+                    {/* Actionable Badges & Dynamic Counters */}
                     <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
-                      {item.count !== undefined && (
+                      {item.count !== undefined && item.count > 0 && (
                         <span
-                          className={`text-xs font-sans px-2 py-0.5 rounded-full flex-shrink-0 ${
-                            isActive ? "bg-[#CC6600]/30 text-white font-bold" : "bg-white/[0.08] text-white/60 group-hover:text-white"
+                          className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full flex-shrink-0 border leading-none ${
+                            isActive
+                              ? "bg-[#CC6600]/25 text-[#FFA040] border-[#CC6600]/40 font-bold"
+                              : "bg-white/[0.06] text-white/60 border-white/10 group-hover:text-white"
                           }`}
-                          style={{
-                            padding: "0.15rem 0.5rem",
-                            borderRadius: "9999px",
-                            fontSize: "0.75rem",
-                            fontWeight: 600,
-                            height: "20px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            lineHeight: 1,
-                          }}
                         >
                           {item.count}
                         </span>
                       )}
                       {item.badge && (
                         <span
-                          className={`text-xs font-sans px-1.5 py-0.5 rounded-[3px] border font-medium flex-shrink-0 ${
+                          className={`text-[10px] font-sans px-1.5 py-0.5 rounded-[2px] border font-semibold flex-shrink-0 tracking-wide uppercase ${
                             BADGE_STYLES[item.badgeColor || "indigo"]
                           }`}
-                          style={{
-                            padding: "0.1rem 0.4rem",
-                            borderRadius: "3px",
-                            fontSize: "0.625rem",
-                            fontWeight: 600,
-                            height: "18px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            lineHeight: 1,
-                            letterSpacing: "0.025em",
-                          }}
                         >
                           {item.badge}
                         </span>
@@ -803,11 +742,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* User Info Card (Bottom) */}
-      <div className="p-4 sm:p-4.5 border-t border-white/[0.08] bg-white/[0.02] flex-shrink-0" style={{ padding: "1rem 1.25rem", flexShrink: 0, backgroundColor: "rgba(255, 255, 255, 0.02)" }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 overflow-hidden">
+      <div className="p-3.5 sm:p-4 border-t border-white/[0.08] bg-white/[0.02] flex-shrink-0" style={{ padding: "0.875rem 1rem", flexShrink: 0, backgroundColor: "rgba(255, 255, 255, 0.02)" }}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
             <div
-              className="h-8 w-8 rounded-sm bg-gradient-to-br from-[#012E57] to-[#011B38] border border-white/15 flex items-center justify-center font-sans text-xs text-white font-semibold shadow-inner flex-shrink-0"
+              className="h-8 w-8 rounded-[2px] bg-gradient-to-br from-[#012E57] to-[#011B38] border border-white/15 flex items-center justify-center font-sans text-xs text-white font-semibold shadow-inner flex-shrink-0"
               style={{
                 height: "2rem",
                 width: "2rem",
@@ -820,9 +759,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               {userFullName.charAt(0)}
             </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-semibold text-white truncate leading-none" style={{ fontSize: "0.875rem" }}>{userFullName}</span>
-              <span className="text-xs text-white/40 truncate mt-1 font-sans" style={{ fontSize: "0.75rem" }}>{userEmail}</span>
+            <div className="flex flex-col overflow-hidden min-w-0">
+              <span className="text-xs font-semibold text-white truncate leading-tight">{userFullName}</span>
+              <span className="text-[11px] text-white/40 truncate mt-0.5 font-sans">{userEmail}</span>
             </div>
           </div>
 
