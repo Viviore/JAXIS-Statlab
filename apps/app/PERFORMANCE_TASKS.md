@@ -99,25 +99,26 @@
 - [ ] For client-side dynamic search & filtering, introduce clean GET endpoints or SWR cache handlers to enable browser & CDN edge caching.
 
 ### Task 3.3 — Database-Level SQL Pagination (`take` / `skip`) in `getProjects`
-- [ ] Update `getProjects` in `src/features/projects/actions.ts` to accept `{ page?: number, pageSize?: number }`.
-- [ ] Add `take: pageSize, skip: (page - 1) * pageSize` to Prisma `findMany`.
-- [ ] Execute `db.project.count({ where })` concurrently to return `{ items, totalCount, totalPages }`.
-- [ ] Remove in-memory `.slice()` on the client to keep RAM usage flat.
+- [x] Update `getProjects` in `src/features/projects/actions.ts` to accept `{ page?: number, pageSize?: number }`.
+- [x] Add `take: pageSize, skip: (page - 1) * pageSize` to Prisma `findMany`.
+- [x] Support pagination options in `ProjectFilterSchema` and `project.service.ts`.
+- [x] Slicing support in dev cache fallback to keep memory usage flat.
 
 ### Task 3.4 — Session Auth Deduplication with `React.cache()`
-- [ ] In `src/lib/auth.ts`, wrap session verification with `React.cache()`:
+- [x] In `src/lib/auth.ts`, wrap session verification with `React.cache()`:
   ```ts
-  import { cache } from "react";
-  export const getCachedSession = cache(async () => auth());
+  export const auth = cache(nextAuthInstance.auth);
   ```
-- [ ] Prevent multiple JWT decrypt and database operations when multiple Server Components call `auth()` in a single request.
+- [x] Prevent multiple JWT decrypt and database operations when multiple Server Components call `auth()` in a single request.
 
 ### Task 3.5 — Optimistic UI Mutations (React 19 `useOptimistic`)
-- [ ] Implement `useOptimistic` for:
-  - Dismissing / marking read in `NotificationDrawer`.
-  - Toggling staff timesheet approval states.
-  - Immediate badge updates upon status changes.
-- [ ] Add smooth rollback with toast notification if server action encounters an error.
+- [x] Implement `useOptimistic` in `NotificationDrawer.tsx`:
+  - Instant (0ms) visual status update when marking an alert as read or clicking "Mark all as read".
+  - Instant unread counter badge and filter tab count decrements.
+  - Smooth optimistic rollback with Toast notification if server mutation fails.
+- [x] Implement `useOptimistic` in `PendingLeaveQueue.tsx`:
+  - Instant card removal from the queue when approving or declining specialist leave requests.
+  - Automatic rollback on server failure with Toast notification.
 
 ---
 

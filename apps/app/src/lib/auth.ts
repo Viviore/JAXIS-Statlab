@@ -1,3 +1,4 @@
+import { cache } from "react";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -197,7 +198,7 @@ export const authConfig: NextAuthConfig = {
 const nextAuthInstance = NextAuth(authConfig);
 
 export const handlers = nextAuthInstance.handlers;
-export const auth = nextAuthInstance.auth;
+export const auth = cache(nextAuthInstance.auth);
 export const signIn = nextAuthInstance.signIn;
 export const signOut = nextAuthInstance.signOut;
 

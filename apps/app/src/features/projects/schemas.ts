@@ -57,6 +57,8 @@ export type RequestMissingInfoInput = z.infer<typeof RequestMissingInfoSchema>;
 export const ProjectFilterSchema = z.object({
   status: z.string().optional(),
   search: z.string().optional(),
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().optional(),
 });
 
 export type ProjectFilterInput = z.infer<typeof ProjectFilterSchema>;

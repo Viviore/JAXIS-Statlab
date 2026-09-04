@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useCallback } from "react";
+import React, { useState, useEffect, useTransition, useOptimistic, useCallback } from "react";
 import { Card, Button, Badge, LoadingState, Toast } from "@repo/ui";
 import {
   IconClock,
@@ -27,6 +27,11 @@ export function PendingLeaveQueue({
   const [isLoading, setIsLoading] = useState(true);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const [optimisticLeaves, setOptimisticLeaves] = useOptimistic(
+    leaves,
+    (state, leaveIdToRemove: string) => state.filter((l) => l.id !== leaveIdToRemove)
+  );
 
   const [toastMessage, setToastMessage] = useState<{
     message: string;
@@ -55,12 +60,13 @@ export function PendingLeaveQueue({
   const handleApprove = (item: PendingLeaveItem) => {
     setActiveActionId(item.id);
     startTransition(async () => {
+      setOptimisticLeaves(item.id);
       const res = await approveLeave(item.id);
       if (res.success) {
         setLeaves((prev) => prev.filter((l) => l.id !== item.id));
         setToastMessage({
           message: "Leave Request Approved",
-          description: `${item.fullName} is now marked On Leave and hidden from Module 08 assignment intake.`,
+          description: `${item.fullName} is now on leave.`,
           variant: "success",
         });
         onStatusChange?.();
@@ -78,12 +84,13 @@ export function PendingLeaveQueue({
   const handleReject = (item: PendingLeaveItem) => {
     setActiveActionId(item.id);
     startTransition(async () => {
+      setOptimisticLeaves(item.id);
       const res = await rejectLeave(item.id);
       if (res.success) {
         setLeaves((prev) => prev.filter((l) => l.id !== item.id));
         setToastMessage({
           message: "Leave Request Declined",
-          description: `${item.fullName} has been restored to Active duty.`,
+          description: `${item.fullName} has been restored to active duty.`,
           variant: "warning",
         });
         onStatusChange?.();
@@ -110,7 +117,7 @@ export function PendingLeaveQueue({
     );
   }
 
-  if (leaves.length === 0) {
+  if (optimisticLeaves.length === 0) {
     return null; // Return nothing when queue is empty so layout stays minimal
   }
 
@@ -127,7 +134,7 @@ export function PendingLeaveQueue({
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-white font-sans">{title}</h3>
                 <span className="text-xs font-mono font-semibold text-[#FF9433] bg-[#CC6600]/20 px-2 py-0.5 rounded-[2px] border border-[#CC6600]/40">
-                  {leaves.length} Pending {leaves.length === 1 ? "Request" : "Requests"}
+                  {optimisticLeaves.length} Pending {optimisticLeaves.length === 1 ? "Request" : "Requests"}
                 </span>
               </div>
               <p className="text-xs text-white/60 mt-0.5 font-sans">{subtitle}</p>
@@ -140,7 +147,7 @@ export function PendingLeaveQueue({
 
         {/* Requests List */}
         <div className="divide-y divide-white/10">
-          {leaves.map((item) => {
+          {optimisticLeaves.map((item) => {
             const isItemBusy = isPending && activeActionId === item.id;
             const fromStr = item.leaveFrom
               ? new Date(item.leaveFrom).toLocaleDateString("en-PH", {

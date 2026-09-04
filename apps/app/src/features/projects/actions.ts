@@ -17,7 +17,7 @@ import {
   type ActionResponse,
 } from "./schemas";
 import type { AuditTelemetryEvent } from "@/types/project";
-import type { ProjectStatus, FileCategory } from "@prisma/client";
+import type { ProjectStatus, FileCategory, Prisma } from "@prisma/client";
 
 const DEV_PROJECTS_FILE = path.join(process.cwd(), ".dev-projects.json");
 const DEV_PAYMENTS_FILE = path.join(process.cwd(), "dev_data", "payments.json");
@@ -278,25 +278,34 @@ export async function getProjects(
   const userId = session.user.id;
 
   const parsed = ProjectFilterSchema.safeParse(filters || {});
-  const { status, search } = parsed.success ? parsed.data : { status: undefined, search: undefined };
+  const { status, search, page, pageSize } = parsed.success
+    ? parsed.data
+    : { status: undefined, search: undefined, page: undefined, pageSize: undefined };
 
   try {
     const isClient = userRole === "CLIENT";
 
+    const whereClause: Prisma.ProjectWhereInput = {
+      ...(isClient ? { clientId: userId } : {}),
+      ...(status && status !== "ALL" ? { masterStatus: status as ProjectStatus } : {}),
+      ...(search?.trim()
+        ? {
+            OR: [
+              { researchTitle: { contains: search.trim(), mode: "insensitive" as const } },
+              { intakeId: { contains: search.trim(), mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const take = pageSize && pageSize > 0 ? Math.min(pageSize, 100) : undefined;
+    const skip = page && page > 0 && take ? (page - 1) * take : undefined;
+
     const projects = await withDbTimeout(
       db.project.findMany({
-        where: {
-          ...(isClient ? { clientId: userId } : {}),
-          ...(status && status !== "ALL" ? { masterStatus: status as ProjectStatus } : {}),
-          ...(search?.trim()
-            ? {
-                OR: [
-                  { researchTitle: { contains: search.trim(), mode: "insensitive" } },
-                  { intakeId: { contains: search.trim(), mode: "insensitive" } },
-                ],
-              }
-            : {}),
-        },
+        where: whereClause,
+        ...(take ? { take } : {}),
+        ...(skip ? { skip } : {}),
         select: {
           id: true,
           intakeId: true,
@@ -470,6 +479,11 @@ export async function getProjects(
           p.researchTitle.toLowerCase().includes(q) ||
           p.intakeId.toLowerCase().includes(q)
       );
+    }
+
+    if (page && pageSize && pageSize > 0) {
+      const startIndex = (page - 1) * pageSize;
+      devProjects = devProjects.slice(startIndex, startIndex + pageSize);
     }
 
     return {

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useOptimistic, startTransition } from "react";
 import Link from "next/link";
 import {
   LoadingState,
+  Toast,
 } from "@repo/ui";
 import {
   getInAppAlertsAction,
@@ -24,12 +25,51 @@ import {
   IconInbox,
 } from "@tabler/icons-react";
 
+type OptimisticAction =
+  | { type: "MARK_READ"; alertId: string }
+  | { type: "MARK_ALL_READ" };
+
+interface NotificationState {
+  alerts: InAppAlertDTO[];
+  unreadCount: number;
+}
+
 export function NotificationDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [alerts, setAlerts] = useState<InAppAlertDTO[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD">("ALL");
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    description: string;
+    variant: "info" | "success" | "warning" | "danger";
+  } | null>(null);
+
+  const [optimisticState, setOptimisticState] = useOptimistic(
+    { alerts, unreadCount },
+    (state: NotificationState, action: OptimisticAction): NotificationState => {
+      switch (action.type) {
+        case "MARK_READ": {
+          const isAlertUnread = state.alerts.some((a) => a.id === action.alertId && !a.isRead);
+          return {
+            alerts: state.alerts.map((a) =>
+              a.id === action.alertId ? { ...a, isRead: true } : a
+            ),
+            unreadCount: isAlertUnread ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
+          };
+        }
+        case "MARK_ALL_READ": {
+          return {
+            alerts: state.alerts.map((a) => ({ ...a, isRead: true })),
+            unreadCount: 0,
+          };
+        }
+        default:
+          return state;
+      }
+    }
+  );
 
   const loadAlerts = useCallback(async (isInitial = false) => {
     if (isInitial) setIsLoading(true);
@@ -85,29 +125,74 @@ export function NotificationDrawer() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  const handleMarkRead = async (alertId: string) => {
-    try {
-      await markAlertReadAction({ alertId });
-      setAlerts((prev) =>
-        prev.map((a) => (a.id === alertId ? { ...a, isRead: true } : a))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (err) {
-      console.error("Failed to mark alert as read:", err);
-    }
+  const handleMarkRead = (alertId: string) => {
+    const prevAlerts = alerts;
+    const prevUnreadCount = unreadCount;
+
+    startTransition(async () => {
+      // 1. Instantly update the UI optimistically (0ms)
+      setOptimisticState({ type: "MARK_READ", alertId });
+
+      try {
+        const res = await markAlertReadAction({ alertId });
+        if (res && !res.success) {
+          throw new Error(res.error?.message || "Failed to mark alert as read");
+        }
+        // 2. Commit real state
+        setAlerts((prev) =>
+          prev.map((a) => (a.id === alertId ? { ...a, isRead: true } : a))
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      } catch (err) {
+        console.error("Failed to mark alert as read:", err);
+        // 3. Roll back state on failure and alert the user
+        setAlerts(prevAlerts);
+        setUnreadCount(prevUnreadCount);
+        setToastMessage({
+          message: "Sync Failed",
+          description: "Could not update notification. Please try again.",
+          variant: "danger",
+        });
+      }
+    });
   };
 
-  const handleMarkAllRead = async () => {
-    try {
-      await markAllAlertsReadAction();
-      setAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
-      setUnreadCount(0);
-    } catch (err) {
-      console.error("Failed to mark all as read:", err);
-    }
+  const handleMarkAllRead = () => {
+    const prevAlerts = alerts;
+    const prevUnreadCount = unreadCount;
+
+    startTransition(async () => {
+      // 1. Instantly update the UI optimistically (0ms)
+      setOptimisticState({ type: "MARK_ALL_READ" });
+
+      try {
+        const res = await markAllAlertsReadAction();
+        if (res && !res.success) {
+          throw new Error(res.error?.message || "Failed to mark all alerts as read");
+        }
+        // 2. Commit real state
+        setAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
+        setUnreadCount(0);
+        setToastMessage({
+          message: "All Marked as Read",
+          description: "All unread notifications have been marked as read.",
+          variant: "success",
+        });
+      } catch (err) {
+        console.error("Failed to mark all as read:", err);
+        // 3. Roll back state on failure
+        setAlerts(prevAlerts);
+        setUnreadCount(prevUnreadCount);
+        setToastMessage({
+          message: "Sync Failed",
+          description: "Could not update notifications. Please try again.",
+          variant: "danger",
+        });
+      }
+    });
   };
 
-  const filteredAlerts = alerts.filter((a) => {
+  const filteredAlerts = optimisticState.alerts.filter((a) => {
     if (filterTab === "UNREAD") return !a.isRead;
     return true;
   });
@@ -147,9 +232,9 @@ export function NotificationDrawer() {
           stroke={1.5}
           className="transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110"
         />
-        {unreadCount > 0 && (
+        {optimisticState.unreadCount > 0 && (
           <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-[#CC6600] text-white font-mono text-[0.625rem] font-bold ring-2 ring-[#010114] animate-pulse">
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {optimisticState.unreadCount > 9 ? "9+" : optimisticState.unreadCount}
           </span>
         )}
       </button>
@@ -183,13 +268,13 @@ export function NotificationDrawer() {
               <div>
                 <h2 className="text-sm font-bold text-white leading-none">Notifications</h2>
                 <span className="text-[0.688rem] text-white/40">
-                  {unreadCount} unread {unreadCount === 1 ? "alert" : "alerts"}
+                  {optimisticState.unreadCount} unread {optimisticState.unreadCount === 1 ? "alert" : "alerts"}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
+              {optimisticState.unreadCount > 0 && (
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
@@ -220,7 +305,7 @@ export function NotificationDrawer() {
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              All ({alerts.length})
+              All ({optimisticState.alerts.length})
             </button>
             <button
               type="button"
@@ -231,7 +316,7 @@ export function NotificationDrawer() {
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              Unread ({unreadCount})
+              Unread ({optimisticState.unreadCount})
             </button>
           </div>
 
@@ -340,6 +425,15 @@ export function NotificationDrawer() {
           </div>
         </div>
       </div>
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          description={toastMessage.description}
+          variant={toastMessage.variant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </>
   );
 }

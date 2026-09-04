@@ -11,6 +11,8 @@ export interface ProjectFilterOptions {
   status?: string;
   search?: string;
   statistician?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 function mapDetailItemToProject(item: ProjectDetailItem): Project {
@@ -60,6 +62,8 @@ export class ProjectService {
       const res = await fetchDbProjects({
         status: filter?.status && filter.status !== "ALL" ? filter.status : undefined,
         search: filter?.search && filter.search.trim() ? filter.search.trim() : undefined,
+        page: filter?.page,
+        pageSize: filter?.pageSize,
       });
 
       if (res.success && res.data) {

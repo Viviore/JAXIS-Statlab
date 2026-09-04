@@ -1,15 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-
-const AuthParticleGlobe = dynamic(
-  () => import("@/components/ui/AuthParticleGlobe"),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
+import { AuthGlobeClient } from "@/components/ui/AuthGlobeClient";
 
 export default function AuthLayout({
   children,
@@ -85,7 +77,7 @@ export default function AuthLayout({
 
         {/* 3D Hardware-Accelerated Particle Canvas */}
         <div className="absolute inset-0 w-full h-full">
-          <AuthParticleGlobe />
+          <AuthGlobeClient />
         </div>
       </main>
     </div>
