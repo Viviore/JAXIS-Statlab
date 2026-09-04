@@ -85,13 +85,12 @@
 ## Phase 3 — Core Architecture & Data Flow (RSC & Database Scaling)
 
 ### Task 3.1 — Server-Component-First Pages (RSC Migration)
-- [ ] Migrate key dashboard routes from `"use client"` to `async function Page()`:
-  - `app/dashboard/admin/page.tsx`
-  - `app/dashboard/finance/page.tsx`
-  - `app/dashboard/client/page.tsx`
-- [ ] Fetch initial data on the server concurrently (`Promise.all`).
-- [ ] Pass pre-fetched data into client container components (`initialProjects`, `initialKpis`).
-- [ ] Eliminate initial blank loading spinner on page entry.
+- [x] Migrate `app/dashboard/admin/page.tsx` from `"use client"` to `async function AdminDashboardPage()` (RSC).
+- [x] Fetch initial data on the server concurrently (`Promise.all([projectService.getProjects(), getFinanceReceivablesSummary()])`).
+- [x] Pass pre-fetched data into `AdminDashboardClient` (`initialProjects`, `initialFinanceData`).
+- [x] Eliminate initial blank loading spinner on admin overview entry.
+- [ ] Migrate `app/dashboard/finance/page.tsx`
+- [ ] Migrate `app/dashboard/client/page.tsx`
 
 ### Task 3.2 — Transition Read Operations Away from POST Server Actions
 - [ ] Reserve Server Actions (`"use server"`) strictly for mutations (Create, Update, Delete).
