@@ -40,8 +40,10 @@ export function useProjects(options?: UseProjectsOptions) {
           const query = params.toString();
           const endpoint = query ? `/api/v1/projects?${query}` : "/api/v1/projects";
           const res = await fetch(endpoint);
+          if (!isMountedRef.current) return;
           if (res.ok) {
             const json = await res.json();
+            if (!isMountedRef.current) return;
             if (json.success && json.data) {
               setProjects(json.data.projects || []);
               setKpis(json.data.kpis || null);
@@ -57,27 +59,37 @@ export function useProjects(options?: UseProjectsOptions) {
           projectService.getAuditStream(),
         ]);
 
+        if (!isMountedRef.current) return;
+
         setProjects(projectsData);
         setKpis(kpisData);
         setAuditStream(auditData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load project telemetry");
+        if (isMountedRef.current) {
+          setError(err instanceof Error ? err.message : "Failed to load project telemetry");
+        }
       } finally {
-        if (showLoading) setIsLoading(false);
+        if (isMountedRef.current && showLoading) setIsLoading(false);
       }
     },
     [status, search, statistician, page, pageSize]
   );
 
   const hasMountedRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
     if (options?.initialData && !hasMountedRef.current && !options?.initialLoading) {
       hasMountedRef.current = true;
       return;
     }
     hasMountedRef.current = true;
     fetchData(options?.initialLoading ?? false);
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [fetchData, options?.initialLoading, options?.initialData]);
 
   const refresh = useCallback(async () => {

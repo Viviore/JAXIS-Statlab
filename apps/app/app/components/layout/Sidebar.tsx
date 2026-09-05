@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useTransition, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import type { RoleName } from "@prisma/client";
 import {
@@ -520,6 +520,65 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  // Reset pending state once navigation completes or URL matches target
+  useEffect(() => {
+    if (pendingHref) {
+      const isCurrentRoute =
+        pathname === pendingHref ||
+        (pendingHref !== "/dashboard" &&
+          pendingHref !== "/dashboard/admin" &&
+          pendingHref !== "/dashboard/ceo" &&
+          pendingHref !== "/dashboard/client" &&
+          pendingHref !== "/dashboard/statistician" &&
+          pendingHref !== "/dashboard/qa" &&
+          pendingHref !== "/dashboard/finance" &&
+          pathname.startsWith(pendingHref + "/"));
+
+      if (isCurrentRoute) {
+        setPendingHref(null);
+      }
+    }
+  }, [pathname, pendingHref]);
+
+  // Safety watchdog: clear pending state if navigation settles or takes longer than 3.5s
+  useEffect(() => {
+    if (!pendingHref) return;
+    const timeout = setTimeout(() => {
+      setPendingHref(null);
+    }, 3500);
+    return () => clearTimeout(timeout);
+  }, [pendingHref]);
+
+  const handleNavClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      // Allow browser native behavior for modified clicks (e.g. Cmd/Ctrl + Click to open new tab)
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+        return;
+      }
+
+      e.preventDefault();
+      if (onClose) onClose();
+
+      // If already at this exact route and no other route is pending, ignore redundant click
+      if (pathname === href && !pendingHref) {
+        return;
+      }
+
+      // Optimistically activate the clicked tab immediately so the UI responds instantaneously (0ms)
+      setPendingHref(href);
+
+      // Trigger transition with Next.js router
+      startTransition(() => {
+        router.push(href);
+      });
+    },
+    [onClose, pathname, pendingHref, router]
+  );
+
   const normalizedRole = (role?.toUpperCase() || "ADMIN") as string;
   let effectiveRole = normalizedRole;
   if (normalizedRole === "QA" || normalizedRole === "SENIOR_QA_LEAD") {
@@ -639,6 +698,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     item.href !== "/dashboard/qa" &&
                     item.href !== "/dashboard/finance" &&
                     pathname.startsWith(item.href + "/"));
+
+                const isPendingActive =
+                  pendingHref !== null &&
+                  (pendingHref === item.href ||
+                    (item.href !== "/dashboard" &&
+                      item.href !== "/dashboard/admin" &&
+                      item.href !== "/dashboard/ceo" &&
+                      item.href !== "/dashboard/client" &&
+                      item.href !== "/dashboard/statistician" &&
+                      item.href !== "/dashboard/qa" &&
+                      item.href !== "/dashboard/finance" &&
+                      pendingHref.startsWith(item.href + "/")));
+
+                const effectivelyActive = pendingHref !== null ? isPendingActive : isActive;
                 const isDisabled = Boolean(item.disabled);
 
                 if (isDisabled) {
@@ -681,11 +754,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Link
                     key={`${item.href}-${item.label}`}
                     href={item.href}
-                    onClick={() => {
-                      if (onClose) onClose();
+                    prefetch={true}
+                    onMouseEnter={() => {
+                      router.prefetch(item.href);
                     }}
+                    onClick={(e) => handleNavClick(e, item.href)}
                     className={`flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-r-[3px] rounded-l-[1px] transition-all duration-150 ease-out group border-l-2 ${
-                      isActive
+                      effectivelyActive
                         ? "bg-[#CC6600]/12 text-white font-semibold border-[#CC6600]"
                         : "border-transparent text-white/65 hover:text-white hover:bg-white/[0.04]"
                     }`}
@@ -699,11 +774,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
-                      <span className={`${isActive ? "text-[#CC6600]" : "text-white/40 group-hover:text-white/80"} transition-colors flex-shrink-0`}>
+                      <span className={`${effectivelyActive ? "text-[#CC6600]" : "text-white/40 group-hover:text-white/80"} transition-colors flex-shrink-0`}>
                         {item.icon}
                       </span>
                       <span
-                        className={`font-sans text-[0.8125rem] truncate ${isActive ? "font-semibold text-white" : "font-normal text-white/70 group-hover:text-white"}`}
+                        className={`font-sans text-[0.8125rem] truncate ${effectivelyActive ? "font-semibold text-white" : "font-normal text-white/70 group-hover:text-white"}`}
                         title={item.label}
                       >
                         {item.label}
@@ -712,10 +787,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Actionable Badges & Dynamic Counters */}
                     <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+                      {isPendingActive && !isActive && (
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-[#CC6600] animate-ping flex-shrink-0 mr-1"
+                          title="Navigating..."
+                        />
+                      )}
                       {item.count !== undefined && item.count > 0 && (
                         <span
                           className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full flex-shrink-0 border leading-none ${
-                            isActive
+                            effectivelyActive
                               ? "bg-[#CC6600]/25 text-[#FFA040] border-[#CC6600]/40 font-bold"
                               : "bg-white/[0.06] text-white/60 border-white/10 group-hover:text-white"
                           }`}

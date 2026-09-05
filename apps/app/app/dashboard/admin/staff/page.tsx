@@ -210,6 +210,8 @@ export default function StaffRosterPage() {
     ];
   }, [currentUserRole]);
 
+  const isMountedRef = React.useRef(true);
+
   // Load roster
   const loadRoster = useCallback(async () => {
     setIsLoading(true);
@@ -219,18 +221,27 @@ export default function StaffRosterPage() {
         status: selectedStatus,
         search: searchQuery,
       });
+      if (!isMountedRef.current) return;
       if (res.success) {
         setStaffList(res.data);
       }
     } catch (e) {
-      console.error("Failed to load staff roster", e);
+      if (isMountedRef.current) {
+        console.error("Failed to load staff roster", e);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [selectedRole, selectedStatus, searchQuery]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadRoster();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadRoster]);
 
   // KPI Calculations

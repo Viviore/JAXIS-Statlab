@@ -27,24 +27,35 @@ export default function QaPayoutsPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
 
+  const isMountedRef = React.useRef(true);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await getSpecialistPayoutHistoryAction();
+      if (!isMountedRef.current) return;
       if (res.success && res.data) {
         setPayouts(res.data.payouts);
         setVerifiedEarnings(res.data.verifiedEarnings);
         setInProgressEscrow(res.data.inProgressEscrow);
       }
     } catch (err) {
-      console.error("Failed to load QA payouts:", err);
+      if (isMountedRef.current) {
+        console.error("Failed to load QA payouts:", err);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadData();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadData]);
 
   const paginatedPayouts = React.useMemo(() => {

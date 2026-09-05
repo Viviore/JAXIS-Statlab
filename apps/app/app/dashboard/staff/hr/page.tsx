@@ -127,6 +127,8 @@ export default function StaffHrPortalPage() {
 
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
 
+  const isMountedRef = React.useRef(true);
+
   // Load Data
   const loadData = useCallback(async () => {
     try {
@@ -136,6 +138,7 @@ export default function StaffHrPortalPage() {
         getMyOfficialPayslip(),
         getMyPayoutDetails(),
       ]);
+      if (!isMountedRef.current) return;
       setPortalData(res);
       setAllMyPayslips(payslipRes.allMyPayslips);
       if (payslipRes.allMyPayslips.length > 0) {
@@ -155,14 +158,22 @@ export default function StaffHrPortalPage() {
       const todayEvt = res.currentMonthEvents.find((e) => e.isToday) || res.currentMonthEvents[0] || null;
       setSelectedDayEvent(todayEvt);
     } catch (err) {
-      console.error("Failed to load HR portal data:", err);
+      if (isMountedRef.current) {
+        console.error("Failed to load HR portal data:", err);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [currentYear, currentMonth]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadData();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadData]);
 
   const activeDisplayPayslip: StaffPayslipDTO | null =

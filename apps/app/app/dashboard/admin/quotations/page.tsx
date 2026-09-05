@@ -58,6 +58,8 @@ export default function AdminQuotationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
 
+  const isMountedRef = React.useRef(true);
+
   const loadQuotations = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -65,23 +67,32 @@ export default function AdminQuotationsPage() {
         getQuotationsRoster(),
         getCommercialCatalog(),
       ]);
+      if (!isMountedRef.current) return;
       setQuotations(data);
       if (catalogData) {
         setCatalog(catalogData);
       }
     } catch {
-      setToastMessage({
-        message: "Load Error",
-        description: "Failed to load quotations list.",
-        variant: "danger",
-      });
+      if (isMountedRef.current) {
+        setToastMessage({
+          message: "Load Error",
+          description: "Failed to load quotations list.",
+          variant: "danger",
+        });
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadQuotations();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadQuotations]);
 
   // Telemetry statistics

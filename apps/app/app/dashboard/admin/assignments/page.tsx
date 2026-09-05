@@ -55,6 +55,8 @@ export default function AdminAssignmentsPage() {
     variant: "info" | "success" | "warning" | "danger";
   } | null>(null);
 
+  const isMountedRef = React.useRef(true);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -62,6 +64,8 @@ export default function AdminAssignmentsPage() {
         getProjects({ status: "ACTIVE" }),
         getStaffCapacity(),
       ]);
+
+      if (!isMountedRef.current) return;
 
       if (projRes.success && projRes.data) {
         setUnassignedProjects(projRes.data);
@@ -71,14 +75,22 @@ export default function AdminAssignmentsPage() {
         setQaLeads(capRes.data.qaLeads);
       }
     } catch (err) {
-      console.error("Failed to load assignment desk:", err);
+      if (isMountedRef.current) {
+        console.error("Failed to load assignment desk:", err);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadData();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadData]);
 
   if (isLoading) {

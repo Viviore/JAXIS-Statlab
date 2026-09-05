@@ -64,6 +64,8 @@ export default function FinancePayoutsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const isMountedRef = React.useRef(true);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -71,19 +73,28 @@ export default function FinancePayoutsPage() {
         status: statusTab === "READY" ? "APPROVED" : statusTab === "PENDING" ? "PENDING" : statusTab,
         search: searchQuery,
       });
+      if (!isMountedRef.current) return;
       if (res.success && res.data) {
         setPayouts(res.data.payouts);
         setSummary(res.data.summary);
       }
     } catch (err) {
-      console.error("Failed to load payout queue:", err);
+      if (isMountedRef.current) {
+        console.error("Failed to load payout queue:", err);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [statusTab, searchQuery]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadData();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadData]);
 
   const handleCopy = (text: string, id: string) => {

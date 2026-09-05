@@ -36,22 +36,32 @@ export default function FinanceAttendanceReviewPage() {
   const [auditPage, setAuditPage] = useState<number>(1);
   const [auditPageSize, setAuditPageSize] = useState<number>(10);
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
+  const isMountedRef = React.useRef(true);
 
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await getAttendanceReviewDeskData();
+      if (!isMountedRef.current) return;
       setCorrections(res.corrections);
       setKpis(res.kpis);
     } catch (err) {
-      console.error("Failed to load HR attendance review desk data:", err);
+      if (isMountedRef.current) {
+        console.error("Failed to load HR attendance review desk data:", err);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadData();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [loadData]);
 
   // Handle Authorization

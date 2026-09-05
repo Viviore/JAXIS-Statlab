@@ -54,10 +54,13 @@ export default function FinancePaymentsQueuePage() {
     variant: "info" | "success" | "warning" | "danger";
   } | null>(null);
 
+  const isMountedRef = React.useRef(true);
+
   const loadQueue = async () => {
     setIsLoading(true);
     try {
       const res = await getFinancePaymentsQueue({ status: "ALL" });
+      if (!isMountedRef.current) return;
       if (res.success) {
         setPayments(res.data);
       } else {
@@ -68,18 +71,26 @@ export default function FinancePaymentsQueuePage() {
         });
       }
     } catch {
-      setToastMessage({
-        message: "Network Error",
-        description: "Could not retrieve pending deposits. Please try again.",
-        variant: "danger",
-      });
+      if (isMountedRef.current) {
+        setToastMessage({
+          message: "Network Error",
+          description: "Could not retrieve pending deposits. Please try again.",
+          variant: "danger",
+        });
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadQueue();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const handleVerificationSuccess = () => {
