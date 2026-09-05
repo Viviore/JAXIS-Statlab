@@ -90,6 +90,7 @@ export default function CeoStorageRetentionPage() {
   const [isTestingAlert, setIsTestingAlert] = useState<boolean>(false);
   const [isConfirmPurgeOpen, setIsConfirmPurgeOpen] = useState<boolean>(false);
   const [purgeScope, setPurgeScope] = useState<"FINISHED_ONLY" | "ALL_PROJECTS" | "ACTIVE_ONLY">("FINISHED_ONLY");
+  const [deleteTestProjects, setDeleteTestProjects] = useState<boolean>(true);
 
   const [toast, setToast] = useState<{
     message: string;
@@ -169,7 +170,11 @@ export default function CeoStorageRetentionPage() {
     setIsConfirmPurgeOpen(false);
     setIsPurging(true);
     try {
-      const res = await purgeExpiredFilesAction(undefined, { scope: purgeScope });
+      const res = await purgeExpiredFilesAction(undefined, {
+        scope: purgeScope,
+        deleteTestProjects: deleteTestProjects && (purgeScope === "ACTIVE_ONLY" || purgeScope === "ALL_PROJECTS"),
+        cleanOrphanedStorage: true,
+      });
       if (res.success) {
         const scopeLabel =
           purgeScope === "ALL_PROJECTS"
@@ -177,16 +182,21 @@ export default function CeoStorageRetentionPage() {
             : purgeScope === "ACTIVE_ONLY"
             ? "Active / Ongoing Studies"
             : "Finished Studies Only";
-        const filesDesc =
+        let filesDesc =
           res.purgedFilesCount && res.purgedFilesCount > 0
-            ? `Deleted ${res.purgedFilesCount} unprotected files and freed ~${res.freedMB} MB across ${res.purgedCount} studies (${scopeLabel}).`
+            ? `Deleted ${res.purgedFilesCount} files and freed ~${res.freedMB} MB from Cloudflare R2 (${scopeLabel}).`
             : res.purgedCount > 0
             ? `Purge check completed for ${res.purgedCount} studies. All files were preserved under active protection rules.`
             : purgeScope === "FINISHED_ONLY"
             ? `Storage is clean. No completed studies have reached your ${config.retentionPeriodDays}-day cutoff yet.`
             : purgeScope === "ACTIVE_ONLY"
-            ? "All files across active studies are currently protected by your active category toggles. Uncheck categories below to free space."
-            : "All files across active and finished studies are currently protected by your active category toggles. Uncheck categories below to free space.";
+            ? "All files across active studies are currently protected by your active category toggles."
+            : "All files across active and finished studies are currently protected by your active category toggles.";
+
+        if (res.testProjectsDeletedCount && res.testProjectsDeletedCount > 0) {
+          filesDesc += ` Removed ${res.testProjectsDeletedCount} unquoted test intake requests from workspace.`;
+        }
+
         setToast({
           variant: "success",
           message: "Storage Purge Completed",
@@ -194,6 +204,9 @@ export default function CeoStorageRetentionPage() {
         });
         await loadData(true);
         router.refresh();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("jaxis:study-updated"));
+        }
       } else {
         setToast({
           variant: "danger",
@@ -1106,6 +1119,25 @@ export default function CeoStorageRetentionPage() {
                   </span>
                 </div>
               </div>
+
+              {(purgeScope === "ACTIVE_ONLY" || purgeScope === "ALL_PROJECTS") && (
+                <label className="p-3 bg-[#01142B] border border-white/10 rounded-[2px] flex items-center gap-3 cursor-pointer hover:border-white/20 transition-all select-none">
+                  <input
+                    type="checkbox"
+                    checked={deleteTestProjects}
+                    onChange={(e) => setDeleteTestProjects(e.target.checked)}
+                    className="w-4 h-4 rounded accent-[#CC6600] cursor-pointer"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-white font-sans">
+                      Purge test &amp; unquoted draft intake requests
+                    </span>
+                    <span className="text-[0.688rem] text-white/50 font-sans">
+                      Clears unquoted test submissions from Recent Studies and Admin Triage Queue.
+                    </span>
+                  </div>
+                </label>
+              )}
 
               <span className="text-white/50 text-[0.688rem] italic">
                 Note: This operation cannot be undone. Unprotected files will be permanently erased from Cloudflare R2 bucket.

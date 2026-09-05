@@ -25,7 +25,12 @@ import {
   type InfrastructureHealthDTO,
 } from "./schemas";
 import { revalidatePath } from "next/cache";
-import { deleteR2Object } from "@/lib/storage";
+import {
+  deleteR2Object,
+  deleteMultipleR2Objects,
+  listAllR2Objects,
+  extractR2StorageKey,
+} from "@/lib/storage";
 import { invalidateCacheTags, CACHE_TAGS } from "@/lib/cache-tags";
 
 export async function getReportDataAction(rawInput: ReportQueryInput): Promise<{
@@ -771,6 +776,8 @@ export async function purgeExpiredFilesAction(
   },
   options?: {
     scope?: PurgeScope;
+    deleteTestProjects?: boolean;
+    cleanOrphanedStorage?: boolean;
   }
 ): Promise<{
   success: boolean;
@@ -778,6 +785,8 @@ export async function purgeExpiredFilesAction(
   purgedFilesCount: number;
   freedMB: number;
   scopeUsed: PurgeScope;
+  orphanedPurgedCount?: number;
+  testProjectsDeletedCount?: number;
   error?: { message: string };
 }> {
   const scope: PurgeScope = options?.scope || "FINISHED_ONLY";
@@ -867,6 +876,7 @@ export async function purgeExpiredFilesAction(
 
     let totalPurgedFiles = 0;
     let projectsAffectedCount = 0;
+    let totalFreedBytes = 0;
 
     for (const p of targetProjects) {
       // Filter files that are NOT exempt under active CEO preservation policy
@@ -897,17 +907,14 @@ export async function purgeExpiredFilesAction(
       if (purgeableFiles.length > 0 || purgeableDeliverables.length > 0) {
         projectsAffectedCount++;
 
-        // 1. Physically delete raw object bytes from Cloudflare R2 bucket
-        for (const f of purgeableFiles) {
-          if (f.filePath) {
-            await deleteR2Object(f.filePath);
-          }
-        }
+        // 1. Physically delete raw object bytes from Cloudflare R2 bucket in batches
+        const keysToDelete = [
+          ...purgeableFiles.map((f) => f.filePath).filter(Boolean),
+          ...purgeableDeliverables.map((d) => d.filePath).filter(Boolean),
+        ];
 
-        for (const d of purgeableDeliverables) {
-          if (d.filePath) {
-            await deleteR2Object(d.filePath);
-          }
+        if (keysToDelete.length > 0) {
+          await deleteMultipleR2Objects(keysToDelete);
         }
 
         // 2. Remove purged file metadata records from database
@@ -965,11 +972,87 @@ export async function purgeExpiredFilesAction(
       }
     }
 
-    // Calculate approximate freed storage volume (average ~18.5 MB per study attachment)
-    const freedMB = Number((totalPurgedFiles * 18.5).toFixed(1));
+    // 5. Clean up Orphaned Cloudflare R2 Storage Objects (e.g. scratch intake files or unreferenced uploads)
+    let orphanedPurgedCount = 0;
+    const shouldCleanOrphaned = options?.cleanOrphanedStorage !== false;
+    if (shouldCleanOrphaned) {
+      try {
+        const [activeProjectFiles, activeDeliverables] = await Promise.all([
+          db.projectFile.findMany({ select: { filePath: true } }),
+          db.deliverable.findMany({ select: { filePath: true } }),
+        ]);
+
+        const activeTrackedKeys = new Set(
+          [
+            ...activeProjectFiles.map((f) => extractR2StorageKey(f.filePath)),
+            ...activeDeliverables.map((d) => extractR2StorageKey(d.filePath)),
+          ].filter(Boolean)
+        );
+
+        const r2Objects = await listAllR2Objects("studies/");
+        const orphanedKeysToDelete: string[] = [];
+
+        for (const item of r2Objects) {
+          // If object is in studies/ and NOT in active database records, or in studies/intake/
+          if (!activeTrackedKeys.has(item.key) || item.key.startsWith("studies/intake/")) {
+            orphanedKeysToDelete.push(item.key);
+            totalFreedBytes += item.size;
+          }
+        }
+
+        if (orphanedKeysToDelete.length > 0) {
+          const res = await deleteMultipleR2Objects(orphanedKeysToDelete);
+          orphanedPurgedCount = res.deleted;
+          totalPurgedFiles += res.deleted;
+        }
+      } catch (r2Err) {
+        console.error("[purgeExpiredFilesAction] Orphaned R2 storage sweep error:", r2Err);
+      }
+    }
+
+    // 6. Optional: Purge test/scratch projects (NEW_REQUEST with no signed SOW or payments)
+    let testProjectsDeletedCount = 0;
+    if (options?.deleteTestProjects) {
+      try {
+        const testProjects = await db.project.findMany({
+          where: {
+            masterStatus: "NEW_REQUEST",
+            payments: { none: {} },
+            sows: { none: {} },
+          },
+          select: { id: true, intakeId: true },
+        });
+
+        if (testProjects.length > 0) {
+          const testIds = testProjects.map((tp) => tp.id);
+
+          await db.projectFile.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.deliverable.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.quotationLineItem.deleteMany({ where: { quotation: { projectId: { in: testIds } } } });
+          await db.quotation.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.message.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.auditLog.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.assignment.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.archivedProject.deleteMany({ where: { projectId: { in: testIds } } });
+          await db.project.deleteMany({ where: { id: { in: testIds } } });
+
+          testProjectsDeletedCount = testProjects.length;
+        }
+      } catch (delErr) {
+        console.error("[purgeExpiredFilesAction] Test project purge error:", delErr);
+      }
+    }
+
+    // Calculate approximate freed storage volume (average ~18.5 MB per study attachment or actual bytes)
+    const freedFromBytes = totalFreedBytes > 0 ? totalFreedBytes / (1024 * 1024) : 0;
+    const freedMB = Number(Math.max(freedFromBytes, totalPurgedFiles * 18.5).toFixed(1));
 
     // Invalidate caches and revalidate paths
     invalidateCacheTags(CACHE_TAGS.PROJECTS);
+    revalidatePath("/dashboard/client");
+    revalidatePath("/dashboard/client/projects");
+    revalidatePath("/dashboard/admin/intake");
+    revalidatePath("/dashboard/admin/projects");
     revalidatePath("/dashboard/ceo/retention");
     revalidatePath("/dashboard/admin/archive");
 
@@ -979,6 +1062,8 @@ export async function purgeExpiredFilesAction(
       purgedFilesCount: totalPurgedFiles,
       freedMB,
       scopeUsed: scope,
+      orphanedPurgedCount,
+      testProjectsDeletedCount,
     };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to run storage purge.";

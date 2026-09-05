@@ -1,16 +1,77 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  S3Client,
+  ListObjectsV2Command,
+  DeleteObjectsCommand,
+  type ListObjectsV2CommandOutput,
+} from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 
+dotenv.config({ path: path.join(process.cwd(), ".env") });
+dotenv.config({ path: path.join(process.cwd(), ".env.local") });
+
 const prisma = new PrismaClient();
+
+const r2Client = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
+  },
+});
 
 async function main() {
   console.log("==================================================================");
-  console.log("🧹 JAXIS StatLab — Purging ALL Study Mockup Data");
+  console.log("🧹 JAXIS StatLab — Purging ALL Study Mockup Data & Cloudflare Storage");
   console.log("==================================================================");
 
   try {
-    // 1. Purge all related project records in relational order
+    // 1. Purge all Cloudflare R2 bucket objects
+    console.log("☁️ Purging Cloudflare R2 Object Storage...");
+    const bucketName = process.env.R2_BUCKET_NAME;
+    if (bucketName && process.env.R2_ACCESS_KEY_ID) {
+      let continuationToken: string | undefined = undefined;
+      let totalR2Deleted = 0;
+
+      do {
+        const listRes: ListObjectsV2CommandOutput = await r2Client.send(
+          new ListObjectsV2Command({
+            Bucket: bucketName,
+            ContinuationToken: continuationToken,
+          })
+        );
+
+        const keysToDelete = (listRes.Contents || [])
+          .map((c) => c.Key)
+          .filter((k): k is string => Boolean(k));
+
+        if (keysToDelete.length > 0) {
+          await r2Client.send(
+            new DeleteObjectsCommand({
+              Bucket: bucketName,
+              Delete: {
+                Objects: keysToDelete.map((Key) => ({ Key })),
+                Quiet: true,
+              },
+            })
+          );
+          totalR2Deleted += keysToDelete.length;
+          console.log(`  - Deleted batch of ${keysToDelete.length} objects from R2 bucket "${bucketName}"`);
+        }
+
+        continuationToken = listRes.NextContinuationToken;
+      } while (continuationToken);
+
+      console.log(`✅ Cleared ${totalR2Deleted} total objects from Cloudflare R2 bucket "${bucketName}".`);
+    } else {
+      console.warn("⚠️ Cloudflare R2 credentials missing, skipping R2 bucket deletion.");
+    }
+
+    // 2. Purge all related project records in relational order from PostgreSQL
+    console.log("\n🗄️ Purging PostgreSQL database records...");
     const deliverables = await prisma.deliverable.deleteMany({});
     console.log(`  - Deleted ${deliverables.count} deliverables`);
 
@@ -88,7 +149,7 @@ async function main() {
 
     console.log("✅ Cleared all projects and relational data from PostgreSQL.");
 
-    // 2. Clear dev local caches
+    // 3. Clear dev local caches
     const devProjectsFile = path.join(process.cwd(), ".dev-projects.json");
     const devPaymentsFile = path.join(process.cwd(), "dev_data", "payments.json");
 
@@ -102,7 +163,7 @@ async function main() {
     }
 
     console.log("==================================================================");
-    console.log("✨ ALL STUDY MOCKUP DATA HAS BEEN PERMANENTLY REMOVED");
+    console.log("✨ ALL STUDY MOCKUP DATA & CLOUD STORAGE OBJECTS PERMANENTLY REMOVED");
     console.log("==================================================================");
   } catch (error) {
     console.error("❌ Error purging project data:", error);
