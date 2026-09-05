@@ -69,7 +69,16 @@ export async function getInAppAlertsAction(): Promise<{
       })
     );
 
-    const alerts: InAppAlertDTO[] = alertsRaw.map((a) => ({
+    // Deduplicate alerts by recipient + alertType + projectId + message to avoid displaying duplicate rows
+    const seenAlertKeys = new Set<string>();
+    const deduplicatedAlertsRaw = alertsRaw.filter((a) => {
+      const key = `${a.recipientId}_${a.alertType}_${a.projectId || ""}_${a.message}`;
+      if (seenAlertKeys.has(key)) return false;
+      seenAlertKeys.add(key);
+      return true;
+    });
+
+    const alerts: InAppAlertDTO[] = deduplicatedAlertsRaw.map((a) => ({
       id: a.id,
       recipientId: a.recipientId,
       recipientRole: a.recipientRole,

@@ -389,6 +389,7 @@ export default function NewProjectIntakePage() {
 
   // Step 3 Final Submission
   const handleFinalSubmit = () => {
+    if (isPending) return;
     if (!integrityAgreed) {
       const covenantMsg = "You must agree to the academic authorship & confidentiality statement before submitting.";
       setToast({
@@ -1384,7 +1385,7 @@ export default function NewProjectIntakePage() {
               size="sm"
               onClick={handleFinalSubmit}
               loading={isPending}
-              disabled={!integrityAgreed}
+              disabled={!integrityAgreed || isPending}
               className="w-full sm:w-auto font-bold tracking-wider"
             >
               SUBMIT INTAKE →

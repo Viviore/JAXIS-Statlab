@@ -102,6 +102,7 @@ export const ClientStudyCard: React.FC<ClientStudyCardProps> = ({
 
           <Link
             href={`/dashboard/client/projects/${study.id}`}
+            prefetch={false}
             className="group/title"
           >
             <h3 className="text-base sm:text-lg font-bold text-white group-hover/title:text-sky-300 transition-colors font-sans leading-snug">
@@ -272,7 +273,7 @@ export const ClientStudyCard: React.FC<ClientStudyCardProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <div className="flex items-center gap-2">
           {/* Messenger Direct Chat Button */}
-          <Link href={`/dashboard/client/messages?projectId=${study.id}`}>
+          <Link href={`/dashboard/client/messages?projectId=${study.id}`} prefetch={false}>
             <Button
               variant="outline"
               size="sm"
@@ -299,7 +300,7 @@ export const ClientStudyCard: React.FC<ClientStudyCardProps> = ({
           )}
 
           {/* View Details Link */}
-          <Link href={`/dashboard/client/projects/${study.id}`}>
+          <Link href={`/dashboard/client/projects/${study.id}`} prefetch={false}>
             <Button
               variant="secondary"
               size="sm"

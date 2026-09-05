@@ -173,6 +173,75 @@ export async function createProject(
   const intakeId = generateIntakeId();
   const deadlineDate = new Date(deadlineRequested);
 
+  // Idempotency: prevent rapid duplicate submissions (within 15 seconds for same client and title)
+  try {
+    const recentDuplicate = await withDbTimeout(
+      db.project.findFirst({
+        where: {
+          clientId: resolvedUserId,
+          researchTitle: researchTitle.trim(),
+          createdAt: { gte: new Date(Date.now() - 15000) },
+        },
+        select: {
+          id: true,
+          intakeId: true,
+          clientId: true,
+          researchTitle: true,
+          researchQuestions: true,
+          researchObjectives: true,
+          hypotheses: true,
+          deadlineRequested: true,
+          chapters13: true,
+          questionnaire: true,
+          masterStatus: true,
+          packageName: true,
+          missingInfoReason: true,
+          deliveredAt: true,
+          filesPurgeAt: true,
+          filesPurged: true,
+          hasActiveDispute: true,
+          hasPendingRefund: true,
+          createdAt: true,
+          updatedAt: true,
+          client: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              clientProfile: {
+                select: {
+                  institutionSchool: true,
+                  academicProgram: true,
+                  contactNumber: true,
+                  region: true,
+                },
+              },
+            },
+          },
+          files: {
+            select: {
+              id: true,
+              projectId: true,
+              fileName: true,
+              filePath: true,
+              fileType: true,
+              fileCategory: true,
+              uploadedAt: true,
+            },
+          },
+        },
+      })
+    );
+    if (recentDuplicate) {
+      return {
+        success: true,
+        data: recentDuplicate as unknown as ProjectDetailItem,
+      };
+    }
+  } catch (dupCheckErr) {
+    console.warn("[createProject] Idempotency duplicate check warning:", dupCheckErr);
+  }
+
   let project;
   try {
     project = await withDbTimeout(
@@ -262,66 +331,7 @@ export async function createProject(
     };
   }
 
-  // ── 1. Create In-App Alert for Admins & CEO ──
-  try {
-    const adminUsers = await db.user.findMany({
-      where: {
-        userRoles: {
-          some: {
-            role: {
-              name: { in: ["ADMIN", "CEO"] },
-            },
-          },
-        },
-      },
-      select: {
-        id: true,
-        email: true,
-        userRoles: { select: { role: { select: { name: true } } } },
-      },
-    });
-
-    if (adminUsers.length > 0) {
-      await db.inAppAlert.createMany({
-        data: adminUsers.map((admin) => ({
-          recipientId: admin.id,
-          recipientRole: (admin.userRoles[0]?.role.name || "ADMIN") as any,
-          alertType: "NEW_INTAKE",
-          projectId: project.id,
-          message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
-          linkUrl: "/dashboard/admin/intake",
-          isRead: false,
-        })),
-      });
-    } else {
-      const fallbackAdmin = await db.user.findFirst({
-        where: {
-          OR: [
-            { email: "admin@jaxis.dev" },
-            { email: { contains: "admin" } },
-          ],
-        },
-        select: { id: true },
-      });
-      if (fallbackAdmin) {
-        await db.inAppAlert.create({
-          data: {
-            recipientId: fallbackAdmin.id,
-            recipientRole: "ADMIN",
-            alertType: "NEW_INTAKE",
-            projectId: project.id,
-            message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
-            linkUrl: "/dashboard/admin/intake",
-            isRead: false,
-          },
-        });
-      }
-    }
-  } catch (alertErr) {
-    console.warn("[createProject] Could not create in-app alert:", alertErr);
-  }
-
-  // ── 2. Record Permanent Audit Log ──
+  // ── 1. Record Permanent Audit Log ──
   try {
     await db.auditLog.create({
       data: {

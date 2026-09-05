@@ -47,6 +47,7 @@ export function ClientDashboardClient({
   const [projects, setProjects] = useState<ProjectDetailItem[]>(initialProjects);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean>(initialIsProfileComplete);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [selectedStudy, setSelectedStudy] = useState<ProjectDetailItem | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isHowToUseModalOpen, setIsHowToUseModalOpen] = useState(false);
@@ -78,8 +79,13 @@ export function ClientDashboardClient({
     }
   }, [initialProjects]);
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const hasHandledCreatedRef = React.useRef(false);
+
+  const loadData = React.useCallback(async (showFullPageSpinner = false) => {
+    setIsRefreshing(true);
+    if (showFullPageSpinner) {
+      setIsLoading(true);
+    }
     try {
       const [projRes, profile] = await Promise.all([
         getProjects(),
@@ -98,15 +104,19 @@ export function ClientDashboardClient({
     } catch (err) {
       console.error("Failed to load client portal data", err);
     } finally {
-      setIsLoading(false);
+      setIsRefreshing(false);
+      if (showFullPageSpinner) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, []);
 
   // Re-fetch immediately when redirected from a newly submitted intake
   useEffect(() => {
     const created = searchParams.get("created");
     const intakeId = searchParams.get("intakeId");
-    if (created === "true") {
+    if (created === "true" && !hasHandledCreatedRef.current) {
+      hasHandledCreatedRef.current = true;
       setToast({
         variant: "success",
         message: "Study Request Successfully Submitted",
@@ -114,39 +124,32 @@ export function ClientDashboardClient({
           ? `Your research study specifications have been queued for triage. Assigned ID: ${intakeId}`
           : "Your research study specifications have been queued for triage.",
       });
-      loadData();
+      loadData(false);
       if (typeof window !== "undefined") {
         window.history.replaceState({}, "", window.location.pathname);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, loadData]);
 
-  // Listen to SSE updates, window focus, and background polling
+  // Listen to SSE updates and background polling (silent sync without flashing loading screen)
   useEffect(() => {
-    loadData();
-
     const handleStudyUpdated = () => {
-      loadData();
-    };
-    const handleFocus = () => {
-      loadData();
+      loadData(false);
     };
 
     window.addEventListener("jaxis:study-updated", handleStudyUpdated);
-    window.addEventListener("focus", handleFocus);
 
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadData();
+        loadData(false);
       }
-    }, 15000);
+    }, 30000);
 
     return () => {
       window.removeEventListener("jaxis:study-updated", handleStudyUpdated);
-      window.removeEventListener("focus", handleFocus);
       clearInterval(interval);
     };
-  }, [router]);
+  }, [loadData]);
 
   // Filter out any projects with pending missing info
   const awaitingInfoProjects = useMemo(() => {
@@ -499,11 +502,11 @@ export function ClientDashboardClient({
               type="button"
               variant="secondary"
               size="sm"
-              onClick={loadData}
-              disabled={isLoading}
+              onClick={() => loadData(false)}
+              disabled={isRefreshing}
               className="flex items-center gap-1.5 font-mono text-xs font-semibold py-1.5 px-3 h-auto"
             >
-              <IconRefresh size={14} className={isLoading ? "animate-spin" : ""} stroke={2} />
+              <IconRefresh size={14} className={isRefreshing ? "animate-spin" : ""} stroke={2} />
               <span>Refresh</span>
             </Button>
             <div className="flex items-center bg-white/[0.04] border border-white/10 rounded-[2px] p-0.5">
@@ -607,7 +610,7 @@ export function ClientDashboardClient({
         </div>
 
         {/* ── Studies Display (Cards Feed or Table) ── */}
-        {isLoading ? (
+        {isLoading && projects.length === 0 ? (
           <div className="py-20 flex justify-center items-center">
             <LoadingState variant="page" label="Loading research studies..." />
           </div>
