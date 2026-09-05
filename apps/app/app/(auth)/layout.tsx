@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { AuthGlobeClient } from "@/components/ui/AuthGlobeClient";
 
+
 export default function AuthLayout({
   children,
 }: {
@@ -62,91 +63,16 @@ export default function AuthLayout({
         </footer>
       </aside>
 
-      {/* ── Right Side: Half-Moon Particle Globe on Right with Research Showcase in Center ─────────── */}
-      <main className="hidden lg:flex flex-1 relative bg-[#010114] items-center justify-start overflow-hidden h-screen px-10 xl:px-16 2xl:px-24 select-none">
-        {/* Ambient Glows Framed on Right Edge behind the Half-Moon Globe */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_85%_50%,rgba(2,132,199,0.22),transparent_70%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_45%,rgba(1,46,87,0.38),transparent_60%)] pointer-events-none" />
+      {/* ── Right Side: Pure Ambient Deep Space & Scaled Particle Globe ─────────── */}
+      <main className="hidden lg:flex flex-1 relative bg-[#010114] items-center justify-center overflow-hidden h-screen select-none">
+        {/* Ambient Glows Emanating from Right Edge behind the 50% Half Globe */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_100%_50%,rgba(2,132,199,0.28),transparent_70%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_95%_50%,rgba(1,46,87,0.48),transparent_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_50%,rgba(204,102,0,0.08),transparent_45%)] pointer-events-none" />
 
-        {/* 3D Hardware-Accelerated Particle Canvas (Half-Moon on Right Edge) */}
+        {/* 3D Hardware-Accelerated Particle Canvas */}
         <div className="absolute inset-0 w-full h-full pointer-events-none">
           <AuthGlobeClient />
-        </div>
-
-        {/* Top Right Live Telemetry Badge */}
-        <div className="absolute top-8 right-8 z-10 hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#01142B]/80 border border-white/10 text-white/60 text-xs font-mono backdrop-blur-md">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>RESEARCH CLOUD • ONLINE</span>
-        </div>
-
-        {/* Hero Showcase — Fills the middle area between login form and right half-moon */}
-        <div className="relative z-10 max-w-lg xl:max-w-xl flex flex-col gap-6">
-          {/* Live Status Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-white/[0.04] border border-white/10 text-white/70 text-xs font-mono backdrop-blur-md self-start">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>RESEARCH CLOUD • ISO/IEC 27001</span>
-          </div>
-
-          <div className="flex flex-col gap-2.5">
-            <h2 className="text-2xl xl:text-3xl font-bold text-white tracking-tight leading-[1.25] font-sans">
-              Precision Statistical Computing for High-Stakes Empirical Research
-            </h2>
-            <p className="text-xs xl:text-sm text-white/60 leading-relaxed font-sans max-w-lg">
-              Collaborate directly with Lead Statisticians and Senior QA Specialists under milestone-gated escrow security and reproducible analytics.
-            </p>
-          </div>
-
-          {/* 4 Bento Capability Cards */}
-          <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
-            <div className="p-3.5 rounded-[2px] bg-[#01142B]/75 border border-white/10 backdrop-blur-md flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[0.688rem] uppercase tracking-wider text-white/45 font-semibold">Verification</span>
-                <span className="font-mono text-xs font-bold text-emerald-400">99.8%</span>
-              </div>
-              <span className="text-xs font-semibold text-white font-sans">Double-Blind QA Audit</span>
-              <span className="text-[0.688rem] text-white/50 leading-relaxed font-sans">
-                Rigorous multi-stage methodology and statistical verification.
-              </span>
-            </div>
-
-            <div className="p-3.5 rounded-[2px] bg-[#01142B]/75 border border-white/10 backdrop-blur-md flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[0.688rem] uppercase tracking-wider text-white/45 font-semibold">Escrow Protection</span>
-                <span className="font-mono text-xs font-bold text-[#CC6600]">100%</span>
-              </div>
-              <span className="text-xs font-semibold text-white font-sans">Milestone-Gated Release</span>
-              <span className="text-[0.688rem] text-white/50 leading-relaxed font-sans">
-                Funds held in secure escrow until deliverables meet all criteria.
-              </span>
-            </div>
-
-            <div className="p-3.5 rounded-[2px] bg-[#01142B]/75 border border-white/10 backdrop-blur-md flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[0.688rem] uppercase tracking-wider text-white/45 font-semibold">Standard</span>
-                <span className="font-mono text-xs font-bold text-sky-400">APA 7th</span>
-              </div>
-              <span className="text-xs font-semibold text-white font-sans">Publication-Ready</span>
-              <span className="text-[0.688rem] text-white/50 leading-relaxed font-sans">
-                Formatted reporting tables, charts, and mathematical appendices.
-              </span>
-            </div>
-
-            <div className="p-3.5 rounded-[2px] bg-[#01142B]/75 border border-white/10 backdrop-blur-md flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[0.688rem] uppercase tracking-wider text-white/45 font-semibold">Compliance</span>
-                <span className="font-mono text-xs font-bold text-white/80">ISO 27001</span>
-              </div>
-              <span className="text-xs font-semibold text-white font-sans">Zero Data Leakage</span>
-              <span className="text-[0.688rem] text-white/50 leading-relaxed font-sans">
-                End-to-end encrypted consultation, audit logs, and secure storage.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-white/40 font-mono pt-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
-            <span>Trusted by university faculties, clinical researchers, and data teams</span>
-          </div>
         </div>
       </main>
     </div>

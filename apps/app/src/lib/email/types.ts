@@ -1,4 +1,5 @@
 export type EmailTemplateName =
+  | "NewIntake"
   | "SOWReady"
   | "SOWSigned"
   | "ProofReceived"
@@ -26,6 +27,7 @@ export interface EmailRenderResult {
 }
 
 export const EMAIL_SUBJECTS: Record<EmailTemplateName, (data: any) => string> = {
+  NewIntake: (d) => `New Study Intake Received: ${d.intakeId || "Study"} — ${d.researchTitle || "Review Required"}`,
   SOWReady: (d) => `Scope of Work Ready for Review: ${d.intakeId || "Study"}`,
   SOWSigned: (d) => `Scope of Work Signed & Study Confirmed: ${d.intakeId || "Study"}`,
   ProofReceived: (d) => `Payment Proof Upload Received: ${d.intakeId || "Study"}`,

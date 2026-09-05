@@ -22,6 +22,7 @@ import {
   type WorkbenchDataDTO,
   type ScopeCreepLogDTO,
 } from "./schemas";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import { Prisma, AnalysisFileCategory, type RoleName } from "@prisma/client";
 import { getR2DownloadUrl } from "@/lib/storage";
 
@@ -422,6 +423,19 @@ export async function uploadAnalysisFile(
       return newFile;
     });
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "OUTPUT_UPDATE",
+        projectId: result.projectId,
+        title: "Analysis Deliverable Uploaded",
+        message: `Statistician ${result.statistician.fullName} uploaded "${result.fileName}" (v${result.version}).`,
+        targetRoles: ["ADMIN", "SENIOR_QA_LEAD"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[uploadAnalysisFile] Realtime notification warning:", e);
+    }
+
     revalidatePath(`/dashboard/statistician/projects/${projectId}/workbench`);
     revalidatePath(`/dashboard/qa/projects/${projectId}/files`);
     revalidatePath(`/dashboard/admin/projects/${projectId}/analysis`);
@@ -579,6 +593,19 @@ export async function flagScopeCreep(
 
       return log;
     });
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "STATUS_UPDATE",
+        projectId: result.projectId,
+        title: "Scope Creep Flagged",
+        message: `Study halted due to scope creep flagged by ${result.flagger.fullName}: "${result.flagReason}"`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[flagScopeCreep] Realtime notification warning:", e);
+    }
 
     revalidatePath(`/dashboard/statistician/projects/${projectId}/workbench`);
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
@@ -754,6 +781,20 @@ export async function submitForQA(
       where: { id: projectId },
       data: { masterStatus: "FOR_QA" },
     });
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "QA_DECISION",
+        projectId: project.id,
+        intakeId: project.intakeId,
+        title: "Study Submitted for QA Inspection",
+        message: `Study ${project.intakeId} has been submitted for QA verification by the statistician.`,
+        targetRoles: ["ADMIN", "SENIOR_QA_LEAD"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[submitForQA] Realtime notification warning:", e);
+    }
 
     revalidatePath(`/dashboard/statistician/projects/${projectId}/workbench`);
     revalidatePath(`/dashboard/qa/projects/${projectId}/files`);

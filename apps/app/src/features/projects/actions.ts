@@ -5,6 +5,8 @@ import fs from "fs";
 import path from "path";
 import { auth } from "@/lib/auth";
 import { db, withDbTimeout } from "@/lib/db";
+import { invalidateCacheTags, CACHE_TAGS } from "@/lib/cache-tags";
+import { sendEmail } from "@/lib/email";
 import { assertValidStatusTransition, generateIntakeId } from "@/lib/project-rules";
 import { getClientProfile } from "@/features/client-profile/actions";
 import {
@@ -16,6 +18,7 @@ import {
   type ProjectFileItem,
   type ActionResponse,
 } from "./schemas";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import type { AuditTelemetryEvent } from "@/types/project";
 import type { ProjectStatus, FileCategory, Prisma } from "@prisma/client";
 
@@ -117,7 +120,7 @@ export async function createProject(
   try {
     const project = await withDbTimeout(
       db.$transaction(async (tx) => {
-        return tx.project.create({
+        const createdProj = await tx.project.create({
           data: {
             intakeId,
             clientId: session.user.id,
@@ -189,13 +192,154 @@ export async function createProject(
             },
           },
         });
+
+        // ── 1. Create In-App Alert for Admins & CEO ──
+        try {
+          const adminUsers = await tx.user.findMany({
+            where: {
+              userRoles: {
+                some: {
+                  role: {
+                    name: { in: ["ADMIN", "CEO"] },
+                  },
+                },
+              },
+            },
+            select: {
+              id: true,
+              email: true,
+              userRoles: { select: { role: { select: { name: true } } } },
+            },
+          });
+
+          if (adminUsers.length > 0) {
+            await tx.inAppAlert.createMany({
+              data: adminUsers.map((admin) => ({
+                recipientId: admin.id,
+                recipientRole: (admin.userRoles[0]?.role.name || "ADMIN") as any,
+                alertType: "NEW_INTAKE",
+                projectId: createdProj.id,
+                message: `New study intake received: ${createdProj.intakeId} — "${createdProj.researchTitle}"`,
+                linkUrl: "/dashboard/admin/intake",
+                isRead: false,
+              })),
+            });
+          } else {
+            const fallbackAdmin = await tx.user.findFirst({
+              where: {
+                OR: [
+                  { email: "admin@jaxis.dev" },
+                  { email: { contains: "admin" } },
+                ],
+              },
+              select: { id: true },
+            });
+            if (fallbackAdmin) {
+              await tx.inAppAlert.create({
+                data: {
+                  recipientId: fallbackAdmin.id,
+                  recipientRole: "ADMIN",
+                  alertType: "NEW_INTAKE",
+                  projectId: createdProj.id,
+                  message: `New study intake received: ${createdProj.intakeId} — "${createdProj.researchTitle}"`,
+                  linkUrl: "/dashboard/admin/intake",
+                  isRead: false,
+                },
+              });
+            }
+          }
+        } catch (alertErr) {
+          console.warn("[createProject] Could not create in-app alert:", alertErr);
+        }
+
+        // ── 2. Record Permanent Audit Log ──
+        try {
+          await tx.auditLog.create({
+            data: {
+              projectId: createdProj.id,
+              actorId: session.user.id,
+              actorRole: "CLIENT",
+              action: "INTAKE_SUBMITTED",
+              newValue: "NEW_REQUEST",
+              reason: "Client submitted new research study specifications",
+              metadata: {
+                intakeId: createdProj.intakeId,
+                researchTitle: createdProj.researchTitle,
+                deadlineRequested: deadlineDate.toISOString(),
+                fileCount: files?.length || 0,
+              },
+            },
+          });
+        } catch (auditErr) {
+          console.warn("[createProject] Could not record audit log:", auditErr);
+        }
+
+        return createdProj;
       })
     );
 
+    // ── 3. Dispatch Email Notification to Admin Operations ──
+    try {
+      const adminUsers = await db.user.findMany({
+        where: {
+          userRoles: {
+            some: {
+              role: {
+                name: "ADMIN",
+              },
+            },
+          },
+        },
+        select: { id: true, email: true, fullName: true },
+      });
+
+      const targets = adminUsers.length > 0
+        ? adminUsers
+        : [{ id: "admin_fallback", email: "admin@jaxis.dev", fullName: "Admin Operations" }];
+
+      for (const admin of targets) {
+        await sendEmail({
+          to: admin.email,
+          recipientId: admin.id,
+          template: "NewIntake",
+          projectId: project.id,
+          data: {
+            intakeId: project.intakeId,
+            researchTitle: project.researchTitle,
+            clientName: session.user.name || (session.user as any).fullName || "Client User",
+            clientEmail: session.user.email || "client@jaxis.dev",
+            deadlineRequested: deadlineDate.toISOString(),
+          },
+        }).catch((e) => console.warn("[createProject] sendEmail error:", e));
+      }
+    } catch (emailErr) {
+      console.warn("[createProject] Failed to dispatch admin email:", emailErr);
+    }
+
+    // ── 4. Dispatch Real-time in-app alert via SSE ──
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "NEW_INTAKE",
+        projectId: project.id,
+        intakeId: project.intakeId,
+        title: "New Research Study Submitted",
+        message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
+        linkUrl: `/dashboard/admin/projects/${project.id}`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[createProject] Realtime dispatch warning:", e);
+    }
+
+    // ── 5. Invalidate Cache Tags and Revalidate Paths ──
+    invalidateCacheTags(CACHE_TAGS.PROJECTS);
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/client");
     revalidatePath("/dashboard/client/projects");
+    revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/admin/intake");
+    revalidatePath("/dashboard/admin/quotations");
 
     return {
       success: true,
@@ -244,6 +388,21 @@ export async function createProject(
 
     const existingDev = readPersistedDevProjects();
     writePersistedDevProjects([devProject, ...existingDev]);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "NEW_INTAKE",
+        projectId: devProject.id,
+        intakeId: devProject.intakeId,
+        title: "New Research Study Submitted",
+        message: `New study intake received: ${devProject.intakeId} — "${devProject.researchTitle}"`,
+        linkUrl: `/dashboard/admin/projects/${devProject.id}`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore in dev
+    }
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/client");
@@ -694,6 +853,21 @@ export async function updateProjectStatus(
       },
     });
 
+    // Real-time multi-role notification dispatch
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "STATUS_UPDATE",
+        projectId: existing.id,
+        intakeId: existing.intakeId,
+        title: "Study Status Updated",
+        message: `Study "${existing.researchTitle}" transitioned to ${targetStatus.replace(/_/g, " ")}.`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch (notifyErr) {
+      console.warn("[updateProjectStatus] Realtime notification dispatch failed:", notifyErr);
+    }
+
     revalidatePath("/dashboard/admin/intake");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath(`/dashboard/client/projects/${projectId}`);
@@ -736,6 +910,20 @@ export async function updateProjectStatus(
     devProjects[index]!.masterStatus = targetStatus;
     devProjects[index]!.updatedAt = new Date().toISOString();
     writePersistedDevProjects(devProjects);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "STATUS_UPDATE",
+        projectId: devProjects[index]!.id,
+        intakeId: devProjects[index]!.intakeId,
+        title: "Study Status Updated",
+        message: `Study "${devProjects[index]!.researchTitle}" transitioned to ${targetStatus.replace(/_/g, " ")}.`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore
+    }
 
     revalidatePath("/dashboard/admin/intake");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
@@ -812,6 +1000,20 @@ export async function requestMissingInfo(
       },
     });
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "INPUT_UPDATE",
+        projectId: existing.id,
+        intakeId: existing.intakeId,
+        title: "Information Requested",
+        message: `Details requested for study ${existing.intakeId}: "${reason}"`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[requestMissingInfo] Realtime notification warning:", e);
+    }
+
     revalidatePath("/dashboard/admin/intake");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath(`/dashboard/client/projects/${projectId}`);
@@ -844,6 +1046,20 @@ export async function requestMissingInfo(
     devProjects[index]!.missingInfoReason = reason.trim();
     devProjects[index]!.updatedAt = new Date().toISOString();
     writePersistedDevProjects(devProjects);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "INPUT_UPDATE",
+        projectId: devProjects[index]!.id,
+        intakeId: devProjects[index]!.intakeId,
+        title: "Information Requested",
+        message: `Details requested for study ${devProjects[index]!.intakeId}: "${reason}"`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore
+    }
 
     revalidatePath("/dashboard/admin/intake");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
@@ -905,6 +1121,20 @@ export async function markIntakeComplete(
       },
     });
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "STATUS_UPDATE",
+        projectId: existing.id,
+        intakeId: existing.intakeId,
+        title: "Intake Evaluation Begun",
+        message: `Study ${existing.intakeId} has been verified and is under evaluation.`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[markIntakeComplete] Realtime notification warning:", e);
+    }
+
     revalidatePath("/dashboard/admin/intake");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath(`/dashboard/client/projects/${projectId}`);
@@ -937,6 +1167,20 @@ export async function markIntakeComplete(
     devProjects[index]!.missingInfoReason = null;
     devProjects[index]!.updatedAt = new Date().toISOString();
     writePersistedDevProjects(devProjects);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "STATUS_UPDATE",
+        projectId: devProjects[index]!.id,
+        intakeId: devProjects[index]!.intakeId,
+        title: "Intake Evaluation Begun",
+        message: `Study ${devProjects[index]!.intakeId} has been verified and is under evaluation.`,
+        targetRoles: ["ADMIN", "CEO"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore
+    }
 
     revalidatePath("/dashboard/admin/intake");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
@@ -1102,6 +1346,20 @@ export async function addProjectFile(
       },
     });
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "INPUT_UPDATE",
+        projectId: project.id,
+        intakeId: project.intakeId,
+        title: "Study File Uploaded",
+        message: `File "${fileData.fileName}" (${fileData.fileCategory.replace(/_/g, " ")}) uploaded to study ${project.intakeId}.`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[addProjectFile] Realtime notification warning:", e);
+    }
+
     revalidatePath(`/dashboard/client/projects/${projectId}`);
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath(`/dashboard/admin/intake`);
@@ -1137,6 +1395,20 @@ export async function addProjectFile(
 
     devProjects[pIndex]!.files.push(newFile);
     writePersistedDevProjects(devProjects);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "INPUT_UPDATE",
+        projectId: devProjects[pIndex]!.id,
+        intakeId: devProjects[pIndex]!.intakeId,
+        title: "Study File Uploaded",
+        message: `File "${fileData.fileName}" (${fileData.fileCategory.replace(/_/g, " ")}) uploaded to study ${devProjects[pIndex]!.intakeId}.`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore
+    }
 
     revalidatePath(`/dashboard/client/projects/${projectId}`);
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
@@ -1210,6 +1482,21 @@ export async function resolveMissingInfo(
       },
     });
 
+    // Notify admin & parties that missing information has been submitted
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "INPUT_UPDATE",
+        projectId: updated.id,
+        intakeId: updated.intakeId,
+        title: "Information Provided",
+        message: `Client provided requested information for ${updated.intakeId}. Ready for quote builder.`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[resolveMissingInfo] Realtime notification error:", e);
+    }
+
     revalidatePath("/dashboard/client");
     revalidatePath("/dashboard/client/projects");
     revalidatePath(`/dashboard/client/projects/${projectId}`);
@@ -1237,6 +1524,20 @@ export async function resolveMissingInfo(
     devProjects[index]!.missingInfoReason = null;
     devProjects[index]!.updatedAt = new Date().toISOString();
     writePersistedDevProjects(devProjects);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "INPUT_UPDATE",
+        projectId: devProjects[index]!.id,
+        intakeId: devProjects[index]!.intakeId,
+        title: "Information Provided",
+        message: `Client provided requested information for ${devProjects[index]!.intakeId}. Ready for quote builder.`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore
+    }
 
     revalidatePath("/dashboard/client");
     revalidatePath("/dashboard/client/projects");

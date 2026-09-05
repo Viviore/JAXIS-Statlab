@@ -25,6 +25,7 @@ import {
   type AssignmentDetailItem,
   type AssignedStudySummary,
 } from "./schemas";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import type { ActionResponse } from "@/features/projects/schemas";
 
 /**
@@ -143,6 +144,20 @@ export async function assignExperts(
     revalidatePath("/dashboard/statistician");
     revalidatePath("/dashboard/qa");
     invalidateCacheTags(CACHE_TAGS.STAFF_CAPACITY, CACHE_TAGS.PROJECTS);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "ASSIGNMENT",
+        projectId: result.projectId,
+        intakeId: result.project.intakeId,
+        title: "Assigned to Research Study",
+        message: `Assigned to study ${result.project.intakeId} ("${result.project.researchTitle}"). Target turnaround: ${turnaround} days.`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[assignExperts] Realtime dispatch warning:", e);
+    }
 
     const remaining = calculateSlaRemaining(result.slaDueAt, result.slaPausedAt);
 

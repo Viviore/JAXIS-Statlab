@@ -45,6 +45,7 @@ export function NotificationDrawer() {
     description: string;
     variant: "info" | "success" | "warning" | "danger";
   } | null>(null);
+  const [isRinging, setIsRinging] = useState<boolean>(false);
 
   const [optimisticState, setOptimisticState] = useOptimistic(
     { alerts, unreadCount },
@@ -86,6 +87,71 @@ export function NotificationDrawer() {
     }
   }, []);
 
+  // ── Real-Time Server-Sent Events (SSE) Stream ──
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let isMounted = true;
+
+    const connectStream = () => {
+      if (!isMounted) return;
+
+      try {
+        eventSource = new EventSource("/api/v1/notifications/stream");
+
+        eventSource.addEventListener("notification", (e: MessageEvent) => {
+          try {
+            const newAlert = JSON.parse(e.data) as InAppAlertDTO & { title?: string };
+            if (!newAlert || !newAlert.id) return;
+
+            setAlerts((prev) => {
+              if (prev.some((a) => a.id === newAlert.id)) return prev;
+              return [newAlert, ...prev];
+            });
+
+            setUnreadCount((count) => count + 1);
+
+            // Ring bell animation
+            setIsRinging(true);
+            setTimeout(() => setIsRinging(false), 2500);
+
+            // Live floating Toast notification
+            setToastMessage({
+              message: newAlert.title || "New Notification",
+              description: newAlert.message,
+              variant: "info",
+            });
+          } catch (err) {
+            console.error("[SSE] Notification parse error:", err);
+          }
+        });
+
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          if (isMounted) {
+            reconnectTimer = setTimeout(connectStream, 5000);
+          }
+        };
+      } catch (err) {
+        console.warn("[SSE] Failed to establish EventSource:", err);
+        if (isMounted) {
+          reconnectTimer = setTimeout(connectStream, 10000);
+        }
+      }
+    };
+
+    connectStream();
+
+    return () => {
+      isMounted = false;
+      if (eventSource) eventSource.close();
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+    };
+  }, []);
+
   useEffect(() => {
     loadAlerts(true);
 
@@ -97,8 +163,8 @@ export function NotificationDrawer() {
       loadAlerts(false);
     };
 
-    // Refresh alerts periodically (every 45 seconds) when active
-    const interval = setInterval(poll, 45000);
+    // Silent background poll fallback (every 25 seconds)
+    const interval = setInterval(poll, 25000);
 
     // Refresh immediately when user returns to tab
     const handleVisibilityChange = () => {

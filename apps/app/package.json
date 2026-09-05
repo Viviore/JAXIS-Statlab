@@ -10,7 +10,8 @@
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
     "seed:mock-m08": "npx tsx scripts/seed-mock-module08.ts",
-    "clean:mock-m08": "npx tsx scripts/cleanup-mock-module08.ts"
+    "clean:mock-m08": "npx tsx scripts/cleanup-mock-module08.ts",
+    "clean:all-roles": "npx tsx scripts/clear-roles-data.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1114.0",

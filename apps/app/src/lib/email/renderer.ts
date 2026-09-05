@@ -152,6 +152,24 @@ export function renderEmailTemplate(
   let metaRows: Array<{ label: string; value: string }> = [];
 
   switch (template) {
+    case "NewIntake":
+      badgeText = "NEW STUDY INTAKE";
+      badgeColor = "#38BDF8";
+      bodyHtml = `
+        <p>A new research study specifications intake has been submitted and queued for triage review.</p>
+        <p><strong>Title:</strong> ${title}</p>
+        <p><strong>Client:</strong> ${name} (${data.clientEmail || "N/A"})</p>
+      `;
+      metaRows = [
+        { label: "Study ID", value: intakeId },
+        { label: "Client", value: name },
+        { label: "Requested Deadline", value: data.deadlineRequested ? new Date(data.deadlineRequested).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Standard Turnaround" },
+        { label: "Triage Status", value: "New Request / Pending Review" },
+      ];
+      ctaText = "Open Intake Review Desk";
+      ctaUrl = `${appUrl}/dashboard/admin/intake`;
+      break;
+
     case "SOWReady":
       badgeText = "ACTION REQUIRED";
       badgeColor = "#F59E0B";

@@ -32,6 +32,7 @@ import {
   type QuotationDetailItem,
   type ActionResponse,
 } from "./schemas";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import { type QuotationStatus, type LineItemType, type ProjectStatus, type AddOnName, Prisma } from "@prisma/client";
 
 const DEV_QUOTATIONS_FILE = path.join(process.cwd(), ".dev-quotations.json");
@@ -769,6 +770,20 @@ export async function issueQuotation(
       expiresAt: result.expiresAt,
     });
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "COMMERCIAL_UPDATE",
+        projectId: result.projectId,
+        intakeId: result.projectIntakeId || undefined,
+        title: "Quotation Issued",
+        message: `Commercial quotation issued for ${result.projectTitle || "study"} (${result.packageName}). Total: ₱${result.totalAmount.toLocaleString()}.`,
+        targetRoles: ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[issueQuotation] Realtime dispatch warning:", e);
+    }
+
     return { success: true, data: result };
   } catch (err: unknown) {
     console.warn("[Quotation] [issueQuotation] DB error, using dev store fallback:", err);
@@ -834,6 +849,20 @@ export async function issueQuotation(
         downpaymentRequired: issuedDevQuote.downpaymentRequired,
         expiresAt: issuedDevQuote.expiresAt,
       });
+
+      try {
+        await dispatchRealtimeNotification({
+          eventType: "COMMERCIAL_UPDATE",
+          projectId: issuedDevQuote.projectId,
+          intakeId: issuedDevQuote.projectIntakeId || undefined,
+          title: "Quotation Issued",
+          message: `Commercial quotation issued for ${issuedDevQuote.projectTitle || "study"} (${issuedDevQuote.packageName}). Total: ₱${issuedDevQuote.totalAmount.toLocaleString()}.`,
+          targetRoles: ["ADMIN"],
+          includeProjectParties: true,
+        });
+      } catch {
+        // Ignore in dev
+      }
 
       return { success: true, data: issuedDevQuote };
     }
@@ -1091,6 +1120,23 @@ export async function respondQuotation(
       });
     }
 
+    try {
+      const isAccepted = decision === "ACCEPT";
+      await dispatchRealtimeNotification({
+        eventType: "COMMERCIAL_UPDATE",
+        projectId: result.projectId,
+        intakeId: result.projectIntakeId || undefined,
+        title: isAccepted ? "Quotation Accepted" : "Quotation Declined",
+        message: isAccepted
+          ? `Lead Researcher accepted proposal for ${result.projectTitle || "study"}. SOW is now ready.`
+          : `Lead Researcher requested proposal revision: ${declineReason || "No specific feedback"}`,
+        targetRoles: ["ADMIN", "FINANCE_OFFICER"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[respondQuotation] Realtime dispatch warning:", e);
+    }
+
     return { success: true, data: result };
   } catch (err: unknown) {
     console.warn("[Quotation] [respondQuotation] DB error, using dev store fallback:", err);
@@ -1198,6 +1244,22 @@ export async function respondQuotation(
           clientName: respondedQuote.clientName || "Lead Researcher",
           reason: declineReason,
         });
+      }
+
+      try {
+        await dispatchRealtimeNotification({
+          eventType: "COMMERCIAL_UPDATE",
+          projectId: respondedQuote.projectId,
+          intakeId: respondedQuote.projectIntakeId || undefined,
+          title: isAccept ? "Quotation Accepted" : "Quotation Declined",
+          message: isAccept
+            ? `Lead Researcher accepted proposal for ${respondedQuote.projectTitle || "study"}. SOW is now ready.`
+            : `Lead Researcher requested proposal revision: ${declineReason || "No specific feedback"}`,
+          targetRoles: ["ADMIN", "FINANCE_OFFICER"],
+          includeProjectParties: true,
+        });
+      } catch {
+        // Ignore
       }
 
       return { success: true, data: respondedQuote };

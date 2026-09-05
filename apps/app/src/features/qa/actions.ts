@@ -19,6 +19,7 @@ import {
   type CeoEscalationItemDTO,
   type AdminQaRejectionWarningDTO,
 } from "./schemas";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import type { RoleName } from "@prisma/client";
 
 export type QaActionResult<T = void> =
@@ -505,6 +506,35 @@ export async function submitQaReview(
         return review;
       })
     );
+
+    // Dispatch real-time notifications to relevant roles
+    try {
+      const decisionTitle =
+        decision === "QA_APPROVED"
+          ? "QA Review Passed (Delivered)"
+          : decision === "QA_REJECTED"
+          ? "QA Revision Required"
+          : "Ethical Violation Escalated to CEO";
+
+      const decisionMsg =
+        decision === "QA_APPROVED"
+          ? `Study ${project.intakeId} passed QA inspection and is now delivered to the researcher.`
+          : decision === "QA_REJECTED"
+          ? `Study ${project.intakeId} rejected: ${comments.slice(0, 120)}`
+          : `Study ${project.intakeId} halted for ethical breach: ${comments.slice(0, 120)}`;
+
+      await dispatchRealtimeNotification({
+        eventType: "QA_DECISION",
+        projectId: project.id,
+        intakeId: project.intakeId,
+        title: decisionTitle,
+        message: decisionMsg,
+        targetRoles: decision === "ESCALATED_TO_CEO" ? ["ADMIN", "CEO"] : ["ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (notifyErr) {
+      console.warn("[submitQaReview] Realtime notification warning:", notifyErr);
+    }
 
     // Revalidate paths
     revalidatePath(`/dashboard/qa`);

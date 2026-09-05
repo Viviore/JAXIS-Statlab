@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   IconX,
@@ -47,7 +47,10 @@ interface DocContentModel {
 
 function getDocContent(fileName: string, category: string): DocContentModel {
   const nameLower = fileName.toLowerCase();
-  const cleanTitle = fileName.replace(/\.[^/.]+$/, "");
+  const cleanTitle = fileName
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
 
   // 1. Standard Operating Procedure (SOP) / Operations / Security
   if (
@@ -543,12 +546,26 @@ export function DocumentViewerLightbox({
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
 
   const totalPages = 3;
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Reset page and zoom when file changes
+  useEffect(() => {
+    setCurrentPage(1);
+    setZoomLevel(100);
+  }, [file]);
+
+  // Scroll back to top when flipping pages
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [currentPage]);
 
   // Keyboard navigation & body scroll locking
   const handleKeyDown = useCallback(
@@ -785,13 +802,16 @@ export function DocumentViewerLightbox({
       </header>
 
       {/* ── Main Viewport Stage ── */}
-      <main className="flex-1 min-h-0 overflow-y-auto relative bg-[#000814] p-6 sm:p-10 lg:p-16 flex flex-col">
+      <main
+        ref={scrollContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-auto relative bg-[#000814] px-4 sm:px-8 py-8 sm:py-12 flex flex-col items-center"
+      >
         {/* Floating Left Page Turn Arrow */}
         {isPdfOrDoc && currentPage > 1 && (
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            className="fixed left-4 sm:left-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[#011B38]/90 hover:bg-[#02254B] border border-white/20 hover:border-sky-400/50 text-white/70 hover:text-white flex items-center justify-center transition-all shadow-2xl z-30 cursor-pointer hover:scale-105"
+            className="fixed left-4 sm:left-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[#011B38]/90 backdrop-blur-sm hover:bg-[#02254B] border border-white/20 hover:border-sky-400/50 text-white/70 hover:text-white flex items-center justify-center transition-all shadow-2xl z-30 cursor-pointer hover:scale-105 print:hidden"
             title="Previous Page"
           >
             <IconChevronLeft size={24} stroke={2} />
@@ -803,19 +823,36 @@ export function DocumentViewerLightbox({
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[#011B38]/90 hover:bg-[#02254B] border border-white/20 hover:border-sky-400/50 text-white/70 hover:text-white flex items-center justify-center transition-all shadow-2xl z-30 cursor-pointer hover:scale-105"
+            className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[#011B38]/90 backdrop-blur-sm hover:bg-[#02254B] border border-white/20 hover:border-sky-400/50 text-white/70 hover:text-white flex items-center justify-center transition-all shadow-2xl z-30 cursor-pointer hover:scale-105 print:hidden"
             title="Next Page"
           >
             <IconChevronRight size={24} stroke={2} />
           </button>
         )}
 
-        {/* Guaranteed Full Centering Stage Container */}
-        <div className="min-h-full w-full flex flex-col items-center justify-center my-auto">
+        {/* Centering & Scroll Alignment Stage Container */}
+        <div
+          className={`w-full flex flex-col items-center ${
+            isPdfOrDoc || isCsv
+              ? "justify-start"
+              : "justify-center min-h-full my-auto"
+          }`}
+        >
           {/* Document Rendering Engine */}
           <div
-            className="transition-transform duration-150 origin-center flex flex-col items-center justify-center w-full max-w-5xl my-auto"
-            style={{ transform: `scale(${zoomLevel / 100})` }}
+            className="transition-transform duration-150 flex flex-col items-center w-full max-w-5xl"
+            style={
+              isPdfOrDoc
+                ? {
+                    transform: `scale(${zoomLevel / 100})`,
+                    transformOrigin: "top center",
+                    marginBottom:
+                      zoomLevel > 100
+                        ? `${((zoomLevel - 100) / 100) * 1100 + 48}px`
+                        : undefined,
+                  }
+                : undefined
+            }
           >
             {isRealPdf ? (
               /* ── Real Cloudflare PDF Document Viewer ── */
@@ -828,7 +865,7 @@ export function DocumentViewerLightbox({
               </div>
             ) : isPdfOrDoc ? (
               /* ── Google Docs Style Paper Manuscript Page ── */
-              <div className="w-full max-w-[800px] min-h-[1050px] bg-white text-slate-900 shadow-[0_15px_45px_rgba(0,0,0,0.65)] p-10 sm:p-14 md:p-16 rounded-[2px] my-4 border border-slate-300 flex flex-col justify-between select-text">
+              <div className="w-full max-w-[800px] min-h-[1050px] bg-white text-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.7)] p-10 sm:p-14 md:p-16 rounded-[2px] border border-slate-300 flex flex-col justify-between select-text">
                 {/* Dynamic Document Content Renderer */}
                 {(() => {
                   const doc = getDocContent(file.fileName, file.fileCategory);

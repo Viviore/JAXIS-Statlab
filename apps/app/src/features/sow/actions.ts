@@ -20,6 +20,7 @@ import {
   type SOWDetailItem,
   type ActionResponse,
 } from "./schemas";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import type { ProjectStatus } from "@prisma/client";
 
 const DEV_SOWS_FILE = path.join(process.cwd(), ".dev-sows.json");
@@ -619,6 +620,20 @@ export async function signSOW(
     revalidatePath(`/dashboard/client/projects/${updatedSow.projectId}/sow`);
     revalidatePath(`/dashboard/admin/projects/${updatedSow.projectId}`);
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "COMMERCIAL_UPDATE",
+        projectId: updatedSow.projectId,
+        intakeId: updatedSow.projectIntakeId,
+        title: "Contract Signed (SOW)",
+        message: `Statement of Work signed by ${updatedSow.signedByName}. Project is ready for payment verification.`,
+        targetRoles: ["ADMIN", "FINANCE_OFFICER"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[signSOW] Realtime notification warning:", e);
+    }
+
     return { success: true, data: updatedSow };
   } catch (err: unknown) {
     const errorMsg = (err as Error).message;
@@ -675,6 +690,20 @@ export async function signSOW(
       if (pIdx !== -1 && devProjects[pIdx]) {
         devProjects[pIdx].masterStatus = "SOW_SIGNED";
         fs.writeFileSync(DEV_PROJECTS_FILE, JSON.stringify(devProjects, null, 2), "utf-8");
+      }
+
+      try {
+        await dispatchRealtimeNotification({
+          eventType: "COMMERCIAL_UPDATE",
+          projectId: targetSow.projectId,
+          intakeId: targetSow.projectIntakeId,
+          title: "Contract Signed (SOW)",
+          message: `Statement of Work signed by ${targetSow.signedByName}. Project is ready for payment verification.`,
+          targetRoles: ["ADMIN", "FINANCE_OFFICER"],
+          includeProjectParties: true,
+        });
+      } catch {
+        // Ignore in dev
       }
 
       return { success: true, data: targetSow };
