@@ -545,65 +545,6 @@ export async function getProjects(
 
     let devProjects = readPersistedDevProjects();
 
-    // Default sample project if empty
-    if (devProjects.length === 0) {
-      devProjects = [
-        {
-          id: "proj_sample_001",
-          intakeId: "JAXIS-202608-0001",
-          clientId: userId,
-          researchTitle: "Impact of Study Habits on Academic Performance Among State University Students",
-          researchQuestions: "Does study frequency significantly affect GPA? Is there a gender difference?",
-          researchObjectives: "Determine relationship between study habits and GPA; identify moderating variables.",
-          hypotheses: "H1: Positive correlation between study hours and academic performance.",
-          chapters13: "https://r2.jaxis.dev/sample-chapters.docx",
-          questionnaire: "https://r2.jaxis.dev/sample-survey.pdf",
-          deadlineRequested: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
-          masterStatus: "UNDER_EVALUATION",
-          packageName: "ADVANCED_STATISTICS",
-          missingInfoReason: null,
-          deliveredAt: null,
-          filesPurgeAt: null,
-          filesPurged: false,
-          hasActiveDispute: false,
-          hasPendingRefund: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          client: {
-            id: userId,
-            fullName: session.user.name || "Client User",
-            email: session.user.email || "client@jaxis.dev",
-            clientProfile: {
-              institutionSchool: "University of the Philippines Diliman",
-              academicProgram: "MS in Data Science",
-              contactNumber: "0917 123 4567",
-              region: "NCR",
-            },
-          },
-          files: [
-            {
-              id: "file_001",
-              projectId: "proj_sample_001",
-              fileName: "research_proposal_draft.docx",
-              filePath: "uploads/research_proposal_draft.docx",
-              fileType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              fileCategory: "RESEARCH_DOCUMENT",
-              uploadedAt: new Date().toISOString(),
-            },
-            {
-              id: "file_002",
-              projectId: "proj_sample_001",
-              fileName: "raw_survey_responses.xlsx",
-              filePath: "uploads/raw_survey_responses.xlsx",
-              fileType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              fileCategory: "DATASET",
-              uploadedAt: new Date().toISOString(),
-            },
-          ],
-        },
-      ];
-      writePersistedDevProjects(devProjects);
-    }
 
     const devPayments = readPersistedDevPayments();
     devProjects = devProjects.map((p) => {
