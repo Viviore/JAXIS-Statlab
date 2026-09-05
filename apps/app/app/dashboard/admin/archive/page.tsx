@@ -10,6 +10,13 @@ import {
   LoadingState,
   Pagination,
   Toast,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@repo/ui";
 import {
   getArchivedProjectsAction,
@@ -25,6 +32,8 @@ import {
   IconTrash,
   IconX,
   IconEye,
+  IconAlertTriangle,
+  IconLock,
 } from "@tabler/icons-react";
 
 export default function AdminArchivePage() {
@@ -35,6 +44,7 @@ export default function AdminArchivePage() {
   const [packageFilter, setPackageFilter] = useState<string>("ALL");
   const [selectedArchive, setSelectedArchive] = useState<ArchivedProjectDTO | null>(null);
   const [isPurging, setIsPurging] = useState<boolean>(false);
+  const [isConfirmPurgeOpen, setIsConfirmPurgeOpen] = useState<boolean>(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -81,14 +91,20 @@ export default function AdminArchivePage() {
   }, [archives, currentPage, pageSize]);
 
   const handleRunPurge = async () => {
+    setIsConfirmPurgeOpen(false);
     setIsPurging(true);
     try {
       const res = await purgeExpiredFilesAction();
       if (res.success) {
+        const filesDesc = res.purgedFilesCount && res.purgedFilesCount > 0
+          ? `Deleted ${res.purgedFilesCount} unprotected files and freed ~${res.freedMB} MB across ${res.purgedCount} expired study records.`
+          : res.purgedCount > 0
+            ? `Purge check completed for ${res.purgedCount} studies. All files were preserved under active protection rules.`
+            : "Storage is already clean. No expired study records reached your cutoff date.";
         setToast({
           variant: "success",
           message: "Storage Purge Completed",
-          description: `Successfully executed storage purge for ${res.purgedCount} expired study records per CEO policy (${retentionConfig?.retentionPeriodDays || 90} days).`,
+          description: filesDesc,
         });
         loadData();
       } else {
@@ -135,7 +151,7 @@ export default function AdminArchivePage() {
           <Button
             variant="secondary"
             className="text-xs h-8 px-3 flex items-center gap-1.5 text-amber-400 hover:text-amber-300"
-            onClick={handleRunPurge}
+            onClick={() => setIsConfirmPurgeOpen(true)}
             disabled={isPurging}
           >
             <IconTrash size={14} />
@@ -394,6 +410,80 @@ export default function AdminArchivePage() {
           </div>
         </div>
       )}
+
+      {/* Styled Purge Confirmation Dialog */}
+      <AlertDialog open={isConfirmPurgeOpen} onOpenChange={setIsConfirmPurgeOpen}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-[2px] bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <IconAlertTriangle size={20} />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-base font-bold text-white font-sans">
+                  Confirm Storage File Cleanup
+                </AlertDialogTitle>
+                <span className="text-xs text-white/50 font-sans block mt-0.5">
+                  Reclaiming cloud storage for completed studies past {retentionDays} days
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-3 text-xs font-sans">
+              {/* Financial & Project Safety Reassurance */}
+              <div className="p-3 bg-[#011E38]/80 border border-emerald-500/30 rounded-[2px] flex items-start gap-2.5">
+                <IconShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-white/80 leading-relaxed">
+                  <strong className="text-emerald-400 font-semibold block">Finance &amp; Historical Records Remain 100% Safe:</strong>
+                  Study project records, client details, payment transactions, GCash/bank proofs, invoices, and accounting ledgers in the Finance Desk are <strong className="text-white">never deleted or modified</strong>.
+                </div>
+              </div>
+
+              {/* What will be purged vs preserved */}
+              <div className="p-3 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-2">
+                <div className="flex items-start gap-2">
+                  <IconTrash size={15} className="text-amber-400 shrink-0 mt-0.5" />
+                  <span className="text-white/70 leading-relaxed">
+                    <strong className="text-amber-400 font-medium">What gets deleted:</strong> Only raw, unprotected attachment files in Cloudflare R2 storage for completed studies delivered more than <strong className="text-white">{retentionDays} days ago</strong>.
+                  </span>
+                </div>
+
+                {retentionConfig && (
+                  <div className="border-t border-white/5 pt-2 flex items-start gap-2">
+                    <IconLock size={15} className="text-sky-400 shrink-0 mt-0.5" />
+                    <span className="text-white/60 leading-relaxed text-[0.688rem]">
+                      <strong className="text-white/80 font-medium">Currently Protected Categories:</strong>{" "}
+                      {[
+                        retentionConfig.keepDatasets && "Research Datasets",
+                        retentionConfig.keepResearchDocs && "Research Documents",
+                        retentionConfig.keepQuestionnaires && "Questionnaires",
+                        retentionConfig.keepReceiptPhotos && "Payment Receipts",
+                        retentionConfig.keepChatHistory && "Messages",
+                        retentionConfig.keepDeliverables && "Final Deliverables",
+                      ].filter(Boolean).join(" • ") || "None (all categories eligible)"}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <span className="text-white/50 text-[0.688rem] italic">
+                Note: This operation cannot be undone. Unprotected files will be permanently erased from Cloudflare R2 bucket.
+              </span>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-3 gap-2">
+            <AlertDialogCancel className="text-xs h-8 px-3 rounded-[2px] font-sans">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRunPurge}
+              className="text-xs h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-[2px] font-sans font-semibold cursor-pointer"
+            >
+              Confirm &amp; Run Purge
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Toast */}
       {toast && (

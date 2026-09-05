@@ -932,19 +932,61 @@ export default function CeoStorageRetentionPage() {
 
       {/* Styled Purge Confirmation Dialog */}
       <AlertDialog open={isConfirmPurgeOpen} onOpenChange={setIsConfirmPurgeOpen}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
-            <div className="w-10 h-10 rounded-[2px] bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-2">
-              <IconTrash size={20} />
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-[2px] bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <IconAlertTriangle size={20} />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-base font-bold text-white font-sans">
+                  Confirm Storage File Cleanup
+                </AlertDialogTitle>
+                <span className="text-xs text-white/50 font-sans block mt-0.5">
+                  Reclaiming cloud storage for completed studies past {config.retentionPeriodDays} days
+                </span>
+              </div>
             </div>
-            <AlertDialogTitle className="text-base font-bold text-white font-sans">
-              Run Storage Purge Now?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-white/70 leading-relaxed font-sans pt-1">
-              This will delete unprotected draft attachments, working files, and scratch data for completed studies older than <strong className="text-white">{config.retentionPeriodDays} days</strong>.
-              <br /><br />
-              Protected categories (such as research datasets, final deliverables, and payment receipts) will remain safely preserved.
-            </AlertDialogDescription>
+
+            <div className="flex flex-col gap-3 pt-3 text-xs font-sans">
+              {/* Financial & Project Safety Reassurance */}
+              <div className="p-3 bg-[#011E38]/80 border border-emerald-500/30 rounded-[2px] flex items-start gap-2.5">
+                <IconShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-white/80 leading-relaxed">
+                  <strong className="text-emerald-400 font-semibold block">Finance &amp; Historical Records Remain 100% Safe:</strong>
+                  Study project records, client details, payment transactions, GCash/bank proofs, invoices, and accounting ledgers in the Finance Desk are <strong className="text-white">never deleted or modified</strong>.
+                </div>
+              </div>
+
+              {/* What will be purged vs preserved */}
+              <div className="p-3 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-2">
+                <div className="flex items-start gap-2">
+                  <IconTrash size={15} className="text-amber-400 shrink-0 mt-0.5" />
+                  <span className="text-white/70 leading-relaxed">
+                    <strong className="text-amber-400 font-medium">What gets deleted:</strong> Only raw, unprotected attachment files in Cloudflare R2 storage for completed studies delivered more than <strong className="text-white">{config.retentionPeriodDays} days ago</strong>.
+                  </span>
+                </div>
+
+                <div className="border-t border-white/5 pt-2 flex items-start gap-2">
+                  <IconLock size={15} className="text-sky-400 shrink-0 mt-0.5" />
+                  <span className="text-white/60 leading-relaxed text-[0.688rem]">
+                    <strong className="text-white/80 font-medium">Currently Protected Categories:</strong>{" "}
+                    {[
+                      config.keepDatasets && "Research Datasets",
+                      config.keepResearchDocs && "Research Documents",
+                      config.keepQuestionnaires && "Questionnaires",
+                      config.keepReceiptPhotos && "Payment Receipts",
+                      config.keepChatHistory && "Messages",
+                      config.keepDeliverables && "Final Deliverables",
+                    ].filter(Boolean).join(" • ") || "None (all categories eligible)"}
+                  </span>
+                </div>
+              </div>
+
+              <span className="text-white/50 text-[0.688rem] italic">
+                Note: This operation cannot be undone. Unprotected files will be permanently erased from Cloudflare R2 bucket.
+              </span>
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter className="pt-3 gap-2">
             <AlertDialogCancel className="text-xs h-8 px-3 rounded-[2px] font-sans">
