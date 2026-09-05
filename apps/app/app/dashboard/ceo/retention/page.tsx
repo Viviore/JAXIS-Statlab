@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   PageHeader,
   KpiCard,
@@ -65,6 +66,7 @@ function getCutoffInfo(days: number) {
 }
 
 export default function CeoStorageRetentionPage() {
+  const router = useRouter();
   const [config, setConfig] = useState<StorageRetentionConfigDTO>({
     retentionPeriodDays: 90,
     purgeInactiveDays: 180,
@@ -190,7 +192,8 @@ export default function CeoStorageRetentionPage() {
           message: "Storage Purge Completed",
           description: filesDesc,
         });
-        loadData(true);
+        await loadData(true);
+        router.refresh();
       } else {
         setToast({
           variant: "danger",
