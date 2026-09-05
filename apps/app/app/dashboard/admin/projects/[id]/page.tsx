@@ -310,7 +310,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 Current Master Status:
               </span>
               {(() => {
-                const displayStatus = getProjectDisplayStatus(project);
+                const displayStatus = getProjectDisplayStatus(project, "ADMIN");
                 return (
                   <StatusBadge
                     status={displayStatus.status}
@@ -337,10 +337,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 variant="primary"
                 size="sm"
                 onClick={() => setIsQuotationModalOpen(true)}
-                className="text-xs font-mono font-bold tracking-wider whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300]"
+                className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300] rounded-[2px]"
               >
                 <IconCalculator size={14} stroke={1.5} />
-                <span>{quotation ? "EDIT QUOTATION DRAFT" : "BUILD COMMERCIAL QUOTE →"}</span>
+                <span>{quotation ? "Edit Quote Draft" : "Build Quote →"}</span>
               </Button>
             )}
 
@@ -349,11 +349,24 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsQuotationModalOpen(true)}
-                className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
+                className="text-xs font-sans whitespace-nowrap flex items-center gap-1.5 rounded-[2px]"
               >
                 <IconFileText size={14} stroke={1.5} />
-                <span>COMMERCIAL QUOTE DETAILS</span>
+                <span>Quote Details</span>
               </Button>
+            )}
+
+            {(project.masterStatus === "CLIENT_APPROVED" || quotation?.status === "CLIENT_APPROVED") && !sow?.isLocked && (
+              <Link href={`/dashboard/admin/projects/${project.id}/sow`}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#E67300] rounded-[2px]"
+                >
+                  <IconFileText size={14} stroke={1.5} />
+                  <span>{sow ? "View Sent SOW →" : "Draft SOW →"}</span>
+                </Button>
+              </Link>
             )}
 
             {(project.masterStatus === "SOW_SIGNED" ||
@@ -409,10 +422,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 size="sm"
                 onClick={handleMarkComplete}
                 disabled={isPending}
-                className="text-xs font-mono font-bold tracking-wider whitespace-nowrap flex items-center gap-1"
+                className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1 rounded-[2px]"
               >
                 <IconCheck size={14} stroke={2.5} />
-                MARK INTAKE COMPLETE
+                <span>Mark Intake Complete</span>
               </Button>
             )}
 
@@ -423,9 +436,9 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                 setMissingInfoReason(project.missingInfoReason || "");
                 setIsMissingInfoModalOpen(true);
               }}
-              className="text-xs font-mono tracking-wider whitespace-nowrap"
+              className="text-xs font-sans whitespace-nowrap rounded-[2px]"
             >
-              REQUEST MISSING INFO
+              Request Missing Info
             </Button>
 
             {allowedTransitions.length > 0 && (
@@ -436,10 +449,10 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                   setSelectedTargetStatus(allowedTransitions[0]!);
                   setIsStatusModalOpen(true);
                 }}
-                className="text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-1.5"
+                className="text-xs font-sans whitespace-nowrap flex items-center gap-1.5 rounded-[2px]"
               >
                 <IconSettings size={14} stroke={1.5} />
-                TRANSITION STATUS
+                <span>Change Status</span>
               </Button>
             )}
           </div>
@@ -489,83 +502,64 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
             sow !== null) && (
             <Card className="p-6 bg-[#01142B] border border-white/[0.08] flex flex-col gap-5">
               {/* Card Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3.5 gap-3">
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
                 <div className="flex items-center gap-2.5">
                   <div className="h-8 w-8 rounded-[2px] bg-[#CC6600]/10 border border-[#CC6600]/30 flex items-center justify-center text-[#CC6600]">
                     <IconReceipt2 size={18} stroke={1.5} />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-white font-sans">
-                      Commercial Proposal &amp; Statement of Work (SOW)
+                      Quote &amp; Agreement
                     </h3>
-                    <p className="text-[0.688rem] text-white/50 font-sans">
-                      Two-stage commercial engagement: Quotation modeling followed by institutional SOW contract execution.
+                    <p className="text-xs text-white/50 font-sans">
+                      Review the price quote and manage the client agreement.
                     </p>
                   </div>
                 </div>
-
-                {/* Progress Indicators */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className={`text-[0.625rem] font-mono px-2 py-0.5 rounded-[2px] border font-bold uppercase ${
-                      quotation?.status === "CLIENT_APPROVED"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        : quotation
-                        ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/20"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                    }`}
-                  >
-                    1. Quote: {quotation ? quotation.status : "Needs Modeling"}
-                  </span>
-                  <span
-                    className={`text-[0.625rem] font-mono px-2 py-0.5 rounded-[2px] border font-bold uppercase ${
-                      sow?.isLocked || project.masterStatus === "SOW_SIGNED"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        : sow || project.masterStatus === "SOW_PENDING"
-                        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                        : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED"
-                        ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
-                        : "bg-white/[0.04] text-white/40 border-white/10"
-                    }`}
-                  >
-                    2. SOW:{" "}
-                    {sow?.isLocked || project.masterStatus === "SOW_SIGNED"
-                      ? "Signed & Locked"
-                      : sow || project.masterStatus === "SOW_PENDING"
-                      ? "Pending Signature"
-                      : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED"
-                      ? "Ready to Draft"
-                      : "Awaiting Quote"}
-                  </span>
-                </div>
               </div>
 
-              {/* Two-Stage Grid */}
+              {/* Two-Column Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* ── STAGE 1: COMMERCIAL QUOTATION ── */}
+                {/* ── Price Quote ── */}
                 <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col justify-between gap-4">
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="h-5 w-5 rounded-[2px] bg-white/[0.06] border border-white/15 text-[0.688rem] font-mono font-bold flex items-center justify-center text-white/80">
-                          1
-                        </span>
                         <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                          Commercial Quotation
+                          Price Quote
                         </span>
+                        {quotation && (
+                          <span className="text-[0.625rem] font-mono uppercase px-1.5 py-0.5 rounded-[2px] bg-white/[0.04] text-white/60 border border-white/10">
+                            {quotation.packageName.replace(/_/g, " ")}
+                          </span>
+                        )}
                       </div>
                       {quotation && (
-                        <span className="text-[0.5625rem] font-mono font-bold uppercase px-1.5 py-0.5 rounded-[2px] bg-white/[0.04] text-white/60 border border-white/10">
-                          {quotation.packageName.replace(/_/g, " ")}
+                        <span
+                          className={`text-[0.625rem] font-mono font-semibold px-2 py-0.5 rounded-[2px] border ${
+                            quotation.status === "CLIENT_APPROVED"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : quotation.status === "QUOTE_SENT"
+                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              : "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                          }`}
+                        >
+                          {quotation.status === "CLIENT_APPROVED"
+                            ? "Approved"
+                            : quotation.status === "QUOTE_SENT"
+                            ? "Sent"
+                            : quotation.status === "DRAFT"
+                            ? "Draft"
+                            : quotation.status}
                         </span>
                       )}
                     </div>
 
                     {quotation ? (
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3 rounded-[2px] bg-white/[0.02] border border-white/[0.04]">
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-3 gap-2.5 p-3 rounded-[2px] bg-white/[0.02] border border-white/[0.04]">
                           <div>
-                            <div className="text-[0.625rem] font-sans text-white/50">Contract Sum</div>
+                            <div className="text-[0.625rem] font-sans text-white/50">Total Price</div>
                             <div className="text-sm font-bold font-mono text-[#38BDF8] mt-0.5 flex items-center">
                               <Peso />{quotation.totalAmount.toLocaleString()}
                             </div>
@@ -577,7 +571,7 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                             </div>
                           </div>
                           <div>
-                            <div className="text-[0.625rem] font-sans text-white/50">Validity</div>
+                            <div className="text-[0.625rem] font-sans text-white/50">Valid Until</div>
                             <div className="text-xs font-bold font-mono text-amber-300 mt-1">
                               {quotation.isExpired ? (
                                 <span className="text-rose-400">Expired</span>
@@ -590,16 +584,14 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                             </div>
                           </div>
                         </div>
-                        <p className="text-[0.688rem] text-white/60 font-sans leading-relaxed">
-                          {quotation.lineItems.length} billable service item(s) included in this proposal.
+                        <p className="text-xs text-white/50 font-sans">
+                          {quotation.lineItems.length} {quotation.lineItems.length === 1 ? "service" : "services"} included in this quote.
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-1.5">
-                        <p className="text-xs text-white/70 font-sans leading-relaxed">
-                          Intake evaluation is complete. Select an analytical package tier, statistical treatments, and priority add-ons to build pricing for the client.
-                        </p>
-                      </div>
+                      <p className="text-xs text-white/60 font-sans leading-relaxed">
+                        Evaluation complete. Build a quote with package pricing and add-ons for the client.
+                      </p>
                     )}
                   </div>
 
@@ -615,45 +607,40 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                       {quotation ? (
                         <>
                           <IconEdit size={14} stroke={1.5} />
-                          <span>{quotation.status === "DRAFT" ? "Edit Quote Draft" : "View Quote Details"}</span>
+                          <span>{quotation.status === "DRAFT" ? "Edit Quote" : "View Quote"}</span>
                         </>
                       ) : (
                         <>
                           <IconCalculator size={14} stroke={1.5} />
-                          <span>Launch Quote Builder →</span>
+                          <span>Build Quote →</span>
                         </>
                       )}
                     </Button>
                   </div>
                 </div>
 
-                {/* ── STAGE 2: STATEMENT OF WORK (SOW) ── */}
+                {/* ── Agreement (SOW) ── */}
                 <div className="p-4 rounded-[2px] bg-[#010D1F] border border-white/[0.06] flex flex-col justify-between gap-4">
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="h-5 w-5 rounded-[2px] bg-white/[0.06] border border-white/15 text-[0.688rem] font-mono font-bold flex items-center justify-center text-white/80">
-                          2
-                        </span>
-                        <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                          Statement of Work (SOW)
-                        </span>
-                      </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                        Agreement (SOW)
+                      </span>
                       <span
-                        className={`text-[0.5625rem] font-mono font-bold uppercase px-1.5 py-0.5 rounded-[2px] border ${
+                        className={`text-[0.625rem] font-mono font-semibold px-2 py-0.5 rounded-[2px] border ${
                           sow?.isLocked || project.masterStatus === "SOW_SIGNED"
-                            ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                             : sow || project.masterStatus === "SOW_PENDING"
-                            ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                             : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED"
-                            ? "bg-sky-500/15 text-sky-400 border-sky-500/30"
+                            ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
                             : "bg-white/[0.04] text-white/40 border-white/10"
                         }`}
                       >
                         {sow?.isLocked || project.masterStatus === "SOW_SIGNED"
-                          ? "Contract Signed"
+                          ? "Signed"
                           : sow || project.masterStatus === "SOW_PENDING"
-                          ? "Dispatched"
+                          ? "Awaiting Signature"
                           : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED"
                           ? "Ready to Draft"
                           : "Locked"}
@@ -661,87 +648,73 @@ export default function AdminProjectInspectionPage({ params }: PageProps) {
                     </div>
 
                     {sow?.isLocked || project.masterStatus === "SOW_SIGNED" ? (
-                      <div className="space-y-2">
-                        <div className="p-3 rounded-[2px] bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 text-xs font-sans leading-relaxed">
-                          <strong>Contract Executed:</strong> Signed by {sow?.signedByName || project.client.fullName}
-                          {sow?.signedAt
-                            ? ` on ${new Date(sow.signedAt).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}`
-                            : ""}
-                          . Scope of work, deliverables, and SLA timelines are legally ratified.
-                        </div>
+                      <div className="p-3 rounded-[2px] bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 text-xs font-sans leading-relaxed">
+                        Signed by {sow?.signedByName || project.client.fullName}
+                        {sow?.signedAt
+                          ? ` on ${new Date(sow.signedAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}`
+                          : ""}.
                       </div>
                     ) : sow || project.masterStatus === "SOW_PENDING" ? (
-                      <div className="space-y-2">
-                        <div className="p-3 rounded-[2px] bg-amber-950/20 border border-amber-500/20 text-amber-300 text-xs font-sans leading-relaxed">
-                          <strong>SOW Dispatched:</strong> Agreement #{sow ? sow.id.slice(-6).toUpperCase() : "Active"} has been drafted and dispatched to the client. Awaiting client electronic signature.
-                        </div>
+                      <div className="p-3 rounded-[2px] bg-amber-950/20 border border-amber-500/20 text-amber-300 text-xs font-sans leading-relaxed">
+                        Agreement sent to client. Awaiting signature.
                       </div>
                     ) : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED" ? (
-                      <div className="space-y-2">
-                        <div className="p-3 rounded-[2px] bg-sky-950/20 border border-sky-500/20 text-sky-300 text-xs font-sans leading-relaxed">
-                          <strong>Quote Accepted:</strong> The client has approved the commercial proposal! Generate the formal SOW contract specifying methodology, milestone deliverables, and downpayment terms.
-                        </div>
+                      <div className="p-3 rounded-[2px] bg-sky-950/20 border border-sky-500/20 text-sky-300 text-xs font-sans leading-relaxed">
+                        Quote accepted by client. Ready to draft the research agreement.
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <p className="text-xs text-white/50 font-sans leading-relaxed">
-                          Following quotation acceptance by the client, the formal Statement of Work (SOW) is drafted here. It establishes binding scope, turnaround SLAs, and payment release milestones.
-                        </p>
-                      </div>
+                      <p className="text-xs text-white/40 font-sans leading-relaxed">
+                        Unlocked once the client accepts the price quote.
+                      </p>
                     )}
                   </div>
 
-                  <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-[0.625rem] font-mono text-white/40">
-                      {sow?.isLocked ? "SOW Executed & Scope Locked" : "Contract Stage 2 of 2"}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {(project.hasPendingPaymentVerification ||
-                        project.latestPaymentStatus === "PROOF_SUBMITTED" ||
-                        project.masterStatus === "AWAITING_PAYMENT") && (
-                        <Link href={`/dashboard/admin/projects/${project.id}/payment`}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="gap-1.5 bg-[#CC6600] text-white hover:bg-[#FFA040] font-sans text-xs font-semibold px-3 py-1.5"
-                          >
-                            <IconReceipt size={14} stroke={1.5} />
-                            <span>Payment Desk →</span>
-                          </Button>
-                        </Link>
-                      )}
-                      <Link href={`/dashboard/admin/projects/${project.id}/sow`}>
+                  <div className="pt-2 border-t border-white/[0.04] flex items-center justify-end gap-2">
+                    {(project.hasPendingPaymentVerification ||
+                      project.latestPaymentStatus === "PROOF_SUBMITTED" ||
+                      project.masterStatus === "AWAITING_PAYMENT") && (
+                      <Link href={`/dashboard/admin/projects/${project.id}/payment`}>
                         <Button
-                          variant={
-                            quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED" || sow
-                              ? "primary"
-                              : "outline"
-                          }
+                          variant="secondary"
                           size="sm"
-                          className={`whitespace-nowrap gap-1.5 font-sans text-xs font-semibold ${
-                            (quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED") &&
-                            !sow?.isLocked
-                              ? "bg-[#CC6600] text-white hover:bg-[#E67300]"
-                              : ""
-                          }`}
+                          className="gap-1.5 font-sans text-xs font-semibold px-3 py-1.5"
                         >
-                          <IconFileText size={14} stroke={1.5} />
-                          <span>
-                            {sow?.isLocked || project.masterStatus === "SOW_SIGNED"
-                              ? "View Signed SOW →"
-                              : sow || project.masterStatus === "SOW_PENDING"
-                              ? "Open SOW Console →"
-                              : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED"
-                              ? "Generate SOW Contract →"
-                              : "Open SOW Desk →"}
-                          </span>
+                          <IconReceipt size={14} stroke={1.5} />
+                          <span>Payment Desk</span>
                         </Button>
                       </Link>
-                    </div>
+                    )}
+                    <Link href={`/dashboard/admin/projects/${project.id}/sow`}>
+                      <Button
+                        variant={
+                          quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED" || sow
+                            ? "primary"
+                            : "outline"
+                        }
+                        size="sm"
+                        className={`whitespace-nowrap gap-1.5 font-sans text-xs font-semibold ${
+                          (quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED") &&
+                          !sow?.isLocked
+                            ? "bg-[#CC6600] text-white hover:bg-[#E67300]"
+                            : ""
+                        }`}
+                      >
+                        <IconFileText size={14} stroke={1.5} />
+                        <span>
+                          {sow?.isLocked || project.masterStatus === "SOW_SIGNED"
+                            ? "View Signed SOW →"
+                            : sow || project.masterStatus === "SOW_PENDING"
+                            ? "View Sent SOW →"
+                            : quotation?.status === "CLIENT_APPROVED" || project.masterStatus === "CLIENT_APPROVED"
+                            ? "Draft SOW →"
+                            : "Open SOW Desk →"}
+                        </span>
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

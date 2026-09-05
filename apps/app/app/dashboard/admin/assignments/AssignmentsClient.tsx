@@ -14,10 +14,9 @@ import {
 } from "@repo/ui";
 import {
   IconUserCheck,
+  IconShieldCheck,
   IconClock,
   IconRefresh,
-  IconChevronDown,
-  IconChevronUp,
   IconArrowRight,
   IconAlertTriangle,
   IconCalendarOff,
@@ -25,7 +24,6 @@ import {
 import { getProjects } from "@/features/projects/actions";
 import { getStaffCapacity } from "@/features/assignments/actions";
 import { AssignmentModal } from "@/features/assignments/components/AssignmentModal";
-import { WorkloadAnalyticsCard } from "@/features/assignments/components/WorkloadAnalyticsCard";
 import type { StaffCapacityItem } from "@/features/assignments/schemas";
 import type { ProjectDetailItem } from "@/features/projects/schemas";
 
@@ -45,18 +43,8 @@ export function AssignmentsClient({
   const [qaLeads, setQaLeads] = useState<StaffCapacityItem[]>(initialQaLeads || []);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProjectForAssign, setSelectedProjectForAssign] = useState<ProjectDetailItem | null>(null);
-  const [expandedStaffIds, setExpandedStaffIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
-
-  const toggleExpandStaff = (id: string) => {
-    setExpandedStaffIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   // Toast
   const [toastMessage, setToastMessage] = useState<{
@@ -121,12 +109,12 @@ export function AssignmentsClient({
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Page Header */}
       <PageHeader
-        title="Expert Assignment & Workload Desk"
-        description="Assign qualified Lead Statisticians and Senior QA Leads to paid studies, monitor staff capacity, and govern contractual SLA timelines."
+        title="Specialist Assignments &amp; Workload"
+        description="Assign lead statisticians and QA leads to active studies and manage team capacity."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "Admin Command", href: "/dashboard/admin" },
-          { label: "Expert Assignments" },
+          { label: "Specialist Assignments" },
         ]}
         actions={
           <Button
@@ -136,7 +124,7 @@ export function AssignmentsClient({
             className="gap-2 font-sans font-semibold rounded-[2px]"
           >
             <IconRefresh size={15} stroke={2} />
-            <span>Refresh Directory</span>
+            <span>Refresh</span>
           </Button>
         }
       />
@@ -149,31 +137,31 @@ export function AssignmentsClient({
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
             <KpiCard
-              label="Unassigned Active Studies"
+              label="Awaiting Assignment"
               value={unassignedProjects.length}
               variant={unassignedProjects.length > 0 ? "amber" : "default"}
-              description={unassignedProjects.length > 0 ? "Awaiting staff assignment" : "All studies staffed"}
+              description={unassignedProjects.length > 0 ? "Studies ready for staffing" : "All studies staffed"}
             />
             <KpiCard
-              label="Active Statisticians"
+              label="Statisticians"
               value={statisticians.length}
               variant="sky"
-              description="Certified specialists directory"
+              description={`${statisticians.filter((s) => !s.isOnLeave).length} available for studies`}
             />
             <KpiCard
-              label="Senior QA Leads"
+              label="QA Leads"
               value={qaLeads.length}
               variant="emerald"
-              description="Quality gatekeepers on duty"
+              description={`${qaLeads.filter((q) => !q.isOnLeave).length} available for reviews`}
             />
             <KpiCard
-              label="Burnout Guard & Capacity"
-              value={burnoutRiskCount > 0 ? `${burnoutRiskCount} At Risk` : "100% Balanced"}
+              label="Team Capacity"
+              value={burnoutRiskCount > 0 ? `${burnoutRiskCount} Overloaded` : "Healthy"}
               variant={burnoutRiskCount > 0 ? "amber" : "emerald"}
               description={
                 burnoutRiskCount > 0
-                  ? "Deadline collisions or high load"
-                  : "Zero specialist overload detected"
+                  ? "Some staff near capacity limits"
+                  : "Balanced across active staff"
               }
             />
           </div>
@@ -181,12 +169,12 @@ export function AssignmentsClient({
       })()}
 
       <div className="flex flex-col gap-8">
-        {/* Section 1: Awaiting Staffing */}
+        {/* Section 1: Studies Awaiting Assignment Table */}
         <Card className="p-0 overflow-hidden border border-white/10 bg-[#01142B]/90 rounded-[2px]">
           <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-white tracking-normal font-sans flex items-center gap-2">
-                <span>Studies Awaiting Specialist Assignment</span>
+                <span>Studies Awaiting Assignment</span>
                 {unassignedProjects.length > 0 && (
                   <Badge variant="amber" className="text-[0.688rem] py-0 px-2 font-mono">
                     {unassignedProjects.length} Pending
@@ -194,7 +182,7 @@ export function AssignmentsClient({
                 )}
               </h2>
               <p className="text-sm text-white/60 mt-1 font-sans leading-relaxed">
-                Downpayment cleared and contract executed. SLA starts upon assignment.
+                Downpayment cleared and contract signed. Assign a statistician and QA lead to start work.
               </p>
             </div>
           </div>
@@ -213,7 +201,7 @@ export function AssignmentsClient({
                     <tr className="border-b border-white/10 bg-white/[0.02] text-white/50 text-xs uppercase tracking-wider font-semibold">
                       <th className="py-3.5 px-6">Study ID</th>
                       <th className="py-3.5 px-6">Research Title &amp; Client</th>
-                      <th className="py-3.5 px-6">Package / Methodology</th>
+                      <th className="py-3.5 px-6">Package</th>
                       <th className="py-3.5 px-6">Turnaround</th>
                       <th className="py-3.5 px-6 text-right">Action</th>
                     </tr>
@@ -234,7 +222,7 @@ export function AssignmentsClient({
                         </td>
                         <td className="py-4 px-6">
                           <span className="text-xs text-white/80 font-sans">
-                            {proj.packageName?.replace(/_/g, " ") || "Empirical Analysis"}
+                            {proj.packageName?.replace(/_/g, " ") || "Standard Study"}
                           </span>
                         </td>
                         <td className="py-4 px-6">
@@ -274,285 +262,297 @@ export function AssignmentsClient({
           )}
         </Card>
 
-        {/* Section 2: Workload Distribution & Burnout Analytics Visual Chart */}
-        <WorkloadAnalyticsCard
-          statisticians={statisticians}
-          qaLeads={qaLeads}
-        />
+        {/* Section 2: Team Workload & Directory (Unified, Clean 2-Column Desk) */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white font-sans">
+              Team Workload &amp; Directory
+            </h2>
+            <p className="text-xs text-white/60 mt-0.5 font-sans">
+              Specialist availability and study capacity (comfortable threshold of 3 concurrent active studies).
+            </p>
+          </div>
 
-        {/* Section 3: Staff Capacity Directory */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Statisticians */}
-          <Card className="p-6 border border-white/10 bg-[#01142B]/90 rounded-[2px] flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <h3 className="font-semibold text-white text-base">Lead Statisticians Directory</h3>
-                <p className="text-xs text-white/60 mt-0.5">Specialization match and current active study load</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Column 1: Lead Statisticians */}
+            <Card className="p-6 border border-white/10 bg-[#01142B]/90 rounded-[2px] flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-sky-500/10 border border-sky-500/20 rounded-[2px] text-sky-400">
+                    <IconUserCheck size={16} stroke={2} />
+                  </div>
+                  <h3 className="font-semibold text-white text-sm font-sans">Lead Statisticians</h3>
+                </div>
+                <span className="text-xs font-mono text-white/40">
+                  {statisticians.length} {statisticians.length === 1 ? "specialist" : "specialists"}
+                </span>
               </div>
-              <span className="text-xs font-mono text-white/40">{statisticians.length} specialists</span>
-            </div>
 
-            <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
-              {statisticians.map((stat) => {
-                const isExpanded = expandedStaffIds.has(stat.id);
-                return (
-                  <div
-                    key={stat.id}
-                    className="bg-[#011B38] border border-white/10 rounded-[2px] overflow-hidden transition-all"
-                  >
+              <div className="space-y-3">
+                {statisticians.map((stat) => {
+                  const isFull = stat.activeAssignmentCount >= 3;
+                  const isModerate = stat.activeAssignmentCount > 0 && stat.activeAssignmentCount < 3;
+                  return (
                     <div
-                      onClick={() => toggleExpandStaff(stat.id)}
-                      className="p-3.5 flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.03] transition-colors select-none"
+                      key={stat.id}
+                      className="p-4 bg-[#011B38] border border-white/10 rounded-[2px] flex flex-col gap-3"
                     >
-                      <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                          <span className="font-semibold text-white text-xs whitespace-nowrap">{stat.fullName}</span>
-                          <span className="text-[0.688rem] text-white/40 whitespace-nowrap">({stat.email})</span>
-                          {!stat.isOnLeave && stat.burnoutRisk?.isAtRisk && (
-                            <Badge variant="amber" className="text-[0.625rem] py-0 px-1.5 font-mono flex items-center gap-1 whitespace-nowrap">
-                              <IconAlertTriangle size={10} stroke={2} />
-                              <span>Burnout Risk</span>
-                            </Badge>
-                          )}
+                      {/* Staff Header */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-white text-xs font-sans truncate">
+                            {stat.fullName}
+                          </h4>
+                          <p className="text-[0.688rem] text-white/40 font-mono mt-0.5">
+                            {stat.email}
+                          </p>
                         </div>
-                        <p className="text-[0.688rem] text-white/50 truncate font-sans">
-                          {stat.isOnLeave
-                            ? `Unavailable for assignments — Reason: "${stat.leaveReason || "Scheduled Absence"}"`
-                            : stat.specializations.length > 0
-                            ? stat.specializations.join(", ")
-                            : "General Analytics"}
-                        </p>
-                        {!stat.isOnLeave && stat.burnoutRisk?.isAtRisk && (
-                          <span className="text-[0.688rem] text-amber-300/80 font-sans">
-                            {stat.burnoutRisk.reasons.join(" • ")}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-2.5">
                         {stat.isOnLeave ? (
-                          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-[2px] border bg-purple-950/50 text-purple-300 border-purple-500/30 flex items-center gap-1.5 whitespace-nowrap">
-                            <IconCalendarOff size={13} stroke={2} />
-                            <span>On Leave{stat.leaveUntil ? ` (until ${new Date(stat.leaveUntil).toLocaleDateString("en-PH", { month: "short", day: "numeric" })})` : ""}</span>
+                          <span className="text-[0.688rem] font-mono font-semibold px-2 py-0.5 rounded-[2px] border bg-purple-950/50 text-purple-300 border-purple-500/30 whitespace-nowrap flex items-center gap-1">
+                            <IconCalendarOff size={11} stroke={2} />
+                            <span>On Leave</span>
                           </span>
                         ) : (
                           <span
-                            className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-[2px] border whitespace-nowrap ${
-                              stat.activeAssignmentCount === 0
-                                ? "bg-emerald-950/40 text-emerald-300 border-emerald-500/30"
-                                : stat.activeAssignmentCount < 3
-                                ? "bg-sky-950/40 text-sky-300 border-sky-500/30"
-                                : "bg-amber-950/40 text-amber-300 border-amber-500/30"
+                            className={`text-[0.688rem] font-mono font-semibold px-2 py-0.5 rounded-[2px] border whitespace-nowrap ${
+                              isFull
+                                ? "bg-amber-950/50 text-amber-300 border-amber-500/30"
+                                : isModerate
+                                ? "bg-sky-950/50 text-sky-300 border-sky-500/30"
+                                : "bg-emerald-950/50 text-emerald-300 border-emerald-500/30"
                             }`}
                           >
-                            {stat.activeAssignmentCount} Active Studies
+                            {stat.activeAssignmentCount} / 3 Studies
                           </span>
                         )}
-                        <span className="text-white/40 hover:text-white transition-colors">
-                          {isExpanded ? (
-                            <IconChevronUp size={15} stroke={2} />
-                          ) : (
-                            <IconChevronDown size={15} stroke={2} />
-                          )}
-                        </span>
                       </div>
-                    </div>
 
-                    {/* Expandable Assigned Studies List */}
-                    {isExpanded && (
-                      <div className="border-t border-white/10 bg-black/40 p-3.5 flex flex-col gap-2.5 animate-content-fade">
-                        <div className="flex items-center justify-between text-[0.688rem] uppercase font-mono text-white/50 px-1 font-semibold">
-                          <span>Assigned Computational Runs</span>
-                          <span>{stat.assignedStudies.length} Active</span>
-                        </div>
-
-                        {stat.assignedStudies.length === 0 ? (
-                          <div className="p-3 text-center text-xs text-white/40 font-sans italic bg-white/[0.01] rounded-[2px] border border-white/5">
-                            {stat.isOnLeave
-                              ? `Specialist is currently on leave${stat.leaveUntil ? ` until ${new Date(stat.leaveUntil).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}` : ""} and unavailable for new computational assignments.`
-                              : "Zero active studies currently assigned. Specialist is available for new pipeline allocations."}
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            {stat.assignedStudies.map((study) => (
+                      {/* 3-Segment Capacity Bar */}
+                      {!stat.isOnLeave && (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 w-full">
+                            {[1, 2, 3].map((step) => (
                               <div
-                                key={study.id}
-                                className="p-2.5 bg-[#01142B] border border-white/[0.08] rounded-[2px] flex items-center justify-between gap-3 text-xs"
-                              >
-                                <div className="min-w-0 flex flex-col gap-0.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-xs text-[#CC6600] font-semibold">
-                                      {study.intakeId}
-                                    </span>
-                                    <Badge
-                                      variant={
-                                        study.isPaused
-                                          ? "amber"
-                                          : study.isOverdue
-                                          ? "danger"
-                                          : study.isUrgent
-                                          ? "amber"
-                                          : "emerald"
-                                      }
-                                      className="font-mono text-[0.625rem] py-0 px-1.5"
-                                    >
-                                      {study.slaLabel}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-white/80 font-medium truncate max-w-xs text-xs font-sans">
-                                    {study.title}
-                                  </p>
-                                </div>
-
-                                <Link
-                                  href={`/dashboard/admin/projects/${study.id}`}
-                                  className="shrink-0 flex items-center gap-1 text-[0.688rem] font-sans font-semibold text-sky-400 hover:text-sky-300 hover:underline"
-                                >
-                                  <span>Open Desk</span>
-                                  <IconArrowRight size={12} stroke={2} />
-                                </Link>
-                              </div>
+                                key={step}
+                                className={`h-1.5 flex-1 rounded-[1px] transition-all ${
+                                  stat.activeAssignmentCount >= step
+                                    ? isFull
+                                      ? "bg-amber-400"
+                                      : isModerate
+                                      ? "bg-sky-400"
+                                      : "bg-emerald-400"
+                                    : "bg-white/[0.08]"
+                                }`}
+                              />
                             ))}
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* QA Leads */}
-          <Card className="p-6 border border-white/10 bg-[#01142B]/90 rounded-[2px] flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <h3 className="font-semibold text-white text-base">Senior QA Leads Directory</h3>
-                <p className="text-xs text-white/60 mt-0.5">Verification gates and review queue volume</p>
-              </div>
-              <span className="text-xs font-mono text-white/40">{qaLeads.length} gatekeepers</span>
-            </div>
-
-            <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
-              {qaLeads.map((qa) => {
-                const isExpanded = expandedStaffIds.has(qa.id);
-                return (
-                  <div
-                    key={qa.id}
-                    className="bg-[#011B38] border border-white/10 rounded-[2px] overflow-hidden transition-all"
-                  >
-                    <div
-                      onClick={() => toggleExpandStaff(qa.id)}
-                      className="p-3.5 flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.03] transition-colors select-none"
-                    >
-                      <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                          <span className="font-semibold text-white text-xs whitespace-nowrap">{qa.fullName}</span>
-                          <span className="text-[0.688rem] text-white/40 whitespace-nowrap">({qa.email})</span>
-                          {!qa.isOnLeave && qa.burnoutRisk?.isAtRisk && (
-                            <Badge variant="amber" className="text-[0.625rem] py-0 px-1.5 font-mono flex items-center gap-1 whitespace-nowrap">
-                              <IconAlertTriangle size={10} stroke={2} />
-                              <span>Burnout Risk</span>
-                            </Badge>
-                          )}
+                          <div className="flex justify-between text-[0.625rem] text-white/40 font-mono">
+                            <span>Capacity</span>
+                            <span>{Math.round((stat.activeAssignmentCount / 3) * 100)}% load</span>
+                          </div>
                         </div>
-                        <p className="text-[0.688rem] text-white/50 truncate font-sans">
-                          {qa.isOnLeave
-                            ? `Unavailable for reviews — Reason: "${qa.leaveReason || "Scheduled Absence"}"`
-                            : "Senior Verification & Dual-Blind Review"}
+                      )}
+
+                      {/* Specializations */}
+                      {stat.specializations.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {stat.specializations.map((spec) => (
+                            <span
+                              key={spec}
+                              className="text-[0.625rem] font-sans px-1.5 py-0.5 rounded-[2px] bg-white/[0.03] text-white/60 border border-white/[0.06]"
+                            >
+                              {spec}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Assigned Studies */}
+                      {stat.assignedStudies.length > 0 ? (
+                        <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-2">
+                          <span className="text-[0.625rem] font-mono uppercase text-white/40 font-semibold">
+                            Active Assignments ({stat.assignedStudies.length})
+                          </span>
+                          {stat.assignedStudies.map((study) => (
+                            <div
+                              key={study.id}
+                              className="p-2.5 bg-[#01142B] border border-white/[0.06] rounded-[2px] flex items-center justify-between gap-3 text-xs"
+                            >
+                              <div className="min-w-0 flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-xs text-[#CC6600] font-semibold">
+                                    {study.intakeId}
+                                  </span>
+                                  <Badge
+                                    variant={study.isUrgent ? "amber" : "emerald"}
+                                    className="font-mono text-[0.5625rem] py-0 px-1"
+                                  >
+                                    {study.slaLabel}
+                                  </Badge>
+                                </div>
+                                <p className="text-white/80 font-sans truncate text-xs">
+                                  {study.title}
+                                </p>
+                              </div>
+                              <Link
+                                href={`/dashboard/admin/projects/${study.id}`}
+                                className="shrink-0 flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 font-sans font-semibold hover:underline"
+                              >
+                                <span>Open</span>
+                                <IconArrowRight size={11} stroke={2} />
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-white/40 font-sans italic pt-1">
+                          {stat.isOnLeave
+                            ? `On leave${stat.leaveUntil ? ` until ${new Date(stat.leaveUntil).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}` : ""}.`
+                            : "No active studies assigned. Available for new studies."}
                         </p>
-                        {!qa.isOnLeave && qa.burnoutRisk?.isAtRisk && (
-                          <span className="text-[0.688rem] text-amber-300/80 font-sans">
-                            {qa.burnoutRisk.reasons.join(" • ")}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-2.5">
-                        {qa.isOnLeave ? (
-                          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-[2px] border bg-purple-950/50 text-purple-300 border-purple-500/30 flex items-center gap-1.5 whitespace-nowrap">
-                            <IconCalendarOff size={13} stroke={2} />
-                            <span>On Leave{qa.leaveUntil ? ` (until ${new Date(qa.leaveUntil).toLocaleDateString("en-PH", { month: "short", day: "numeric" })})` : ""}</span>
-                          </span>
-                        ) : (
-                          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-[2px] border bg-emerald-950/40 text-emerald-300 border-emerald-500/30 whitespace-nowrap">
-                            {qa.activeAssignmentCount} in QA Review
-                          </span>
-                        )}
-                        <span className="text-white/40 hover:text-white transition-colors">
-                          {isExpanded ? (
-                            <IconChevronUp size={15} stroke={2} />
-                          ) : (
-                            <IconChevronDown size={15} stroke={2} />
-                          )}
-                        </span>
-                      </div>
+                      )}
                     </div>
+                  );
+                })}
+              </div>
+            </Card>
 
-                    {/* Expandable Assigned Studies List */}
-                    {isExpanded && (
-                      <div className="border-t border-white/10 bg-black/40 p-3.5 flex flex-col gap-2.5 animate-content-fade">
-                        <div className="flex items-center justify-between text-[0.688rem] uppercase font-mono text-white/50 px-1 font-semibold">
-                          <span>Assigned Verification Queue</span>
-                          <span>{qa.assignedStudies.length} Studies</span>
+            {/* Column 2: Senior QA Leads */}
+            <Card className="p-6 border border-white/10 bg-[#01142B]/90 rounded-[2px] flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-[2px] text-emerald-400">
+                    <IconShieldCheck size={16} stroke={2} />
+                  </div>
+                  <h3 className="font-semibold text-white text-sm font-sans">Senior QA Leads</h3>
+                </div>
+                <span className="text-xs font-mono text-white/40">
+                  {qaLeads.length} {qaLeads.length === 1 ? "lead" : "leads"}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {qaLeads.map((qa) => {
+                  const isFull = qa.activeAssignmentCount >= 3;
+                  const isModerate = qa.activeAssignmentCount > 0 && qa.activeAssignmentCount < 3;
+                  return (
+                    <div
+                      key={qa.id}
+                      className="p-4 bg-[#011B38] border border-white/10 rounded-[2px] flex flex-col gap-3"
+                    >
+                      {/* Staff Header */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-white text-xs font-sans truncate">
+                            {qa.fullName}
+                          </h4>
+                          <p className="text-[0.688rem] text-white/40 font-mono mt-0.5">
+                            {qa.email}
+                          </p>
                         </div>
-
-                        {qa.assignedStudies.length === 0 ? (
-                          <div className="p-3 text-center text-xs text-white/40 font-sans italic bg-white/[0.01] rounded-[2px] border border-white/5">
-                            {qa.isOnLeave
-                              ? `Quality gatekeeper is currently on leave${qa.leaveUntil ? ` until ${new Date(qa.leaveUntil).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}` : ""} and unavailable for new QA assignments.`
-                              : "Zero studies currently under review. Quality gatekeeper is clear."}
-                          </div>
+                        {qa.isOnLeave ? (
+                          <span className="text-[0.688rem] font-mono font-semibold px-2 py-0.5 rounded-[2px] border bg-purple-950/50 text-purple-300 border-purple-500/30 whitespace-nowrap flex items-center gap-1">
+                            <IconCalendarOff size={11} stroke={2} />
+                            <span>On Leave</span>
+                          </span>
                         ) : (
-                          <div className="space-y-2">
-                            {qa.assignedStudies.map((study) => (
-                              <div
-                                key={study.id}
-                                className="p-2.5 bg-[#01142B] border border-white/[0.08] rounded-[2px] flex items-center justify-between gap-3 text-xs"
-                              >
-                                <div className="min-w-0 flex flex-col gap-0.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-xs text-[#CC6600] font-semibold">
-                                      {study.intakeId}
-                                    </span>
-                                    <Badge
-                                      variant={
-                                        study.isPaused
-                                          ? "amber"
-                                          : study.isOverdue
-                                          ? "danger"
-                                          : study.isUrgent
-                                          ? "amber"
-                                          : "emerald"
-                                      }
-                                      className="font-mono text-[0.625rem] py-0 px-1.5"
-                                    >
-                                      {study.slaLabel}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-white/80 font-medium truncate max-w-xs text-xs font-sans">
-                                    {study.title}
-                                  </p>
-                                </div>
+                          <span
+                            className={`text-[0.688rem] font-mono font-semibold px-2 py-0.5 rounded-[2px] border whitespace-nowrap ${
+                              isFull
+                                ? "bg-amber-950/50 text-amber-300 border-amber-500/30"
+                                : isModerate
+                                ? "bg-sky-950/50 text-sky-300 border-sky-500/30"
+                                : "bg-emerald-950/50 text-emerald-300 border-emerald-500/30"
+                            }`}
+                          >
+                            {qa.activeAssignmentCount} in Review
+                          </span>
+                        )}
+                      </div>
 
-                                <Link
-                                  href={`/dashboard/admin/projects/${study.id}`}
-                                  className="shrink-0 flex items-center gap-1 text-[0.688rem] font-sans font-semibold text-sky-400 hover:text-sky-300 hover:underline"
-                                >
-                                  <span>Open Desk</span>
-                                  <IconArrowRight size={12} stroke={2} />
-                                </Link>
-                              </div>
+                      {/* 3-Segment Capacity Bar */}
+                      {!qa.isOnLeave && (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 w-full">
+                            {[1, 2, 3].map((step) => (
+                              <div
+                                key={step}
+                                className={`h-1.5 flex-1 rounded-[1px] transition-all ${
+                                  qa.activeAssignmentCount >= step
+                                    ? isFull
+                                      ? "bg-amber-400"
+                                      : isModerate
+                                      ? "bg-sky-400"
+                                      : "bg-emerald-400"
+                                    : "bg-white/[0.08]"
+                                }`}
+                              />
                             ))}
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+                          <div className="flex justify-between text-[0.625rem] text-white/40 font-mono">
+                            <span>Review Load</span>
+                            <span>{Math.round((qa.activeAssignmentCount / 3) * 100)}% load</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Review Focus */}
+                      <p className="text-[0.688rem] text-white/50 font-sans">
+                        {qa.isOnLeave
+                          ? `Unavailable for reviews — "${qa.leaveReason || "Scheduled Absence"}"`
+                          : "Statistical Verification & Peer Review"}
+                      </p>
+
+                      {/* Assigned Studies */}
+                      {qa.assignedStudies.length > 0 ? (
+                        <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-2">
+                          <span className="text-[0.625rem] font-mono uppercase text-white/40 font-semibold">
+                            Active Reviews ({qa.assignedStudies.length})
+                          </span>
+                          {qa.assignedStudies.map((study) => (
+                            <div
+                              key={study.id}
+                              className="p-2.5 bg-[#01142B] border border-white/[0.06] rounded-[2px] flex items-center justify-between gap-3 text-xs"
+                            >
+                              <div className="min-w-0 flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-xs text-[#CC6600] font-semibold">
+                                    {study.intakeId}
+                                  </span>
+                                  <Badge
+                                    variant={study.isUrgent ? "amber" : "emerald"}
+                                    className="font-mono text-[0.5625rem] py-0 px-1"
+                                  >
+                                    {study.slaLabel}
+                                  </Badge>
+                                </div>
+                                <p className="text-white/80 font-sans truncate text-xs">
+                                  {study.title}
+                                </p>
+                              </div>
+                              <Link
+                                href={`/dashboard/admin/projects/${study.id}`}
+                                className="shrink-0 flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 font-sans font-semibold hover:underline"
+                              >
+                                <span>Open</span>
+                                <IconArrowRight size={11} stroke={2} />
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-white/40 font-sans italic pt-1">
+                          {qa.isOnLeave
+                            ? `On leave${qa.leaveUntil ? ` until ${new Date(qa.leaveUntil).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}` : ""}.`
+                            : "No studies currently under review. Available for new assignments."}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 

@@ -65,12 +65,20 @@ export const ClientStudyCard: React.FC<ClientStudyCardProps> = ({
   study,
   onDownloadDeliverable,
 }) => {
-  const displayStatus = getProjectDisplayStatus(study);
+  const displayStatus = getProjectDisplayStatus(study, "CLIENT");
   const currentStageIndex = getStageIndex(study.masterStatus);
   const isDelivered =
     study.masterStatus === "DELIVERED" || study.masterStatus === "CLOSED";
   const isAwaitingInfo = study.masterStatus === "AWAITING_INFORMATION";
   const isQuotePending = study.masterStatus === "QUOTE_SENT";
+  const hasAssignedSpecialist =
+    study.masterStatus === "EXPERT_ASSIGNED" ||
+    study.masterStatus === "IN_PROGRESS" ||
+    study.masterStatus === "SLA_PAUSED" ||
+    study.masterStatus === "FOR_QA" ||
+    study.masterStatus === "QA_REVISION" ||
+    study.masterStatus === "DELIVERED" ||
+    study.masterStatus === "CLOSED";
 
   const institutionSchool =
     study.client?.clientProfile?.institutionSchool || null;
@@ -271,7 +279,7 @@ export const ClientStudyCard: React.FC<ClientStudyCardProps> = ({
               className="font-sans text-xs font-semibold px-3.5 py-2 flex items-center gap-2 border-white/15 hover:bg-white/[0.06] text-white/90 transition-colors"
             >
               <IconMessages size={16} stroke={1.5} className="text-sky-400" />
-              <span>Message Statistician</span>
+              <span>{hasAssignedSpecialist ? "Message Statistician" : "Message Desk"}</span>
             </Button>
           </Link>
         </div>

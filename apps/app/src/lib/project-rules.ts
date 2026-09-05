@@ -111,11 +111,14 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
  * 1. If in AWAITING_PAYMENT / SOW_SIGNED with proof submitted -> "Awaiting Payment Confirmation"
  * 2. If ACTIVE (payment confirmed, in queue for specialists assignment) -> "Pending Assignment"
  */
-export function getProjectDisplayStatus(project: {
-  masterStatus: ProjectStatus | string;
-  hasPendingPaymentVerification?: boolean;
-  latestPaymentStatus?: string | null;
-}): {
+export function getProjectDisplayStatus(
+  project: {
+    masterStatus: ProjectStatus | string;
+    hasPendingPaymentVerification?: boolean;
+    latestPaymentStatus?: string | null;
+  },
+  viewerRole?: string
+): {
   status: string;
   label: string;
   pulse: boolean;
@@ -146,20 +149,26 @@ export function getProjectDisplayStatus(project: {
   }
 
   if (project.masterStatus === "CLIENT_APPROVED") {
+    const isAdmin = viewerRole === "ADMIN" || viewerRole === "CEO";
     return {
       status: "CLIENT_APPROVED",
-      label: "Awaiting SOW",
+      label: isAdmin ? "Draft SOW Needed" : "Quote Accepted",
       pulse: true,
-      description: "Quote accepted by client. Admin is compiling the formal Statement of Work.",
+      description: isAdmin
+        ? "Client accepted quote. Action required: Compile and issue the Statement of Work."
+        : "Commercial proposal accepted. JAXIS Operations is preparing your official Statement of Work.",
     };
   }
 
   if (project.masterStatus === "SOW_PENDING") {
+    const isAdmin = viewerRole === "ADMIN" || viewerRole === "CEO";
     return {
       status: "SOW_PENDING",
-      label: "SOW Ready to Sign",
+      label: isAdmin ? "Awaiting Client Signature" : "Action: Sign SOW",
       pulse: true,
-      description: "Statement of Work issued. Waiting for client digital signature.",
+      description: isAdmin
+        ? "Statement of Work dispatched to client. Awaiting client signature."
+        : "Statement of Work issued. Review terms and type your signature to execute the contract.",
     };
   }
 

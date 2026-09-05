@@ -12,6 +12,9 @@ import {
   IconFiles,
   IconUser,
   IconClock,
+  IconShieldCheck,
+  IconCheck,
+  IconArrowRight,
 } from "@tabler/icons-react";
 import { formatFileCategory } from "@/lib/file-utils";
 
@@ -37,6 +40,8 @@ export default async function QAProjectFilesPage({ params }: QAProjectFilesPageP
 
   const { project, assignment, analysisFiles, clientFiles } = res.data;
   const currentFiles = analysisFiles.filter((f) => f.isCurrent);
+  const isReadyForQa = project.masterStatus === "FOR_QA";
+  const isDelivered = project.masterStatus === "DELIVERED";
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
@@ -49,13 +54,37 @@ export default async function QAProjectFilesPage({ params }: QAProjectFilesPageP
         ]}
         title="Statistical Analysis Working Files"
         badge={
-          <Badge variant="sky" className="font-mono text-xs">
+          <Badge
+            variant={
+              isDelivered
+                ? "emerald"
+                : isReadyForQa
+                ? "emerald"
+                : project.masterStatus === "QA_REVISION"
+                ? "warning"
+                : "sky"
+            }
+            className="font-mono text-xs"
+          >
             {project.masterStatus}
           </Badge>
         }
         description={`Senior QA Lead File Inspection • Study: ${project.researchTitle}`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {isReadyForQa && (
+              <Link href={`/dashboard/qa/projects/${project.id}/review`}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="rounded-[2px] text-xs gap-1.5 cursor-pointer bg-[#CC6600] hover:bg-[#CC6600]/90 text-white font-semibold shadow-sm"
+                >
+                  <IconShieldCheck size={14} stroke={2} />
+                  <span>Open Evaluation Desk</span>
+                  <IconArrowRight size={12} stroke={2} />
+                </Button>
+              </Link>
+            )}
             <Link href={`/dashboard/qa/messages`}>
               <Button variant="outline" size="sm" className="rounded-[2px] text-xs gap-1.5 cursor-pointer">
                 <IconMessages size={14} stroke={2} className="text-[#38BDF8]" />
@@ -71,6 +100,64 @@ export default async function QAProjectFilesPage({ params }: QAProjectFilesPageP
           </div>
         }
       />
+
+      {/* Lifecycle Status Guidance Banner */}
+      {project.masterStatus === "IN_PROGRESS" && (
+        <div className="p-4 rounded-[2px] bg-[#01142B] border border-amber-500/30 flex items-start gap-3 text-xs animate-content-fade">
+          <IconClock size={18} stroke={2} className="text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-0.5">
+            <span className="font-semibold text-amber-300">Study Still In Progress (Draft Mode)</span>
+            <p className="text-white/70 leading-relaxed">
+              The Lead Statistician is currently drafting statistical outputs. Once they finish and click{" "}
+              <strong className="text-white font-semibold">&ldquo;Submit for QA Review&rdquo;</strong> on their workbench,
+              this study will advance to <span className="font-mono text-emerald-400 font-semibold">FOR_QA</span> and unlock the Evaluation Desk for your formal review and approval.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isReadyForQa && (
+        <div className="p-4 rounded-[2px] bg-[#01142B] border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs animate-content-fade">
+          <div className="flex items-start gap-3">
+            <IconShieldCheck size={18} stroke={2} className="text-emerald-400 shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-emerald-300">Ready for Formal QA Evaluation</span>
+              <p className="text-white/70 leading-relaxed">
+                The Lead Statistician has submitted these outputs. You can now open the QA Evaluation Desk to recalculate empirical models, verify APA 7th tables, and approve or request revisions.
+              </p>
+            </div>
+          </div>
+          <Link href={`/dashboard/qa/projects/${project.id}/review`} className="shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              className="rounded-[2px] text-xs gap-1.5 cursor-pointer bg-[#CC6600] hover:bg-[#CC6600]/90 text-white font-semibold"
+            >
+              <span>Open Evaluation Desk</span>
+              <IconArrowRight size={13} stroke={2} />
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {isDelivered && (
+        <div className="p-4 rounded-[2px] bg-[#01142B] border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs animate-content-fade">
+          <div className="flex items-start gap-3">
+            <IconCheck size={18} stroke={2} className="text-emerald-400 shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-emerald-300">Outputs Approved</span>
+              <p className="text-white/70 leading-relaxed">
+                This study has been formally evaluated, verified, and approved for release.
+              </p>
+            </div>
+          </div>
+          <Link href={`/dashboard/qa/projects/${project.id}/review`} className="shrink-0">
+            <Button variant="outline" size="sm" className="rounded-[2px] text-xs cursor-pointer">
+              <span>View Evaluation Audit</span>
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Meta Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

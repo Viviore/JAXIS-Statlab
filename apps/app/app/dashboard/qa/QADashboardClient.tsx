@@ -225,11 +225,18 @@ export function QADashboardClient({
     });
   };
 
-  const urgentCount = assignments.filter((a) => a.isUrgent || a.isOverdue).length;
+  // Option 1: Only show submitted studies (FOR_QA) or studies under active QA revision (QA_REVISION)
+  const qaQueueAssignments = useMemo(() => {
+    return assignments.filter(
+      (a) => a.masterStatus === "FOR_QA" || a.masterStatus === "QA_REVISION"
+    );
+  }, [assignments]);
+
+  const urgentCount = qaQueueAssignments.filter((a) => a.isUrgent || a.isOverdue).length;
 
   // Prioritize studies ready for QA evaluation (FOR_QA) to the top of the queue
   const sortedAssignments = useMemo(() => {
-    return [...assignments].sort((a, b) => {
+    return [...qaQueueAssignments].sort((a, b) => {
       // 1. FOR_QA is highest priority (Ready for QA evaluation / Go Signal)
       const aIsForQa = a.masterStatus === "FOR_QA";
       const bIsForQa = b.masterStatus === "FOR_QA";
@@ -248,15 +255,9 @@ export function QADashboardClient({
       if (aIsUrgent && !bIsUrgent) return -1;
       if (!aIsUrgent && bIsUrgent) return 1;
 
-      // 4. In progress studies
-      const aIsProgress = a.masterStatus === "IN_PROGRESS";
-      const bIsProgress = b.masterStatus === "IN_PROGRESS";
-      if (aIsProgress && !bIsProgress) return -1;
-      if (!aIsProgress && bIsProgress) return 1;
-
       return 0;
     });
-  }, [assignments]);
+  }, [qaQueueAssignments]);
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
@@ -422,7 +423,7 @@ export function QADashboardClient({
               Conduct dual-blind statistical recalculation, inspect notebooks, and validate APA 7th format compliance
             </p>
           </div>
-          <span className="text-xs font-mono text-white/50">{assignments.length} Assigned Studies</span>
+          <span className="text-xs font-mono text-white/50">{sortedAssignments.length} Studies in Queue</span>
         </div>
 
         {isLoading ? (
@@ -431,11 +432,11 @@ export function QADashboardClient({
             label="Loading QA verification queue..."
             description="Retrieving assigned studies, verification records, and SLA timers."
           />
-        ) : assignments.length === 0 ? (
+        ) : sortedAssignments.length === 0 ? (
           <div className="p-12 text-center text-white/50 text-sm font-sans flex flex-col items-center justify-center gap-2">
             <IconCheck size={32} stroke={1.5} className="text-[#10B981]" />
             <span className="font-semibold text-white">No Studies Pending QA Review</span>
-            <span className="text-xs text-white/40">Studies assigned to your QA desk will appear here as statisticians submit analytical models.</span>
+            <span className="text-xs text-white/40">Studies assigned to your QA desk will appear here as soon as statisticians submit outputs for review.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">

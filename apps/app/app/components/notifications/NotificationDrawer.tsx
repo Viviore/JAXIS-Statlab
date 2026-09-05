@@ -23,6 +23,9 @@ import {
   IconArrowRight,
   IconAlertTriangle,
   IconInbox,
+  IconCreditCard,
+  IconReceipt2,
+  IconUserCheck,
 } from "@tabler/icons-react";
 
 type OptimisticAction =
@@ -267,6 +270,13 @@ export function NotificationDrawer() {
     switch (type) {
       case "NEW_INTAKE":
         return <IconInbox size={16} className="text-sky-400" />;
+      case "PAYMENT_UPDATE":
+        return <IconCreditCard size={16} className="text-emerald-400" />;
+      case "COMMERCIAL_UPDATE":
+        return <IconReceipt2 size={16} className="text-amber-400" />;
+      case "ASSIGNMENT":
+        return <IconUserCheck size={16} className="text-sky-400" />;
+      case "QA_DECISION":
       case "QA_SUBMISSION":
         return <IconShieldCheck size={16} className="text-emerald-400" />;
       case "PRE_DEADLINE":

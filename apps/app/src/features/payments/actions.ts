@@ -21,6 +21,7 @@ import {
   type PaymentChannelDetails,
   OFFICIAL_PAYMENT_CHANNELS,
 } from "@/lib/payment-rules";
+import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
 import type { PaymentStatus, PackageName, ProjectStatus } from "@prisma/client";
 import fs from "fs";
 import path from "path";
@@ -250,6 +251,19 @@ export async function submitPaymentProof(
     revalidatePath("/dashboard/finance");
     invalidateCacheTags(CACHE_TAGS.PAYMENTS, CACHE_TAGS.PROJECTS);
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "PAYMENT_UPDATE",
+        projectId: result.projectId,
+        title: "Payment Proof Submitted",
+        message: `Client submitted payment proof of ₱${Number(result.amountSubmitted).toLocaleString()} (Ref: ${result.referenceNumber}). Verification required.`,
+        targetRoles: ["FINANCE_OFFICER", "ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[submitPaymentProof] Realtime notification warning:", e);
+    }
+
     return {
       success: true,
       data: {
@@ -324,6 +338,19 @@ export async function submitPaymentProof(
       }
     } catch {
       // ignore
+    }
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "PAYMENT_UPDATE",
+        projectId: newPayment.projectId,
+        title: "Payment Proof Submitted",
+        message: `Client submitted payment proof of ₱${Number(newPayment.amountSubmitted).toLocaleString()} (Ref: ${newPayment.referenceNumber}). Verification required.`,
+        targetRoles: ["FINANCE_OFFICER", "ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore in dev
     }
 
     return { success: true, data: newPayment };
@@ -477,6 +504,20 @@ export async function verifyPayment(
     revalidatePath("/dashboard/finance");
     invalidateCacheTags(CACHE_TAGS.PAYMENTS, CACHE_TAGS.PROJECTS);
 
+    try {
+      const isFullyPaid = result.paymentStatus === "FULLY_PAID";
+      await dispatchRealtimeNotification({
+        eventType: "PAYMENT_UPDATE",
+        projectId: result.projectId,
+        title: isFullyPaid ? "Payment Completed" : "Payment Verified & Cleared",
+        message: `Payment of ₱${Number(result.amountSubmitted).toLocaleString()} has been verified. Study is active and ready for specialist assignment.`,
+        targetRoles: ["CLIENT", "ADMIN", "FINANCE_OFFICER"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[verifyPayment] Realtime notification warning:", e);
+    }
+
     return {
       success: true,
       data: {
@@ -543,6 +584,19 @@ export async function verifyPayment(
       }
     } catch {
       // ignore
+    }
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "PAYMENT_UPDATE",
+        projectId: current.projectId,
+        title: "Payment Verified & Cleared",
+        message: `Payment of ₱${Number(current.amountSubmitted).toLocaleString()} has been verified. Study is active and ready for specialist assignment.`,
+        targetRoles: ["CLIENT", "ADMIN", "FINANCE_OFFICER"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore in dev
     }
 
     return { success: true, data: current };
@@ -632,6 +686,19 @@ export async function rejectPayment(
     revalidatePath("/dashboard/finance");
     invalidateCacheTags(CACHE_TAGS.PAYMENTS, CACHE_TAGS.PROJECTS);
 
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "PAYMENT_UPDATE",
+        projectId: updated.projectId,
+        title: "Payment Proof Declined",
+        message: `Payment proof of ₱${Number(updated.amountSubmitted).toLocaleString()} was declined: "${rejectionReason}". Please review and upload a valid receipt.`,
+        targetRoles: ["CLIENT", "ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch (e) {
+      console.warn("[rejectPayment] Realtime notification warning:", e);
+    }
+
     return {
       success: true,
       data: {
@@ -681,6 +748,19 @@ export async function rejectPayment(
 
     devPayments[idx] = current;
     writePersistedDevPayments(devPayments);
+
+    try {
+      await dispatchRealtimeNotification({
+        eventType: "PAYMENT_UPDATE",
+        projectId: current.projectId,
+        title: "Payment Proof Declined",
+        message: `Payment proof of ₱${Number(current.amountSubmitted).toLocaleString()} was declined: "${rejectionReason}". Please review and upload a valid receipt.`,
+        targetRoles: ["CLIENT", "ADMIN"],
+        includeProjectParties: true,
+      });
+    } catch {
+      // Ignore in dev
+    }
 
     return { success: true, data: current };
   }
