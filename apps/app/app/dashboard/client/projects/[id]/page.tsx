@@ -26,6 +26,7 @@ import {
   IconShieldCheck,
   IconFileCertificate,
   IconMessages,
+  IconDownload,
 } from "@tabler/icons-react";
 import { getProjectById, deleteProjectFile, resolveMissingInfo, addProjectFile } from "@/features/projects/actions";
 import { uploadFileToR2 } from "@/lib/storage-client";
@@ -571,20 +572,6 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
               </Link>
             )}
 
-            {(project.masterStatus === "DELIVERED" ||
-              project.masterStatus === "REVISION_REQUESTED") && (
-              <Link href={`/dashboard/client/projects/${project.id}/deliverables`}>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="text-xs font-sans font-semibold whitespace-nowrap flex items-center gap-1.5 bg-[#CC6600] text-white hover:bg-[#FFA040]"
-                >
-                  <IconFileText size={14} stroke={2} />
-                  <span>Download Deliverables →</span>
-                </Button>
-              </Link>
-            )}
-
             {isPreSow && (
               <Button
                 variant="outline"
@@ -715,32 +702,61 @@ export default function ClientProjectDetailPage({ params }: PageProps) {
         </Card>
       )}
 
-      {/* ── Deliverables Released Banner (if DELIVERED or REVISION_REQUESTED) ── */}
+      {/* ── Deliverables Released or Payment Locked Banner (if DELIVERED or REVISION_REQUESTED) ── */}
       {(project.masterStatus === "DELIVERED" || project.masterStatus === "REVISION_REQUESTED") && (
-        <Card className="p-6 sm:p-7 bg-[#011B38] border border-emerald-500/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <IconShieldCheck size={20} stroke={1.5} className="text-emerald-400" />
+        project.financialSummary && !project.financialSummary.isFullyPaid && project.financialSummary.remainingBalance > 0 ? (
+          <Card className="p-6 sm:p-7 bg-[#01142B] border border-amber-500/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl animate-content-fade">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-[2px] bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <IconReceipt size={20} stroke={1.5} className="text-amber-400" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-sans text-amber-400 font-semibold uppercase tracking-wider block">
+                  Outputs Verified by QA · Final Payment Required to Unlock Deliverables
+                </span>
+                <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                  Your statistical findings and official reports have been verified by our Senior QA Lead. Please settle your remaining balance of ₱{project.financialSummary.remainingBalance.toLocaleString("en-PH", { minimumFractionDigits: 2 })} to immediately unlock your download links.
+                </p>
+              </div>
             </div>
-            <div className="space-y-0.5">
-              <span className="text-xs font-sans text-emerald-400 font-semibold uppercase tracking-wider block">
-                Research Study Complete · Final Deliverables Available
-              </span>
-              <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
-                Your statistical findings, cleaned datasets, and official reports have been verified and released. Access your downloads and the 3-day revision window.
-              </p>
+            <Link href={`/dashboard/client/projects/${project.id}/payment`}>
+              <Button
+                variant="primary"
+                size="md"
+                className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#E67300] text-white whitespace-nowrap px-5 py-2 rounded-[2px] cursor-pointer"
+              >
+                <IconReceipt size={15} stroke={2} className="mr-1.5" />
+                <span>Proceed to Payment Desk →</span>
+              </Button>
+            </Link>
+          </Card>
+        ) : (
+          <Card className="p-6 sm:p-7 bg-[#011B38] border border-emerald-500/40 rounded-[4px] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-xl animate-content-fade">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <IconShieldCheck size={20} stroke={1.5} className="text-emerald-400" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-sans text-emerald-400 font-semibold uppercase tracking-wider block">
+                  Research Study Complete · Final Deliverables Available
+                </span>
+                <p className="text-xs sm:text-sm text-white/75 font-sans leading-relaxed">
+                  Your statistical findings, cleaned datasets, and official reports have been verified and released. Access your downloads and the 3-day revision window.
+                </p>
+              </div>
             </div>
-          </div>
-          <Link href={`/dashboard/client/projects/${project.id}/deliverables`}>
-            <Button
-              variant="primary"
-              size="md"
-              className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#E67300] text-white whitespace-nowrap px-5 py-2 rounded-[2px]"
-            >
-              Access Deliverables Portal →
-            </Button>
-          </Link>
-        </Card>
+            <Link href={`/dashboard/client/projects/${project.id}/deliverables`}>
+              <Button
+                variant="primary"
+                size="md"
+                className="font-sans font-semibold text-xs min-h-[38px] bg-[#CC6600] hover:bg-[#E67300] text-white whitespace-nowrap px-5 py-2 rounded-[2px] cursor-pointer"
+              >
+                <IconDownload size={15} stroke={2} className="mr-1.5" />
+                <span>Download Deliverables →</span>
+              </Button>
+            </Link>
+          </Card>
+        )
       )}
 
       {/* ── Missing Information Banner (if AWAITING_INFORMATION) ── */}

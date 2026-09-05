@@ -107,6 +107,14 @@ export interface ProjectDetailItem {
       region: string;
     } | null;
   };
+  financialSummary?: {
+    totalAmount: number;
+    downpaymentRequired: number;
+    verifiedPaid: number;
+    remainingBalance: number;
+    isDownpaymentCleared: boolean;
+    isFullyPaid: boolean;
+  } | null;
   files: ProjectFileItem[];
 }
 

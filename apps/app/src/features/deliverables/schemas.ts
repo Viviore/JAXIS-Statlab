@@ -160,6 +160,12 @@ export interface ClientDeliverablesDTO {
     revisionWindowExpiresAt?: string | null;
   };
   isReleased: boolean;
+  paymentLock?: {
+    isLocked: boolean;
+    remainingBalance: number;
+    totalAmount: number;
+    totalPaid: number;
+  } | null;
   revisionWindow: {
     isActive: boolean;
     isExpired: boolean;

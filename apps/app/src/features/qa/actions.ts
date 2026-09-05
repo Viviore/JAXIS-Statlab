@@ -20,7 +20,8 @@ import {
   type AdminQaRejectionWarningDTO,
 } from "./schemas";
 import { dispatchRealtimeNotification } from "@/features/notifications/dispatcher";
-import type { RoleName } from "@prisma/client";
+import { computePurgeDeadline, computeRevisionWindowExpiry } from "@/lib/delivery-rules";
+import type { RoleName, DeliverableCategory } from "@prisma/client";
 
 export type QaActionResult<T = void> =
   | { success: true; data: T }
@@ -411,6 +412,9 @@ export async function submitQaReview(
       where: { OR: [{ id: projectId }, { intakeId: projectId }] },
       include: {
         assignment: true,
+        analysisFiles: {
+          where: { isCurrent: true },
+        },
       },
     });
 
@@ -477,13 +481,54 @@ export async function submitQaReview(
           isLocked = true;
         }
 
-        // Update Project master status
+        let deliveredAt: Date | undefined = undefined;
+        let filesPurgeAt: Date | undefined = undefined;
+        let revisionWindowExpiresAt: Date | undefined = undefined;
+
+        if (decision === "QA_APPROVED") {
+          newProjectStatus = "DELIVERED";
+          qaApproved = true;
+          deliveredAt = now;
+          filesPurgeAt = computePurgeDeadline(now, 90);
+          revisionWindowExpiresAt = await computeRevisionWindowExpiry(now, 3);
+
+          // Auto-promote approved current analysisFiles to released deliverables
+          for (const af of project.analysisFiles) {
+            const existing = await tx.deliverable.findFirst({
+              where: { projectId: project.id, filePath: af.filePath },
+            });
+            if (existing) continue;
+
+            let cat: DeliverableCategory = "STATISTICAL_OUTPUT";
+            if (af.fileCategory === "PDF_REPORT") cat = "PDF_REPORT";
+            else if (af.fileCategory === "RAW_DATASET") cat = "RAW_DATA_CLEANED";
+            else if (af.fileCategory === "OTHER") cat = "OTHER";
+
+            await tx.deliverable.create({
+              data: {
+                projectId: project.id,
+                category: cat,
+                fileName: af.fileName,
+                filePath: af.filePath,
+                fileSize: af.fileSize || 1024,
+                fileType: af.fileType || "application/octet-stream",
+                uploadedBy: af.statisticianId || user.id,
+                isFinalReleased: true,
+                releasedAt: now,
+                releasedBy: user.id,
+              },
+            });
+          }
+        }
+
+        // Update Project master status and delivery timestamps
         await tx.project.update({
           where: { id: project.id },
           data: {
             masterStatus: newProjectStatus,
             qaApproved,
             isLocked,
+            ...(deliveredAt ? { deliveredAt, filesPurgeAt, revisionWindowExpiresAt } : {}),
           },
         });
 

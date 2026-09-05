@@ -12,6 +12,7 @@ import {
   StatusBadge,
   Badge,
   Toast,
+  Peso,
 } from "@repo/ui";
 import {
   IconDownload,
@@ -21,6 +22,7 @@ import {
   IconLoader2,
   IconRotateClockwise,
   IconInfoCircle,
+  IconReceipt,
 } from "@tabler/icons-react";
 import { DELIVERABLE_CATEGORY_METADATA } from "@/lib/delivery-rules";
 
@@ -30,7 +32,7 @@ interface ClientDeliverablesDeskProps {
 
 export function ClientDeliverablesDesk({ data }: ClientDeliverablesDeskProps) {
   const router = useRouter();
-  const { project, isReleased, revisionWindow, deliverables, revisions, hasPendingRevision } = data;
+  const { project, isReleased, paymentLock, revisionWindow, deliverables, revisions, hasPendingRevision } = data;
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
@@ -127,8 +129,34 @@ export function ClientDeliverablesDesk({ data }: ClientDeliverablesDeskProps) {
         </div>
       ) : null}
 
+      {/* Payment Lock Notice */}
+      {!isReleased && paymentLock?.isLocked && (
+        <Card className="p-8 sm:p-12 text-center bg-[#01142B] border border-amber-500/30">
+          <div className="mx-auto w-16 h-16 rounded-[2px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-4">
+            <IconReceipt size={36} stroke={1.5} />
+          </div>
+          <h3 className="font-sans font-bold text-lg text-white">
+            Deliverables Locked · Final Balance Settlement Required
+          </h3>
+          <p className="font-sans text-xs sm:text-sm text-white/70 max-w-xl mx-auto mt-2 leading-relaxed">
+            Your Lead Statistician and Senior QA Lead have completed and verified your research outputs. Settle your outstanding balance of <span className="text-white font-semibold"><Peso />{paymentLock.remainingBalance.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span> to unlock your official deliverables and start the 3-day revision window.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push(`/dashboard/client/projects/${project.id}/payment`)}
+              className="bg-[#CC6600] hover:bg-[#E67300] text-white"
+            >
+              <IconReceipt size={16} className="mr-1.5" />
+              <span>Settle Balance on Payment Desk →</span>
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Unreleased Under Packaging Notice */}
-      {!isReleased && (
+      {!isReleased && !paymentLock?.isLocked && (
         <Card className="p-8 sm:p-12 text-center bg-[#01142B] border border-sky-500/20">
           <div className="mx-auto w-16 h-16 rounded-[2px] bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4">
             <IconShieldCheck size={36} />

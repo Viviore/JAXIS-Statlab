@@ -8,6 +8,7 @@ import { db, withDbTimeout } from "@/lib/db";
 import { invalidateCacheTags, CACHE_TAGS } from "@/lib/cache-tags";
 import { sendEmail } from "@/lib/email";
 import { assertValidStatusTransition, generateIntakeId } from "@/lib/project-rules";
+import { calculateProjectBalance } from "@/lib/payment-rules";
 import { getClientProfile } from "@/features/client-profile/actions";
 import {
   CreateProjectSchema,
@@ -722,8 +723,18 @@ export async function getProjectById(
           payments: {
             select: {
               id: true,
+              amountSubmitted: true,
               paymentStatus: true,
               createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+          },
+          quotations: {
+            select: {
+              id: true,
+              totalAmount: true,
+              downpaymentRequired: true,
+              status: true,
             },
             orderBy: { createdAt: "desc" },
             take: 1,
@@ -747,11 +758,31 @@ export async function getProjectById(
       };
     }
 
-    const latestPay = (project as unknown as { payments?: Array<{ paymentStatus: string }> }).payments?.[0];
+    const latestPay = project.payments?.[0];
+    const latestQuote = project.quotations?.[0];
+    const totalAmount = latestQuote ? Number(latestQuote.totalAmount) : 0;
+    const downpaymentRequired = latestQuote ? Number(latestQuote.downpaymentRequired) : 0;
+    const balanceSummary = calculateProjectBalance(
+      project.payments.map((p) => ({
+        amountSubmitted: Number(p.amountSubmitted),
+        paymentStatus: p.paymentStatus,
+      })),
+      totalAmount,
+      downpaymentRequired
+    );
+
     const mapped = {
       ...project,
       latestPaymentStatus: latestPay?.paymentStatus || null,
       hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
+      financialSummary: {
+        totalAmount: balanceSummary.totalAmount,
+        downpaymentRequired: balanceSummary.downpaymentRequired,
+        verifiedPaid: balanceSummary.verifiedPaid,
+        remainingBalance: balanceSummary.remainingBalance,
+        isDownpaymentCleared: balanceSummary.isDownpaymentCleared,
+        isFullyPaid: balanceSummary.isFullyPaid,
+      },
     };
 
     return {

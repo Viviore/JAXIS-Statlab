@@ -27,7 +27,7 @@ import {
   type SubmitRevisionRequestInput,
   type UploadDeliverableInput,
 } from "./schemas";
-import { Deliverable, RevisionRequest, RoleName } from "@prisma/client";
+import { Deliverable, RevisionRequest, RoleName, DeliverableCategory } from "@prisma/client";
 
 /**
  * Maps Deliverable Prisma record to DeliverableDTO
@@ -329,7 +329,7 @@ export async function getClientDeliverables(projectId: string): Promise<ClientDe
   const userRole = (session.user as { role?: RoleName })?.role;
   const isClient = userRole === "CLIENT";
 
-  const project = await db.project.findUnique({
+  let project = await db.project.findUnique({
     where: { id: projectId },
     include: {
       deliverables: {
@@ -339,6 +339,9 @@ export async function getClientDeliverables(projectId: string): Promise<ClientDe
           releaser: { select: { id: true, fullName: true } },
         },
         orderBy: { createdAt: "desc" },
+      },
+      analysisFiles: {
+        where: { isCurrent: true },
       },
       revisionRequests: {
         where: isClient ? { clientId: session.user.id } : undefined,
@@ -359,7 +362,101 @@ export async function getClientDeliverables(projectId: string): Promise<ClientDe
     throw new Error("Unauthorized: You do not have access to this study's deliverables.");
   }
 
-  const isReleased = project.masterStatus === "DELIVERED" || Boolean(project.deliveredAt);
+  // Check Dual Release Gates (RULE_REL_01 financial & RULE_REL_02 QA clearance)
+  const gateEligibility = await assertReleaseEligibility(projectId);
+  const isFinancialLocked = !gateEligibility.financialGatePassed && gateEligibility.remainingBalance > 0;
+
+  // If study is DELIVERED and financial gate passed, ensure analysis files are packaged as deliverables
+  if (project.masterStatus === "DELIVERED" && !isFinancialLocked) {
+    const now = new Date();
+    const purgeDeadline = computePurgeDeadline(now, 90);
+    const revisionExpiry = await computeRevisionWindowExpiry(now, 3);
+
+    if (project.deliverables.length === 0 && project.analysisFiles.length > 0) {
+      for (const af of project.analysisFiles) {
+        // Prevent duplicate creation
+        const existing = await db.deliverable.findFirst({
+          where: { projectId: project.id, filePath: af.filePath },
+        });
+        if (existing) continue;
+
+        let cat: DeliverableCategory = "STATISTICAL_OUTPUT";
+        if (af.fileCategory === "PDF_REPORT") cat = "PDF_REPORT";
+        else if (af.fileCategory === "RAW_DATASET") cat = "RAW_DATA_CLEANED";
+        else if (af.fileCategory === "OTHER") cat = "OTHER";
+
+        await db.deliverable.create({
+          data: {
+            projectId: project.id,
+            category: cat,
+            fileName: af.fileName,
+            filePath: af.filePath,
+            fileSize: af.fileSize || 1024,
+            fileType: af.fileType || "application/octet-stream",
+            uploadedBy: af.statisticianId || session.user.id,
+            isFinalReleased: true,
+            releasedAt: now,
+            releasedBy: session.user.id,
+          },
+        });
+      }
+
+      await db.project.update({
+        where: { id: project.id },
+        data: {
+          deliveredAt: project.deliveredAt || now,
+          filesPurgeAt: project.filesPurgeAt || purgeDeadline,
+          revisionWindowExpiresAt: project.revisionWindowExpiresAt || revisionExpiry,
+        },
+      });
+
+      // Refetch project with newly created deliverables
+      const refreshed = await db.project.findUnique({
+        where: { id: projectId },
+        include: {
+          deliverables: {
+            where: isClient ? { isFinalReleased: true } : undefined,
+            include: {
+              uploader: { select: { id: true, fullName: true } },
+              releaser: { select: { id: true, fullName: true } },
+            },
+            orderBy: { createdAt: "desc" },
+          },
+          analysisFiles: {
+            where: { isCurrent: true },
+          },
+          revisionRequests: {
+            where: isClient ? { clientId: session.user.id } : undefined,
+            include: {
+              client: { select: { id: true, fullName: true, email: true } },
+              classifier: { select: { id: true, fullName: true } },
+            },
+            orderBy: { createdAt: "desc" },
+          },
+        },
+      });
+      if (refreshed) {
+        project = refreshed;
+      }
+    } else if (!project.revisionWindowExpiresAt) {
+      await db.project.update({
+        where: { id: project.id },
+        data: {
+          deliveredAt: project.deliveredAt || now,
+          filesPurgeAt: project.filesPurgeAt || purgeDeadline,
+          revisionWindowExpiresAt: revisionExpiry,
+        },
+      });
+      project.deliveredAt = project.deliveredAt || now;
+      project.filesPurgeAt = project.filesPurgeAt || purgeDeadline;
+      project.revisionWindowExpiresAt = revisionExpiry;
+    }
+  }
+
+  const isReleased =
+    !isFinancialLocked &&
+    (project.masterStatus === "DELIVERED" || Boolean(project.deliveredAt)) &&
+    project.deliverables.length > 0;
   const countdown = getRevisionWindowCountdown(project.revisionWindowExpiresAt);
 
   const pendingRevision = project.revisionRequests.some(
@@ -380,6 +477,14 @@ export async function getClientDeliverables(projectId: string): Promise<ClientDe
         : null,
     },
     isReleased,
+    paymentLock: isFinancialLocked
+      ? {
+          isLocked: true,
+          remainingBalance: gateEligibility.remainingBalance,
+          totalAmount: gateEligibility.totalAmount,
+          totalPaid: gateEligibility.totalPaid,
+        }
+      : null,
     revisionWindow: {
       ...countdown,
       expiresAtFormatted: project.revisionWindowExpiresAt
