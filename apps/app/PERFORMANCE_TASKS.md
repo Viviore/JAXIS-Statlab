@@ -124,6 +124,33 @@
 
 ---
 
+## Phase 4 — High-Speed Database Retrieval & In-Memory Caching (Completed)
+
+### Task 4.1 — Modern Minimalist Loading State Redesign & Anti-Double-Loading
+- [x] Redesigned `LoadingState.tsx` from the legacy HUD reticle into a sleek single-track circular arc spinner (`rgba(255, 255, 255, 0.08)` base with `#CC6600` 100° arc, `strokeLinecap="round"`, `0.85s linear infinite`).
+- [x] Removed all HUD clutter, crosshair ticks, concentric rings, and ping blobs.
+- [x] Audited all role pages (Admin, Finance, Client, QA, Statistician, CEO) to eliminate secondary accessory card loaders flashing concurrently alongside page loaders.
+- [x] Updated `PendingLeaveQueue.tsx` to return `null` while loading so it never triggers a double loading state.
+
+### Task 4.2 — In-Memory Server Caching (`unstable_cache`) & Canonical Tags
+- [x] Created `apps/app/src/lib/cache-tags.ts` establishing `CACHE_TAGS` (`PROJECTS`, `STAFF_CAPACITY`, `STAFF_DIRECTORY`, `ATTENDANCE_REVIEW`, `PAYROLL`).
+- [x] Implemented `invalidateCacheTags(...)` supporting Next.js 16 `updateTag` and `revalidateTag` for instantaneous read-your-own-writes consistency.
+- [x] Wrapped `getStaffCapacity` specialist queries in `fetchCachedStaffUsers` with 30s TTL.
+- [x] Wrapped `getAttendanceReviewDeskData` raw records in `fetchCachedAttendanceDeskRaw` with 30s TTL.
+- [x] Wrapped signatory resolution and staff directories in `fetchCachedSignatoriesDb` and `fetchCachedStaffMembersDb` with 60s TTL.
+
+### Task 4.3 — Parallel Query Execution in Read Actions
+- [x] Parallelized sequential Prisma queries in `attendance/actions.ts` using `Promise.all` across correction requests, monthly logs, and active clock-ins.
+- [x] Added immediate tag invalidation to `reviewAttendanceCorrection`, `clockIn`, `clockOut`, and `fileAttendanceCorrection`.
+
+### Task 4.4 — Server Component Pre-loading for Operational Desks (RSC)
+- [x] Migrated `admin/assignments` to async Server Component `page.tsx` prefetching `getProjects` and `getStaffCapacity` concurrently, passing preloaded data to `AssignmentsClient.tsx` (0ms spinner wait time).
+- [x] Migrated `finance/attendance` to async Server Component `page.tsx` prefetching `getAttendanceReviewDeskData`, passing preloaded data to `AttendanceReviewClient.tsx`.
+- [x] Migrated `finance/payroll` to async Server Component `page.tsx` prefetching `getCompanyPayslips` and `getPayrollConfigurations`, passing preloaded data to `FinancePayrollClient.tsx`.
+- [x] Verified zero console errors and 0-error TypeScript build across the monorepo.
+
+---
+
 ## 🔒 Verification & Quality Gate Checklist
 Before marking any task complete:
 - [x] `npm run check-types` passes with **0 errors**.

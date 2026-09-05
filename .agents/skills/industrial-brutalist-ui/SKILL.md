@@ -1,6 +1,6 @@
 ---
 name: industrial-brutalist-ui
-description: Master Enterprise Scientific & Statistical Consultation UI standard for JAXIS StatLab. Anchored strictly to apps/app/docs/design-system.md and canonical reference photos. Enforces deep navy substrates (#010114, #01142B, #011B38), enterprise orange accents (#CC6600), spacious card padding (p-6 to p-12), Tabler icons exclusively, orbital loading states, and clean sans-serif typography.
+description: Master Enterprise Scientific & Statistical Consultation UI standard for JAXIS StatLab. Anchored strictly to apps/app/docs/design-system.md and canonical reference photos. Enforces deep navy substrates (#010114, #01142B, #011B38), enterprise orange accents (#CC6600), spacious card padding (p-6 to p-12), Tabler icons exclusively, modern minimalist loading states, and clean sans-serif typography.
 ---
 
 # SKILL: JAXIS StatLab Enterprise Scientific Design System
@@ -48,9 +48,10 @@ This skill directly enforces the canonical visual design specifications from **[
 
 ---
 
-## 5. Telemetry & Loading States (NO CLUNKY BOXES / NO PING BLOBS)
+## 5. Modern Loading & Anti-Double-Loading Standards (NO CLUNKY BOXES / NO HUD SLOP)
 - **Standard Component:** All data retrieval and async states must use `<LoadingState variant="page" | "table" | "card" | "inline" />` from `@repo/ui`.
-- **Orbital Loader Standard:** High-precision orbital sweep gauge with dual-layer calibrated track (`border-white/[0.08]` + `border-t-[#CC6600] border-r-[#FFA040]/60`) and glowing center micro-emitter node (`OrbitalSpinner`).
+- **Modern Minimalist Spinner Standard:** Calibrated single circular track in `rgba(255, 255, 255, 0.08)` with a smooth 100° active Enterprise Orange arc (`#CC6600`) with rounded ends, rotating at `0.85s linear infinite`. Zero sci-fi crosshairs, concentric dotted rings, counter-rotating arcs, or AI-slop HUD clutter.
+- **Anti-Double-Loading Rule:** A page or view must only ever render ONE unified loader at a time. Inner widgets and cards must remain hidden until the parent container finishes loading.
 - **Typography:** Clean Sans-Serif title and subtitle with zero robotic double slashes.
 
 ---

@@ -581,6 +581,24 @@ Layer 0 (Foundation)
 
 ---
 
+### `20` — High-Speed Database Retrieval Engine & Modern Minimalist UI
+
+**Depends on:** All modules\
+**Domain:** Core Platform Architecture & UI Standards
+
+**Goal:** Provide enterprise-grade data retrieval speed, eliminate initial loading spinner delays via Server Component pre-loading (RSC), implement in-memory server caching (`unstable_cache` + `updateTag`), and overhaul the platform loading state into a modern minimalist single-track arc spinner.
+
+**Deliverables:**
+- Modern Minimalist single-track arc spinner (`LoadingState.tsx`, Linear / Vercel style)
+- Anti-double-loading policy eliminating accessory card loaders
+- Server-side in-memory caching engine (`apps/app/src/lib/cache-tags.ts`)
+- Tag-based invalidation across all mutation Server Actions
+- Server Component prefetching for primary operational desks (`admin/assignments`, `finance/attendance`, `finance/payroll`)
+
+**Gate:** `npm run check-types` 0 errors. All operational desks render with initial preloaded data on initial HTML delivery.
+
+---
+
 ## Revised Summary Table
 
 | # | Module | Domain | Key Dependency | Change from v1 |
@@ -605,3 +623,4 @@ Layer 0 (Foundation)
 | 17 | Reporting, Analytics & Archive | Reports + Archive | All | 🔀 **Merged 18 + 19** |
 | 18 | Staff Attendance, Duty Tracking & Adjustments | People Operations / Duty Governance | 01, 02, 14 | ➕ **New (Duty & Payroll Adjustments)** |
 | 19 | Corporate Payroll Policies & Payslip Engine | People Operations / Treasury Settlement | 01, 02, 14, 18 | ➕ **New (CEO Policies & Payslips)** |
+| 20 | High-Speed Caching & Minimalist UI | Performance & Architecture | All | ➕ **New (Speed Engine & UI Overhaul)** |

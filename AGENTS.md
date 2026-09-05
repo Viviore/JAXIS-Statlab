@@ -7,7 +7,7 @@ All AI coding assistants and developers MUST inspect and strictly follow [.agent
 ### Core Non-Negotiable Directives:
 1. **Follow [design-system.md](file:///c:/Users/ROG%20STRIX/Desktop/JAXIS%20StatLab/apps/app/docs/design-system.md) strictly for all UI.**
 2. **Anti-Double-Padding Layout Standard**: Inner dashboard pages must use `flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade` without adding redundant outer horizontal padding (the shell handles viewport gutters).
-3. **Orbital Loading States**: Always use `<LoadingState variant="page" | "table" | "card" | "inline" />` with high-precision orbital sweep gauge. Zero clunky boxes or pinging blobs.
+3. **Modern Minimalist Loading & Anti-Double-Loading Standard**: Always use `<LoadingState variant="page" | "table" | "card" | "inline" />` with the clean, single-track Enterprise Orange arc spinner. Zero clunky boxes, pinging blobs, or sci-fi HUD slop. Never render secondary card spinners alongside page-level loaders.
 4. **Button & Dropdown Styling**: Precision `rounded-[2px]`, Title Case copy, centered high-contrast loader spinner, and zero hover/focus rings on dropdown items.
 5. **Tabler Icons Exclusively**: No emojis anywhere, no ad-hoc raw SVGs.
 6. **Sans-Serif First**: Use `font-sans` for readable content. Reserve `font-mono` strictly for IDs and metrics.
@@ -16,5 +16,6 @@ All AI coding assistants and developers MUST inspect and strictly follow [.agent
 9. **Canonical KPI Cards**: All metric and telemetry cards must exclusively use `<KpiCard />` from `@repo/ui` with uppercase mono labels (`text-xs font-mono text-white/50 tracking-wider font-semibold`), bold mono metrics (`font-mono font-bold text-2xl sm:text-3xl`), unit suffixes (`text-xs text-white/40 font-mono`), and sans-serif descriptions (`text-xs font-sans text-white/50`). Zero ad-hoc raw cards or divergent typography.
 10. **Philippine Peso (₱) Symbol Harmonization**: Always use `<Peso />` from `@repo/ui` or `formatPeso()` from `@/lib/formatters`. Never render raw `₱` inside `font-mono font-bold` (renders clunky/heavy monospace fallback glyph). The peso symbol must always use `font-sans font-normal opacity-85 select-none inline-block mr-0.5`.
 11. **Standardized PageHeader & Navigation Breadcrumbs**: All inner pages must exclusively use `<PageHeader />` from `@repo/ui` with the canonical hierarchy: (1) Breadcrumbs starting with `{ label: "WORKSPACE", href: "/dashboard" }` via `next/link`, (2) Authoritative Title (`font-sans font-bold text-xl sm:text-2xl`), (3) Description (`font-sans text-sm text-white/60`), and (4) Right-aligned action buttons with a bottom border divider (`border-b border-white/10 pb-6 sm:pb-8`). Zero raw `<h1>` divs.
+12. **High-Speed Data Retrieval & Server Component Pre-loading**: Inner operational desks must prefetch data on the server in async Server Components (RSC) and pass `initialData` into client components to eliminate initial loading delays entirely. Use in-memory server caching (`unstable_cache` + `invalidateCacheTags`) for read-heavy operations.
 
 

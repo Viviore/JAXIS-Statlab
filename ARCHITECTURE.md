@@ -243,3 +243,41 @@ CREATE TABLE payouts (
 - **QA:** `GET /api/v1/qa/queue`, `POST /api/v1/qa/reviews`, `POST /api/v1/qa/escalate`
 - **Deliverables:** `POST /api/v1/deliverables/upload`, `PATCH /api/v1/deliverables/:id/release`
 - **Finance:** `GET /api/v1/finance/ledger`, `POST /api/v1/finance/payouts/disburse`
+
+---
+
+## 7. Performance, Caching & Data Retrieval Architecture
+
+JAXIS StatLab implements a multi-tier caching and prefetching engine engineered for sub-100ms perceived transitions and zero-CLS initial rendering:
+
+```
+[Browser Request]
+       │
+       ▼
+[Server Component (RSC) page.tsx]
+       │
+       ├── Concurrent Parallel Prefetch (Promise.all)
+       │         │
+       │         ▼
+       ├── [In-Memory Cache (unstable_cache)]
+       │         │
+       │         ├── HIT (0-2ms) ──> Memory Cache Return
+       │         │
+       │         └── MISS ─────────> PostgreSQL (Prisma with DbTimeout)
+       │
+       ▼
+[Pre-populated Client Component (Client.tsx)]
+       │
+       └── Render HTML with 100% Data Present (Zero Spinner Flash)
+```
+
+1. **In-Memory Server Caching (`unstable_cache`)**:
+   - High-throughput read operations (specialist capacity, attendance review datasets, company signatories, staff directories) are wrapped in module-scoped `unstable_cache` with canonical tags (`CACHE_TAGS` in `src/lib/cache-tags.ts`).
+2. **Instant Tag-Based Invalidation (`invalidateCacheTags`)**:
+   - Mutating Server Actions immediately invalidate affected tags using Next.js 16 `updateTag` and `revalidateTag`, guaranteeing that writes are instantly visible across all users without waiting for TTL expiry.
+3. **Server Component Pre-Loading (RSC)**:
+   - Primary operational desks (`admin/assignments`, `finance/attendance`, `finance/payroll`) prefetch data directly in async Server Components and feed `initialData` into client components.
+   - Client components start with `isLoading = false`, giving users an instant view of their dashboard without intermediate blank states.
+4. **Anti-Double-Loading Policy**:
+   - Pages enforce a strict single-loader policy via `<LoadingState>` from `@repo/ui`. Sub-components and auxiliary cards never render independent spinners while page-level data is loading.
+

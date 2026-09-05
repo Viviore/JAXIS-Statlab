@@ -45,9 +45,11 @@ All AI coding assistants and developers MUST strictly follow the design system a
 
 ---
 
-## 4. Telemetry & Loading States (NO CLUNKY BOXES / NO PING BLOBS)
+## 4. Modern Loading & Data Retrieval Standards (NO CLUNKY BOXES / NO HUD SLOP / NO DOUBLE LOADERS)
 - **Standard Component**: All data retrieval and async states must use `<LoadingState variant="page" | "table" | "card" | "inline" />` from `@repo/ui`.
-- **Orbital Loader Standard**: Uses the dual-layer calibrated orbital track with active sweep arc and glowing center micro-emitter node (`OrbitalSpinner`).
+- **Modern Minimalist Spinner Standard**: Single calibrated circular track in `rgba(255, 255, 255, 0.08)` with a clean 100° active Enterprise Orange arc (`#CC6600`) with rounded caps (`strokeLinecap="round"`), rotating smoothly at `0.85s linear infinite`. Zero sci-fi crosshairs, concentric dotted rings, counter-rotating multi-color arcs, or AI-slop HUD clutter.
+- **Anti-Double-Loading Policy**: A page must only ever show ONE unified loader at a time. Sub-components (such as `<PendingLeaveQueue />` or secondary widgets) must never show independent spinners or skeletons while a page-level or parent container loader is active.
+- **High-Speed Database Retrieval & Server Component Pre-loading**: Inner operational desks must prefetch data on the server in async Server Components (`page.tsx`) and pass `initialData` into client components, eliminating initial client-side spinner flashes entirely. Read-heavy database operations must use in-memory server caching (`unstable_cache` with canonical `CACHE_TAGS` in `@/lib/cache-tags`) with immediate mutation invalidation (`invalidateCacheTags`).
 - **Standardized KPI Metric Cards (`<KpiCard />`)**: All telemetry, financial, and operational metric cards across all roles and pages **MUST** use `<KpiCard />` from `@repo/ui`. Ad-hoc raw cards or custom div layouts for KPIs are strictly forbidden. Header labels are uppercase monospace (`font-mono text-xs text-white/50 tracking-wider font-semibold`), metric values are bold monospace (`font-mono font-bold text-2xl sm:text-3xl`), unit labels are `text-xs text-white/40 font-mono`, and descriptions are `text-xs font-sans text-white/50`.
 - **Typography**: Clean Sans-Serif title and subtitle with zero robotic double slashes.
 

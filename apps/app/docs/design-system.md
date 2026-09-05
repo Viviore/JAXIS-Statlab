@@ -500,33 +500,35 @@ All action buttons placed in form footers must use `className="w-full sm:w-auto 
 
 ---
 
-### 6.7. Enterprise Scientific Loading System: `LoadingState`
+### 6.7. Modern Minimalist Loading System: `LoadingState`
 
-Generic shimmering grey skeletons and clunky square boxes with pinging blobs are **strictly banned** across the workspace. In their place, all asynchronous data fetching and route transitions use the high-precision **`<LoadingState>`** component from `@repo/ui`.
+Generic shimmering grey skeletons, bouncing blobs, and sci-fi HUD crosshairs are **strictly banned** across the workspace. In their place, all asynchronous data fetching and route transitions use the clean, modern **`<LoadingState>`** component from `@repo/ui` (Linear / Vercel style).
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│ [Table / Card Shell Pinned]                            │
-│                 [OrbitalLoader Gauge]                  │
-│               (High-Precision Sweep Ring)              │
+│ [Container / Card / Page Shell Pinned]                 │
+│                 [Minimalist Arc Spinner]               │
+│               (Clean Single-Track Arc)                 │
 │               Loading research studies...              │
-│         Please wait while telemetry synchronizes       │
+│                 Please wait a moment                   │
 └────────────────────────────────────────────────────────┘
 ```
 
-#### **The Precision Orbital Loader (`OrbitalSpinner`):**
-- **Dual-Layer Calibrated Track:** Ultra-thin background radial track (`border-white/[0.08]`) with an active high-contrast gradient sweep arc (`border-t-[#CC6600] border-r-[#FFA040]/60 animate-spin`).
-- **Center Micro-Emitter Node:** Glowing core node (`bg-[#CC6600] shadow-[0_0_8px_#CC6600]`) conveying authoritative statistical telemetry.
-- **Calibrated Typography:** Crisp Sans-Serif title (`text-base font-semibold text-white tracking-tight`) + soft secondary reading text (`text-xs text-white/50 leading-relaxed max-w-sm`). Zero double slashes.
+#### **The Modern Minimalist Spinner Standard:**
+- **Calibrated Track:** Ultra-clean single geometric circular track in subtle `rgba(255, 255, 255, 0.08)`.
+- **Fluid Active Arc:** 100° active arc in Enterprise Orange (`#CC6600`) with smooth rounded line caps (`strokeLinecap="round"`), rotating at `0.85s linear infinite`.
+- **Zero HUD Slop / Zero Gimmicks:** No crosshair ticks, no concentric dotted rings, no multi-color counter-rotating arcs, and no center emitter blobs.
+- **Calibrated Typography:** Crisp Sans-Serif title (`text-base font-semibold text-white tracking-tight`) + soft secondary reading text (`text-xs text-white/50 leading-relaxed max-w-sm`). Zero robotic double slashes (`//`).
+- **Anti-Double-Loading Policy:** A page or view must only ever render ONE unified loader at a time. Sub-components (such as `<PendingLeaveQueue />` or secondary widgets) must never show independent spinners or skeletons while a page-level or parent container loader is active.
 
 #### **The 4 Standard Loading Variants:**
 
 | Variant | Container Dimensions | Primary Visual Elements | Use Case |
 | :--- | :--- | :--- | :--- |
-| **`variant="table"`** | `py-16 px-4` inside `<tr><td colSpan={N}>` | `OrbitalSpinner size="md"` + Sans-serif typography (`text-sm font-semibold` + `text-xs text-white/45`). | Table bodies (`DataTable`, Study Registries, Payout Ledgers) while fetching records. Preserves table headers with **Zero CLS**. |
-| **`variant="card"`** | `min-h-[160px]` | Centered `OrbitalSpinner` + Sans-serif label & description (`text-sm font-semibold`). | Inside KPI matrix cards, verification guardrail loading cards, and inspector containers. |
-| **`variant="page"`** | `min-h-full` (100% flex centered) | Large `OrbitalSpinner size="lg"` + Sans-serif status heading and subtext. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
-| **`variant="inline"`** | Compact inline row | `OrbitalSpinner size="sm"` + concise sans-serif string. | Inside button micro-interactions, modal sub-headers, or search bars. |
+| **`variant="table"`** | `py-16 px-4` inside `<tr><td colSpan={N}>` | `size="md"` (28px) + Sans-serif typography (`text-sm font-semibold` + `text-xs text-white/45`). | Table bodies (`DataTable`, Study Registries, Payout Ledgers) while fetching records. Preserves table headers with **Zero CLS**. |
+| **`variant="card"`** | `min-h-[160px]` | Centered `size="md"` + Sans-serif label & description (`text-sm font-semibold`). | Inside KPI matrix cards, verification guardrail loading cards, and inspector containers. |
+| **`variant="page"`** | `min-h-full` (100% flex centered) | Large `size="lg"` (40px) + Sans-serif status heading and subtext. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
+| **`variant="inline"`** | Compact inline row | `size="sm"` (16px) + concise sans-serif string. | Inside button micro-interactions, modal sub-headers, or search bars. |
 
 #### **Usage Examples:**
 ```tsx

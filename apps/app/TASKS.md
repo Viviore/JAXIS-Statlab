@@ -604,6 +604,18 @@
 - [x] Seeded mock initial archived projects and audit logs in `prisma/seed.ts`
 - [x] Documented verification report in `docs/modules/17-verification-report.md` (0 check-types errors across 5 packages)
 
+### Task 12 — Module 20: High-Speed Database Retrieval Engine & Modern Minimalist UI Overhaul
+- [x] Overhauled platform loading indicator (`LoadingState.tsx`) into a clean, modern minimalist single-track arc spinner (Linear / Vercel style) with zero sci-fi HUD slop.
+- [x] Audited all role pages and components to eliminate double loading states (e.g. `PendingLeaveQueue.tsx`).
+- [x] Implemented in-memory server caching engine via `unstable_cache` with canonical cache tags (`apps/app/src/lib/cache-tags.ts`):
+  - `staff-capacity` for specialist workload & directories
+  - `attendance-review` for timesheets and missed-punch claims
+  - `staff-directory` for corporate signatories and staff members
+  - `payroll-data` for batch payroll runs
+- [x] Parallelized multi-query data fetching with `Promise.all` across attendance, assignment, and payroll Server Actions.
+- [x] Connected instantaneous tag invalidation (`updateTag` & `revalidateTag`) across all mutations for read-your-own-writes consistency.
+- [x] Migrated inner operational desks (`admin/assignments`, `finance/attendance`, `finance/payroll`) to async Server Components with server-side prefetching, eliminating initial loading delays entirely.
+
 ---
 
 ## Roadmap Status Matrix
@@ -627,6 +639,7 @@
 | `14` | `14-finance` — Finance, Payouts & Ledger | Treasury | ✅ Completed |
 | `15` | `15-disputes` — Disputes, Refunds & Chargebacks | Treasury | ✅ Completed |
 | `16` | `16-notifications` — Email Notifications & Webhooks | Platform | ✅ Completed |
-| `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ✅ **Completed** |
+| `17` | `17-reporting` — Reporting, Analytics & Audit Archive | Platform | ✅ Completed |
 | `18` | `18-attendance` — Staff Attendance & Duty Governance | HR & Labor | ✅ Completed |
 | `19` | `19-payroll` — Corporate Payroll & Payslip Engine | HR & Treasury | ✅ Completed |
+| `20` | `20-performance` — High-Speed Caching & Minimalist UI | Architecture | ✅ **Completed** |

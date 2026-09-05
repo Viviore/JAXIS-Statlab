@@ -252,3 +252,22 @@ setToastMessage({
 )}
 ```
 
+---
+
+## 10. Modern Minimalist Loading & Anti-Double-Loading Architecture
+
+### A. Minimalist Single-Ring Loader Standard (`LoadingState.tsx`)
+- **Geometry:** Single calibrated geometric circular track in subtle `rgba(255, 255, 255, 0.08)`.
+- **Active Arc:** 100° active arc in Enterprise Orange (`#CC6600`) with smooth rounded caps (`strokeLinecap="round"`), rotating at `0.85s linear infinite`.
+- **Zero HUD Slop:** No sci-fi crosshairs, target ticks, concentric rings, or bouncing blobs.
+- **Typography:** Sans-Serif font-semibold title with human copy (e.g. *"Loading research studies..."*, *"Preparing Statement of Work..."*), with zero robotic double slashes (`//`).
+
+### B. Anti-Double-Loading Policy
+- A page or view must only ever render **ONE** unified loader at a time.
+- Sub-components (such as `<PendingLeaveQueue />`, secondary card summaries, or table skeletons) must never render independent loaders while a parent page-level loader is active.
+- Return `null` from nested widgets while loading to prevent jitter and CLS.
+
+### C. Server Component (RSC) Pre-loading
+- Core operational desks (`admin/assignments`, `finance/attendance`, `finance/payroll`) must prefetch initial data in async Server Components (`page.tsx`) and pass `initialData` into client components.
+- Initial HTML delivers with data already populated, giving users an instant 0ms perceived load time.
+
