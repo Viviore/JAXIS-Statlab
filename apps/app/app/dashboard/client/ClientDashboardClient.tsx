@@ -21,6 +21,7 @@ import {
   IconTable,
   IconSearch,
   IconHelp,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { getProjects } from "@/features/projects/actions";
 import { getClientProfile } from "@/features/client-profile/actions";
@@ -44,9 +45,9 @@ export function ClientDashboardClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [projects, setProjects] = useState<ProjectDetailItem[]>(initialProjects);
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean>(initialIsProfileComplete);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedStudy, setSelectedStudy] = useState<ProjectDetailItem | null>(null);
-  const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(initialIsProfileComplete);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isHowToUseModalOpen, setIsHowToUseModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
@@ -60,22 +61,12 @@ export function ClientDashboardClient({
     description?: string;
   } | null>(null);
 
+  // Sync projects if initialProjects from Server Component updates
   useEffect(() => {
-    const created = searchParams.get("created");
-    const intakeId = searchParams.get("intakeId");
-    if (created === "true") {
-      setToast({
-        variant: "success",
-        message: "Study Request Successfully Submitted",
-        description: intakeId
-          ? `Your research study specifications have been queued for triage. Assigned ID: ${intakeId}`
-          : "Your research study specifications have been queued for triage.",
-      });
-      if (typeof window !== "undefined") {
-        window.history.replaceState({}, "", window.location.pathname);
-      }
+    if (initialProjects) {
+      setProjects(initialProjects);
     }
-  }, [searchParams]);
+  }, [initialProjects]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -100,6 +91,54 @@ export function ClientDashboardClient({
       setIsLoading(false);
     }
   };
+
+  // Re-fetch immediately when redirected from a newly submitted intake
+  useEffect(() => {
+    const created = searchParams.get("created");
+    const intakeId = searchParams.get("intakeId");
+    if (created === "true") {
+      setToast({
+        variant: "success",
+        message: "Study Request Successfully Submitted",
+        description: intakeId
+          ? `Your research study specifications have been queued for triage. Assigned ID: ${intakeId}`
+          : "Your research study specifications have been queued for triage.",
+      });
+      loadData();
+      router.refresh();
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [searchParams, router]);
+
+  // Listen to SSE updates, window focus, and background polling
+  useEffect(() => {
+    loadData();
+
+    const handleStudyUpdated = () => {
+      loadData();
+      router.refresh();
+    };
+    const handleFocus = () => {
+      loadData();
+    };
+
+    window.addEventListener("jaxis:study-updated", handleStudyUpdated);
+    window.addEventListener("focus", handleFocus);
+
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadData();
+      }
+    }, 15000);
+
+    return () => {
+      window.removeEventListener("jaxis:study-updated", handleStudyUpdated);
+      window.removeEventListener("focus", handleFocus);
+      clearInterval(interval);
+    };
+  }, [router]);
 
   // Filter out any projects with pending missing info
   const awaitingInfoProjects = useMemo(() => {
@@ -446,8 +485,19 @@ export function ClientDashboardClient({
             </p>
           </div>
 
-          {/* View Toggle (Cards vs. Table) */}
+          {/* View Toggle (Cards vs. Table) & Refresh */}
           <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={loadData}
+              disabled={isLoading}
+              className="flex items-center gap-1.5 font-mono text-xs font-semibold py-1.5 px-3 h-auto"
+            >
+              <IconRefresh size={14} className={isLoading ? "animate-spin" : ""} stroke={2} />
+              <span>Refresh</span>
+            </Button>
             <div className="flex items-center bg-white/[0.04] border border-white/10 rounded-[2px] p-0.5">
               <button
                 type="button"
