@@ -153,7 +153,7 @@ export default function CeoAttendanceAuditPage() {
         <LoadingState
           variant="page"
           label="Loading CEO Audit Ledger..."
-          description="Retrieving institutional attendance telemetry and corporate policy configurations"
+          description="Retrieving attendance records and company policy settings"
         />
       </div>
     );
@@ -173,8 +173,8 @@ export default function CeoAttendanceAuditPage() {
 
       {/* Standardized PageHeader */}
       <PageHeader
-        title="Institutional Attendance & Duty Audit Ledger"
-        description="Comprehensive platform telemetry across all raw punches, server timestamps, IP footprints, and company-wide labor policy controls."
+        title="Staff Attendance & Duty Audit Ledger"
+        description="Full overview of employee timesheets, shift records, and attendance policies."
         breadcrumbs={[
           { label: "WORKSPACE", href: "/dashboard" },
           { label: "CEO Console", href: "/dashboard/ceo" },
@@ -193,11 +193,11 @@ export default function CeoAttendanceAuditPage() {
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          label="Total Institutional Hours"
+          label="Total Hours Worked"
           value={kpis.totalHoursThisMonth}
           unit="hrs month"
           icon={<IconClock size={16} stroke={1.5} />}
-          description="Macro Duty Telemetry"
+          description="Total Monthly Hours"
         />
 
         <KpiCard
@@ -291,7 +291,7 @@ export default function CeoAttendanceAuditPage() {
                       <th className="py-3 px-3">Clock Out</th>
                       <th className="py-3 px-3">Break</th>
                       <th className="py-3 px-3">Net Hours</th>
-                      <th className="py-3 px-3">Device &amp; Telemetry</th>
+                      <th className="py-3 px-3">Device &amp; Details</th>
                       <th className="py-3 px-3">In-Shift Activity</th>
                       <th className="py-3 px-3">Status</th>
                     </tr>

@@ -152,7 +152,7 @@ export default function FinanceAttendanceReviewPage() {
         <LoadingState
           variant="page"
           label="Loading HR Attendance Review Desk..."
-          description="Retrieving staff punch telemetry, missed punch claims, and SoD signatures."
+          description="Retrieving staff timesheets and missed punch claims."
         />
       </div>
     );
@@ -174,7 +174,7 @@ export default function FinanceAttendanceReviewPage() {
         ]}
         badge={
           <Badge variant="amber" className="text-xs font-mono">
-            Institutional HR & Payroll Governance
+            HR & Payroll Review
           </Badge>
         }
       />

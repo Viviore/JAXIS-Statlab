@@ -19,15 +19,12 @@ import {
 import type { ArchivedProjectDTO, StorageRetentionConfigDTO } from "@/features/reporting/schemas";
 import {
   IconArchive,
-  IconClock,
   IconFileText,
   IconSearch,
   IconShieldCheck,
   IconTrash,
   IconX,
   IconEye,
-  IconSettings,
-  IconDatabase,
 } from "@tabler/icons-react";
 
 export default function AdminArchivePage() {
@@ -110,6 +107,18 @@ export default function AdminArchivePage() {
   };
 
   const retentionDays = retentionConfig?.retentionPeriodDays || 90;
+
+  if (isLoading && archives.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Project Archive..."
+          description="Fetching completed studies and storage records."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">

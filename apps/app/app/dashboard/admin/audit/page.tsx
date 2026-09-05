@@ -6,19 +6,15 @@ import {
   KpiCard,
   Card,
   Badge,
-  Button,
   LoadingState,
   Pagination,
 } from "@repo/ui";
 import { getAuditLogsAction } from "@/features/reporting/actions";
 import type { AuditLogDTO } from "@/features/reporting/schemas";
 import {
-  IconActivity,
-  IconClock,
   IconFileText,
   IconSearch,
   IconShieldCheck,
-  IconUser,
   IconArrowsExchange,
   IconReceipt,
 } from "@tabler/icons-react";
@@ -90,6 +86,18 @@ export default function AdminAuditLogPage() {
       </Badge>
     );
   };
+
+  if (isLoading && logs.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading System Audit Logs..."
+          description="Querying immutable activity trail."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">

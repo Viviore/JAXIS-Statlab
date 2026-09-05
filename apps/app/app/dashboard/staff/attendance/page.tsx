@@ -231,7 +231,7 @@ export default function StaffAttendancePage() {
                   <th className="py-3 px-3">Clock Out</th>
                   <th className="py-3 px-3">Break Deducted</th>
                   <th className="py-3 px-3">Net Payable Hours</th>
-                  <th className="py-3 px-3">Device &amp; Telemetry</th>
+                  <th className="py-3 px-3">Device &amp; Details</th>
                   <th className="py-3 px-3">Duty Status</th>
                 </tr>
               </thead>

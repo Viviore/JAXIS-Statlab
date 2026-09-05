@@ -65,6 +65,39 @@ export default function QAMessagesPage() {
 
   const selectedThread = threads.find((t) => t.projectId === selectedProjectId) || filteredThreads[0] || threads[0] || null;
 
+  if (isLoading) {
+    return (
+      <div className="h-full flex-1 flex flex-col min-h-0 gap-3 w-full animate-content-fade font-sans overflow-hidden">
+        <div className="flex-shrink-0">
+          <PageHeader
+            breadcrumbs={[
+              { label: "WORKSPACE", href: "/dashboard" },
+              { label: "QA REVIEW DESK", href: "/dashboard/qa" },
+              { label: "MESSAGES" },
+            ]}
+            title="Study Messages & Quality Audit Thread"
+            description="Review communication history and consult directly with Lead Researchers and Statisticians."
+            actions={
+              <div className="flex items-center gap-2">
+                <Badge variant="emerald" className="text-[0.688rem] font-mono flex items-center gap-1">
+                  <IconShieldCheck size={13} stroke={2} />
+                  <span>Firewall Protected</span>
+                </Badge>
+              </div>
+            }
+          />
+        </div>
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <LoadingState
+            variant="page"
+            label="Loading Messages..."
+            description="Please wait while we load your research consultation threads"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex-1 flex flex-col min-h-0 gap-3 w-full animate-content-fade font-sans overflow-hidden">
       {/* Standardized PageHeader (Compact & Responsive) */}

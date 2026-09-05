@@ -212,6 +212,18 @@ export default function CeoDisputesPage() {
     (d) => d.status === "OPEN" || d.status === "UNDER_REVIEW"
   ).length;
 
+  if (isLoading && !summary) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Claims Queue..."
+          description="Fetching claims and executive resolution records."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Standardized PageHeader */}

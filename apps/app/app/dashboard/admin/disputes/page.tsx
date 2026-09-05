@@ -29,7 +29,6 @@ import {
   IconFileText,
   IconGavel,
   IconSearch,
-  IconShieldExclamation,
   IconShieldCheck,
   IconX,
   IconScale,
@@ -229,6 +228,18 @@ export default function AdminDisputesPage() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  if (isLoading && !summary) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Claims Queue..."
+          description="Fetching claims and evidence records."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">

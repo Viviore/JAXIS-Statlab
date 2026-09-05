@@ -99,8 +99,8 @@ export default function CeoFinancePage() {
       <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
         <LoadingState
           variant="page"
-          label="Loading Financial Telemetry..."
-          description="Aggregating corporate revenue and margin streams"
+          label="Loading Financial Overview..."
+          description="Aggregating company revenue and profit margins"
         />
       </div>
     );
@@ -115,8 +115,8 @@ export default function CeoFinancePage() {
           { label: "CEO OVERVIEW", href: "/dashboard/ceo" },
           { label: "TREASURY & RATES" },
         ]}
-        title="Executive Treasury & Payout Governance"
-        description="Corporate financial telemetry, package profitability breakdown, and executive commission rate configuration."
+        title="Company Financials & Pay Rates"
+        description="Company financial overview, package profitability breakdown, and commission rate settings."
         actions={
           <div className="flex items-center gap-2">
             <Badge variant="emerald" className="text-xs font-mono flex items-center gap-1">

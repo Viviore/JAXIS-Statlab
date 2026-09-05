@@ -110,6 +110,18 @@ export default function AdminFirewallMessagesPage() {
     return <IconLink size={14} className="text-red-400" />;
   };
 
+  if (isLoading && logs.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Blocked Messages..."
+          description="Retrieving flagged communications for review."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Toast Notification */}

@@ -303,7 +303,7 @@ export default function SpecialistLeaveApprovalsPage() {
         <LoadingState
           variant="page"
           label="Loading HR Specialist Leave Desk..."
-          description="Fetching availability statuses, pending requests, and pipeline telemetry."
+          description="Fetching specialist availability and pending leave requests."
         />
       </div>
     );
@@ -337,7 +337,7 @@ export default function SpecialistLeaveApprovalsPage() {
               className="w-full sm:w-auto justify-center gap-2 font-sans text-xs rounded-[2px] cursor-pointer"
             >
               <IconRefresh size={14} className={isLoading ? "animate-spin" : ""} />
-              <span>Refresh Telemetry</span>
+              <span>Refresh Directory</span>
             </Button>
             <Link href="/dashboard/finance" className="w-full sm:w-auto">
               <Button

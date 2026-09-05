@@ -99,7 +99,7 @@ export default function AdminAssignmentsPage() {
         <LoadingState
           variant="page"
           label="Loading assignment workbench..."
-          description="Retrieving active studies and specialist workload telemetry."
+          description="Retrieving active studies and specialist workload."
         />
       </div>
     );

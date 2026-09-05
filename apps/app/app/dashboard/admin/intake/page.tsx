@@ -286,6 +286,18 @@ export default function AdminIntakeTriagePage() {
     });
   };
 
+  if (isLoading && projects.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Intake Queue..."
+          description="Retrieving new study requests and pricing triage."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {/* ── Page Header ── */}
@@ -593,7 +605,7 @@ export default function AdminIntakeTriagePage() {
                                   : []),
                                 {
                                   label: "Open Inspection Desk",
-                                  subtitle: "Full study workspace & telemetry",
+                                  subtitle: "Full study workspace and data files",
                                   icon: <IconExternalLink size={16} stroke={1.5} />,
                                   onClick: () => {
                                     window.location.href = `/dashboard/admin/projects/${p.id}`;

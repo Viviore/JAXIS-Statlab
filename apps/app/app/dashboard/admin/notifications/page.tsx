@@ -25,7 +25,6 @@ import {
   IconClock,
   IconFileText,
   IconMail,
-  IconMailForward,
   IconRefresh,
   IconSearch,
   IconShieldCheck,
@@ -151,6 +150,18 @@ export default function AdminNotificationsPage() {
     }
   };
 
+  if (isLoading && !summary) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Email Delivery Logs..."
+          description="Querying notification logs database."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Standardized PageHeader */}
@@ -160,7 +171,7 @@ export default function AdminNotificationsPage() {
           { label: "OPERATIONS", href: "/dashboard/admin" },
           { label: "EMAIL LOGS" },
         ]}
-        title="Email Delivery Logs & Telemetry"
+        title="Email Delivery Logs"
         description="Monitor transactional email deliveries, audit delivery failures, and trigger manual re-sends."
       />
 

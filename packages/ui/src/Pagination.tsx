@@ -6,6 +6,7 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
+  IconChevronDown,
 } from "@tabler/icons-react";
 import { cn } from "./utils";
 
@@ -82,34 +83,41 @@ export function Pagination({
       <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-white/50 w-full sm:w-auto justify-between sm:justify-start">
         <span>
           Showing{" "}
-          <span className="font-mono font-semibold text-white">
+          <span className="font-mono font-medium text-white">
             {totalItems === 0 ? 0 : startIndex + 1}
           </span>{" "}
           to{" "}
-          <span className="font-mono font-semibold text-white">{endIndex}</span>{" "}
+          <span className="font-mono font-medium text-white">{endIndex}</span>{" "}
           of{" "}
-          <span className="font-mono font-semibold text-white">{totalItems}</span>{" "}
+          <span className="font-mono font-medium text-white">{totalItems}</span>{" "}
           {itemLabel}
         </span>
 
         {showPageSizeSelector && onPageSizeChange && (
-          <div className="flex items-center gap-1.5 pl-2 border-l border-white/10">
-            <span className="text-white/40">Rows:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                const newSize = Number(e.target.value);
-                onPageSizeChange(newSize);
-                onPageChange(1);
-              }}
-              className="bg-[#011B38] text-white border border-white/10 rounded-[2px] px-2 py-0.5 text-xs font-mono focus:outline-none focus:border-[#CC6600] transition-colors cursor-pointer"
-            >
-              {pageSizeOptions.map((opt) => (
-                <option key={opt} value={opt} className="bg-[#01142B] text-white">
-                  {opt}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-2 pl-2.5 border-l border-white/10">
+            <span className="text-white/40 font-sans">Rows:</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  const newSize = Number(e.target.value);
+                  onPageSizeChange(newSize);
+                  onPageChange(1);
+                }}
+                className="bg-[#01142B] hover:bg-[#011B38] text-white/90 border border-white/15 hover:border-white/25 rounded-[2px] pl-2 pr-5 py-0.5 text-xs font-mono focus:outline-none focus:border-white/30 focus:ring-0 transition-colors cursor-pointer appearance-none shadow-none"
+              >
+                {pageSizeOptions.map((opt) => (
+                  <option key={opt} value={opt} className="bg-[#01142B] text-white">
+                    {opt}
+                  </option>
+                ))}
+              </select>
+              <IconChevronDown
+                size={12}
+                stroke={2}
+                className="absolute right-1.5 text-white/40 pointer-events-none"
+              />
+            </div>
           </div>
         )}
       </div>

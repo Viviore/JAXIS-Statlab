@@ -23,6 +23,7 @@ import {
   DropdownMenu,
   Toast,
   Pagination,
+  LoadingState,
 } from "@repo/ui";
 import {
   IconEye,
@@ -707,6 +708,18 @@ export default function StaffRosterPage() {
         );
     }
   };
+
+  if (isLoading && staffList.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Staff Directory..."
+          description="Getting team accounts, roles, and status."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-9 max-w-7xl mx-auto pb-16 w-full">

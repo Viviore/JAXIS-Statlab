@@ -16,12 +16,14 @@ interface PendingLeaveQueueProps {
   onStatusChange?: () => void;
   title?: string;
   subtitle?: string;
+  showLoadingCard?: boolean;
 }
 
 export function PendingLeaveQueue({
   onStatusChange,
   title = "HR Personnel & Specialist Leave Queue",
   subtitle = "Review and acknowledge specialist absence requests before activating leave status.",
+  showLoadingCard = false,
 }: PendingLeaveQueueProps) {
   const [leaves, setLeaves] = useState<PendingLeaveItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,6 +108,9 @@ export function PendingLeaveQueue({
   };
 
   if (isLoading) {
+    if (!showLoadingCard) {
+      return null;
+    }
     return (
       <Card className="p-6 border-white/10 bg-[#01142B]/90 rounded-[2px]">
         <LoadingState

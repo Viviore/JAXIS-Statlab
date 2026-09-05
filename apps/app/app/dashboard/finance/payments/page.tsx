@@ -132,6 +132,18 @@ export default function FinancePaymentsQueuePage() {
   const gcashCount = currentTabPayments.filter((p) => p.paymentMethod === "GCASH").length;
   const bankCount = currentTabPayments.filter((p) => p.paymentMethod === "BANK_TRANSFER").length;
 
+  if (isLoading && payments.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Payment Verification Queue..."
+          description="Scanning deposit records and receipts."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade">
       {/* ── Header ── */}
@@ -292,7 +304,7 @@ export default function FinancePaymentsQueuePage() {
             <div className="py-16">
               <LoadingState
                 variant="table"
-                label="Scanning financial records and receipt telemetry..."
+                label="Scanning financial records and payment receipts..."
                 description="Please wait while data synchronizes."
               />
             </div>

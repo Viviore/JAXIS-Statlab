@@ -105,6 +105,18 @@ export default function AdminReportsPage() {
     window.print();
   };
 
+  if (isLoading && !reportData) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto">
+        <LoadingState
+          variant="page"
+          label="Loading System Reports..."
+          description="Please wait while we load your research workspace"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Standardized PageHeader */}

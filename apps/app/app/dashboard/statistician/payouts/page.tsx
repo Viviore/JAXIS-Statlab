@@ -68,6 +68,18 @@ export default function StatisticianPayoutsPage() {
     return payouts.slice(start, start + pageSize);
   }, [payouts, currentPage, pageSize]);
 
+  if (isLoading && payouts.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Payout History..."
+          description="Retrieving personal compensation ledger."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {/* Standardized PageHeader */}

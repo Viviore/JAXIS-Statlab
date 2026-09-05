@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column } from "@repo/ui";
+import { PageHeader, Card, StatusBadge, Button, Modal, KpiCard, DataTable, Column, LoadingState } from "@repo/ui";
 import { IconReceipt } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { getFinanceReceivablesSummary } from "@/features/payments/actions";
@@ -126,6 +126,18 @@ export default function CEODashboardPage() {
       ),
     },
   ];
+
+  if (isLoading && projects.length === 0) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto">
+        <LoadingState
+          variant="page"
+          label="Loading CEO Overview..."
+          description="Please wait while we load your research workspace"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-16 w-full animate-content-fade">

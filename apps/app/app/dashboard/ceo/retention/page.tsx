@@ -200,7 +200,7 @@ export default function CeoStorageRetentionPage() {
         <LoadingState
           variant="page"
           label="Loading Storage & Retention Status..."
-          description="Connecting to Supabase, Cloudflare R2, Resend, and Trigger.dev telemetry"
+          description="Connecting to database and cloud storage services"
         />
       </div>
     );

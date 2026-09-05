@@ -13,33 +13,99 @@ export interface LoadingStateProps {
 }
 
 /**
- * Precision Orbital Loader Indicator
+ * Modern Minimalist Spinner
+ * Clean single-track geometry, calibrated active arc with rounded caps, silky smooth spin.
  */
-function OrbitalSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const dimensions =
-    size === "sm"
-      ? "h-5 w-5"
-      : size === "lg"
-      ? "h-12 w-12"
-      : "h-9 w-9";
+function ModernSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
+  if (size === "sm") {
+    return (
+      <div className="relative flex items-center justify-center h-4 w-4 shrink-0">
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full animate-spin"
+          style={{ animationDuration: "0.85s" }}
+        >
+          <circle
+            cx="10"
+            cy="10"
+            r="7.5"
+            stroke="rgba(255, 255, 255, 0.12)"
+            strokeWidth="2"
+          />
+          <circle
+            cx="10"
+            cy="10"
+            r="7.5"
+            stroke="#CC6600"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="14 36"
+          />
+        </svg>
+      </div>
+    );
+  }
 
-  const trackWidth = size === "sm" ? "border-[1.5px]" : "border-2";
-  const nodeSize = size === "sm" ? "h-1 w-1" : size === "lg" ? "h-2 w-2" : "h-1.5 w-1.5";
+  if (size === "lg") {
+    return (
+      <div className="relative flex items-center justify-center h-10 w-10 shrink-0">
+        <svg
+          viewBox="0 0 40 40"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full animate-spin"
+          style={{ animationDuration: "0.85s" }}
+        >
+          <circle
+            cx="20"
+            cy="20"
+            r="16"
+            stroke="rgba(255, 255, 255, 0.08)"
+            strokeWidth="2.5"
+          />
+          <circle
+            cx="20"
+            cy="20"
+            r="16"
+            stroke="#CC6600"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeDasharray="28 72"
+          />
+        </svg>
+      </div>
+    );
+  }
 
+  // Default: "md" (28px)
   return (
-    <div className={`relative flex items-center justify-center ${dimensions} shrink-0`}>
-      {/* Background Track */}
-      <div className={`absolute inset-0 rounded-full ${trackWidth} border-white/[0.08]`} />
-
-      {/* Active High-Precision Sweep Ring */}
-      <div
-        className={`absolute inset-0 rounded-full ${trackWidth} border-transparent border-t-[#CC6600] border-r-[#FFA040]/60 animate-spin`}
-      />
-
-      {/* Center Micro-Core Emitter */}
-      <div
-        className={`rounded-full bg-[#CC6600] shadow-[0_0_8px_rgba(204,102,0,0.8)] ${nodeSize}`}
-      />
+    <div className="relative flex items-center justify-center h-7 w-7 shrink-0">
+      <svg
+        viewBox="0 0 28 28"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full animate-spin"
+        style={{ animationDuration: "0.85s" }}
+      >
+        <circle
+          cx="14"
+          cy="14"
+          r="11"
+          stroke="rgba(255, 255, 255, 0.08)"
+          strokeWidth="2.25"
+        />
+        <circle
+          cx="14"
+          cy="14"
+          r="11"
+          stroke="#CC6600"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeDasharray="20 50"
+        />
+      </svg>
     </div>
   );
 }
@@ -53,8 +119,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 }) => {
   if (variant === "inline") {
     return (
-      <div className={`inline-flex items-center gap-2.5 text-xs font-sans text-white/75 ${className}`}>
-        <OrbitalSpinner size={size === "lg" ? "md" : "sm"} />
+      <div className={`inline-flex items-center gap-2 text-xs font-sans text-white/75 ${className}`}>
+        <ModernSpinner size={size === "lg" ? "md" : "sm"} />
         <span className="font-medium">{label || "Loading..."}</span>
       </div>
     );
@@ -63,15 +129,15 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   if (variant === "table") {
     return (
       <div
-        className={`py-16 px-4 flex flex-col items-center justify-center gap-3.5 text-center select-none animate-content-fade ${className}`}
+        className={`py-16 px-4 flex flex-col items-center justify-center gap-4 text-center select-none animate-content-fade ${className}`}
       >
-        <OrbitalSpinner size="md" />
+        <ModernSpinner size="md" />
         <div className="flex flex-col items-center gap-1 max-w-sm">
           <span className="text-sm font-semibold text-white font-sans tracking-tight">
             {label || "Loading records..."}
           </span>
           <span className="text-xs text-white/45 font-sans leading-relaxed">
-            {description || "Please wait a moment while telemetry syncs"}
+            {description || "Please wait while records load"}
           </span>
         </div>
       </div>
@@ -81,9 +147,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   if (variant === "page") {
     return (
       <div
-        className={`flex-1 min-h-full h-full w-full flex flex-col items-center justify-center gap-4 py-8 px-4 text-center select-none animate-content-fade my-auto mx-auto ${className}`}
+        className={`flex-1 min-h-full h-full w-full flex flex-col items-center justify-center gap-5 py-8 px-4 text-center select-none animate-content-fade my-auto mx-auto ${className}`}
       >
-        <OrbitalSpinner size="lg" />
+        <ModernSpinner size="lg" />
         <div className="flex flex-col items-center justify-center gap-1.5 max-w-md mx-auto text-center">
           <h3 className="text-base sm:text-lg font-semibold text-white font-sans tracking-tight">
             {label || "Loading workspace..."}
@@ -99,9 +165,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   // Default: "card"
   return (
     <div
-      className={`min-h-[160px] h-full w-full flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center select-none animate-content-fade ${className}`}
+      className={`min-h-[160px] h-full w-full flex-1 flex flex-col items-center justify-center gap-3.5 p-6 text-center select-none animate-content-fade ${className}`}
     >
-      <OrbitalSpinner size={size} />
+      <ModernSpinner size={size} />
       <div className="flex flex-col items-center justify-center text-center gap-1 max-w-sm">
         <span className="text-sm font-semibold text-white font-sans tracking-tight">
           {label || "Loading..."}
