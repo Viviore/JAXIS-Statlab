@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db, withDbTimeout } from "@/lib/db";
+import { CACHE_TAGS, invalidateCacheTags } from "@/lib/cache-tags";
 import {
   assertCanManageAssignments,
   assertCanBeAssigned,
@@ -141,6 +142,7 @@ export async function assignExperts(
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath("/dashboard/statistician");
     revalidatePath("/dashboard/qa");
+    invalidateCacheTags(CACHE_TAGS.STAFF_CAPACITY, CACHE_TAGS.PROJECTS);
 
     const remaining = calculateSlaRemaining(result.slaDueAt, result.slaPausedAt);
 
@@ -281,6 +283,7 @@ export async function reassignExperts(
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath("/dashboard/statistician");
     revalidatePath("/dashboard/qa");
+    invalidateCacheTags(CACHE_TAGS.STAFF_CAPACITY, CACHE_TAGS.PROJECTS);
 
     const remaining = calculateSlaRemaining(result.slaDueAt, result.slaPausedAt);
 
@@ -364,6 +367,7 @@ export async function requestSlaPause(
     revalidatePath("/dashboard/admin/assignments");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath("/dashboard/statistician");
+    invalidateCacheTags(CACHE_TAGS.STAFF_CAPACITY, CACHE_TAGS.PROJECTS);
 
     return {
       success: true,
@@ -437,6 +441,7 @@ export async function approveSlaPause(
     revalidatePath("/dashboard/admin/assignments");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath("/dashboard/statistician");
+    invalidateCacheTags(CACHE_TAGS.STAFF_CAPACITY, CACHE_TAGS.PROJECTS);
 
     return {
       success: true,
@@ -512,6 +517,7 @@ export async function resumeSla(
     revalidatePath("/dashboard/admin/assignments");
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath("/dashboard/statistician");
+    invalidateCacheTags(CACHE_TAGS.STAFF_CAPACITY, CACHE_TAGS.PROJECTS);
 
     return {
       success: true,
@@ -526,27 +532,11 @@ export async function resumeSla(
 }
 
 /**
- * 6. Retrieves staff directory with current active assignments and optional specialization match.
+ * Module-scoped cached query for staff directory and capacity
  */
-export async function getStaffCapacity(
-  projectIntakeId?: string
-): Promise<ActionResponse<{ statisticians: StaffCapacityItem[]; qaLeads: StaffCapacityItem[] }>> {
-  try {
-    let targetMethod: string | null = null;
-    let targetField: string | null = null;
-
-    if (projectIntakeId) {
-      const project = await db.project.findFirst({
-        where: { OR: [{ id: projectIntakeId }, { intakeId: projectIntakeId }] },
-        include: { client: { include: { clientProfile: true } } },
-      });
-      if (project) {
-        targetMethod = project.packageName;
-        targetField = project.client?.clientProfile?.academicProgram || null;
-      }
-    }
-
-    const staffUsers = await db.user.findMany({
+const fetchCachedStaffUsers = unstable_cache(
+  async () => {
+    return db.user.findMany({
       where: {
         status: { in: ["ACTIVE", "LEAVE_PENDING", "ON_LEAVE"] },
         userRoles: {
@@ -588,6 +578,33 @@ export async function getStaffCapacity(
         },
       },
     });
+  },
+  ["staff-capacity-users-cache"],
+  { tags: [CACHE_TAGS.STAFF_CAPACITY], revalidate: 30 }
+);
+
+/**
+ * 6. Retrieves staff directory with current active assignments and optional specialization match.
+ */
+export async function getStaffCapacity(
+  projectIntakeId?: string
+): Promise<ActionResponse<{ statisticians: StaffCapacityItem[]; qaLeads: StaffCapacityItem[] }>> {
+  try {
+    let targetMethod: string | null = null;
+    let targetField: string | null = null;
+
+    if (projectIntakeId) {
+      const project = await db.project.findFirst({
+        where: { OR: [{ id: projectIntakeId }, { intakeId: projectIntakeId }] },
+        include: { client: { include: { clientProfile: true } } },
+      });
+      if (project) {
+        targetMethod = project.packageName;
+        targetField = project.client?.clientProfile?.academicProgram || null;
+      }
+    }
+
+    const staffUsers = await fetchCachedStaffUsers();
 
     const statisticians: StaffCapacityItem[] = [];
     const qaLeads: StaffCapacityItem[] = [];

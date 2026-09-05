@@ -1,10 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { db, withDbTimeout } from "@/lib/db";
 import { requireRole, auth } from "@/lib/auth";
+import { CACHE_TAGS, invalidateCacheTags } from "@/lib/cache-tags";
 import type { RoleName } from "@prisma/client";
 import {
   RoleCompensationConfigSchema,
@@ -198,6 +199,74 @@ function findPayoutDetailsForStaff(
   return null;
 }
 
+/**
+ * Cached DB queries for signatories and staff directory.
+ * Invalidation tag: staff-directory
+ */
+const fetchCachedSignatoriesDb = unstable_cache(
+  async () => {
+    try {
+      return await withDbTimeout(
+        db.user.findMany({
+          where: {
+            userRoles: {
+              some: {
+                role: {
+                  name: { in: ["CEO", "FINANCE_OFFICER", "ADMIN"] },
+                },
+              },
+            },
+          },
+          select: {
+            fullName: true,
+            userRoles: {
+              select: {
+                role: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
+        }),
+        1500
+      );
+    } catch {
+      return [];
+    }
+  },
+  ["payroll-signatories-db"],
+  { revalidate: 60, tags: [CACHE_TAGS.STAFF_DIRECTORY] }
+);
+
+const fetchCachedStaffMembersDb = unstable_cache(
+  async () => {
+    const targetRoles: RoleName[] = ["STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER", "ADMIN"];
+    try {
+      return await withDbTimeout(
+        db.user.findMany({
+          where: {
+            userRoles: {
+              some: {
+                role: {
+                  name: { in: targetRoles },
+                },
+              },
+            },
+          },
+          include: {
+            userRoles: { include: { role: true } },
+          },
+        }),
+        3000
+      );
+    } catch {
+      return [];
+    }
+  },
+  ["payroll-staff-members-db"],
+  { revalidate: 60, tags: [CACHE_TAGS.STAFF_DIRECTORY] }
+);
+
 export async function getSignatoryDetails(): Promise<{ ceoName: string; financeName: string; adminName: string }> {
   let ceoName = "CEO Owner";
   let financeName = "Finance Officer";
@@ -225,39 +294,16 @@ export async function getSignatoryDetails(): Promise<{ ceoName: string; financeN
     }
   }
 
-  try {
-    const users = await withDbTimeout(
-      db.user.findMany({
-        where: {
-          userRoles: {
-            some: {
-              role: {
-                name: { in: ["CEO", "FINANCE_OFFICER", "ADMIN"] },
-              },
-            },
-          },
-        },
-        select: {
-          fullName: true,
-          userRoles: {
-            select: {
-              role: {
-                select: { name: true },
-              },
-            },
-          },
-        },
-      }),
-      1500
-    );
+  const users = await fetchCachedSignatoriesDb();
 
+  if (users.length > 0) {
     for (const u of users) {
       const roleNames = u.userRoles.map((ur) => ur.role.name);
       if (roleNames.includes("CEO") && u.fullName) ceoName = u.fullName;
       if (roleNames.includes("FINANCE_OFFICER") && u.fullName) financeName = u.fullName;
       if (roleNames.includes("ADMIN") && u.fullName) adminName = u.fullName;
     }
-  } catch {
+  } else {
     const devUsers = getDevUsers();
     const ceoDev = Object.values(devUsers).find((u) => u.role === "CEO");
     if (ceoDev) ceoName = ceoDev.fullName;
@@ -299,28 +345,7 @@ export async function getPayrollConfigurations(): Promise<{
   const targetRoles: RoleName[] = ["STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER", "ADMIN"];
 
   // 1. Check DB users
-  let dbUsers: { id: string; fullName: string; email: string; status: string; userRoles: { role: { name: RoleName } }[] }[] = [];
-  try {
-    dbUsers = await withDbTimeout(
-      db.user.findMany({
-        where: {
-          userRoles: {
-            some: {
-              role: {
-                name: { in: targetRoles },
-              },
-            },
-          },
-        },
-        include: {
-          userRoles: { include: { role: true } },
-        },
-      }),
-      3000
-    );
-  } catch {
-    // fallback
-  }
+  const dbUsers = await fetchCachedStaffMembersDb();
 
   const registeredEmails = new Set<string>();
 
@@ -397,6 +422,7 @@ export async function saveCompanyPayrollSchedule(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL, CACHE_TAGS.STAFF_DIRECTORY);
 
   return { success: true, config: dto };
 }
@@ -430,6 +456,7 @@ export async function saveRoleCompensationConfig(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL, CACHE_TAGS.STAFF_DIRECTORY);
 
   return { success: true, data: updatedDTO };
 }
@@ -463,6 +490,7 @@ export async function saveStaffCompensationOverride(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL, CACHE_TAGS.STAFF_DIRECTORY);
 
   return { success: true, data: overrideDTO };
 }
@@ -481,6 +509,7 @@ export async function deleteStaffCompensationOverride(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL, CACHE_TAGS.STAFF_DIRECTORY);
 
   return { success: true };
 }
@@ -732,6 +761,7 @@ export async function generateBatchPayslips(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL);
 
   return { success: true, count: staffMembers.length };
 }
@@ -849,6 +879,7 @@ export async function disbursePayslip(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL);
 
   return { success: true, data: target };
 }
@@ -874,6 +905,7 @@ export async function approvePayslip(
   revalidatePath("/dashboard/ceo/payroll");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/staff/hr");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL);
 
   return { success: true };
 }
@@ -1074,6 +1106,7 @@ export async function updateMyPayoutDetails(
   revalidatePath("/dashboard/staff/hr");
   revalidatePath("/dashboard/finance/payroll");
   revalidatePath("/dashboard/ceo/payroll");
+  invalidateCacheTags(CACHE_TAGS.PAYROLL, CACHE_TAGS.STAFF_DIRECTORY);
 
   return {
     success: true,

@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 import { db, withDbTimeout } from "@/lib/db";
 import { requireRole, auth } from "@/lib/auth";
+import { CACHE_TAGS, invalidateCacheTags } from "@/lib/cache-tags";
 import {
   ClockInSchema,
   ClockOutSchema,
@@ -363,6 +364,7 @@ export async function clockIn(
       });
 
       revalidatePath("/dashboard");
+      invalidateCacheTags(CACHE_TAGS.ATTENDANCE_REVIEW);
       return {
         success: true,
         data: {
@@ -452,6 +454,7 @@ export async function clockOut(
       });
 
       revalidatePath("/dashboard");
+      invalidateCacheTags(CACHE_TAGS.ATTENDANCE_REVIEW, CACHE_TAGS.PAYROLL);
       return {
         success: true,
         data: {
@@ -782,6 +785,7 @@ export async function fileAttendanceCorrection(
       });
 
       revalidatePath("/dashboard");
+      invalidateCacheTags(CACHE_TAGS.ATTENDANCE_REVIEW);
       return {
         success: true,
         data: { correctionId: correction.id },
@@ -800,6 +804,60 @@ export async function fileAttendanceCorrection(
 }
 
 /**
+ * In-memory cached retrieval of Attendance Review raw data.
+ * Invalidation tag: attendance-review
+ */
+const fetchCachedAttendanceDeskRaw = unstable_cache(
+  async (startOfMonthIso: string) => {
+    const startOfMonth = new Date(startOfMonthIso);
+
+    const [corrections, allLogsThisMonth, activePunches] = await Promise.all([
+      db.attendanceCorrectionRequest.findMany({
+        include: {
+          user: {
+            select: {
+              fullName: true,
+              email: true,
+              userRoles: { include: { role: true } },
+            },
+          },
+        },
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      }),
+      db.staffAttendanceLog.findMany({
+        where: { clockInAt: { gte: startOfMonth } },
+        select: { totalMinutes: true, status: true, isAdjusted: true },
+      }),
+      db.staffAttendanceLog.count({ where: { status: "IN_PROGRESS" } }),
+    ]);
+
+    const reviewerIds = Array.from(
+      new Set(corrections.map((c) => c.reviewedBy).filter(Boolean))
+    ) as string[];
+
+    let reviewers: { id: string; fullName: string }[] = [];
+    if (reviewerIds.length > 0) {
+      reviewers = await db.user.findMany({
+        where: { id: { in: reviewerIds } },
+        select: { id: true, fullName: true },
+      });
+    }
+
+    return {
+      corrections,
+      allLogsThisMonth,
+      activePunches,
+      reviewers,
+    };
+  },
+  ["attendance-desk-raw"],
+  {
+    revalidate: 30,
+    tags: [CACHE_TAGS.ATTENDANCE_REVIEW],
+  }
+);
+
+/**
  * 6. Fetch HR Attendance Review Desk Queue (Finance Officer, Admin, CEO).
  */
 export async function getAttendanceReviewDeskData(): Promise<{
@@ -812,40 +870,30 @@ export async function getAttendanceReviewDeskData(): Promise<{
 
   try {
     return await withDbTimeout((async () => {
-      const corrections = await db.attendanceCorrectionRequest.findMany({
-        include: {
-          user: {
-            select: {
-              fullName: true,
-              email: true,
-              userRoles: { include: { role: true } },
-            },
-          },
-        },
-        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-      });
-
-      const reviewerIds = Array.from(new Set(corrections.map((c: { reviewedBy: string | null }) => c.reviewedBy).filter(Boolean))) as string[];
-      const reviewers = await db.user.findMany({
-        where: { id: { in: reviewerIds } },
-        select: { id: true, fullName: true },
-      });
-      const reviewerMap = new Map(reviewers.map((r: { id: string; fullName: string }) => [r.id, r.fullName]));
-
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const allLogsThisMonth = await db.staffAttendanceLog.findMany({
-        where: { clockInAt: { gte: startOfMonth } },
-        select: { totalMinutes: true, status: true, isAdjusted: true },
-      });
+      const { corrections, allLogsThisMonth, activePunches, reviewers } =
+        await fetchCachedAttendanceDeskRaw(startOfMonth.toISOString());
 
-      const totalMinutes = allLogsThisMonth.reduce((sum: number, l: { totalMinutes: number | null }) => sum + (l.totalMinutes || 0), 0);
-      const completedShifts = allLogsThisMonth.filter((l: { status: string }) => l.status === "COMPLETED" || l.status === "ADJUSTED").length;
-      const adjustedShifts = allLogsThisMonth.filter((l: { isAdjusted: boolean }) => l.isAdjusted).length;
-      const activePunches = await db.staffAttendanceLog.count({ where: { status: "IN_PROGRESS" } });
-      const pendingCount = corrections.filter((c: { status: string }) => c.status === "PENDING").length;
+      const reviewerMap = new Map<string, string>(
+        reviewers.map((r) => [r.id, r.fullName])
+      );
+
+      const totalMinutes = allLogsThisMonth.reduce(
+        (sum: number, l: { totalMinutes: number | null }) => sum + (l.totalMinutes || 0),
+        0
+      );
+      const completedShifts = allLogsThisMonth.filter(
+        (l: { status: string }) => l.status === "COMPLETED" || l.status === "ADJUSTED"
+      ).length;
+      const adjustedShifts = allLogsThisMonth.filter(
+        (l: { isAdjusted: boolean }) => l.isAdjusted
+      ).length;
+      const pendingCount = corrections.filter(
+        (c: { status: string }) => c.status === "PENDING"
+      ).length;
 
       const formattedCorrections: AttendanceCorrectionItem[] = corrections.map((c) => {
         const requesterRole = (c.user.userRoles[0]?.role.name as RoleName) || "STATISTICIAN";
@@ -1040,6 +1088,7 @@ export async function reviewAttendanceCorrection(
       }
 
       revalidatePath("/dashboard");
+      invalidateCacheTags(CACHE_TAGS.ATTENDANCE_REVIEW, CACHE_TAGS.PAYROLL);
       return {
         success: true,
         data: { correctionId, status: action === "APPROVE" ? "APPROVED" : "REJECTED" },
