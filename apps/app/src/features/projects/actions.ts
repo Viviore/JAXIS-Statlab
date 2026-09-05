@@ -92,17 +92,41 @@ export async function createProject(
     };
   }
 
+  // Resolve valid user in DB (heal if session has mismatched or dev ID)
+  let resolvedUserId = session.user.id;
+  try {
+    const userInDb = await withDbTimeout(
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true },
+      })
+    );
+    if (!userInDb && session.user.email) {
+      const userByEmail = await withDbTimeout(
+        db.user.findUnique({
+          where: { email: session.user.email.toLowerCase().trim() },
+          select: { id: true },
+        })
+      );
+      if (userByEmail) {
+        resolvedUserId = userByEmail.id;
+      }
+    }
+  } catch (userResolveErr) {
+    console.warn("[createProject] User ID resolution warning:", userResolveErr);
+  }
+
   // Ensure client profile is safely stored in PostgreSQL if it was only mirrored in cookies
   try {
     const existingDbProfile = await withDbTimeout(
       db.clientProfile.findUnique({
-        where: { userId: session.user.id },
+        where: { userId: resolvedUserId },
       })
     );
     if (!existingDbProfile && profile.institutionSchool && profile.contactNumber) {
       await withDbTimeout(
         db.clientProfile.upsert({
-          where: { userId: session.user.id },
+          where: { userId: resolvedUserId },
           update: {
             institutionSchool: profile.institutionSchool,
             academicProgram: profile.academicProgram || "General Program",
@@ -110,7 +134,7 @@ export async function createProject(
             region: profile.region || "National Capital Region (NCR)",
           },
           create: {
-            userId: session.user.id,
+            userId: resolvedUserId,
             institutionSchool: profile.institutionSchool,
             academicProgram: profile.academicProgram || "General Program",
             contactNumber: profile.contactNumber,
@@ -155,7 +179,7 @@ export async function createProject(
       db.project.create({
         data: {
           intakeId,
-          clientId: session.user.id,
+          clientId: resolvedUserId,
           researchTitle: researchTitle.trim(),
           researchQuestions: researchQuestions.trim(),
           researchObjectives: researchObjectives.trim(),
@@ -417,7 +441,19 @@ export async function getProjects(
     const isClient = userRole === "CLIENT";
 
     const whereClause: Prisma.ProjectWhereInput = {
-      ...(isClient ? { clientId: userId } : {}),
+      ...(isClient
+        ? {
+            OR: [
+              { clientId: userId },
+              ...(session.user?.email
+                ? [
+                    { client: { email: session.user.email.toLowerCase().trim() } },
+                    { client: { email: session.user.email } },
+                  ]
+                : []),
+            ],
+          }
+        : {}),
       ...(status && status !== "ALL" ? { masterStatus: status as ProjectStatus } : {}),
       ...(search?.trim()
         ? {

@@ -61,9 +61,9 @@ export function ClientDashboardClient({
     description?: string;
   } | null>(null);
 
-  // Sync projects if initialProjects from Server Component updates
+  // Sync projects if initialProjects from Server Component updates (without wiping newer client-fetched data)
   useEffect(() => {
-    if (initialProjects) {
+    if (initialProjects && initialProjects.length > 0) {
       setProjects(initialProjects);
     }
   }, [initialProjects]);
@@ -76,7 +76,7 @@ export function ClientDashboardClient({
         getClientProfile(),
       ]);
 
-      if (projRes.success) {
+      if (projRes.success && Array.isArray(projRes.data)) {
         setProjects(projRes.data);
       }
 
@@ -104,11 +104,9 @@ export function ClientDashboardClient({
           ? `Your research study specifications have been queued for triage. Assigned ID: ${intakeId}`
           : "Your research study specifications have been queued for triage.",
       });
-      loadData();
-      router.refresh();
-      if (typeof window !== "undefined") {
-        window.history.replaceState({}, "", window.location.pathname);
-      }
+      loadData().then(() => {
+        router.refresh();
+      });
     }
   }, [searchParams, router]);
 
