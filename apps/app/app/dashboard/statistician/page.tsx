@@ -32,7 +32,7 @@ export default async function StatisticianDashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex justify-center items-center py-24">
+        <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto">
           <LoadingState variant="page" label="Loading statistical workbench..." />
         </div>
       }

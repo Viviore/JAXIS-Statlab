@@ -196,7 +196,7 @@ export default function CeoStorageRetentionPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
         <LoadingState
           variant="page"
           label="Loading Storage & Retention Status..."

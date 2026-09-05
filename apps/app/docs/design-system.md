@@ -525,7 +525,7 @@ Generic shimmering grey skeletons and clunky square boxes with pinging blobs are
 | :--- | :--- | :--- | :--- |
 | **`variant="table"`** | `py-16 px-4` inside `<tr><td colSpan={N}>` | `OrbitalSpinner size="md"` + Sans-serif typography (`text-sm font-semibold` + `text-xs text-white/45`). | Table bodies (`DataTable`, Study Registries, Payout Ledgers) while fetching records. Preserves table headers with **Zero CLS**. |
 | **`variant="card"`** | `min-h-[160px]` | Centered `OrbitalSpinner` + Sans-serif label & description (`text-sm font-semibold`). | Inside KPI matrix cards, verification guardrail loading cards, and inspector containers. |
-| **`variant="page"`** | `min-h-[50vh]` | Large `OrbitalSpinner size="lg"` + Sans-serif status heading and subtext. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
+| **`variant="page"`** | `min-h-full` (100% flex centered) | Large `OrbitalSpinner size="lg"` + Sans-serif status heading and subtext. | Full-page route transitions (`loading.tsx`), initial desk boots, and full-screen auth/error boundaries. |
 | **`variant="inline"`** | Compact inline row | `OrbitalSpinner size="sm"` + concise sans-serif string. | Inside button micro-interactions, modal sub-headers, or search bars. |
 
 #### **Usage Examples:**

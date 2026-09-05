@@ -201,6 +201,18 @@ export default function ClientDefenseLabPage() {
     return entitlements.find((e) => e.projectId === selectedProjectId);
   }, [entitlements, selectedProjectId]);
 
+  if (isLoading) {
+    return (
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading DefenseLab Rehearsals..."
+          description="Retrieving mock panel defense sessions and specialist rosters"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
       {toast && (
@@ -234,11 +246,7 @@ export default function ClientDefenseLabPage() {
         }
       />
 
-      {isLoading ? (
-        <LoadingState variant="page" label="Loading DefenseLab Rehearsals..." />
-      ) : (
-        <>
-          {/* KPI TELEMETRY CARDS */}
+      {/* KPI TELEMETRY CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KpiCard
               label="TOTAL PURCHASED"
@@ -558,8 +566,6 @@ export default function ClientDefenseLabPage() {
               </div>
             )}
           </Card>
-        </>
-      )}
 
       {/* SCHEDULE REHEARSAL MODAL */}
       {isBookModalOpen && (

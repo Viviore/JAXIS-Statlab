@@ -81,7 +81,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   if (variant === "page") {
     return (
       <div
-        className={`flex-1 min-h-[50vh] h-full w-full flex flex-col items-center justify-center gap-4 py-8 px-4 text-center select-none animate-content-fade my-auto mx-auto ${className}`}
+        className={`flex-1 min-h-full h-full w-full flex flex-col items-center justify-center gap-4 py-8 px-4 text-center select-none animate-content-fade my-auto mx-auto ${className}`}
       >
         <OrbitalSpinner size="lg" />
         <div className="flex flex-col items-center justify-center gap-1.5 max-w-md mx-auto text-center">

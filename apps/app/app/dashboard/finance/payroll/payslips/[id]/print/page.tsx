@@ -38,7 +38,7 @@ export default function FinancePayslipPrintPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 w-full flex items-center justify-center py-24">
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto">
         <LoadingState variant="page" label="Loading Official Payslip Document..." />
       </div>
     );

@@ -96,19 +96,12 @@ export default function CeoFinancePage() {
 
   if (isLoading || !overview) {
     return (
-      <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
-        <PageHeader
-          breadcrumbs={[
-            { label: "WORKSPACE", href: "/dashboard" },
-            { label: "CEO OVERVIEW", href: "/dashboard/ceo" },
-            { label: "TREASURY & RATES" },
-          ]}
-          title="Executive Treasury & Payout Governance"
-          description="Corporate financial telemetry, package profitability breakdown, and executive commission rate configuration."
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto font-sans">
+        <LoadingState
+          variant="page"
+          label="Loading Financial Telemetry..."
+          description="Aggregating corporate revenue and margin streams"
         />
-        <div className="py-24 flex items-center justify-center">
-          <LoadingState variant="page" label="Loading Financial Telemetry..." description="Aggregating corporate revenue and margin streams" />
-        </div>
       </div>
     );
   }

@@ -132,7 +132,7 @@ export default function ClientSowPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 min-h-[50vh] w-full flex items-center justify-center animate-content-fade my-auto">
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto">
         <LoadingState
           variant="page"
           label="Retrieving Statement of Work contract..."

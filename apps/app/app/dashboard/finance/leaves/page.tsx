@@ -299,7 +299,7 @@ export default function SpecialistLeaveApprovalsPage() {
 
   if (isLoading && !data) {
     return (
-      <div className="flex-1 min-h-[50vh] w-full flex items-center justify-center animate-content-fade my-auto">
+      <div className="flex-1 w-full min-h-full flex items-center justify-center animate-content-fade my-auto">
         <LoadingState
           variant="page"
           label="Loading HR Specialist Leave Desk..."
