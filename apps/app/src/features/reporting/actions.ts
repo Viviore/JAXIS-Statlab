@@ -835,7 +835,7 @@ export async function purgeExpiredFilesAction(
       projectFilter = {};
     }
 
-    // Query target projects with their attached project files
+    // Query target projects with their attached project files and deliverables
     const targetProjects = await withDbTimeout(
       db.project.findMany({
         where: projectFilter,
@@ -851,6 +851,14 @@ export async function purgeExpiredFilesAction(
               filePath: true,
               fileName: true,
               fileCategory: true,
+            },
+          },
+          deliverables: {
+            select: {
+              id: true,
+              filePath: true,
+              fileName: true,
+              fileSize: true,
             },
           },
         },
@@ -883,7 +891,10 @@ export async function purgeExpiredFilesAction(
         }
       });
 
-      if (purgeableFiles.length > 0) {
+      // Filter deliverables if CEO opted not to preserve deliverables
+      const purgeableDeliverables = !config?.keepDeliverables && p.deliverables ? p.deliverables : [];
+
+      if (purgeableFiles.length > 0 || purgeableDeliverables.length > 0) {
         projectsAffectedCount++;
 
         // 1. Physically delete raw object bytes from Cloudflare R2 bucket
@@ -893,16 +904,35 @@ export async function purgeExpiredFilesAction(
           }
         }
 
+        for (const d of purgeableDeliverables) {
+          if (d.filePath) {
+            await deleteR2Object(d.filePath);
+          }
+        }
+
         // 2. Remove purged file metadata records from database
-        await withDbTimeout(
-          db.projectFile.deleteMany({
-            where: { id: { in: purgeableFiles.map((f) => f.id) } },
-          })
-        );
-        totalPurgedFiles += purgeableFiles.length;
+        if (purgeableFiles.length > 0) {
+          await withDbTimeout(
+            db.projectFile.deleteMany({
+              where: { id: { in: purgeableFiles.map((f) => f.id) } },
+            })
+          );
+          totalPurgedFiles += purgeableFiles.length;
+        }
+
+        if (purgeableDeliverables.length > 0) {
+          await withDbTimeout(
+            db.deliverable.deleteMany({
+              where: { id: { in: purgeableDeliverables.map((d) => d.id) } },
+            })
+          );
+          totalPurgedFiles += purgeableDeliverables.length;
+        }
 
         // 3. Mark project and archived project as purged if delivered or all files purged
-        if (p.deliveredAt || p.files.length === purgeableFiles.length) {
+        const remainingFiles = p.files.length - purgeableFiles.length;
+        const remainingDeliverables = p.deliverables.length - purgeableDeliverables.length;
+        if (p.deliveredAt || (remainingFiles === 0 && remainingDeliverables === 0)) {
           await withDbTimeout(
             db.project.update({
               where: { id: p.id },
@@ -919,7 +949,8 @@ export async function purgeExpiredFilesAction(
         }
 
         // 4. Record audit entry detailing preserved vs purged counts
-        const preservedCount = p.files.length - purgeableFiles.length;
+        const preservedCount = remainingFiles + remainingDeliverables;
+        const totalDeletedForProject = purgeableFiles.length + purgeableDeliverables.length;
         await withDbTimeout(
           db.auditLog.create({
             data: {
@@ -927,7 +958,7 @@ export async function purgeExpiredFilesAction(
               actorId: effectiveUser.id,
               actorRole: effectiveUser.role as RoleName,
               action: "FILES_PURGED",
-              reason: `Storage retention purge (${scope} scope, ${retentionDays}-day policy): deleted ${purgeableFiles.length} unprotected files (${preservedCount} preserved by CEO policy) executed by ${effectiveUser.fullName || effectiveUser.role}.`,
+              reason: `Storage retention purge (${scope} scope, ${retentionDays}-day policy): deleted ${totalDeletedForProject} unprotected files (${preservedCount} preserved by CEO policy) executed by ${effectiveUser.fullName || effectiveUser.role}.`,
             },
           })
         );

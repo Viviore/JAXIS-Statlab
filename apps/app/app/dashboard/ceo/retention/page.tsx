@@ -247,9 +247,9 @@ export default function CeoStorageRetentionPage() {
   const dbLimit = health?.supabase.databaseLimitMB || 500;
   const dbPercent = health?.supabase.percentageUsed || Math.round((dbUsed / dbLimit) * 100);
 
-  const cfUsed = health?.cloudflare.storageUsedMB || 3.87;
+  const cfUsed = health?.cloudflare.storageUsedMB ?? 0;
   const cfLimit = health?.cloudflare.storageLimitMB || 10240;
-  const cfPercent = health?.cloudflare.percentageUsed || Math.round((cfUsed / cfLimit) * 100);
+  const cfPercent = health?.cloudflare.percentageUsed ?? Math.round((cfUsed / cfLimit) * 100);
 
   const emailToday = health?.resend.sentToday || 0;
   const emailDailyLimit = health?.resend.dailyLimit || 100;
@@ -500,7 +500,7 @@ export default function CeoStorageRetentionPage() {
 
             <div className="flex items-center justify-between text-[11px] font-mono text-white/40 pt-0.5">
               <span>{cfPercent}% used</span>
-              <span>{health?.cloudflare.totalFiles || 15} files</span>
+              <span>{health?.cloudflare.totalFiles ?? 0} files</span>
             </div>
           </div>
 
