@@ -771,8 +771,10 @@ export async function getProjectById(
       downpaymentRequired
     );
 
+    const { payments: _rawPayments, quotations: _rawQuotations, ...projectFields } = project;
+
     const mapped = {
-      ...project,
+      ...projectFields,
       latestPaymentStatus: latestPay?.paymentStatus || null,
       hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
       financialSummary: {
