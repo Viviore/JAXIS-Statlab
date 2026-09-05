@@ -3,8 +3,8 @@
 import React from "react";
 import dynamic from "next/dynamic";
 
-const AuthParticleGlobe = dynamic(
-  () => import("./AuthParticleGlobe"),
+const ParticleGlobe = dynamic(
+  () => import("./ParticleGlobe"),
   {
     ssr: false,
     loading: () => null,
@@ -12,5 +12,5 @@ const AuthParticleGlobe = dynamic(
 );
 
 export function AuthGlobeClient() {
-  return <AuthParticleGlobe />;
+  return <ParticleGlobe layout="auth-crescent" />;
 }

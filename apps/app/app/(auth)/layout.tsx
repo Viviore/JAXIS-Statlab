@@ -63,17 +63,17 @@ export default function AuthLayout({
         </footer>
       </aside>
 
-      {/* ── Right Side: Pure Ambient Deep Space & Scaled Particle Globe ─────────── */}
+      {/* ── Right Side: Pure Ambient Deep Space & Particle Globe ─────────── */}
       <main className="hidden lg:flex flex-1 relative bg-[#010114] items-center justify-center overflow-hidden h-screen select-none">
-        {/* Ambient Glows Emanating from Right Edge behind the 50% Half Globe */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_100%_50%,rgba(2,132,199,0.28),transparent_70%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_95%_50%,rgba(1,46,87,0.48),transparent_60%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_50%,rgba(204,102,0,0.08),transparent_45%)] pointer-events-none" />
-
         {/* 3D Hardware-Accelerated Particle Canvas */}
         <div className="absolute inset-0 w-full h-full pointer-events-none">
           <AuthGlobeClient />
         </div>
+
+        {/* Subtle optical vignette and ambient deep space atmosphere centered behind the globe */}
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_85%_75%_at_55%_50%,rgba(2,132,199,0.18),transparent_70%)]" />
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_55%_50%,rgba(1,46,87,0.38),transparent_60%)]" />
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_90%_60%_at_50%_110%,rgba(1,22,57,0.40)_0%,rgba(0,4,20,0)_65%)]" />
       </main>
     </div>
   );
