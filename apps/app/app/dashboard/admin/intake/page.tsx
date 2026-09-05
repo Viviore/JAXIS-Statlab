@@ -29,6 +29,7 @@ import {
   IconShieldCheck,
   IconCalculator,
   IconFileCertificate,
+  IconRefresh,
 } from "@tabler/icons-react";
 import {
   getProjects,
@@ -103,6 +104,22 @@ export default function AdminIntakeTriagePage() {
 
   useEffect(() => {
     loadData();
+
+    // Auto-refresh when new intake alerts arrive via SSE or when the admin tab regains focus
+    const handleStudyUpdated = () => {
+      loadData();
+    };
+    const handleFocus = () => {
+      loadData();
+    };
+
+    window.addEventListener("jaxis:study-updated", handleStudyUpdated);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("jaxis:study-updated", handleStudyUpdated);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   // Filter projects based on STATUS dropdown and search query
@@ -309,6 +326,18 @@ export default function AdminIntakeTriagePage() {
           { label: "Admin Command", href: "/dashboard/admin" },
           { label: "Intake Triage" },
         ]}
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={loadData}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 font-mono text-xs font-semibold"
+          >
+            <IconRefresh size={14} className={isLoading ? "animate-spin" : ""} stroke={2} />
+            <span>Refresh</span>
+          </Button>
+        }
       />
 
       {/* ── KPI Metrics Ribbon ── */}

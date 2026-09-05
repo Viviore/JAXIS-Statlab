@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader, Card, StatusBadge, Button, Modal, FilterToolbar, KpiCard, Badge, LoadingState, Pagination } from "@repo/ui";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconRefresh } from "@tabler/icons-react";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { projectService } from "@/features/projects/services/project.service";
 import { Project, AuditTelemetryEvent } from "@/types/project";
@@ -34,10 +34,30 @@ export function AdminDashboardClient({
 
   const {
     projects,
+    refresh,
+    isRefreshing,
   } = useProjects({
     initialData: initialProjects,
     initialLoading: false,
   });
+
+  // Auto-refresh when new intake alerts arrive or when admin tab regains focus
+  useEffect(() => {
+    const handleStudyUpdated = () => {
+      refresh();
+    };
+    const handleFocus = () => {
+      refresh();
+    };
+
+    window.addEventListener("jaxis:study-updated", handleStudyUpdated);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("jaxis:study-updated", handleStudyUpdated);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [refresh]);
 
   // Prioritize studies requiring immediate administrative action / ready signal to the top
   const sortedProjects = useMemo(() => {
@@ -117,6 +137,16 @@ export function AdminDashboardClient({
         ]}
         actions={
           <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={refresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-1.5 font-mono text-xs font-semibold"
+            >
+              <IconRefresh size={14} className={isRefreshing ? "animate-spin" : ""} stroke={2} />
+              <span>Refresh</span>
+            </Button>
             <Link href="/dashboard/admin/intake">
               <Button variant="primary" size="sm" className="gap-2 font-sans font-semibold">
                 <IconPlus size={15} stroke={2} />

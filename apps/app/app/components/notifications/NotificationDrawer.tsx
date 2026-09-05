@@ -124,6 +124,11 @@ export function NotificationDrawer() {
               description: newAlert.message,
               variant: "info",
             });
+
+            // Dispatch global event for active desk pages to auto-refresh data
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("jaxis:study-updated", { detail: newAlert }));
+            }
           } catch (err) {
             console.error("[SSE] Notification parse error:", err);
           }
