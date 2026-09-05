@@ -106,24 +106,31 @@ export class ProjectService {
   }
 
   /**
-   * Retrieves dashboard KPI aggregated metrics computed from active database projects
+   * Retrieves dashboard KPI aggregated metrics computed from active database projects.
+   * Can reuse an already fetched projects array to eliminate duplicate database roundtrips.
    */
-  async getKPIs(): Promise<ProjectKPIs> {
+  async getKPIs(existingProjects?: Project[]): Promise<ProjectKPIs> {
     try {
-      const res = await fetchDbProjects({});
-      if (res.success && res.data) {
-        const list = res.data;
+      let list = existingProjects;
+      if (!list) {
+        const res = await fetchDbProjects({});
+        if (res.success && res.data) {
+          list = res.data.map(mapDetailItemToProject);
+        }
+      }
+
+      if (list) {
         const underEvaluationCount = list.filter(
           (p) =>
-            p.masterStatus === "UNDER_EVALUATION" ||
-            p.masterStatus === "NEW_REQUEST" ||
-            p.masterStatus === "QUOTE_SENT"
+            p.status === "UNDER_EVALUATION" ||
+            p.status === "NEW_REQUEST" ||
+            p.status === "QUOTE_SENT"
         ).length;
         const qaReviewGateCount = list.filter(
-          (p) => p.masterStatus === "FOR_QA" || p.masterStatus === "IN_PROGRESS"
+          (p) => p.status === "FOR_QA" || p.status === "IN_PROGRESS"
         ).length;
         const fullyPaidReleasedCount = list.filter(
-          (p) => p.masterStatus === "DELIVERED" || p.masterStatus === "ACTIVE"
+          (p) => p.status === "DELIVERED" || p.status === "APPROVED"
         ).length;
 
         return {

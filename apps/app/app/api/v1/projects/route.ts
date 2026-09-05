@@ -30,11 +30,12 @@ export async function GET(request: Request) {
       ? Math.max(1, Math.min(100, parseInt(pageSizeParam, 10)))
       : undefined;
 
-    const [projects, kpis, auditStream] = await Promise.all([
-      projectService.getProjects({ status, search, statistician, page, pageSize }),
-      projectService.getKPIs(),
-      projectService.getAuditStream(),
-    ]);
+    const projects = await projectService.getProjects({ status, search, statistician, page, pageSize });
+    // When unfiltered, compute KPIs directly from fetched projects to eliminate duplicate database query
+    const kpis = (!status || status === "ALL") && !search && !statistician
+      ? await projectService.getKPIs(projects)
+      : await projectService.getKPIs();
+    const auditStream = await projectService.getAuditStream();
 
     return NextResponse.json(
       {

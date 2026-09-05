@@ -284,6 +284,9 @@ model Project {
   @@index([masterStatus])
   @@index([intakeId])
   @@index([createdAt])
+  @@index([clientId, createdAt(sort: Desc)])
+  @@index([masterStatus, createdAt(sort: Desc)])
+  @@index([clientId, masterStatus, createdAt(sort: Desc)])
   @@map("projects")
 }
 
@@ -352,6 +355,8 @@ model Quotation {
 
   @@index([projectId])
   @@index([status])
+  @@index([projectId, status])
+  @@index([projectId, createdAt(sort: Desc)])
   @@map("quotations")
 }
 
@@ -461,6 +466,9 @@ model Payment {
   @@index([projectId])
   @@index([paymentStatus])
   @@index([createdAt])
+  @@index([projectId, createdAt(sort: Desc)])
+  @@index([projectId, paymentStatus])
+  @@index([paymentStatus, createdAt(sort: Desc)])
   @@map("payments")
 }
 
@@ -511,6 +519,8 @@ model Assignment {
   @@index([statisticianId])
   @@index([qaLeadId])
   @@index([slaDueAt])
+  @@index([statisticianId, isActive])
+  @@index([qaLeadId, isActive])
   @@map("assignments")
 }
 
@@ -661,6 +671,8 @@ model Message {
   @@index([senderId])
   @@index([sentAt])
   @@index([isBlocked])
+  @@index([projectId, sentAt(sort: Asc)])
+  @@index([projectId, isBlocked, sentAt(sort: Asc)])
   @@map("messages")
 }
 
@@ -853,6 +865,8 @@ model Deliverable {
   @@index([category])
   @@index([isFinalReleased])
   @@index([uploadedBy])
+  @@index([projectId, isFinalReleased])
+  @@index([projectId, category])
   @@map("deliverables")
 }
 
@@ -1108,6 +1122,11 @@ model InAppAlert {
   @@index([recipientRole])
   @@index([isRead])
   @@index([createdAt])
+  @@index([recipientId, createdAt(sort: Desc)])
+  @@index([recipientId, isRead, createdAt(sort: Desc)])
+  @@index([recipientRole, createdAt(sort: Desc)])
+  @@index([recipientRole, isRead, createdAt(sort: Desc)])
+  @@index([recipientId, alertType, createdAt(sort: Desc)])
   @@map("in_app_alerts")
 }
 
@@ -1156,6 +1175,8 @@ model AuditLog {
   @@index([actorId])
   @@index([action])
   @@index([createdAt])
+  @@index([projectId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
   @@map("audit_logs")
 }
 

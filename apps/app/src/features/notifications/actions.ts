@@ -15,6 +15,7 @@ import {
   type NotificationSummaryDTO,
 } from "./schemas";
 import { revalidatePath } from "next/cache";
+import type { RoleName } from "@prisma/client";
 
 export async function getInAppAlertsAction(): Promise<{
   success: boolean;
@@ -31,32 +32,14 @@ export async function getInAppAlertsAction(): Promise<{
       return { success: false, error: { message: "Authentication required." } };
     }
 
-    let recipientId = user.id;
-    try {
-      const dbUser = await withDbTimeout(
-        db.user.findFirst({
-          where: {
-            OR: [
-              { id: user.id },
-              ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
-            ],
-          },
-          select: { id: true },
-        }),
-        1000
-      );
-      if (dbUser) recipientId = dbUser.id;
-    } catch {
-      // Ignore DB timeout and use user.id
-    }
+    const recipientId = user.id;
 
     const alertsRaw = await withDbTimeout(
       db.inAppAlert.findMany({
         where: {
           OR: [
             { recipientId },
-            ...(recipientId !== user.id ? [{ recipientId: user.id }] : []),
-            { recipientRole: user.role as any },
+            { recipientRole: user.role as RoleName },
           ],
         },
         include: {
@@ -119,32 +102,12 @@ export async function getUnreadAlertCountAction(): Promise<{
       return { success: true, count: 0 };
     }
 
-    let recipientId = user.id;
-    try {
-      const dbUser = await withDbTimeout(
-        db.user.findFirst({
-          where: {
-            OR: [
-              { id: user.id },
-              ...(user.email ? [{ email: user.email.toLowerCase().trim() }] : []),
-            ],
-          },
-          select: { id: true },
-        }),
-        1000
-      );
-      if (dbUser) recipientId = dbUser.id;
-    } catch {
-      // Ignore DB timeout and use user.id
-    }
-
     const count = await withDbTimeout(
       db.inAppAlert.count({
         where: {
           OR: [
-            { recipientId },
-            ...(recipientId !== user.id ? [{ recipientId: user.id }] : []),
-            { recipientRole: user.role as any },
+            { recipientId: user.id },
+            { recipientRole: user.role as RoleName },
           ],
           isRead: false,
         },

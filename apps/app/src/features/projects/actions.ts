@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { auth } from "@/lib/auth";
@@ -62,6 +62,24 @@ function writePersistedDevProjects(projects: ProjectDetailItem[]): void {
     fs.writeFileSync(DEV_PROJECTS_FILE, JSON.stringify(projects, null, 2), "utf-8");
   } catch {
     // Ignore write errors
+  }
+}
+
+/**
+ * Unified project cache invalidation & path revalidation.
+ * Evicts in-memory server cache tags and triggers Next.js path updates.
+ */
+function revalidateProjectCaches(projectId?: string): void {
+  invalidateCacheTags(CACHE_TAGS.PROJECTS);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/client");
+  revalidatePath("/dashboard/client/projects");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/intake");
+  revalidatePath("/dashboard/admin/quotations");
+  if (projectId) {
+    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+    revalidatePath(`/dashboard/client/projects/${projectId}`);
   }
 }
 
@@ -372,21 +390,24 @@ export async function createProject(
       ? adminUsers
       : [{ id: "admin_fallback", email: "admin@jaxis.dev", fullName: "Admin Operations" }];
 
-    for (const admin of targets) {
-      await sendEmail({
-        to: admin.email,
-        recipientId: admin.id,
-        template: "NewIntake",
-        projectId: project.id,
-        data: {
-          intakeId: project.intakeId,
-          researchTitle: project.researchTitle,
-          clientName: session.user.name || (session.user as any).fullName || "Client User",
-          clientEmail: session.user.email || "client@jaxis.dev",
-          deadlineRequested: deadlineDate.toISOString(),
-        },
-      }).catch((e) => console.warn("[createProject] sendEmail error:", e));
-    }
+    // Non-blocking fire-and-forget email dispatch so response stays snappy (<400ms)
+    Promise.allSettled(
+      targets.map((admin) =>
+        sendEmail({
+          to: admin.email,
+          recipientId: admin.id,
+          template: "NewIntake",
+          projectId: project.id,
+          data: {
+            intakeId: project.intakeId,
+            researchTitle: project.researchTitle,
+            clientName: session.user.name || "Lead Researcher",
+            clientEmail: session.user.email || "client@jaxis.dev",
+            deadlineRequested: deadlineDate.toISOString(),
+          },
+        })
+      )
+    ).catch((e) => console.warn("[createProject] sendEmail background error:", e));
   } catch (emailErr) {
     console.warn("[createProject] Failed to dispatch admin email:", emailErr);
   }
@@ -408,13 +429,7 @@ export async function createProject(
   }
 
   // ── 5. Invalidate Cache Tags and Revalidate Paths ──
-  invalidateCacheTags(CACHE_TAGS.PROJECTS);
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/client");
-  revalidatePath("/dashboard/client/projects");
-  revalidatePath("/dashboard/admin");
-  revalidatePath("/dashboard/admin/intake");
-  revalidatePath("/dashboard/admin/quotations");
+  revalidateProjectCaches(project.id);
 
   return {
     success: true,
@@ -424,86 +439,14 @@ export async function createProject(
 
 /**
  * 2. Get role-scoped list of projects.
- * - CLIENT: sees only their own projects.
- * - ADMIN / CEO: sees all projects.
- * - STATISTICIAN / QA: sees assigned (or all active in dev).
+/**
+ * In-memory cached project list fetcher.
+ * Revalidates every 30 seconds or immediately when CACHE_TAGS.PROJECTS is invalidated.
  */
-export async function getProjects(
-  filters?: unknown
-): Promise<ActionResponse<ProjectDetailItem[]>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      error: { code: "UNAUTHORIZED", message: "You must be logged in." },
-    };
-  }
-
-  const userRole = session.user.role as string;
-  const userId = session.user.id;
-
-  // Resolve valid user in DB (heal if session has mismatched or dev ID)
-  let resolvedUserId = session.user.id;
-  try {
-    const userInDb = await withDbTimeout(
-      db.user.findUnique({
-        where: { id: session.user.id },
-        select: { id: true },
-      })
-    );
-    if (!userInDb && session.user.email) {
-      const userByEmail = await withDbTimeout(
-        db.user.findUnique({
-          where: { email: session.user.email.toLowerCase().trim() },
-          select: { id: true },
-        })
-      );
-      if (userByEmail) {
-        resolvedUserId = userByEmail.id;
-      }
-    }
-  } catch (userResolveErr) {
-    console.warn("[getProjects] User ID resolution warning:", userResolveErr);
-  }
-
-  const parsed = ProjectFilterSchema.safeParse(filters || {});
-  const { status, search, page, pageSize } = parsed.success
-    ? parsed.data
-    : { status: undefined, search: undefined, page: undefined, pageSize: undefined };
-
-  try {
-    const isClient = userRole === "CLIENT";
-
-    const whereClause: Prisma.ProjectWhereInput = {
-      ...(isClient
-        ? {
-            OR: [
-              { clientId: resolvedUserId },
-              { clientId: session.user.id },
-              ...(session.user?.email
-                ? [
-                    { client: { email: session.user.email.toLowerCase().trim() } },
-                    { client: { email: session.user.email } },
-                  ]
-                : []),
-            ],
-          }
-        : {}),
-      ...(status && status !== "ALL" ? { masterStatus: status as ProjectStatus } : {}),
-      ...(search?.trim()
-        ? {
-            OR: [
-              { researchTitle: { contains: search.trim(), mode: "insensitive" as const } },
-              { intakeId: { contains: search.trim(), mode: "insensitive" as const } },
-            ],
-          }
-        : {}),
-    };
-
-    const take = pageSize && pageSize > 0 ? Math.min(pageSize, 100) : undefined;
-    const skip = page && page > 0 && take ? (page - 1) * take : undefined;
-
-    const projects = await withDbTimeout(
+const fetchCachedProjectsDb = unstable_cache(
+  async (whereClauseJson: string, take?: number, skip?: number) => {
+    const whereClause: Prisma.ProjectWhereInput = JSON.parse(whereClauseJson);
+    return withDbTimeout(
       db.project.findMany({
         where: whereClause,
         ...(take ? { take } : {}),
@@ -568,6 +511,59 @@ export async function getProjects(
         orderBy: { createdAt: "desc" },
       })
     );
+  },
+  ["cached-projects-feed"],
+  { revalidate: 30, tags: [CACHE_TAGS.PROJECTS] }
+);
+
+/**
+ * 2. Get role-scoped list of projects.
+ * - CLIENT: sees only their own projects (using indexed clientId lookup).
+ * - ADMIN / CEO: sees all projects.
+ * - STATISTICIAN / QA: sees assigned (or all active in dev).
+ */
+export async function getProjects(
+  filters?: unknown
+): Promise<ActionResponse<ProjectDetailItem[]>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "You must be logged in." },
+    };
+  }
+
+  const userRole = session.user.role as string;
+  const isClient = userRole === "CLIENT";
+
+  const parsed = ProjectFilterSchema.safeParse(filters || {});
+  const { status, search, page, pageSize } = parsed.success
+    ? parsed.data
+    : { status: undefined, search: undefined, page: undefined, pageSize: undefined };
+
+  try {
+    const whereClause: Prisma.ProjectWhereInput = {
+      ...(isClient
+        ? {
+            clientId: session.user.id,
+          }
+        : {}),
+      ...(status && status !== "ALL" ? { masterStatus: status as ProjectStatus } : {}),
+      ...(search?.trim()
+        ? {
+            OR: [
+              { researchTitle: { contains: search.trim(), mode: "insensitive" as const } },
+              { intakeId: { contains: search.trim(), mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const take = pageSize && pageSize > 0 ? Math.min(pageSize, 100) : undefined;
+    const skip = page && page > 0 && take ? (page - 1) * take : undefined;
+
+    const whereClauseJson = JSON.stringify(whereClause);
+    const projects = await fetchCachedProjectsDb(whereClauseJson, take, skip);
 
     const mappedProjects = (projects as unknown as Array<ProjectDetailItem & { payments?: Array<{ paymentStatus: string }> }>).map((p) => {
       const latestPay = p.payments?.[0];
@@ -604,7 +600,7 @@ export async function getProjects(
     if (userRole === "CLIENT") {
       devProjects = devProjects.filter(
         (p) =>
-          p.clientId === userId ||
+          p.clientId === session.user.id ||
           p.client.email === session.user?.email ||
           p.client.email === "client@jaxis.dev" ||
           p.clientId === "usr_dev_client_001"
@@ -754,10 +750,10 @@ export async function getProjectById(
       downpaymentRequired
     );
 
-    const { payments: _rawPayments, quotations: _rawQuotations, ...projectFields } = project;
-
     const mapped = {
-      ...projectFields,
+      ...project,
+      payments: undefined,
+      quotations: undefined,
       latestPaymentStatus: latestPay?.paymentStatus || null,
       hasPendingPaymentVerification: latestPay?.paymentStatus === "PROOF_SUBMITTED",
       financialSummary: {
@@ -884,9 +880,7 @@ export async function updateProjectStatus(
       console.warn("[updateProjectStatus] Realtime notification dispatch failed:", notifyErr);
     }
 
-    revalidatePath("/dashboard/admin/intake");
-    revalidatePath(`/dashboard/admin/projects/${projectId}`);
-    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidateProjectCaches(projectId);
 
     return {
       success: true,
@@ -1030,9 +1024,7 @@ export async function requestMissingInfo(
       console.warn("[requestMissingInfo] Realtime notification warning:", e);
     }
 
-    revalidatePath("/dashboard/admin/intake");
-    revalidatePath(`/dashboard/admin/projects/${projectId}`);
-    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidateProjectCaches(projectId);
 
     return {
       success: true,
@@ -1077,9 +1069,7 @@ export async function requestMissingInfo(
       // Ignore
     }
 
-    revalidatePath("/dashboard/admin/intake");
-    revalidatePath(`/dashboard/admin/projects/${projectId}`);
-    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidateProjectCaches(projectId);
 
     return {
       success: true,
@@ -1151,9 +1141,7 @@ export async function markIntakeComplete(
       console.warn("[markIntakeComplete] Realtime notification warning:", e);
     }
 
-    revalidatePath("/dashboard/admin/intake");
-    revalidatePath(`/dashboard/admin/projects/${projectId}`);
-    revalidatePath(`/dashboard/client/projects/${projectId}`);
+    revalidateProjectCaches(projectId);
 
     return {
       success: true,
@@ -1513,11 +1501,7 @@ export async function resolveMissingInfo(
       console.warn("[resolveMissingInfo] Realtime notification error:", e);
     }
 
-    revalidatePath("/dashboard/client");
-    revalidatePath("/dashboard/client/projects");
-    revalidatePath(`/dashboard/client/projects/${projectId}`);
-    revalidatePath("/dashboard/admin/intake");
-    revalidatePath(`/dashboard/admin/projects/${projectId}`);
+    revalidateProjectCaches(projectId);
 
     return {
       success: true,

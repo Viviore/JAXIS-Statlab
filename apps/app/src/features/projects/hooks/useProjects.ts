@@ -23,10 +23,19 @@ export function useProjects(options?: UseProjectsOptions) {
   const page = options?.page;
   const pageSize = options?.pageSize;
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const fetchData = useCallback(
     async (showLoading = false) => {
       if (showLoading) setIsLoading(true);
       setError(null);
+
+      // Cancel any ongoing in-flight request to prevent race conditions
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
         if (typeof window !== "undefined") {
@@ -39,7 +48,7 @@ export function useProjects(options?: UseProjectsOptions) {
 
           const query = params.toString();
           const endpoint = query ? `/api/v1/projects?${query}` : "/api/v1/projects";
-          const res = await fetch(endpoint);
+          const res = await fetch(endpoint, { signal: controller.signal });
           if (!isMountedRef.current) return;
           if (res.ok) {
             const json = await res.json();
@@ -64,7 +73,10 @@ export function useProjects(options?: UseProjectsOptions) {
         setProjects(projectsData);
         setKpis(kpisData);
         setAuditStream(auditData);
-      } catch (err) {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
         if (isMountedRef.current) {
           setError(err instanceof Error ? err.message : "Failed to load project telemetry");
         }
@@ -89,6 +101,9 @@ export function useProjects(options?: UseProjectsOptions) {
 
     return () => {
       isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [fetchData, options?.initialLoading, options?.initialData]);
 

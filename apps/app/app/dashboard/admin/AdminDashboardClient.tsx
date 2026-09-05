@@ -41,21 +41,16 @@ export function AdminDashboardClient({
     initialLoading: false,
   });
 
-  // Auto-refresh when new intake alerts arrive or when admin tab regains focus
+  // Auto-refresh when new intake alerts arrive via real-time event
   useEffect(() => {
     const handleStudyUpdated = () => {
       refresh();
     };
-    const handleFocus = () => {
-      refresh();
-    };
 
     window.addEventListener("jaxis:study-updated", handleStudyUpdated);
-    window.addEventListener("focus", handleFocus);
 
     return () => {
       window.removeEventListener("jaxis:study-updated", handleStudyUpdated);
-      window.removeEventListener("focus", handleFocus);
     };
   }, [refresh]);
 
