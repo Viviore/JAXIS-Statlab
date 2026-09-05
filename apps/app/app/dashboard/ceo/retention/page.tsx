@@ -46,6 +46,7 @@ import {
   IconCpu,
   IconLock,
   IconCalendarEvent,
+  IconInfoCircle,
 } from "@tabler/icons-react";
 
 function getCutoffInfo(days: number) {
@@ -86,6 +87,7 @@ export default function CeoStorageRetentionPage() {
   const [isPurging, setIsPurging] = useState<boolean>(false);
   const [isTestingAlert, setIsTestingAlert] = useState<boolean>(false);
   const [isConfirmPurgeOpen, setIsConfirmPurgeOpen] = useState<boolean>(false);
+  const [purgeScope, setPurgeScope] = useState<"FINISHED_ONLY" | "ALL_PROJECTS" | "ACTIVE_ONLY">("FINISHED_ONLY");
 
   const [toast, setToast] = useState<{
     message: string;
@@ -165,13 +167,24 @@ export default function CeoStorageRetentionPage() {
     setIsConfirmPurgeOpen(false);
     setIsPurging(true);
     try {
-      const res = await purgeExpiredFilesAction();
+      const res = await purgeExpiredFilesAction(undefined, { scope: purgeScope });
       if (res.success) {
-        const filesDesc = res.purgedFilesCount && res.purgedFilesCount > 0
-          ? `Deleted ${res.purgedFilesCount} unprotected files and freed ~${res.freedMB} MB across ${res.purgedCount} expired study records.`
-          : res.purgedCount > 0
+        const scopeLabel =
+          purgeScope === "ALL_PROJECTS"
+            ? "Finished + Active Studies"
+            : purgeScope === "ACTIVE_ONLY"
+            ? "Active / Ongoing Studies"
+            : "Finished Studies Only";
+        const filesDesc =
+          res.purgedFilesCount && res.purgedFilesCount > 0
+            ? `Deleted ${res.purgedFilesCount} unprotected files and freed ~${res.freedMB} MB across ${res.purgedCount} studies (${scopeLabel}).`
+            : res.purgedCount > 0
             ? `Purge check completed for ${res.purgedCount} studies. All files were preserved under active protection rules.`
-            : "Storage is already clean. No expired study records reached your cutoff date.";
+            : purgeScope === "FINISHED_ONLY"
+            ? `Storage is clean. No completed studies have reached your ${config.retentionPeriodDays}-day cutoff yet.`
+            : purgeScope === "ACTIVE_ONLY"
+            ? "All files across active studies are currently protected by your active category toggles. Uncheck categories below to free space."
+            : "All files across active and finished studies are currently protected by your active category toggles. Uncheck categories below to free space.";
         setToast({
           variant: "success",
           message: "Storage Purge Completed",
@@ -932,7 +945,7 @@ export default function CeoStorageRetentionPage() {
 
       {/* Styled Purge Confirmation Dialog */}
       <AlertDialog open={isConfirmPurgeOpen} onOpenChange={setIsConfirmPurgeOpen}>
-        <AlertDialogContent className="max-w-lg">
+        <AlertDialogContent className="max-w-xl">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-1">
               <div className="w-10 h-10 rounded-[2px] bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
@@ -943,12 +956,111 @@ export default function CeoStorageRetentionPage() {
                   Confirm Storage File Cleanup
                 </AlertDialogTitle>
                 <span className="text-xs text-white/50 font-sans block mt-0.5">
-                  Reclaiming cloud storage for completed studies past {config.retentionPeriodDays} days
+                  {purgeScope === "ALL_PROJECTS"
+                    ? "Reclaiming cloud storage across all projects (including active/ongoing studies)"
+                    : purgeScope === "ACTIVE_ONLY"
+                    ? "Reclaiming cloud storage on active & ongoing studies (cleaning test files)"
+                    : `Reclaiming cloud storage for completed studies past ${config.retentionPeriodDays} days`}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 pt-3 text-xs font-sans">
+              {/* Purge Target Scope Selector */}
+              <div className="flex flex-col gap-2">
+                <span className="text-[0.688rem] font-mono text-white/60 uppercase tracking-wider font-semibold">
+                  Choose Studies Scope:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPurgeScope("FINISHED_ONLY")}
+                    className={`p-3 rounded-[2px] border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                      purgeScope === "FINISHED_ONLY"
+                        ? "bg-[#CC6600]/20 border-[#CC6600] text-white shadow-sm"
+                        : "bg-[#010D1F] border-white/10 text-white/60 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold font-sans flex items-center gap-1.5 text-white">
+                        <IconShieldCheck size={14} className={purgeScope === "FINISHED_ONLY" ? "text-[#CC6600]" : "text-white/40"} />
+                        Finished Only
+                      </span>
+                      <span className="text-[0.625rem] font-mono px-1.5 py-0.5 bg-white/10 rounded text-white/70">
+                        Safe
+                      </span>
+                    </div>
+                    <span className="text-[0.688rem] text-white/50 leading-tight font-sans">
+                      Delivered studies past {config.retentionPeriodDays} days. Ongoing studies untouched.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPurgeScope("ACTIVE_ONLY")}
+                    className={`p-3 rounded-[2px] border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                      purgeScope === "ACTIVE_ONLY"
+                        ? "bg-sky-500/20 border-sky-500 text-white shadow-sm"
+                        : "bg-[#010D1F] border-white/10 text-white/60 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold font-sans flex items-center gap-1.5 text-white">
+                        <IconClock size={14} className={purgeScope === "ACTIVE_ONLY" ? "text-sky-400" : "text-white/40"} />
+                        Active Only
+                      </span>
+                      <span className="text-[0.625rem] font-mono px-1.5 py-0.5 bg-sky-500/20 text-sky-300 rounded">
+                        In-Progress
+                      </span>
+                    </div>
+                    <span className="text-[0.688rem] text-white/50 leading-tight font-sans">
+                      Cleans unprotected scratch &amp; test files on ongoing studies. Finished records safe.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPurgeScope("ALL_PROJECTS")}
+                    className={`p-3 rounded-[2px] border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                      purgeScope === "ALL_PROJECTS"
+                        ? "bg-amber-500/20 border-amber-500 text-white shadow-sm"
+                        : "bg-[#010D1F] border-white/10 text-white/60 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold font-sans flex items-center gap-1.5 text-white">
+                        <IconAlertTriangle size={14} className={purgeScope === "ALL_PROJECTS" ? "text-amber-400" : "text-white/40"} />
+                        All Studies
+                      </span>
+                      <span className="text-[0.625rem] font-mono px-1.5 py-0.5 bg-amber-500/20 text-amber-300 rounded">
+                        CEO Override
+                      </span>
+                    </div>
+                    <span className="text-[0.688rem] text-white/50 leading-tight font-sans">
+                      Cleans unprotected files across all studies (finished + active). Reclaims max space.
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {purgeScope === "ALL_PROJECTS" && (
+                <div className="p-2.5 bg-amber-950/40 border border-amber-500/40 rounded-[2px] text-amber-200 text-xs flex items-start gap-2 animate-content-fade">
+                  <IconAlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                  <span className="text-[0.688rem] leading-relaxed">
+                    <strong className="text-amber-300">Executive Override Active:</strong> Unprotected attachments on all completed and ongoing/test studies will be deleted. Any category marked protected below (like Datasets or Deliverables) will remain strictly safe.
+                  </span>
+                </div>
+              )}
+
+              {purgeScope === "ACTIVE_ONLY" && (
+                <div className="p-2.5 bg-sky-950/40 border border-sky-500/40 rounded-[2px] text-sky-200 text-xs flex items-start gap-2 animate-content-fade">
+                  <IconInfoCircle size={16} className="text-sky-400 shrink-0 mt-0.5" />
+                  <span className="text-[0.688rem] leading-relaxed">
+                    <strong className="text-sky-300">Active Studies Scope:</strong> Unprotected attachments on ongoing or test studies will be deleted. Completed archives are left untouched, and protected categories remain strictly safe.
+                  </span>
+                </div>
+              )}
+
               {/* Financial & Project Safety Reassurance */}
               <div className="p-3 bg-[#011E38]/80 border border-emerald-500/30 rounded-[2px] flex items-start gap-2.5">
                 <IconShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
@@ -963,7 +1075,16 @@ export default function CeoStorageRetentionPage() {
                 <div className="flex items-start gap-2">
                   <IconTrash size={15} className="text-amber-400 shrink-0 mt-0.5" />
                   <span className="text-white/70 leading-relaxed">
-                    <strong className="text-amber-400 font-medium">What gets deleted:</strong> Only raw, unprotected attachment files in Cloudflare R2 storage for completed studies delivered more than <strong className="text-white">{config.retentionPeriodDays} days ago</strong>.
+                    <strong className="text-amber-400 font-medium">What gets deleted:</strong>{" "}
+                    {purgeScope === "FINISHED_ONLY" && (
+                      <>Only raw, unprotected attachment files in Cloudflare R2 storage for completed studies delivered more than <strong className="text-white">{config.retentionPeriodDays} days ago</strong>.</>
+                    )}
+                    {purgeScope === "ACTIVE_ONLY" && (
+                      <>Raw, unprotected attachment files on <strong className="text-white">active, ongoing, or test studies</strong> (e.g. scratch uploads or draft files). Finished studies are not touched.</>
+                    )}
+                    {purgeScope === "ALL_PROJECTS" && (
+                      <>Raw, unprotected attachment files in Cloudflare R2 across <strong className="text-white">all studies</strong> in the system (both finished archives and active/test studies).</>
+                    )}
                   </span>
                 </div>
 
@@ -996,7 +1117,11 @@ export default function CeoStorageRetentionPage() {
               onClick={handleManualPurge}
               className="text-xs h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-[2px] font-sans font-semibold cursor-pointer"
             >
-              Confirm &amp; Run Purge
+              {purgeScope === "FINISHED_ONLY"
+                ? "Confirm Purge (Finished Studies)"
+                : purgeScope === "ACTIVE_ONLY"
+                ? "Confirm Purge (Active Studies)"
+                : "Confirm Purge (All Studies)"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

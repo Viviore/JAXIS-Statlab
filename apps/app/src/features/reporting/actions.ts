@@ -761,17 +761,26 @@ export async function updateStorageRetentionConfigAction(rawInput: StorageRetent
   }
 }
 
-export async function purgeExpiredFilesAction(actorOverride?: {
-  id: string;
-  role: string;
-  fullName?: string;
-}): Promise<{
+export type PurgeScope = "FINISHED_ONLY" | "ALL_PROJECTS" | "ACTIVE_ONLY";
+
+export async function purgeExpiredFilesAction(
+  actorOverride?: {
+    id: string;
+    role: string;
+    fullName?: string;
+  },
+  options?: {
+    scope?: PurgeScope;
+  }
+): Promise<{
   success: boolean;
   purgedCount: number;
   purgedFilesCount: number;
   freedMB: number;
+  scopeUsed: PurgeScope;
   error?: { message: string };
 }> {
+  const scope: PurgeScope = options?.scope || "FINISHED_ONLY";
   try {
     let effectiveUser: { id: string; role: string; fullName?: string } | null = null;
 
@@ -786,6 +795,7 @@ export async function purgeExpiredFilesAction(actorOverride?: {
           purgedCount: 0,
           purgedFilesCount: 0,
           freedMB: 0,
+          scopeUsed: scope,
           error: { message: "Administrative authority required." },
         };
       }
@@ -806,17 +816,35 @@ export async function purgeExpiredFilesAction(actorOverride?: {
     const retentionDays = config ? config.retentionPeriodDays : 90;
     const cutoffDate = new Date(Date.now() - retentionDays * 86400000);
 
-    // Query expired projects with their attached project files
-    const expiredProjects = await withDbTimeout(
+    // Build project query filter based on CEO's selected scope
+    let projectFilter: Record<string, unknown> = {};
+    if (scope === "FINISHED_ONLY") {
+      projectFilter = {
+        deliveredAt: { lte: cutoffDate },
+        filesPurged: false,
+      };
+    } else if (scope === "ACTIVE_ONLY") {
+      projectFilter = {
+        OR: [
+          { deliveredAt: null },
+          { masterStatus: { notIn: ["DELIVERED", "CLOSED"] } },
+        ],
+      };
+    } else {
+      // ALL_PROJECTS: include all studies with files
+      projectFilter = {};
+    }
+
+    // Query target projects with their attached project files
+    const targetProjects = await withDbTimeout(
       db.project.findMany({
-        where: {
-          deliveredAt: { lte: cutoffDate },
-          filesPurged: false,
-        },
+        where: projectFilter,
         select: {
           id: true,
           intakeId: true,
           researchTitle: true,
+          deliveredAt: true,
+          filesPurged: true,
           files: {
             select: {
               id: true,
@@ -830,8 +858,9 @@ export async function purgeExpiredFilesAction(actorOverride?: {
     );
 
     let totalPurgedFiles = 0;
+    let projectsAffectedCount = 0;
 
-    for (const p of expiredProjects) {
+    for (const p of targetProjects) {
       // Filter files that are NOT exempt under active CEO preservation policy
       const purgeableFiles = p.files.filter((file) => {
         switch (file.fileCategory) {
@@ -854,51 +883,55 @@ export async function purgeExpiredFilesAction(actorOverride?: {
         }
       });
 
-      // 1. Physically delete raw object bytes from Cloudflare R2 bucket
-      for (const f of purgeableFiles) {
-        if (f.filePath) {
-          await deleteR2Object(f.filePath);
-        }
-      }
-
-      // 2. Remove purged file metadata records from database
       if (purgeableFiles.length > 0) {
+        projectsAffectedCount++;
+
+        // 1. Physically delete raw object bytes from Cloudflare R2 bucket
+        for (const f of purgeableFiles) {
+          if (f.filePath) {
+            await deleteR2Object(f.filePath);
+          }
+        }
+
+        // 2. Remove purged file metadata records from database
         await withDbTimeout(
           db.projectFile.deleteMany({
             where: { id: { in: purgeableFiles.map((f) => f.id) } },
           })
         );
         totalPurgedFiles += purgeableFiles.length;
+
+        // 3. Mark project and archived project as purged if delivered or all files purged
+        if (p.deliveredAt || p.files.length === purgeableFiles.length) {
+          await withDbTimeout(
+            db.project.update({
+              where: { id: p.id },
+              data: { filesPurged: true },
+            })
+          );
+
+          await withDbTimeout(
+            db.archivedProject.updateMany({
+              where: { projectId: p.id },
+              data: { filesPurged: true, filesPurgedAt: new Date() },
+            })
+          );
+        }
+
+        // 4. Record audit entry detailing preserved vs purged counts
+        const preservedCount = p.files.length - purgeableFiles.length;
+        await withDbTimeout(
+          db.auditLog.create({
+            data: {
+              projectId: p.id,
+              actorId: effectiveUser.id,
+              actorRole: effectiveUser.role as RoleName,
+              action: "FILES_PURGED",
+              reason: `Storage retention purge (${scope} scope, ${retentionDays}-day policy): deleted ${purgeableFiles.length} unprotected files (${preservedCount} preserved by CEO policy) executed by ${effectiveUser.fullName || effectiveUser.role}.`,
+            },
+          })
+        );
       }
-
-      // 3. Mark project and archived project as purged
-      await withDbTimeout(
-        db.project.update({
-          where: { id: p.id },
-          data: { filesPurged: true },
-        })
-      );
-
-      await withDbTimeout(
-        db.archivedProject.updateMany({
-          where: { projectId: p.id },
-          data: { filesPurged: true, filesPurgedAt: new Date() },
-        })
-      );
-
-      // 4. Record audit entry detailing preserved vs purged counts
-      const preservedCount = p.files.length - purgeableFiles.length;
-      await withDbTimeout(
-        db.auditLog.create({
-          data: {
-            projectId: p.id,
-            actorId: effectiveUser.id,
-            actorRole: effectiveUser.role as RoleName,
-            action: "FILES_PURGED",
-            reason: `Storage retention purge (${retentionDays}-day policy): deleted ${purgeableFiles.length} unprotected files (${preservedCount} preserved by CEO policy) executed by ${effectiveUser.fullName || effectiveUser.role}.`,
-          },
-        })
-      );
     }
 
     // Calculate approximate freed storage volume (average ~18.5 MB per study attachment)
@@ -911,9 +944,10 @@ export async function purgeExpiredFilesAction(actorOverride?: {
 
     return {
       success: true,
-      purgedCount: expiredProjects.length,
+      purgedCount: projectsAffectedCount > 0 ? projectsAffectedCount : (scope === "FINISHED_ONLY" ? targetProjects.length : 0),
       purgedFilesCount: totalPurgedFiles,
       freedMB,
+      scopeUsed: scope,
     };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to run storage purge.";
@@ -922,6 +956,7 @@ export async function purgeExpiredFilesAction(actorOverride?: {
       purgedCount: 0,
       purgedFilesCount: 0,
       freedMB: 0,
+      scopeUsed: scope,
       error: { message: msg },
     };
   }
