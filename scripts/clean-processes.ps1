@@ -37,9 +37,9 @@ if (-not $SkipProcessClean) {
         $connections = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
         if ($connections) {
             foreach ($conn in $connections) {
-                $pId = $conn.OwningProcess
-                if ($pId -and ($ancestorPids -notcontains $pId)) {
-                    Stop-Process -Id $pId -Force -ErrorAction SilentlyContinue
+                $procId = $conn.OwningProcess
+                if ($procId -and ($ancestorPids -notcontains $procId)) {
+                    Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
                 }
             }
         }

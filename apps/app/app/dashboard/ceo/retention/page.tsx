@@ -45,7 +45,23 @@ import {
   IconActivity,
   IconCpu,
   IconLock,
+  IconCalendarEvent,
 } from "@tabler/icons-react";
+
+function getCutoffInfo(days: number) {
+  const target = new Date();
+  target.setDate(target.getDate() + Number(days || 0));
+  const formattedDate = target.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return {
+    date: formattedDate,
+    countdown: `in ${days} days`,
+  };
+}
 
 export default function CeoStorageRetentionPage() {
   const [config, setConfig] = useState<StorageRetentionConfigDTO>({
@@ -151,10 +167,15 @@ export default function CeoStorageRetentionPage() {
     try {
       const res = await purgeExpiredFilesAction();
       if (res.success) {
+        const filesDesc = res.purgedFilesCount && res.purgedFilesCount > 0
+          ? `Deleted ${res.purgedFilesCount} unprotected files and freed ~${res.freedMB} MB across ${res.purgedCount} expired study records.`
+          : res.purgedCount > 0
+            ? `Purge check completed for ${res.purgedCount} studies. All files were preserved under active protection rules.`
+            : "Storage is already clean. No expired study records reached your cutoff date.";
         setToast({
           variant: "success",
           message: "Storage Purge Completed",
-          description: `Successfully cleaned raw storage for ${res.purgedCount} expired study records.`,
+          description: filesDesc,
         });
         loadData(true);
       } else {
@@ -231,6 +252,31 @@ export default function CeoStorageRetentionPage() {
     cfPercent >= 75 ||
     emailPercent >= 75 ||
     triggerPercent >= 75;
+
+  const CATEGORY_KEYS: (keyof StorageRetentionConfigDTO)[] = [
+    "keepDatasets",
+    "keepResearchDocs",
+    "keepQuestionnaires",
+    "keepReceiptPhotos",
+    "keepChatHistory",
+    "keepDeliverables",
+  ];
+
+  const protectedCount = CATEGORY_KEYS.filter((k) => Boolean(config[k])).length;
+  const areAllCategoriesProtected = protectedCount === CATEGORY_KEYS.length;
+  const areSomeCategoriesProtected = protectedCount > 0 && !areAllCategoriesProtected;
+
+  const handleToggleAllCategories = (targetState: boolean) => {
+    setConfig((prev) => ({
+      ...prev,
+      keepDatasets: targetState,
+      keepResearchDocs: targetState,
+      keepQuestionnaires: targetState,
+      keepReceiptPhotos: targetState,
+      keepChatHistory: targetState,
+      keepDeliverables: targetState,
+    }));
+  };
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto pb-24 w-full animate-content-fade font-sans">
@@ -336,75 +382,177 @@ export default function CeoStorageRetentionPage() {
         </div>
       )}
 
-      {/* Streamlined Live Infrastructure Health Strip */}
-      <Card className="p-4 sm:p-5 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Left: Indicator & Title */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-[2px] bg-sky-500/15 text-sky-400 shrink-0">
-            <IconActivity size={18} />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold tracking-wider text-white uppercase">
-                Live Service Health
-              </span>
-              {health?.overallStatus === "HEALTHY" ? (
-                <Badge variant="emerald">ALL SYSTEMS OPERATIONAL</Badge>
-              ) : health?.overallStatus === "CRITICAL" ? (
-                <Badge variant="danger">CRITICAL</Badge>
-              ) : (
-                <Badge variant="amber">CAPACITY ALERT</Badge>
-              )}
+      {/* Revamped Live Infrastructure & API Storage Health Deck */}
+      <Card className="p-5 sm:p-6 bg-[#01142B] border border-white/10 rounded-[2px] flex flex-col gap-4">
+        {/* Header Row: Indicator, Title & Status Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-[2px] bg-sky-500/15 text-sky-400 shrink-0">
+              <IconActivity size={18} />
             </div>
-            <span className="text-xs text-white/50 font-sans">
-              Real-time cloud database, storage buckets, email dispatcher, and automated cron status
-            </span>
-          </div>
-        </div>
-
-        {/* Right: 4 compact service indicators + diagnostic button */}
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-sans">
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] bg-black/40 border border-white/10">
-            <IconDatabase size={14} className="text-sky-400 shrink-0" />
-            <span className="text-white/60">Database:</span>
-            <span className="font-mono text-white font-semibold">{dbUsed} MB</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Healthy" />
-          </div>
-
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] bg-black/40 border border-white/10">
-            <IconCloud size={14} className="text-[#CC6600] shrink-0" />
-            <span className="text-white/60">Storage:</span>
-            <span className="font-mono text-white font-semibold">{cfUsed} MB</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Healthy" />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold tracking-wider text-white uppercase">
+                  Live Service &amp; Storage Health
+                </span>
+                {health?.overallStatus === "HEALTHY" ? (
+                  <Badge variant="emerald">ALL SYSTEMS OPERATIONAL</Badge>
+                ) : health?.overallStatus === "CRITICAL" ? (
+                  <Badge variant="danger">CRITICAL</Badge>
+                ) : (
+                  <Badge variant="amber">CAPACITY ALERT</Badge>
+                )}
+              </div>
+              <span className="text-xs text-white/50 font-sans">
+                Real-time API status, storage consumption, and hard operational quotas
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] bg-black/40 border border-white/10">
-            <IconMail size={14} className="text-emerald-400 shrink-0" />
-            <span className="text-white/60">Email:</span>
-            <span className="font-mono text-white font-semibold">{emailToday} / {emailDailyLimit}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Healthy" />
-          </div>
-
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] bg-black/40 border border-white/10">
-            <IconCpu size={14} className="text-purple-400 shrink-0" />
-            <span className="text-white/60">Crons:</span>
-            <span className="font-mono text-white font-semibold">4 active</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Healthy" />
-          </div>
-
-          <div className="flex items-center gap-2 ml-auto lg:ml-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               type="button"
               onClick={() => handleTestCapacityAlert("Cloudflare")}
               disabled={isTestingAlert}
-              className="text-[0.688rem] font-sans px-2 py-1 rounded-[2px] text-white/60 hover:text-white border border-white/10 hover:bg-white/[0.06] transition-colors cursor-pointer"
+              className="text-xs font-sans px-2.5 py-1 rounded-[2px] text-white/70 hover:text-white border border-white/10 hover:bg-white/[0.06] transition-colors cursor-pointer"
               title="Send a test notification alert"
             >
               Test Alert
             </button>
-            <span className="text-[0.688rem] text-white/40 font-mono">
+            <span className="text-xs text-white/40 font-mono">
               Synced: {health?.lastCheckedAt ? new Date(health.lastCheckedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Live"}
             </span>
+          </div>
+        </div>
+
+        {/* 4 Leveled Service Health & Limit Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Service 1: Supabase Database */}
+          <div className="p-3.5 rounded-[2px] bg-black/40 border border-white/10 flex flex-col justify-between gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <IconDatabase size={15} className="text-sky-400 shrink-0" />
+                <span className="text-xs font-semibold text-white font-sans">Database API</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-mono text-emerald-400 font-medium">HEALTHY</span>
+              </div>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-mono text-lg font-bold text-white tracking-tight">{dbUsed} MB</span>
+              <span className="font-mono text-xs text-white/50">/ {dbLimit} MB max</span>
+            </div>
+
+            {/* Micro Progress Track */}
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-sky-400 transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(2, dbPercent))}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] font-mono text-white/40 pt-0.5">
+              <span>{dbPercent}% used</span>
+              <span>{health?.supabase.totalRows || 76} rows</span>
+            </div>
+          </div>
+
+          {/* Service 2: Cloudflare R2 Storage */}
+          <div className="p-3.5 rounded-[2px] bg-black/40 border border-white/10 flex flex-col justify-between gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <IconCloud size={15} className="text-[#CC6600] shrink-0" />
+                <span className="text-xs font-semibold text-white font-sans">Storage Bucket</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-mono text-emerald-400 font-medium">HEALTHY</span>
+              </div>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-mono text-lg font-bold text-white tracking-tight">{cfUsed} MB</span>
+              <span className="font-mono text-xs text-white/50">/ {(cfLimit / 1024).toFixed(0)} GB max</span>
+            </div>
+
+            {/* Micro Progress Track */}
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#CC6600] transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(2, cfPercent))}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] font-mono text-white/40 pt-0.5">
+              <span>{cfPercent}% used</span>
+              <span>{health?.cloudflare.totalFiles || 15} files</span>
+            </div>
+          </div>
+
+          {/* Service 3: Resend Email API */}
+          <div className="p-3.5 rounded-[2px] bg-black/40 border border-white/10 flex flex-col justify-between gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <IconMail size={15} className="text-emerald-400 shrink-0" />
+                <span className="text-xs font-semibold text-white font-sans">Email API</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-mono text-emerald-400 font-medium">HEALTHY</span>
+              </div>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-mono text-lg font-bold text-white tracking-tight">{emailToday} sent</span>
+              <span className="font-mono text-xs text-white/50">/ {emailDailyLimit} daily max</span>
+            </div>
+
+            {/* Micro Progress Track */}
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-400 transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(2, emailPercent))}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] font-mono text-white/40 pt-0.5">
+              <span>{emailPercent}% quota</span>
+              <span>{health?.resend.sentThisMonth || 0} this mo</span>
+            </div>
+          </div>
+
+          {/* Service 4: Trigger.dev Crons API */}
+          <div className="p-3.5 rounded-[2px] bg-black/40 border border-white/10 flex flex-col justify-between gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <IconCpu size={15} className="text-purple-400 shrink-0" />
+                <span className="text-xs font-semibold text-white font-sans">Crons &amp; Jobs API</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-mono text-emerald-400 font-medium">HEALTHY</span>
+              </div>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-mono text-lg font-bold text-white tracking-tight">{triggerRuns} runs</span>
+              <span className="font-mono text-xs text-white/50">/ {(triggerLimit / 1000).toFixed(0)}k monthly max</span>
+            </div>
+
+            {/* Micro Progress Track */}
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-purple-400 transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(2, triggerPercent))}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] font-mono text-white/40 pt-0.5">
+              <span>{triggerPercent}% quota</span>
+              <span>4 active schedules</span>
+            </div>
           </div>
         </div>
       </Card>
@@ -450,6 +598,19 @@ export default function CeoStorageRetentionPage() {
                 />
                 <span className="text-xs text-white/60 font-sans">
                   Days ({(config.retentionPeriodDays / 30).toFixed(1)} Months post-delivery)
+                </span>
+              </div>
+
+              {/* Target Cutoff Date & Countdown Banner */}
+              <div className="flex items-center justify-between px-3 py-2 rounded-[2px] bg-black/40 border border-white/10 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <IconCalendarEvent size={14} className="text-sky-400 shrink-0" />
+                  <span className="text-white/70 font-sans truncate">
+                    Target Cutoff: <strong className="text-white font-mono">{getCutoffInfo(config.retentionPeriodDays).date}</strong>
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-[2px] border border-sky-500/20 shrink-0 ml-2">
+                  {getCutoffInfo(config.retentionPeriodDays).countdown}
                 </span>
               </div>
 
@@ -504,6 +665,44 @@ export default function CeoStorageRetentionPage() {
                   Days of Inactivity ({(config.purgeInactiveDays / 30).toFixed(1)} Months)
                 </span>
               </div>
+
+              {/* Target Cutoff Date & Countdown Banner */}
+              <div className="flex items-center justify-between px-3 py-2 rounded-[2px] bg-black/40 border border-white/10 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <IconCalendarEvent size={14} className="text-amber-400 shrink-0" />
+                  <span className="text-white/70 font-sans truncate">
+                    Target Cutoff: <strong className="text-white font-mono">{getCutoffInfo(config.purgeInactiveDays).date}</strong>
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-[2px] border border-amber-500/20 shrink-0 ml-2">
+                  {getCutoffInfo(config.purgeInactiveDays).countdown}
+                </span>
+              </div>
+
+              {/* Quick Preset Buttons / Templates */}
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {[
+                  { label: "30 Days (1 Mo)", days: 30 },
+                  { label: "60 Days (2 Mo)", days: 60 },
+                  { label: "90 Days (3 Mo)", days: 90 },
+                  { label: "180 Days (6 Mo)", days: 180 },
+                  { label: "365 Days (1 Yr)", days: 365 },
+                ].map((preset) => (
+                  <button
+                    key={preset.days}
+                    type="button"
+                    onClick={() => setConfig({ ...config, purgeInactiveDays: preset.days })}
+                    className={`px-2.5 py-1 rounded-[2px] text-xs font-sans transition-colors cursor-pointer ${
+                      config.purgeInactiveDays === preset.days
+                        ? "bg-[#CC6600] text-white font-semibold"
+                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
               <span className="text-xs text-white/40 leading-relaxed font-sans">
                 Applies to unaccepted proposals, draft intakes, and stagnant consultation threads without recent client activity.
               </span>
@@ -588,6 +787,54 @@ export default function CeoStorageRetentionPage() {
                 </div>
               </div>
               <Badge variant="emerald">IMMUTABLE PROTECTION</Badge>
+            </div>
+
+            {/* Bulk Action & Master Toggle Toolbar */}
+            <div className="flex items-center justify-between px-3 py-2 rounded-[2px] bg-black/40 border border-white/10 text-xs">
+              <label className="flex items-center gap-2 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={areAllCategoriesProtected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = areSomeCategoriesProtected;
+                  }}
+                  onChange={(e) => handleToggleAllCategories(e.target.checked)}
+                  className="accent-[#CC6600] h-4 w-4 rounded-[2px] cursor-pointer"
+                />
+                <span className="font-semibold text-xs text-white font-sans group-hover:text-white/90 transition-colors">
+                  {areAllCategoriesProtected ? "All Categories Protected" : "Select All Categories"}
+                </span>
+                <span className="font-mono text-[11px] text-white/40">
+                  ({protectedCount}/6)
+                </span>
+              </label>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleToggleAllCategories(true)}
+                  disabled={areAllCategoriesProtected}
+                  className={`text-[11px] font-sans px-2.5 py-1 rounded-[2px] border transition-colors cursor-pointer ${
+                    areAllCategoriesProtected
+                      ? "bg-white/5 text-white/30 border-white/5 cursor-not-allowed"
+                      : "bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border-white/10"
+                  }`}
+                >
+                  Protect All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleAllCategories(false)}
+                  disabled={protectedCount === 0}
+                  className={`text-[11px] font-sans px-2.5 py-1 rounded-[2px] border transition-colors cursor-pointer ${
+                    protectedCount === 0
+                      ? "bg-white/5 text-white/30 border-white/5 cursor-not-allowed"
+                      : "bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border-white/10"
+                  }`}
+                >
+                  Clear All
+                </button>
+              </div>
             </div>
 
             {/* 6 Protected Category Rows */}

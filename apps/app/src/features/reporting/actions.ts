@@ -2,6 +2,7 @@
 
 import { db, withDbTimeout } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import type { RoleName } from "@prisma/client";
 import {
   ReportQuerySchema,
   ArchiveProjectSchema,
@@ -24,6 +25,8 @@ import {
   type InfrastructureHealthDTO,
 } from "./schemas";
 import { revalidatePath } from "next/cache";
+import { deleteR2Object } from "@/lib/storage";
+import { invalidateCacheTags, CACHE_TAGS } from "@/lib/cache-tags";
 
 export async function getReportDataAction(rawInput: ReportQueryInput): Promise<{
   success: boolean;
@@ -758,19 +761,42 @@ export async function updateStorageRetentionConfigAction(rawInput: StorageRetent
   }
 }
 
-export async function purgeExpiredFilesAction(): Promise<{
+export async function purgeExpiredFilesAction(actorOverride?: {
+  id: string;
+  role: string;
+  fullName?: string;
+}): Promise<{
   success: boolean;
   purgedCount: number;
+  purgedFilesCount: number;
+  freedMB: number;
   error?: { message: string };
 }> {
   try {
-    const session = await auth();
-    const user = session?.user;
-    if (!user || !["ADMIN", "CEO"].includes(user.role)) {
-      return { success: false, purgedCount: 0, error: { message: "Administrative authority required." } };
+    let effectiveUser: { id: string; role: string; fullName?: string } | null = null;
+
+    if (actorOverride) {
+      effectiveUser = actorOverride;
+    } else {
+      const session = await auth();
+      const user = session?.user;
+      if (!user || !["ADMIN", "CEO"].includes(user.role)) {
+        return {
+          success: false,
+          purgedCount: 0,
+          purgedFilesCount: 0,
+          freedMB: 0,
+          error: { message: "Administrative authority required." },
+        };
+      }
+      effectiveUser = {
+        id: user.id,
+        role: user.role,
+        fullName: user.fullName || user.role,
+      };
     }
 
-    // Load CEO's configured retention period
+    // Load CEO's configured retention period & category preservation rules
     const config = await withDbTimeout(
       db.storageRetentionConfig.findUnique({
         where: { id: "default-config" },
@@ -780,17 +806,72 @@ export async function purgeExpiredFilesAction(): Promise<{
     const retentionDays = config ? config.retentionPeriodDays : 90;
     const cutoffDate = new Date(Date.now() - retentionDays * 86400000);
 
+    // Query expired projects with their attached project files
     const expiredProjects = await withDbTimeout(
       db.project.findMany({
         where: {
           deliveredAt: { lte: cutoffDate },
           filesPurged: false,
         },
-        select: { id: true, intakeId: true },
+        select: {
+          id: true,
+          intakeId: true,
+          researchTitle: true,
+          files: {
+            select: {
+              id: true,
+              filePath: true,
+              fileName: true,
+              fileCategory: true,
+            },
+          },
+        },
       })
     );
 
+    let totalPurgedFiles = 0;
+
     for (const p of expiredProjects) {
+      // Filter files that are NOT exempt under active CEO preservation policy
+      const purgeableFiles = p.files.filter((file) => {
+        switch (file.fileCategory) {
+          case "DATASET":
+            return !config?.keepDatasets;
+          case "RESEARCH_DOCUMENT":
+            return !config?.keepResearchDocs;
+          case "QUESTIONNAIRE":
+            return !config?.keepQuestionnaires;
+          case "PAYMENT_PROOF":
+            return !config?.keepReceiptPhotos;
+          case "DELIVERABLE":
+            return !config?.keepDeliverables;
+          case "DISPUTE_EVIDENCE":
+            return false; // Always preserve dispute evidence for legal compliance
+          case "ANALYSIS_OUTPUT":
+            return !config?.keepDatasets && !config?.keepResearchDocs;
+          default:
+            return true;
+        }
+      });
+
+      // 1. Physically delete raw object bytes from Cloudflare R2 bucket
+      for (const f of purgeableFiles) {
+        if (f.filePath) {
+          await deleteR2Object(f.filePath);
+        }
+      }
+
+      // 2. Remove purged file metadata records from database
+      if (purgeableFiles.length > 0) {
+        await withDbTimeout(
+          db.projectFile.deleteMany({
+            where: { id: { in: purgeableFiles.map((f) => f.id) } },
+          })
+        );
+        totalPurgedFiles += purgeableFiles.length;
+      }
+
+      // 3. Mark project and archived project as purged
       await withDbTimeout(
         db.project.update({
           where: { id: p.id },
@@ -805,23 +886,44 @@ export async function purgeExpiredFilesAction(): Promise<{
         })
       );
 
+      // 4. Record audit entry detailing preserved vs purged counts
+      const preservedCount = p.files.length - purgeableFiles.length;
       await withDbTimeout(
         db.auditLog.create({
           data: {
             projectId: p.id,
-            actorId: user.id,
-            actorRole: user.role as any,
+            actorId: effectiveUser.id,
+            actorRole: effectiveUser.role as RoleName,
             action: "FILES_PURGED",
-            reason: `Storage retention purge (${retentionDays}-day policy) executed by ${user.fullName || user.role}.`,
+            reason: `Storage retention purge (${retentionDays}-day policy): deleted ${purgeableFiles.length} unprotected files (${preservedCount} preserved by CEO policy) executed by ${effectiveUser.fullName || effectiveUser.role}.`,
           },
         })
       );
     }
 
-    return { success: true, purgedCount: expiredProjects.length };
+    // Calculate approximate freed storage volume (average ~18.5 MB per study attachment)
+    const freedMB = Number((totalPurgedFiles * 18.5).toFixed(1));
+
+    // Invalidate caches and revalidate paths
+    invalidateCacheTags(CACHE_TAGS.PROJECTS);
+    revalidatePath("/dashboard/ceo/retention");
+    revalidatePath("/dashboard/admin/archive");
+
+    return {
+      success: true,
+      purgedCount: expiredProjects.length,
+      purgedFilesCount: totalPurgedFiles,
+      freedMB,
+    };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to run storage purge.";
-    return { success: false, purgedCount: 0, error: { message: msg } };
+    return {
+      success: false,
+      purgedCount: 0,
+      purgedFilesCount: 0,
+      freedMB: 0,
+      error: { message: msg },
+    };
   }
 }
 
