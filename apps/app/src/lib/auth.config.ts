@@ -27,6 +27,9 @@ export const authConfig: NextAuthConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.id = LEGACY_DEV_ID_MAP[user.id] || user.id;
+        if (user.email) {
+          token.email = user.email;
+        }
         token.role = user.role;
         token.fullName = user.fullName;
         token.status = user.status;
@@ -39,6 +42,9 @@ export const authConfig: NextAuthConfig = {
       if (session.user && token) {
         const rawId = token.id as string;
         session.user.id = LEGACY_DEV_ID_MAP[rawId] || rawId;
+        if (token.email) {
+          session.user.email = token.email as string;
+        }
         session.user.role = token.role as RoleName;
         session.user.fullName = token.fullName as string;
         session.user.status = token.status as UserStatus;

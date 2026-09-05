@@ -436,7 +436,6 @@ export default function NewProjectIntakePage() {
         window.dispatchEvent(new CustomEvent("jaxis:study-updated"));
       }
       router.push(`/dashboard/client?created=true&intakeId=${encodeURIComponent(assignedId)}`);
-      router.refresh();
     });
   };
 

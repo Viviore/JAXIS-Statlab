@@ -24,7 +24,28 @@ export async function upsertClientProfile(
       return { success: false, error: { message: "Unauthorized. Please log in." } };
     }
 
-    const userId = session.user.id;
+    let resolvedUserId = session.user.id;
+    try {
+      const userInDb = await withDbTimeout(
+        db.user.findUnique({
+          where: { id: session.user.id },
+          select: { id: true },
+        })
+      );
+      if (!userInDb && session.user.email) {
+        const userByEmail = await withDbTimeout(
+          db.user.findUnique({
+            where: { email: session.user.email.toLowerCase().trim() },
+            select: { id: true },
+          })
+        );
+        if (userByEmail) {
+          resolvedUserId = userByEmail.id;
+        }
+      }
+    } catch (userResolveErr) {
+      console.warn("[upsertClientProfile] User ID resolution warning:", userResolveErr);
+    }
 
     // Validate input
     const parsed = ClientProfileSchema.safeParse(data);
@@ -43,7 +64,7 @@ export async function upsertClientProfile(
     try {
       await withDbTimeout(
         db.clientProfile.upsert({
-          where: { userId },
+          where: { userId: resolvedUserId },
           update: {
             institutionSchool,
             academicProgram,
@@ -51,7 +72,7 @@ export async function upsertClientProfile(
             region,
           },
           create: {
-            userId,
+            userId: resolvedUserId,
             institutionSchool,
             academicProgram,
             contactNumber,
@@ -67,10 +88,10 @@ export async function upsertClientProfile(
     try {
       const cookieStore = await cookies();
       cookieStore.set(
-        `jaxis_profile_${userId}`,
+        `jaxis_profile_${resolvedUserId}`,
         JSON.stringify({
-          id: `profile_${userId}`,
-          userId,
+          id: `profile_${resolvedUserId}`,
+          userId: resolvedUserId,
           institutionSchool,
           academicProgram,
           contactNumber,
@@ -102,10 +123,44 @@ export async function getClientProfile() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  let resolvedUserId = session.user.id;
+  try {
+    const userInDb = await withDbTimeout(
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true },
+      })
+    );
+    if (!userInDb && session.user.email) {
+      const userByEmail = await withDbTimeout(
+        db.user.findUnique({
+          where: { email: session.user.email.toLowerCase().trim() },
+          select: { id: true },
+        })
+      );
+      if (userByEmail) {
+        resolvedUserId = userByEmail.id;
+      }
+    }
+  } catch (userResolveErr) {
+    console.warn("[getClientProfile] User ID resolution warning:", userResolveErr);
+  }
+
   try {
     const profile = await withDbTimeout(
-      db.clientProfile.findUnique({
-        where: { userId: session.user.id },
+      db.clientProfile.findFirst({
+        where: {
+          OR: [
+            { userId: resolvedUserId },
+            { userId: session.user.id },
+            ...(session.user.email
+              ? [
+                  { user: { email: session.user.email.toLowerCase().trim() } },
+                  { user: { email: session.user.email } },
+                ]
+              : []),
+          ],
+        },
       })
     );
     if (profile) return profile;
@@ -116,7 +171,9 @@ export async function getClientProfile() {
   // Fallback to cookie for development/demo testing
   try {
     const cookieStore = await cookies();
-    const cookieVal = cookieStore.get(`jaxis_profile_${session.user.id}`)?.value;
+    const cookieVal =
+      cookieStore.get(`jaxis_profile_${resolvedUserId}`)?.value ||
+      cookieStore.get(`jaxis_profile_${session.user.id}`)?.value;
     if (cookieVal) {
       return JSON.parse(cookieVal);
     }

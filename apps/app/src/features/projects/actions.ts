@@ -432,6 +432,30 @@ export async function getProjects(
   const userRole = session.user.role as string;
   const userId = session.user.id;
 
+  // Resolve valid user in DB (heal if session has mismatched or dev ID)
+  let resolvedUserId = session.user.id;
+  try {
+    const userInDb = await withDbTimeout(
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true },
+      })
+    );
+    if (!userInDb && session.user.email) {
+      const userByEmail = await withDbTimeout(
+        db.user.findUnique({
+          where: { email: session.user.email.toLowerCase().trim() },
+          select: { id: true },
+        })
+      );
+      if (userByEmail) {
+        resolvedUserId = userByEmail.id;
+      }
+    }
+  } catch (userResolveErr) {
+    console.warn("[getProjects] User ID resolution warning:", userResolveErr);
+  }
+
   const parsed = ProjectFilterSchema.safeParse(filters || {});
   const { status, search, page, pageSize } = parsed.success
     ? parsed.data
@@ -444,7 +468,8 @@ export async function getProjects(
       ...(isClient
         ? {
             OR: [
-              { clientId: userId },
+              { clientId: resolvedUserId },
+              { clientId: session.user.id },
               ...(session.user?.email
                 ? [
                     { client: { email: session.user.email.toLowerCase().trim() } },

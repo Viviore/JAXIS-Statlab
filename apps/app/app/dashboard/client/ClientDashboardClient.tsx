@@ -64,7 +64,17 @@ export function ClientDashboardClient({
   // Sync projects if initialProjects from Server Component updates (without wiping newer client-fetched data)
   useEffect(() => {
     if (initialProjects && initialProjects.length > 0) {
-      setProjects(initialProjects);
+      setProjects((prev) => {
+        if (!prev || prev.length === 0) return initialProjects;
+        const initialMap = new Map(initialProjects.map((p) => [p.id, p]));
+        const merged = [...initialProjects];
+        for (const p of prev) {
+          if (!initialMap.has(p.id)) {
+            merged.unshift(p);
+          }
+        }
+        return merged;
+      });
     }
   }, [initialProjects]);
 
@@ -104,11 +114,12 @@ export function ClientDashboardClient({
           ? `Your research study specifications have been queued for triage. Assigned ID: ${intakeId}`
           : "Your research study specifications have been queued for triage.",
       });
-      loadData().then(() => {
-        router.refresh();
-      });
+      loadData();
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   // Listen to SSE updates, window focus, and background polling
   useEffect(() => {
@@ -116,7 +127,6 @@ export function ClientDashboardClient({
 
     const handleStudyUpdated = () => {
       loadData();
-      router.refresh();
     };
     const handleFocus = () => {
       loadData();

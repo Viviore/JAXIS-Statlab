@@ -535,12 +535,10 @@ export default function AdminIntakeTriagePage() {
                         {/* Target Deadline */}
                         <td>
                           <div className="flex flex-col gap-0.5 whitespace-nowrap font-mono text-xs">
-                            {(p as unknown as { targetCompletionDate?: string }).targetCompletionDate ? (
+                            {p.deadlineRequested ? (
                               <>
                                 <span className="text-white font-medium">
-                                  {new Date(
-                                    (p as unknown as { targetCompletionDate?: string }).targetCompletionDate!
-                                  ).toLocaleDateString("en-US", {
+                                  {new Date(p.deadlineRequested).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
                                     year: "numeric",
