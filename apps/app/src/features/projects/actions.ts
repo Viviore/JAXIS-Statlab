@@ -92,6 +92,37 @@ export async function createProject(
     };
   }
 
+  // Ensure client profile is safely stored in PostgreSQL if it was only mirrored in cookies
+  try {
+    const existingDbProfile = await withDbTimeout(
+      db.clientProfile.findUnique({
+        where: { userId: session.user.id },
+      })
+    );
+    if (!existingDbProfile && profile.institutionSchool && profile.contactNumber) {
+      await withDbTimeout(
+        db.clientProfile.upsert({
+          where: { userId: session.user.id },
+          update: {
+            institutionSchool: profile.institutionSchool,
+            academicProgram: profile.academicProgram || "General Program",
+            contactNumber: profile.contactNumber,
+            region: profile.region || "National Capital Region (NCR)",
+          },
+          create: {
+            userId: session.user.id,
+            institutionSchool: profile.institutionSchool,
+            academicProgram: profile.academicProgram || "General Program",
+            contactNumber: profile.contactNumber,
+            region: profile.region || "National Capital Region (NCR)",
+          },
+        })
+      );
+    }
+  } catch (syncErr) {
+    console.warn("[createProject] Profile persistence sync warning:", syncErr);
+  }
+
   const parsed = CreateProjectSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -118,303 +149,243 @@ export async function createProject(
   const intakeId = generateIntakeId();
   const deadlineDate = new Date(deadlineRequested);
 
+  let project;
   try {
-    const project = await withDbTimeout(
-      db.$transaction(async (tx) => {
-        const createdProj = await tx.project.create({
-          data: {
-            intakeId,
-            clientId: session.user.id,
-            researchTitle: researchTitle.trim(),
-            researchQuestions: researchQuestions.trim(),
-            researchObjectives: researchObjectives.trim(),
-            hypotheses: hypotheses?.trim() || null,
-            deadlineRequested: deadlineDate,
-            chapters13: chapters13?.trim() || null,
-            questionnaire: questionnaire?.trim() || null,
-            masterStatus: "NEW_REQUEST",
-            files: files?.length
-              ? {
-                  create: files.map((f) => ({
-                    fileName: f.fileName,
-                    filePath: f.filePath,
-                    fileType: f.fileType,
-                    fileCategory: f.fileCategory,
-                  })),
-                }
-              : undefined,
-          },
-          select: {
-            id: true,
-            intakeId: true,
-            clientId: true,
-            researchTitle: true,
-            researchQuestions: true,
-            researchObjectives: true,
-            hypotheses: true,
-            deadlineRequested: true,
-            chapters13: true,
-            questionnaire: true,
-            masterStatus: true,
-            packageName: true,
-            missingInfoReason: true,
-            deliveredAt: true,
-            filesPurgeAt: true,
-            filesPurged: true,
-            hasActiveDispute: true,
-            hasPendingRefund: true,
-            createdAt: true,
-            updatedAt: true,
-            client: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-                clientProfile: {
-                  select: {
-                    institutionSchool: true,
-                    academicProgram: true,
-                    contactNumber: true,
-                    region: true,
-                  },
-                },
-              },
-            },
-            files: {
-              select: {
-                id: true,
-                projectId: true,
-                fileName: true,
-                filePath: true,
-                fileType: true,
-                fileCategory: true,
-                uploadedAt: true,
-              },
-            },
-          },
-        });
-
-        // ── 1. Create In-App Alert for Admins & CEO ──
-        try {
-          const adminUsers = await tx.user.findMany({
-            where: {
-              userRoles: {
-                some: {
-                  role: {
-                    name: { in: ["ADMIN", "CEO"] },
-                  },
-                },
-              },
-            },
+    project = await withDbTimeout(
+      db.project.create({
+        data: {
+          intakeId,
+          clientId: session.user.id,
+          researchTitle: researchTitle.trim(),
+          researchQuestions: researchQuestions.trim(),
+          researchObjectives: researchObjectives.trim(),
+          hypotheses: hypotheses?.trim() || null,
+          deadlineRequested: deadlineDate,
+          chapters13: chapters13?.trim() || null,
+          questionnaire: questionnaire?.trim() || null,
+          masterStatus: "NEW_REQUEST",
+          files: files?.length
+            ? {
+                create: files.map((f) => ({
+                  fileName: f.fileName,
+                  filePath: f.filePath,
+                  fileType: f.fileType,
+                  fileCategory: f.fileCategory,
+                })),
+              }
+            : undefined,
+        },
+        select: {
+          id: true,
+          intakeId: true,
+          clientId: true,
+          researchTitle: true,
+          researchQuestions: true,
+          researchObjectives: true,
+          hypotheses: true,
+          deadlineRequested: true,
+          chapters13: true,
+          questionnaire: true,
+          masterStatus: true,
+          packageName: true,
+          missingInfoReason: true,
+          deliveredAt: true,
+          filesPurgeAt: true,
+          filesPurged: true,
+          hasActiveDispute: true,
+          hasPendingRefund: true,
+          createdAt: true,
+          updatedAt: true,
+          client: {
             select: {
               id: true,
+              fullName: true,
               email: true,
-              userRoles: { select: { role: { select: { name: true } } } },
-            },
-          });
-
-          if (adminUsers.length > 0) {
-            await tx.inAppAlert.createMany({
-              data: adminUsers.map((admin) => ({
-                recipientId: admin.id,
-                recipientRole: (admin.userRoles[0]?.role.name || "ADMIN") as any,
-                alertType: "NEW_INTAKE",
-                projectId: createdProj.id,
-                message: `New study intake received: ${createdProj.intakeId} — "${createdProj.researchTitle}"`,
-                linkUrl: "/dashboard/admin/intake",
-                isRead: false,
-              })),
-            });
-          } else {
-            const fallbackAdmin = await tx.user.findFirst({
-              where: {
-                OR: [
-                  { email: "admin@jaxis.dev" },
-                  { email: { contains: "admin" } },
-                ],
-              },
-              select: { id: true },
-            });
-            if (fallbackAdmin) {
-              await tx.inAppAlert.create({
-                data: {
-                  recipientId: fallbackAdmin.id,
-                  recipientRole: "ADMIN",
-                  alertType: "NEW_INTAKE",
-                  projectId: createdProj.id,
-                  message: `New study intake received: ${createdProj.intakeId} — "${createdProj.researchTitle}"`,
-                  linkUrl: "/dashboard/admin/intake",
-                  isRead: false,
+              clientProfile: {
+                select: {
+                  institutionSchool: true,
+                  academicProgram: true,
+                  contactNumber: true,
+                  region: true,
                 },
-              });
-            }
-          }
-        } catch (alertErr) {
-          console.warn("[createProject] Could not create in-app alert:", alertErr);
-        }
-
-        // ── 2. Record Permanent Audit Log ──
-        try {
-          await tx.auditLog.create({
-            data: {
-              projectId: createdProj.id,
-              actorId: session.user.id,
-              actorRole: "CLIENT",
-              action: "INTAKE_SUBMITTED",
-              newValue: "NEW_REQUEST",
-              reason: "Client submitted new research study specifications",
-              metadata: {
-                intakeId: createdProj.intakeId,
-                researchTitle: createdProj.researchTitle,
-                deadlineRequested: deadlineDate.toISOString(),
-                fileCount: files?.length || 0,
               },
             },
-          });
-        } catch (auditErr) {
-          console.warn("[createProject] Could not record audit log:", auditErr);
-        }
-
-        return createdProj;
-      })
-    );
-
-    // ── 3. Dispatch Email Notification to Admin Operations ──
-    try {
-      const adminUsers = await db.user.findMany({
-        where: {
-          userRoles: {
-            some: {
-              role: {
-                name: "ADMIN",
-              },
+          },
+          files: {
+            select: {
+              id: true,
+              projectId: true,
+              fileName: true,
+              filePath: true,
+              fileType: true,
+              fileCategory: true,
+              uploadedAt: true,
             },
           },
         },
-        select: { id: true, email: true, fullName: true },
-      });
-
-      const targets = adminUsers.length > 0
-        ? adminUsers
-        : [{ id: "admin_fallback", email: "admin@jaxis.dev", fullName: "Admin Operations" }];
-
-      for (const admin of targets) {
-        await sendEmail({
-          to: admin.email,
-          recipientId: admin.id,
-          template: "NewIntake",
-          projectId: project.id,
-          data: {
-            intakeId: project.intakeId,
-            researchTitle: project.researchTitle,
-            clientName: session.user.name || (session.user as any).fullName || "Client User",
-            clientEmail: session.user.email || "client@jaxis.dev",
-            deadlineRequested: deadlineDate.toISOString(),
-          },
-        }).catch((e) => console.warn("[createProject] sendEmail error:", e));
-      }
-    } catch (emailErr) {
-      console.warn("[createProject] Failed to dispatch admin email:", emailErr);
-    }
-
-    // ── 4. Dispatch Real-time in-app alert via SSE ──
-    try {
-      await dispatchRealtimeNotification({
-        eventType: "NEW_INTAKE",
-        projectId: project.id,
-        intakeId: project.intakeId,
-        title: "New Research Study Submitted",
-        message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
-        linkUrl: `/dashboard/admin/projects/${project.id}`,
-        targetRoles: ["ADMIN", "CEO"],
-        includeProjectParties: true,
-      });
-    } catch (e) {
-      console.warn("[createProject] Realtime dispatch warning:", e);
-    }
-
-    // ── 5. Invalidate Cache Tags and Revalidate Paths ──
-    invalidateCacheTags(CACHE_TAGS.PROJECTS);
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/client");
-    revalidatePath("/dashboard/client/projects");
-    revalidatePath("/dashboard/admin");
-    revalidatePath("/dashboard/admin/intake");
-    revalidatePath("/dashboard/admin/quotations");
-
-    return {
-      success: true,
-      data: project as unknown as ProjectDetailItem,
-    };
+      })
+    );
   } catch (dbError) {
-    console.warn("[createProject] DB offline, writing to persistent dev projects cache.", dbError);
-
-    const devProject: ProjectDetailItem = {
-      id: `proj_${Date.now()}`,
-      intakeId,
-      clientId: session.user.id,
-      researchTitle: researchTitle.trim(),
-      researchQuestions: researchQuestions.trim(),
-      researchObjectives: researchObjectives.trim(),
-      hypotheses: hypotheses?.trim() || null,
-      deadlineRequested: deadlineDate.toISOString(),
-      chapters13: chapters13?.trim() || null,
-      questionnaire: questionnaire?.trim() || null,
-      masterStatus: "NEW_REQUEST",
-      packageName: null,
-      missingInfoReason: null,
-      deliveredAt: null,
-      filesPurgeAt: null,
-      filesPurged: false,
-      hasActiveDispute: false,
-      hasPendingRefund: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      client: {
-        id: session.user.id,
-        fullName: session.user.name || session.user.fullName || "Client User",
-        email: session.user.email || "client@jaxis.dev",
-        clientProfile: profile,
-      },
-      files: (files || []).map((f, i) => ({
-        id: `file_${Date.now()}_${i}`,
-        projectId: `proj_${Date.now()}`,
-        fileName: f.fileName,
-        filePath: f.filePath,
-        fileType: f.fileType,
-        fileCategory: f.fileCategory,
-        uploadedAt: new Date().toISOString(),
-      })),
-    };
-
-    const existingDev = readPersistedDevProjects();
-    writePersistedDevProjects([devProject, ...existingDev]);
-
-    try {
-      await dispatchRealtimeNotification({
-        eventType: "NEW_INTAKE",
-        projectId: devProject.id,
-        intakeId: devProject.intakeId,
-        title: "New Research Study Submitted",
-        message: `New study intake received: ${devProject.intakeId} — "${devProject.researchTitle}"`,
-        linkUrl: `/dashboard/admin/projects/${devProject.id}`,
-        targetRoles: ["ADMIN", "CEO"],
-        includeProjectParties: true,
-      });
-    } catch {
-      // Ignore in dev
-    }
-
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/client");
-    revalidatePath("/dashboard/client/projects");
-    revalidatePath("/dashboard/admin/intake");
-
+    console.error("[createProject] Database project creation error:", dbError);
     return {
-      success: true,
-      data: devProject,
+      success: false,
+      error: {
+        code: "DATABASE_ERROR",
+        message:
+          (dbError as Error)?.message ||
+          "Could not save research study to database. Please check your connection and try again.",
+      },
     };
   }
+
+  // ── 1. Create In-App Alert for Admins & CEO ──
+  try {
+    const adminUsers = await db.user.findMany({
+      where: {
+        userRoles: {
+          some: {
+            role: {
+              name: { in: ["ADMIN", "CEO"] },
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        userRoles: { select: { role: { select: { name: true } } } },
+      },
+    });
+
+    if (adminUsers.length > 0) {
+      await db.inAppAlert.createMany({
+        data: adminUsers.map((admin) => ({
+          recipientId: admin.id,
+          recipientRole: (admin.userRoles[0]?.role.name || "ADMIN") as any,
+          alertType: "NEW_INTAKE",
+          projectId: project.id,
+          message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
+          linkUrl: "/dashboard/admin/intake",
+          isRead: false,
+        })),
+      });
+    } else {
+      const fallbackAdmin = await db.user.findFirst({
+        where: {
+          OR: [
+            { email: "admin@jaxis.dev" },
+            { email: { contains: "admin" } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (fallbackAdmin) {
+        await db.inAppAlert.create({
+          data: {
+            recipientId: fallbackAdmin.id,
+            recipientRole: "ADMIN",
+            alertType: "NEW_INTAKE",
+            projectId: project.id,
+            message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
+            linkUrl: "/dashboard/admin/intake",
+            isRead: false,
+          },
+        });
+      }
+    }
+  } catch (alertErr) {
+    console.warn("[createProject] Could not create in-app alert:", alertErr);
+  }
+
+  // ── 2. Record Permanent Audit Log ──
+  try {
+    await db.auditLog.create({
+      data: {
+        projectId: project.id,
+        actorId: session.user.id,
+        actorRole: "CLIENT",
+        action: "INTAKE_SUBMITTED",
+        newValue: "NEW_REQUEST",
+        reason: "Client submitted new research study specifications",
+        metadata: {
+          intakeId: project.intakeId,
+          researchTitle: project.researchTitle,
+          deadlineRequested: deadlineDate.toISOString(),
+          fileCount: files?.length || 0,
+        },
+      },
+    });
+  } catch (auditErr) {
+    console.warn("[createProject] Could not record audit log:", auditErr);
+  }
+
+  // ── 3. Dispatch Email Notification to Admin Operations ──
+  try {
+    const adminUsers = await db.user.findMany({
+      where: {
+        userRoles: {
+          some: {
+            role: {
+              name: "ADMIN",
+            },
+          },
+        },
+      },
+      select: { id: true, email: true, fullName: true },
+    });
+
+    const targets = adminUsers.length > 0
+      ? adminUsers
+      : [{ id: "admin_fallback", email: "admin@jaxis.dev", fullName: "Admin Operations" }];
+
+    for (const admin of targets) {
+      await sendEmail({
+        to: admin.email,
+        recipientId: admin.id,
+        template: "NewIntake",
+        projectId: project.id,
+        data: {
+          intakeId: project.intakeId,
+          researchTitle: project.researchTitle,
+          clientName: session.user.name || (session.user as any).fullName || "Client User",
+          clientEmail: session.user.email || "client@jaxis.dev",
+          deadlineRequested: deadlineDate.toISOString(),
+        },
+      }).catch((e) => console.warn("[createProject] sendEmail error:", e));
+    }
+  } catch (emailErr) {
+    console.warn("[createProject] Failed to dispatch admin email:", emailErr);
+  }
+
+  // ── 4. Dispatch Real-time in-app alert via SSE ──
+  try {
+    await dispatchRealtimeNotification({
+      eventType: "NEW_INTAKE",
+      projectId: project.id,
+      intakeId: project.intakeId,
+      title: "New Research Study Submitted",
+      message: `New study intake received: ${project.intakeId} — "${project.researchTitle}"`,
+      linkUrl: `/dashboard/admin/projects/${project.id}`,
+      targetRoles: ["ADMIN", "CEO"],
+      includeProjectParties: true,
+    });
+  } catch (e) {
+    console.warn("[createProject] Realtime dispatch warning:", e);
+  }
+
+  // ── 5. Invalidate Cache Tags and Revalidate Paths ──
+  invalidateCacheTags(CACHE_TAGS.PROJECTS);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/client");
+  revalidatePath("/dashboard/client/projects");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/intake");
+  revalidatePath("/dashboard/admin/quotations");
+
+  return {
+    success: true,
+    data: project as unknown as ProjectDetailItem,
+  };
 }
 
 /**

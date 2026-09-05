@@ -57,11 +57,10 @@ export async function upsertClientProfile(
             contactNumber,
             region,
           },
-        }),
-        300
+        })
       );
-    } catch {
-      // DB offline, graceful fallback
+    } catch (dbErr) {
+      console.warn("[upsertClientProfile] DB slow or offline, falling back to cookie mirror", dbErr);
     }
 
     // Always mirror to cookie for resilient offline testing
@@ -107,12 +106,11 @@ export async function getClientProfile() {
     const profile = await withDbTimeout(
       db.clientProfile.findUnique({
         where: { userId: session.user.id },
-      }),
-      250
+      })
     );
     if (profile) return profile;
-  } catch {
-    // DB offline, fallback to cookie
+  } catch (dbErr) {
+    console.warn("[getClientProfile] DB slow or offline, reading from cookie mirror", dbErr);
   }
 
   // Fallback to cookie for development/demo testing

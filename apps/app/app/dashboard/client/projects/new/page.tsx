@@ -432,8 +432,11 @@ export default function NewProjectIntakePage() {
       }
 
       const assignedId = res.data.intakeId;
-      router.refresh();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("jaxis:study-updated"));
+      }
       router.push(`/dashboard/client?created=true&intakeId=${encodeURIComponent(assignedId)}`);
+      router.refresh();
     });
   };
 
