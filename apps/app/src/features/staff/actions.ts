@@ -1,10 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { db, withDbTimeout } from "@/lib/db";
 import { requireRole, auth } from "@/lib/auth";
+import { CACHE_TAGS, invalidateCacheTags } from "@/lib/cache-tags";
 import {
   ProvisionStaffSchema,
   SuspendStaffSchema,
@@ -133,6 +134,9 @@ export async function provisionStaff(
       },
     });
 
+    revalidatePath("/dashboard/admin/staff");
+    invalidateCacheTags(CACHE_TAGS.STAFF_ROSTER, CACHE_TAGS.STAFF_DIRECTORY, CACHE_TAGS.STAFF_CAPACITY);
+
     return {
       success: true,
       data: {
@@ -191,21 +195,10 @@ export async function provisionStaff(
  * 2. Query internal staff roster directory with role, status, and search filters.
  * Accessible to ADMIN and CEO.
  */
-export async function getStaffRoster(
-  filters?: unknown
-): Promise<StaffActionResult<StaffListItem[]>> {
-  await requireRole("ADMIN", "CEO");
-
-  const parsed = StaffFilterSchema.safeParse(filters || {});
-  const { role = "ALL", status = "ALL", search = "" } = parsed.success ? parsed.data : { role: "ALL", status: "ALL", search: "" };
-
-  const targetRoles: RoleName[] =
-    role === "ALL"
-      ? ["ADMIN", "STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER"]
-      : [role as RoleName];
-
-  try {
-    const users = await withDbTimeout(
+const fetchCachedStaffRosterRaw = unstable_cache(
+  async (rolesJson: string, status: string, search: string) => {
+    const targetRoles = JSON.parse(rolesJson) as RoleName[];
+    return withDbTimeout(
       db.user.findMany({
         where: {
           userRoles: {
@@ -251,6 +244,30 @@ export async function getStaffRoster(
         },
         orderBy: { createdAt: "desc" },
       })
+    );
+  },
+  ["cached-staff-roster"],
+  { revalidate: 30, tags: [CACHE_TAGS.STAFF_ROSTER, CACHE_TAGS.STAFF_DIRECTORY] }
+);
+
+export async function getStaffRoster(
+  filters?: unknown
+): Promise<StaffActionResult<StaffListItem[]>> {
+  await requireRole("ADMIN", "CEO");
+
+  const parsed = StaffFilterSchema.safeParse(filters || {});
+  const { role = "ALL", status = "ALL", search = "" } = parsed.success ? parsed.data : { role: "ALL", status: "ALL", search: "" };
+
+  const targetRoles: RoleName[] =
+    role === "ALL"
+      ? ["ADMIN", "STATISTICIAN", "SENIOR_QA_LEAD", "FINANCE_OFFICER"]
+      : [role as RoleName];
+
+  try {
+    const users = await fetchCachedStaffRosterRaw(
+      JSON.stringify(targetRoles),
+      status,
+      search
     );
 
     const roster: StaffListItem[] = users.map((u) => {
@@ -501,6 +518,9 @@ export async function suspendStaff(
       registerDevUser(devUser);
     }
 
+    revalidatePath("/dashboard/admin/staff");
+    invalidateCacheTags(CACHE_TAGS.STAFF_ROSTER, CACHE_TAGS.STAFF_DIRECTORY, CACHE_TAGS.STAFF_CAPACITY);
+
     return { success: true, data: { id, status: "SUSPENDED" } };
   } catch (dbError) {
     console.warn("[SuspendStaff] DB offline fallback.", dbError);
@@ -577,6 +597,9 @@ export async function liftSuspension(
       devUser.status = "ACTIVE";
       registerDevUser(devUser);
     }
+
+    revalidatePath("/dashboard/admin/staff");
+    invalidateCacheTags(CACHE_TAGS.STAFF_ROSTER, CACHE_TAGS.STAFF_DIRECTORY, CACHE_TAGS.STAFF_CAPACITY);
 
     return { success: true, data: { id, status: "ACTIVE" } };
   } catch (dbError) {
@@ -664,6 +687,9 @@ export async function terminateStaff(
       devUser.status = "TERMINATED";
       registerDevUser(devUser);
     }
+
+    revalidatePath("/dashboard/admin/staff");
+    invalidateCacheTags(CACHE_TAGS.STAFF_ROSTER, CACHE_TAGS.STAFF_DIRECTORY, CACHE_TAGS.STAFF_CAPACITY);
 
     return {
       success: true,

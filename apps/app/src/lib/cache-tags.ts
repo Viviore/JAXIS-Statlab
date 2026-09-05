@@ -7,8 +7,11 @@ export const CACHE_TAGS = {
   PROJECTS: "projects",
   STAFF_CAPACITY: "staff-capacity",
   STAFF_DIRECTORY: "staff-directory",
+  STAFF_ROSTER: "staff-roster",
   ATTENDANCE_REVIEW: "attendance-review",
   PAYROLL: "payroll-data",
+  PAYMENTS: "payments-queue",
+  QUOTATIONS: "quotations-roster",
 } as const;
 
 /**

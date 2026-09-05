@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -522,7 +522,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
 
   // Reset pending state once navigation completes or URL matches target
   useEffect(() => {
@@ -560,23 +559,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return;
       }
 
-      e.preventDefault();
       if (onClose) onClose();
 
       // If already at this exact route and no other route is pending, ignore redundant click
       if (pathname === href && !pendingHref) {
+        e.preventDefault();
         return;
       }
 
       // Optimistically activate the clicked tab immediately so the UI responds instantaneously (0ms)
       setPendingHref(href);
-
-      // Trigger transition with Next.js router
-      startTransition(() => {
-        router.push(href);
-      });
     },
-    [onClose, pathname, pendingHref, router]
+    [onClose, pathname, pendingHref]
   );
 
   const normalizedRole = (role?.toUpperCase() || "ADMIN") as string;

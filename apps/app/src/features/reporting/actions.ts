@@ -1060,9 +1060,9 @@ export async function getInfrastructureHealthAction(): Promise<{
     const dbPercentageUsed = Number(((databaseSizeMB / databaseLimitMB) * 100).toFixed(1));
 
     let supabaseStatus: "HEALTHY" | "WARNING" | "CRITICAL" = "HEALTHY";
-    if (dbPercentageUsed >= 90 || latencyMs > 1500) {
+    if (dbPercentageUsed >= 90) {
       supabaseStatus = "CRITICAL";
-    } else if (dbPercentageUsed >= 75 || latencyMs > 600) {
+    } else if (dbPercentageUsed >= 75) {
       supabaseStatus = "WARNING";
     }
 

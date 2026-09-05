@@ -30,9 +30,16 @@ export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CL
   const [shiftNotes, setShiftNotes] = useState<string>("");
   const [toast, setToast] = useState<{ message: string; description?: string; variant: "success" | "warning" | "danger" | "info" } | null>(null);
 
-  // 1. Fetch initial status
-  const refreshStatus = useCallback(async () => {
+  const lastFetchRef = React.useRef<number>(0);
+
+  // 1. Fetch initial status (throttled for passive window focus)
+  const refreshStatus = useCallback(async (force = false) => {
     if (!isInternal) return;
+    const now = Date.now();
+    if (!force && now - lastFetchRef.current < 15000) {
+      return;
+    }
+    lastFetchRef.current = now;
     try {
       const status = await getActiveShift();
       setShiftStatus(status);
@@ -47,23 +54,26 @@ export const DutyClockWidget: React.FC<DutyClockWidgetProps> = ({ userRole = "CL
   }, [isInternal]);
 
   useEffect(() => {
-    refreshStatus();
+    refreshStatus(true);
   }, [refreshStatus]);
 
   // Listen for global leave and shift updates from anywhere in the application
   useEffect(() => {
     const handleGlobalUpdate = () => {
-      refreshStatus();
+      refreshStatus(true);
+    };
+    const handleFocus = () => {
+      refreshStatus(false);
     };
 
     window.addEventListener("leave-status-updated", handleGlobalUpdate);
     window.addEventListener("shift-status-updated", handleGlobalUpdate);
-    window.addEventListener("focus", handleGlobalUpdate);
+    window.addEventListener("focus", handleFocus);
 
     return () => {
       window.removeEventListener("leave-status-updated", handleGlobalUpdate);
       window.removeEventListener("shift-status-updated", handleGlobalUpdate);
-      window.removeEventListener("focus", handleGlobalUpdate);
+      window.removeEventListener("focus", handleFocus);
     };
   }, [refreshStatus]);
 

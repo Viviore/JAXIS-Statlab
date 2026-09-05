@@ -1,10 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { auth } from "@/lib/auth";
 import { db, withDbTimeout } from "@/lib/db";
+import { CACHE_TAGS, invalidateCacheTags } from "@/lib/cache-tags";
 import {
   assertCanManageQuotation,
   calculateQuotationTotals,
@@ -343,6 +344,7 @@ export async function createQuotation(
     revalidatePath(`/dashboard/admin/projects/${projectId}`);
     revalidatePath(`/dashboard/admin/quotations`);
     revalidatePath(`/dashboard/client/projects/${projectId}`);
+    invalidateCacheTags(CACHE_TAGS.QUOTATIONS, CACHE_TAGS.PROJECTS);
 
     return { success: true, data: result };
   } catch (dbError: unknown) {
@@ -561,6 +563,7 @@ export async function updateQuotation(
 
     revalidatePath(`/dashboard/admin/projects/${updated.projectId}`);
     revalidatePath(`/dashboard/admin/quotations`);
+    invalidateCacheTags(CACHE_TAGS.QUOTATIONS, CACHE_TAGS.PROJECTS);
     return { success: true, data: result };
   } catch (err: unknown) {
     console.warn("[Quotation] [updateQuotation] DB error, using dev store fallback:", err);
@@ -751,6 +754,7 @@ export async function issueQuotation(
     revalidatePath(`/dashboard/admin/quotations`);
     revalidatePath(`/dashboard/client/projects/${updated.projectId}`);
     revalidatePath(`/dashboard/client/projects/${updated.projectId}/quote`);
+    invalidateCacheTags(CACHE_TAGS.QUOTATIONS, CACHE_TAGS.PROJECTS);
 
     // Dispatch email notification to client
     await sendQuotationIssuedNotification({
@@ -1064,6 +1068,7 @@ export async function respondQuotation(
     revalidatePath(`/dashboard/admin/quotations`);
     revalidatePath(`/dashboard/client/projects/${updated.projectId}`);
     revalidatePath(`/dashboard/client/projects/${updated.projectId}/quote`);
+    invalidateCacheTags(CACHE_TAGS.QUOTATIONS, CACHE_TAGS.PROJECTS);
 
     // Note: SOW is intentionally drafted and compiled by Operations Admin (Module 06)
     if (decision === "ACCEPT") {
@@ -1297,14 +1302,9 @@ export async function getQuotationByProject(
 /**
  * 6. Fetch Admin Quotations Roster across all active studies.
  */
-export async function getQuotationsRoster(): Promise<QuotationDetailItem[]> {
-  const session = await auth();
-  if (!session?.user?.id || (session.user.role !== "ADMIN" && session.user.role !== "CEO")) {
-    return [];
-  }
-
-  try {
-    const quotes = await withDbTimeout(
+const fetchCachedQuotationsRoster = unstable_cache(
+  async () => {
+    return withDbTimeout(
       db.quotation.findMany({
         orderBy: { createdAt: "desc" },
         include: {
@@ -1319,6 +1319,19 @@ export async function getQuotationsRoster(): Promise<QuotationDetailItem[]> {
         },
       })
     );
+  },
+  ["cached-quotations-roster"],
+  { revalidate: 30, tags: [CACHE_TAGS.QUOTATIONS] }
+);
+
+export async function getQuotationsRoster(): Promise<QuotationDetailItem[]> {
+  const session = await auth();
+  if (!session?.user?.id || (session.user.role !== "ADMIN" && session.user.role !== "CEO")) {
+    return [];
+  }
+
+  try {
+    const quotes = await fetchCachedQuotationsRoster();
 
     return quotes.map((quote) => ({
       id: quote.id,

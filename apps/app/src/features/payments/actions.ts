@@ -2,7 +2,8 @@
 
 import { auth } from "@/lib/auth";
 import { db, withDbTimeout } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
+import { CACHE_TAGS, invalidateCacheTags } from "@/lib/cache-tags";
 import {
   SubmitPaymentProofSchema,
   VerifyPaymentSchema,
@@ -247,6 +248,7 @@ export async function submitPaymentProof(
     revalidatePath(`/dashboard/admin/projects/${projectId}/payment`);
     revalidatePath("/dashboard/finance/payments");
     revalidatePath("/dashboard/finance");
+    invalidateCacheTags(CACHE_TAGS.PAYMENTS, CACHE_TAGS.PROJECTS);
 
     return {
       success: true,
@@ -473,6 +475,7 @@ export async function verifyPayment(
     revalidatePath(`/dashboard/admin/projects/${result.projectId}/payment`);
     revalidatePath("/dashboard/finance/payments");
     revalidatePath("/dashboard/finance");
+    invalidateCacheTags(CACHE_TAGS.PAYMENTS, CACHE_TAGS.PROJECTS);
 
     return {
       success: true,
@@ -627,6 +630,7 @@ export async function rejectPayment(
     revalidatePath(`/dashboard/admin/projects/${updated.projectId}/payment`);
     revalidatePath("/dashboard/finance/payments");
     revalidatePath("/dashboard/finance");
+    invalidateCacheTags(CACHE_TAGS.PAYMENTS, CACHE_TAGS.PROJECTS);
 
     return {
       success: true,
@@ -822,7 +826,38 @@ export async function getPaymentsByProject(
 
 // ─── 5. Get Pending Payments Queue (Finance Desk) ────────────────────────────
 
-// ─── 5. Get Finance Payments Queue & History ─────────────────────────────────
+const fetchCachedFinancePaymentsQueueRaw = unstable_cache(
+  async (status: string) => {
+    const whereClause: { paymentStatus?: PaymentStatus | { in: PaymentStatus[] } } = {};
+    if (status === "PENDING") {
+      whereClause.paymentStatus = "PROOF_SUBMITTED";
+    } else if (status === "VERIFIED") {
+      whereClause.paymentStatus = { in: ["VERIFIED", "FULLY_PAID"] };
+    } else if (status === "REJECTED") {
+      whereClause.paymentStatus = "REJECTED";
+    }
+
+    return withDbTimeout(
+      db.payment.findMany({
+        where: whereClause,
+        include: {
+          proofs: true,
+          project: {
+            include: {
+              client: {
+                include: { clientProfile: true },
+              },
+            },
+          },
+          quotation: true,
+        },
+        orderBy: status === "PENDING" ? { createdAt: "asc" } : { updatedAt: "desc" },
+      })
+    );
+  },
+  ["cached-finance-payments-queue"],
+  { revalidate: 30, tags: [CACHE_TAGS.PAYMENTS] }
+);
 
 export async function getFinancePaymentsQueue(
   filter: { status?: "PENDING" | "VERIFIED" | "REJECTED" | "ALL" } = {}
@@ -847,32 +882,7 @@ export async function getFinancePaymentsQueue(
   const { status = "ALL" } = filter;
 
   try {
-    const whereClause: { paymentStatus?: PaymentStatus | { in: PaymentStatus[] } } = {};
-    if (status === "PENDING") {
-      whereClause.paymentStatus = "PROOF_SUBMITTED";
-    } else if (status === "VERIFIED") {
-      whereClause.paymentStatus = { in: ["VERIFIED", "FULLY_PAID"] };
-    } else if (status === "REJECTED") {
-      whereClause.paymentStatus = "REJECTED";
-    }
-
-    const payments = await withDbTimeout(
-      db.payment.findMany({
-        where: whereClause,
-        include: {
-          proofs: true,
-          project: {
-            include: {
-              client: {
-                include: { clientProfile: true },
-              },
-            },
-          },
-          quotation: true,
-        },
-        orderBy: status === "PENDING" ? { createdAt: "asc" } : { updatedAt: "desc" },
-      })
-    );
+    const payments = await fetchCachedFinancePaymentsQueueRaw(status);
 
     const formatted: PaymentItem[] = payments.map((p) => ({
       id: p.id,
